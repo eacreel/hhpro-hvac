@@ -18,6 +18,21 @@
 </head>
 <body>
 
+    <!-- ================================================================
+         LOGIN GATE
+         ================================================================ -->
+    <div id="login-gate">
+        <div id="login-card">
+            <div id="login-logo">HH<span id="login-logo-accent">pro</span></div>
+            <p id="login-subtitle">Equipment Selection Tool</p>
+            <div id="login-form">
+                <input id="login-password" type="password" placeholder="Enter password" autocomplete="off" spellcheck="false">
+                <button id="login-submit" type="button">Enter</button>
+            </div>
+            <p id="login-error" class="hidden">Incorrect password. Please try again.</p>
+        </div>
+    </div>
+
     <!-- LOADING OVERLAY (shown during data load / export generation) -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
@@ -304,7 +319,6 @@
                     Preview Schedule &amp; Project Files
                 </button>
                 <button id="btn-export-csv" class="export-btn" type="button" disabled>Save Project (CSV)</button>
-                <!-- Hidden but kept in DOM — triggered programmatically by preview.js -->
                 <button id="btn-export-schedule-xlsx" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (Excel)</button>
                 <button id="btn-export-schedule-pdf" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (PDF)</button>
                 <button id="btn-download-docs" class="export-btn panel-hidden-btn" type="button" disabled>Download All Documents</button>
@@ -315,6 +329,38 @@
 
     <!-- SCHEDULE PREVIEW OVERLAY (populated dynamically by preview.js) -->
     <div id="schedule-preview-overlay" class="hidden"></div>
+
+    <!-- LOGIN GATE SCRIPT -->
+    <script>
+    (function () {
+        var SESSION_KEY = "hhpro_authenticated";
+        var PASS = "mellon";
+        var gate = document.getElementById("login-gate");
+        var input = document.getElementById("login-password");
+        var btn = document.getElementById("login-submit");
+        var error = document.getElementById("login-error");
+
+        if (sessionStorage.getItem(SESSION_KEY) === "true") {
+            gate.parentNode.removeChild(gate);
+        } else {
+            function tryLogin() {
+                if (input.value.trim().toLowerCase() === PASS) {
+                    sessionStorage.setItem(SESSION_KEY, "true");
+                    gate.classList.add("login-gate-exit");
+                    setTimeout(function () { gate.parentNode.removeChild(gate); }, 400);
+                } else {
+                    error.classList.remove("hidden");
+                    input.classList.add("login-input-shake");
+                    setTimeout(function () { input.classList.remove("login-input-shake"); }, 500);
+                    input.value = "";
+                    input.focus();
+                }
+            }
+            btn.addEventListener("click", tryLogin);
+            input.addEventListener("keydown", function (e) { if (e.key === "Enter") tryLogin(); });
+        }
+    })();
+    </script>
 
     <!-- LOCAL LIBRARIES -->
     <script src="JS/jszip.min.js"></script>
