@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HHpro HVAC — Equipment Selection</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="CSS/main.css">
+    <link rel="stylesheet" href="CSS/filters.css">
+    <link rel="stylesheet" href="CSS/schedule.css">
+    <link rel="stylesheet" href="CSS/project.css">
+</head>
+<body>
+
+    <!-- LOADING OVERLAY (shown during data load / export generation) -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-message">Loading equipment data…</p>
+        </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <header id="top-bar">
+        <div id="top-bar-left">
+            <span id="logo">HH<span id="logo-accent">pro</span></span>
+            <span id="logo-divider"></span>
+            <span id="logo-tagline">Equipment Selection</span>
+        </div>
+        <div id="top-bar-right">
+            <button id="btn-active-target" class="hidden" type="button" title="Open project panel">
+                <svg class="active-target-icon active-target-icon-project" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                <svg class="active-target-icon active-target-icon-cart hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span id="active-target-name"></span>
+            </button>
+            <button id="btn-clear-target" class="hidden" type="button" title="Stop adding to this target">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <button id="btn-project-toggle" type="button" title="Open projects page">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span id="btn-project-label">Projects</span>
+                <span id="project-badge" class="hidden">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- PRODUCT TABS -->
+    <nav id="product-tabs">
+        <button class="product-tab active" data-product="mini-splits">Mini Splits</button>
+        <button class="product-tab" data-product="multi-position">Multi Position Splits</button>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+
+        <!-- PROJECTS PAGE -->
+        <section id="projects-page" class="hidden">
+            <div id="projects-page-header">
+                <div id="projects-page-header-left">
+                    <button id="btn-back-to-schedule" type="button" title="Back to equipment schedule">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                        Back to Equipment
+                    </button>
+                    <h2 id="projects-page-title">My Projects</h2>
+                </div>
+                <button id="btn-create-project" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Create Project
+                </button>
+            </div>
+            <div id="projects-grid"></div>
+            <div id="projects-empty">
+                <div id="projects-empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </div>
+                <p id="projects-empty-title">No projects yet</p>
+                <p id="projects-empty-subtitle">Create a project to start organizing your equipment selections.</p>
+            </div>
+        </section>
+
+        <!-- SCHEDULE VIEW -->
+        <div id="schedule-view">
+
+            <!-- ============================================================
+                 MINI SPLITS PRODUCT CONTENT
+                 ============================================================ -->
+            <div id="product-mini-splits" class="product-content">
+
+                <section id="filter-bar">
+                    <div id="filter-bar-header">
+                        <h2 id="filter-title">System Filters</h2>
+                        <button id="btn-clear-filters" type="button">Clear All</button>
+                    </div>
+                    <div id="filter-controls">
+                        <div class="filter-group" id="fg-system-type"><label class="filter-label" for="filter-system-type">Heat Pump / Cooling Only</label><select id="filter-system-type" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="fg-electrical-type"><label class="filter-label" for="filter-electrical-type">Electrical</label><select id="filter-electrical-type" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="fg-outdoor-size"><label class="filter-label" for="filter-outdoor-size">Outdoor System Size (Tons)</label><select id="filter-outdoor-size" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="fg-num-indoor"><label class="filter-label" for="filter-num-indoor">Number of Indoor Units</label><select id="filter-num-indoor" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor" id="fg-indoor-size-1"><label class="filter-label" for="filter-indoor-size-1">Indoor Unit #1 Size (Tons)</label><select id="filter-indoor-size-1" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-size-2"><label class="filter-label" for="filter-indoor-size-2">Indoor Unit #2 Size (Tons)</label><select id="filter-indoor-size-2" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-size-3"><label class="filter-label" for="filter-indoor-size-3">Indoor Unit #3 Size (Tons)</label><select id="filter-indoor-size-3" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-size-4"><label class="filter-label" for="filter-indoor-size-4">Indoor Unit #4 Size (Tons)</label><select id="filter-indoor-size-4" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-size-5"><label class="filter-label" for="filter-indoor-size-5">Indoor Unit #5 Size (Tons)</label><select id="filter-indoor-size-5" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor" id="fg-indoor-type-1"><label class="filter-label" for="filter-indoor-type-1">Indoor Unit #1 Type</label><select id="filter-indoor-type-1" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-type-2"><label class="filter-label" for="filter-indoor-type-2">Indoor Unit #2 Type</label><select id="filter-indoor-type-2" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-type-3"><label class="filter-label" for="filter-indoor-type-3">Indoor Unit #3 Type</label><select id="filter-indoor-type-3" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-type-4"><label class="filter-label" for="filter-indoor-type-4">Indoor Unit #4 Type</label><select id="filter-indoor-type-4" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group filter-indoor hidden" id="fg-indoor-type-5"><label class="filter-label" for="filter-indoor-type-5">Indoor Unit #5 Type</label><select id="filter-indoor-type-5" class="filter-select"><option value="">All</option></select></div>
+                    </div>
+                    <div id="filter-status"><span id="filter-result-count">0 systems found</span></div>
+                </section>
+
+                <section id="schedule-section">
+                    <div id="schedule-toolbar">
+                        <h2 id="schedule-title">Split System Schedule</h2>
+                        <span id="schedule-subtitle">DAIKIN</span>
+                    </div>
+                    <div id="indoor-schedule-wrapper" class="schedule-table-wrapper">
+                        <div class="schedule-section-label">INDOOR UNIT</div>
+                        <table id="indoor-schedule-table" class="schedule-table">
+                            <thead>
+                                <tr class="schedule-header-row header-row-1">
+                                    <th class="col-action" rowspan="2"></th><th class="idu-col-symbol" rowspan="2">SYMBOL</th><th class="idu-col-odu-symbol" rowspan="2">SYMBOL<br>(OUTDOOR UNIT)</th><th class="idu-col-cfm" rowspan="2">CFM</th><th class="idu-col-cooling" colspan="4">COOLING CAPACITY</th><th class="idu-col-heating" colspan="2">HEAT PUMP HEATING CAPACITY</th><th class="idu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="idu-col-type" rowspan="2">INDOOR UNIT<br>TYPE</th><th class="idu-col-elec" colspan="3">ELECTRICAL</th><th class="idu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th><th class="idu-col-accessories" rowspan="2">ACCESSORIES</th>
+                                </tr>
+                                <tr class="schedule-header-row header-row-2">
+                                    <th class="idu-col-edb">EDB</th><th class="idu-col-ewb">EWB</th><th class="idu-col-total-cool">TOTAL<br>CAPACITY</th><th class="idu-col-sensible">SENSIBLE<br>CAPACITY</th><th class="idu-col-heat-edb">EDB</th><th class="idu-col-heat-total">TOTAL<br>CAPACITY</th><th class="idu-col-voltage">Voltage</th><th class="idu-col-mca">MCA</th><th class="idu-col-mop">MOP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="indoor-schedule-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="outdoor-schedule-wrapper" class="schedule-table-wrapper">
+                        <div class="schedule-section-label">OUTDOOR UNIT</div>
+                        <table id="outdoor-schedule-table" class="schedule-table">
+                            <thead>
+                                <tr class="schedule-header-row header-row-1">
+                                    <th class="col-action" rowspan="2"></th><th class="odu-col-symbol" rowspan="2">SYMBOL</th><th class="odu-col-cool-amb" rowspan="2">OA AMBIENT<br>(COOLING)</th><th class="odu-col-heat-amb" rowspan="2">OA AMBIENT<br>(HEATING)</th><th class="odu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="odu-col-seer" rowspan="2">SEER2/EER2/<br>HSPF2</th><th class="odu-col-elec" colspan="3">ELECTRICAL</th><th class="odu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th><th class="odu-col-refrig" rowspan="2">REFRIGERANT</th><th class="odu-col-lineset" rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th><th class="odu-col-accessories" rowspan="2">ACCESSORIES</th>
+                                </tr>
+                                <tr class="schedule-header-row header-row-2">
+                                    <th class="odu-col-voltage">Voltage</th><th class="odu-col-mca">MCA</th><th class="odu-col-mop">MOP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="outdoor-schedule-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="accessories-notes">
+                        <div id="accessories-indoor"><h3 class="accessories-heading">ACCESSORIES (INDOOR UNIT):</h3><div id="accessories-indoor-list" class="accessories-list"></div></div>
+                        <div id="accessories-outdoor"><h3 class="accessories-heading">ACCESSORIES (OUTDOOR UNIT):</h3><div id="accessories-outdoor-list" class="accessories-list"></div></div>
+                    </div>
+                    <div id="schedule-empty" class="hidden"><p id="empty-message">Select filters above to view available systems.</p></div>
+                </section>
+
+            </div><!-- /product-mini-splits -->
+
+
+            <!-- ============================================================
+                 MULTI POSITION SPLITS PRODUCT CONTENT
+                 ============================================================ -->
+            <div id="product-multi-position" class="product-content hidden">
+
+                <section id="mps-filter-bar" class="filter-bar-section">
+                    <div id="mps-filter-bar-header" class="filter-bar-header-common">
+                        <h2 class="filter-title-common">System Filters</h2>
+                        <button id="mps-btn-clear-filters" type="button" class="btn-clear-filters-common">Clear All</button>
+                    </div>
+                    <div id="mps-filter-controls" class="filter-controls-common">
+                        <div class="filter-group" id="mps-fg-size"><label class="filter-label" for="mps-filter-size">System Size (Tons)</label><select id="mps-filter-size" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-system-type"><label class="filter-label" for="mps-filter-system-type">Heat Pump / Cooling Only</label><select id="mps-filter-system-type" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-nom-eff"><label class="filter-label" for="mps-filter-nom-eff">Nominal Efficiency</label><select id="mps-filter-nom-eff" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-electrical"><label class="filter-label" for="mps-filter-electrical">Electrical</label><select id="mps-filter-electrical" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-heat-kw"><label class="filter-label" for="mps-filter-heat-kw">Auxiliary Electric Heat (kW)</label><select id="mps-filter-heat-kw" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-compressor"><label class="filter-label" for="mps-filter-compressor">Compressor Stages</label><select id="mps-filter-compressor" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mps-fg-fan-type"><label class="filter-label" for="mps-filter-fan-type">Fan Type</label><select id="mps-filter-fan-type" class="filter-select"><option value="">All</option></select></div>
+                    </div>
+                    <div id="mps-filter-status" class="filter-status-common"><span id="mps-filter-result-count">0 systems found</span></div>
+                </section>
+
+                <section id="mps-schedule-section" class="schedule-section-common">
+                    <div id="mps-schedule-toolbar" class="schedule-toolbar-common">
+                        <h2 class="schedule-title-text">Multi Position Split System Schedule</h2>
+                        <span class="schedule-subtitle-text">DAIKIN</span>
+                    </div>
+                    <div id="mps-indoor-schedule-wrapper" class="schedule-table-wrapper">
+                        <div class="schedule-section-label">INDOOR AIR HANDLING UNIT</div>
+                        <table id="mps-indoor-schedule-table" class="schedule-table mps-table">
+                            <thead>
+                                <tr class="schedule-header-row header-row-1">
+                                    <th class="col-action" rowspan="2"></th>
+                                    <th class="mps-idu-col-tag" rowspan="2">TAG</th>
+                                    <th class="mps-idu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
+                                    <th class="mps-idu-col-fan" colspan="3">SUPPLY FAN</th>
+                                    <th class="mps-idu-col-cool" colspan="5">COOLING</th>
+                                    <th class="mps-idu-col-hp-total" rowspan="2">HEAT PUMP<br>TOTAL<br>CAPACITY</th>
+                                    <th class="mps-idu-col-aux" colspan="2">AUX. ELECTRIC HEAT</th>
+                                    <th class="mps-idu-col-elec" colspan="3">ELECTRICAL DATA</th>
+                                    <th class="mps-idu-col-weight" rowspan="2">WEIGHT</th>
+                                    <th class="mps-idu-col-accessories" rowspan="2">ACCESSORIES</th>
+                                </tr>
+                                <tr class="schedule-header-row header-row-2">
+                                    <th class="mps-idu-col-cfm">AIRFLOW<br>(CFM)</th>
+                                    <th class="mps-idu-col-hp">MOTOR<br>(HP)</th>
+                                    <th class="mps-idu-col-motor-type">MOTOR<br>TYPE</th>
+                                    <th class="mps-idu-col-eat-db">EAT<br>(DB)</th>
+                                    <th class="mps-idu-col-eat-wb">EAT<br>(WB)</th>
+                                    <th class="mps-idu-col-lat-db">LAT<br>(DB)</th>
+                                    <th class="mps-idu-col-total-cap">TOTAL<br>CAPACITY</th>
+                                    <th class="mps-idu-col-sensible">SENSIBLE<br>CAPACITY</th>
+                                    <th class="mps-idu-col-aux-kw">kW</th>
+                                    <th class="mps-idu-col-aux-rise">TEMP<br>RISE (DB)</th>
+                                    <th class="mps-idu-col-voltage">VOLTAGE<br>/ PHASE</th>
+                                    <th class="mps-idu-col-mca">MCA</th>
+                                    <th class="mps-idu-col-mop">MOP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mps-indoor-schedule-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="mps-outdoor-schedule-wrapper" class="schedule-table-wrapper">
+                        <div class="schedule-section-label">OUTDOOR CONDENSING UNIT</div>
+                        <table id="mps-outdoor-schedule-table" class="schedule-table mps-table">
+                            <thead>
+                                <tr class="schedule-header-row header-row-1">
+                                    <th class="col-action" rowspan="2"></th>
+                                    <th class="mps-odu-col-tag" rowspan="2">TAG</th>
+                                    <th class="mps-odu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
+                                    <th class="mps-odu-col-heat" colspan="3">HEAT PUMP HEATING DATA</th>
+                                    <th class="mps-odu-col-elec" colspan="3">ELECTRICAL DATA</th>
+                                    <th class="mps-odu-col-cool-amb" rowspan="2">OUTDOOR<br>AMBIENT<br>(COOLING)</th>
+                                    <th class="mps-odu-col-refrig" rowspan="2">REFRIGERANT</th>
+                                    <th class="mps-odu-col-efficiency" rowspan="2">EFFICIENCY</th>
+                                    <th class="mps-odu-col-weight" rowspan="2">WEIGHT</th>
+                                    <th class="mps-odu-col-compressor" rowspan="2">COMPRESSOR<br>STAGES</th>
+                                    <th class="mps-odu-col-accessories" rowspan="2">ACCESSORIES</th>
+                                </tr>
+                                <tr class="schedule-header-row header-row-2">
+                                    <th class="mps-odu-col-heat-amb">OUTDOOR<br>AMBIENT (DB)</th>
+                                    <th class="mps-odu-col-heat-total">TOTAL<br>CAPACITY</th>
+                                    <th class="mps-odu-col-heat-eff">EFFICIENCY</th>
+                                    <th class="mps-odu-col-voltage">VOLTAGE<br>/ PHASE</th>
+                                    <th class="mps-odu-col-mca">MCA</th>
+                                    <th class="mps-odu-col-mop">MOP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mps-outdoor-schedule-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="mps-accessories-notes" class="accessories-notes-common">
+                        <div id="mps-accessories-indoor"><h3 class="accessories-heading">ACCESSORIES (INDOOR UNIT):</h3><div id="mps-accessories-indoor-list" class="accessories-list"></div></div>
+                        <div id="mps-accessories-outdoor"><h3 class="accessories-heading">ACCESSORIES (OUTDOOR UNIT):</h3><div id="mps-accessories-outdoor-list" class="accessories-list"></div></div>
+                    </div>
+                    <div id="mps-schedule-empty" class="hidden"><p class="empty-message-text">Select filters above to view available systems.</p></div>
+                </section>
+
+            </div><!-- /product-multi-position -->
+
+        </div>
+    </main>
+
+    <!-- PROJECT PANEL -->
+    <aside id="project-panel" class="closed">
+        <div id="project-panel-header">
+            <h2 id="project-panel-title">My Project</h2>
+            <button id="btn-project-close" type="button" title="Close project panel">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div id="project-panel-toolbar">
+            <button id="btn-new-project" class="project-btn" type="button">Clear All</button>
+            <button id="btn-load-csv" class="project-btn" type="button">Load CSV</button>
+            <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+        </div>
+        <div id="project-panel-body">
+            <div id="project-systems-list"></div>
+            <div id="project-empty">
+                <p>No systems added yet.</p>
+                <p>Use the <strong>+</strong> button on the schedule to add systems to your project.</p>
+            </div>
+        </div>
+        <div id="project-panel-footer">
+            <div id="project-export-group">
+                <button id="btn-preview-schedule" class="export-btn export-btn-preview" type="button" disabled>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Preview Schedule &amp; Project Files
+                </button>
+                <button id="btn-export-csv" class="export-btn" type="button" disabled>Save Project (CSV)</button>
+                <!-- Hidden but kept in DOM — triggered programmatically by preview.js -->
+                <button id="btn-export-schedule-xlsx" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (Excel)</button>
+                <button id="btn-export-schedule-pdf" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (PDF)</button>
+                <button id="btn-download-docs" class="export-btn panel-hidden-btn" type="button" disabled>Download All Documents</button>
+            </div>
+        </div>
+    </aside>
+    <div id="project-overlay" class="hidden"></div>
+
+    <!-- SCHEDULE PREVIEW OVERLAY (populated dynamically by preview.js) -->
+    <div id="schedule-preview-overlay" class="hidden"></div>
+
+    <!-- LOCAL LIBRARIES -->
+    <script src="JS/jszip.min.js"></script>
+    <script src="JS/exceljs.min.js"></script>
+    <script src="JS/jspdf.umd.min.js"></script>
+    <script src="JS/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- APPLICATION SCRIPTS -->
+    <script src="JS/event-bus.js"></script>
+    <script src="JS/data-loader.js"></script>
+    <script src="JS/filters.js"></script>
+    <script src="JS/schedule.js"></script>
+    <script src="JS/project.js"></script>
+    <script src="JS/preview.js"></script>
+    <script src="JS/export.js"></script>
+    <script src="JS/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,248 @@
+/* ==========================================================================
+   filters.css — Filter bar layout, dropdowns, labels, result count.
+   Supports both Mini Split and Multi Position Split filter bars.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Filter Bar Container
+   -------------------------------------------------------------------------- */
+#filter-bar,
+#mps-filter-bar {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--space-2xl);
+    overflow: hidden;
+}
+
+
+/* --------------------------------------------------------------------------
+   Filter Bar Header  (title + clear button)
+   -------------------------------------------------------------------------- */
+#filter-bar-header,
+#mps-filter-bar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--color-border-light);
+    background-color: var(--color-surface-alt);
+}
+
+#filter-title,
+.filter-title-common {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+}
+
+#btn-clear-filters,
+.btn-clear-filters-common {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-brand);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--border-radius);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+#btn-clear-filters:hover,
+.btn-clear-filters-common:hover {
+    color: var(--color-brand-dark);
+    background-color: var(--color-brand-light);
+}
+
+
+/* --------------------------------------------------------------------------
+   Filter Controls Grid
+   -------------------------------------------------------------------------- */
+#filter-controls,
+#mps-filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: var(--space-lg) var(--space-xl);
+    padding: var(--space-xl);
+}
+
+
+/* --------------------------------------------------------------------------
+   Individual Filter Group
+   -------------------------------------------------------------------------- */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-width: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Filter Labels
+   -------------------------------------------------------------------------- */
+.filter-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* --------------------------------------------------------------------------
+   Filter Select Dropdowns
+   -------------------------------------------------------------------------- */
+.filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    height: 38px;
+    padding: 0 var(--space-2xl) 0 var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235F6672' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.filter-select:hover {
+    border-color: var(--color-brand);
+    background-color: var(--color-brand-lighter);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.12);
+}
+
+/* Active filter indicator — highlight dropdowns that have a non-default value */
+.filter-select.has-value {
+    border-color: var(--color-brand);
+    background-color: var(--color-brand-light);
+    color: var(--color-brand-dark);
+    font-weight: var(--font-weight-semibold);
+}
+
+
+/* --------------------------------------------------------------------------
+   Filter Status Bar  (result count)
+   -------------------------------------------------------------------------- */
+#filter-status,
+#mps-filter-status {
+    display: flex;
+    align-items: center;
+    padding: var(--space-md) var(--space-xl);
+    border-top: 1px solid var(--color-border-light);
+    background-color: var(--color-surface-alt);
+}
+
+#filter-result-count,
+#mps-filter-result-count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    padding: var(--space-xs) var(--space-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: 999px;
+    line-height: 1.6;
+}
+
+#filter-result-count.has-results,
+#mps-filter-result-count.has-results {
+    color: var(--color-success);
+    background-color: var(--color-success-bg);
+    border-color: rgba(26, 138, 74, 0.2);
+}
+
+#filter-result-count.no-results,
+#mps-filter-result-count.no-results {
+    color: var(--color-danger);
+    background-color: var(--color-danger-bg);
+    border-color: rgba(209, 41, 61, 0.2);
+}
+
+
+/* --------------------------------------------------------------------------
+   Dynamic Indoor Filter Visibility  (Mini Splits only)
+   -------------------------------------------------------------------------- */
+.filter-group.filter-indoor {
+    transition: opacity var(--transition-base), max-height var(--transition-base);
+    opacity: 1;
+    max-height: 80px;
+    overflow: hidden;
+}
+
+.filter-group.filter-indoor.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    pointer-events: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 1400px) {
+    #filter-controls,
+    #mps-filter-controls {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    #filter-controls,
+    #mps-filter-controls {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: var(--space-md);
+        padding: var(--space-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    #filter-controls,
+    #mps-filter-controls {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+        padding: var(--space-md);
+    }
+
+    #filter-bar-header,
+    #mps-filter-bar-header {
+        padding: var(--space-md) var(--space-lg);
+    }
+
+    #filter-status,
+    #mps-filter-status {
+        padding: var(--space-sm) var(--space-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    #filter-controls,
+    #mps-filter-controls {
+        grid-template-columns: 1fr;
+    }
+}
