@@ -911,12 +911,15 @@ body.preview-open {
 /* --------------------------------------------------------------------------
    Preview Tag / Symbol Column Widths
    -------------------------------------------------------------------------- */
-.sp-col-sym {
-    min-width: 80px;
+.sp-col-sym,
+.sp-col-odu-sym {
+    min-width: 100px;
+    width: 100px;
 }
 
-.sp-table thead th:nth-child(2) {
-    min-width: 80px;
+.sp-table td:has(.sp-input-tag) {
+    min-width: 100px;
+    width: 100px;
 }
 
 
@@ -945,7 +948,7 @@ body.preview-open {
 }
 
 .sp-input-tag {
-    min-width: 80px;
+    min-width: 100px;
     text-align: center;
 }
 
