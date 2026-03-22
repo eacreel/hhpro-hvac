@@ -334,27 +334,39 @@
     <script>
     (function () {
         var SESSION_KEY = "hhpro_authenticated";
-        var PASS = "mellon";
+        var PASS_HASH = "b5a2c96250612366ea272ffac6d9744aaf4b45aacd96aa7cfcb931ee3b558259";
         var gate = document.getElementById("login-gate");
         var input = document.getElementById("login-password");
         var btn = document.getElementById("login-submit");
         var error = document.getElementById("login-error");
 
+        function hashPassword(pw) {
+            var encoder = new TextEncoder();
+            var data = encoder.encode(pw);
+            return crypto.subtle.digest("SHA-256", data).then(function (buffer) {
+                var array = Array.from(new Uint8Array(buffer));
+                return array.map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+            });
+        }
+
         if (sessionStorage.getItem(SESSION_KEY) === "true") {
             gate.parentNode.removeChild(gate);
         } else {
             function tryLogin() {
-                if (input.value.trim().toLowerCase() === PASS) {
-                    sessionStorage.setItem(SESSION_KEY, "true");
-                    gate.classList.add("login-gate-exit");
-                    setTimeout(function () { gate.parentNode.removeChild(gate); }, 400);
-                } else {
-                    error.classList.remove("hidden");
-                    input.classList.add("login-input-shake");
-                    setTimeout(function () { input.classList.remove("login-input-shake"); }, 500);
-                    input.value = "";
-                    input.focus();
-                }
+                var value = input.value.trim().toLowerCase();
+                hashPassword(value).then(function (hash) {
+                    if (hash === PASS_HASH) {
+                        sessionStorage.setItem(SESSION_KEY, "true");
+                        gate.classList.add("login-gate-exit");
+                        setTimeout(function () { gate.parentNode.removeChild(gate); }, 400);
+                    } else {
+                        error.classList.remove("hidden");
+                        input.classList.add("login-input-shake");
+                        setTimeout(function () { input.classList.remove("login-input-shake"); }, 500);
+                        input.value = "";
+                        input.focus();
+                    }
+                });
             }
             btn.addEventListener("click", tryLogin);
             input.addEventListener("keydown", function (e) { if (e.key === "Enter") tryLogin(); });
