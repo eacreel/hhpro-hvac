@@ -333,6 +333,11 @@ const SchedulePreview = (function () {
         html += '      <button class="sp-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button>';
         html += '    </div>';
         html += '    <span class="sp-toolbar-sep"></span>';
+        html += '    <button class="sp-dl-btn sp-dl-btn-email" id="sp-btn-email" type="button" title="Download CSV and open email client">';
+        html += '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+        html += '      Email Project';
+        html += '    </button>';
+        html += '    <span class="sp-toolbar-sep"></span>';
         html += '    <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
         html += '    <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
         html += '    <button class="sp-dl-btn" id="sp-btn-dxf" type="button">Download DXF</button>';
@@ -1043,6 +1048,39 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
+    // Email Project CSV
+    // -----------------------------------------------------------------------
+    function emailProjectCsv() {
+        var csvData = Project.getCsvData();
+        if (!csvData) {
+            showToast("No systems to export");
+            return;
+        }
+
+        // 1. Download the CSV file
+        Project.downloadBlob(csvData.blob, csvData.filename);
+
+        // 2. Build mailto link
+        var subject = encodeURIComponent("HHpro Equipment Selections — " + csvData.filename.replace(/\.csv$/, "").replace(/HHpro_/g, "").replace(/_/g, " "));
+        var body = encodeURIComponent(
+            "Hi,\n\n" +
+            "Please find my HHpro equipment selections attached.\n\n" +
+            "File: " + csvData.filename + "\n" +
+            "Systems: " + _entries.length + "\n\n" +
+            "This CSV file can be loaded into HHpro using the \"Load CSV\" button in the project panel.\n\n" +
+            "Thanks"
+        );
+        var mailto = "mailto:?subject=" + subject + "&body=" + body;
+
+        // 3. Small delay so the download triggers first, then open email
+        setTimeout(function () {
+            window.location.href = mailto;
+        }, 500);
+
+        showToast("CSV downloaded — attach it to the email");
+    }
+
+    // -----------------------------------------------------------------------
     // Wire Events
     // -----------------------------------------------------------------------
     function wireEvents() {
@@ -1053,6 +1091,7 @@ const SchedulePreview = (function () {
         document.getElementById("sp-btn-xlsx").addEventListener("click", function () { collectEditsFromDom(); saveState(); document.getElementById("btn-export-schedule-xlsx").click(); });
         document.getElementById("sp-btn-pdf").addEventListener("click", function () { collectEditsFromDom(); saveState(); document.getElementById("btn-export-schedule-pdf").click(); });
         document.getElementById("sp-btn-dxf").addEventListener("click", function () { collectEditsFromDom(); saveState(); if (Export.exportScheduleDxf) Export.exportScheduleDxf(); });
+        document.getElementById("sp-btn-email").addEventListener("click", function () { collectEditsFromDom(); saveState(); emailProjectCsv(); });
 
         document.getElementById("sp-btn-columns").addEventListener("click", function (e) {
             e.stopPropagation();

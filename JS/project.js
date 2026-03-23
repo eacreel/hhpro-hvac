@@ -576,11 +576,122 @@ const Project = (function () {
 
         var docCount = DataLoader.getSystemDocCount(entry.systemId);
         if (docCount > 0) {
-            var badge = document.createElement("div"); badge.className = "project-card-docs-badge";
-            badge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' + docCount + " documents available";
+            var badge = document.createElement("button"); badge.type = "button"; badge.className = "project-card-docs-badge project-card-docs-btn";
+            badge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>' + docCount + ' documents available</span><svg class="docs-badge-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+            (function (sysId) { badge.addEventListener("click", function (e) { e.stopPropagation(); showDocumentsPopup(sysId, badge); }); })(entry.systemId);
             body.appendChild(badge);
         }
         card.appendChild(body); return card;
+    }
+
+    // -----------------------------------------------------------------------
+    // Documents Popup
+    // -----------------------------------------------------------------------
+    function showDocumentsPopup(systemId, anchorEl) {
+        // Close any existing popup
+        closeDocumentsPopup();
+
+        var docs = DataLoader.getSystemDocuments(systemId);
+        if (!docs || docs.length === 0) return;
+
+        var sys = DataLoader.getSystemById(systemId);
+        var sysName = sys ? DataLoader.getSystemSummary(systemId) : "System";
+
+        // Create backdrop
+        var backdrop = document.createElement("div");
+        backdrop.className = "docs-popup-backdrop";
+        backdrop.addEventListener("click", closeDocumentsPopup);
+
+        // Create popup
+        var popup = document.createElement("div");
+        popup.className = "docs-popup";
+
+        // Header
+        var header = document.createElement("div");
+        header.className = "docs-popup-header";
+        var headerTitle = document.createElement("h3");
+        headerTitle.className = "docs-popup-title";
+        headerTitle.textContent = "Documents";
+        var headerClose = document.createElement("button");
+        headerClose.type = "button";
+        headerClose.className = "docs-popup-close";
+        headerClose.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        headerClose.addEventListener("click", closeDocumentsPopup);
+        header.appendChild(headerTitle);
+        header.appendChild(headerClose);
+        popup.appendChild(header);
+
+        // Subtitle
+        var subtitle = document.createElement("div");
+        subtitle.className = "docs-popup-subtitle";
+        subtitle.textContent = sysName;
+        popup.appendChild(subtitle);
+
+        // Document list
+        var list = document.createElement("div");
+        list.className = "docs-popup-list";
+
+        for (var i = 0; i < docs.length; i++) {
+            (function (doc) {
+                var row = document.createElement("div");
+                row.className = "docs-popup-row";
+
+                var icon = document.createElement("span");
+                icon.className = "docs-popup-icon";
+                if (doc.type === "pdf") {
+                    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+                } else {
+                    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+                }
+
+                var label = document.createElement("span");
+                label.className = "docs-popup-label";
+                label.textContent = doc.label;
+
+                var typeBadge = document.createElement("span");
+                typeBadge.className = "docs-popup-type";
+                typeBadge.textContent = doc.type.toUpperCase();
+
+                var openBtn = document.createElement("a");
+                openBtn.className = "docs-popup-action docs-popup-open";
+                openBtn.href = doc.path;
+                openBtn.target = "_blank";
+                openBtn.rel = "noopener noreferrer";
+                openBtn.title = "Open in new tab";
+                openBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+
+                var dlBtn = document.createElement("a");
+                dlBtn.className = "docs-popup-action docs-popup-download";
+                dlBtn.href = doc.path;
+                dlBtn.download = "";
+                dlBtn.title = "Download";
+                dlBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+                row.appendChild(icon);
+                row.appendChild(label);
+                row.appendChild(typeBadge);
+                row.appendChild(openBtn);
+                row.appendChild(dlBtn);
+                list.appendChild(row);
+            })(docs[i]);
+        }
+
+        popup.appendChild(list);
+        backdrop.appendChild(popup);
+        document.body.appendChild(backdrop);
+
+        // Position popup near the panel
+        requestAnimationFrame(function () {
+            backdrop.classList.add("docs-popup-visible");
+        });
+    }
+
+    function closeDocumentsPopup() {
+        var existing = document.querySelector(".docs-popup-backdrop");
+        if (existing) {
+            existing.classList.remove("docs-popup-visible");
+            setTimeout(function () { if (existing.parentNode) existing.remove(); }, 200);
+        }
     }
 
     // Remove entry by array index (supports duplicates)
@@ -769,8 +880,8 @@ const Project = (function () {
     // -----------------------------------------------------------------------
     // CSV
     // -----------------------------------------------------------------------
-    function exportCsv() {
-        if (_entries.length === 0) return;
+    function buildCsvData() {
+        if (_entries.length === 0) return null;
         var lines = [];
         lines.push(["System ID","ODU Tag","ODU Model","System Type","Size","Num Indoor","IDU Tags","IDU Models","IDU Types","IDU Sizes","IDU Accessories","Outdoor Accessories"].join(","));
         for (var i = 0; i < _entries.length; i++) {
@@ -788,7 +899,16 @@ const Project = (function () {
         var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
         var fn = "HHpro_Project.csv";
         if (_openTarget && _openTarget.type === "project") { var proj = getProjectById(_openTarget.projectId); if (proj) fn = "HHpro_" + proj.name.replace(/[^a-zA-Z0-9]/g, "_") + ".csv"; }
-        downloadBlob(blob, fn);
+        return { blob: blob, filename: fn };
+    }
+
+    function exportCsv() {
+        var data = buildCsvData();
+        if (data) downloadBlob(data.blob, data.filename);
+    }
+
+    function getCsvData() {
+        return buildCsvData();
     }
 
     function csvEscape(val) { if (!val) return '""'; var s = String(val); if (s.indexOf(",") !== -1 || s.indexOf('"') !== -1 || s.indexOf("\n") !== -1) return '"' + s.replace(/"/g, '""') + '"'; return s; }
@@ -892,6 +1012,7 @@ const Project = (function () {
         getActiveIndoorNotes: getActiveIndoorNotes,
         getActiveOutdoorNotes: getActiveOutdoorNotes,
         exportCsv: exportCsv,
+        getCsvData: getCsvData,
         openPanel: openPanel,
         closePanel: closePanel,
         togglePanel: togglePanel,
