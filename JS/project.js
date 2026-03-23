@@ -463,8 +463,19 @@ const Project = (function () {
     // Panel Open / Close
     // -----------------------------------------------------------------------
     function togglePanel() { if (_panel.classList.contains("open")) closePanel(); else openPanel(); }
-    function openPanel() { _panel.classList.add("open"); _panel.classList.remove("closed"); _overlay.classList.remove("hidden"); _overlay.classList.add("visible"); document.body.classList.add("project-open"); updateFloatingButton(); }
-    function closePanel() { _panel.classList.remove("open"); _panel.classList.add("closed"); _overlay.classList.remove("visible"); _overlay.classList.add("hidden"); document.body.classList.remove("project-open"); updateFloatingButton(); }
+    function openPanel() {
+        _panel.classList.add("open"); _panel.classList.remove("closed");
+        _overlay.classList.remove("hidden"); _overlay.classList.add("visible");
+        document.body.classList.add("project-open");
+        if (_btnFloatingSidebar) _btnFloatingSidebar.classList.add("hidden");
+    }
+    function closePanel() {
+        _panel.classList.remove("open"); _panel.classList.add("closed");
+        _overlay.classList.remove("visible"); _overlay.classList.add("hidden");
+        document.body.classList.remove("project-open");
+        // Show floating button after panel closes (slight delay for animation)
+        setTimeout(updateFloatingButton, 100);
+    }
     function isPanelOpen() { return _panel.classList.contains("open"); }
 
     // -----------------------------------------------------------------------

@@ -86,10 +86,6 @@
     box-shadow: -5px 4px 20px rgba(0, 30, 70, 0.45);
 }
 
-.floating-sidebar-btn.hidden {
-    display: none;
-}
-
 .floating-sidebar-icon {
     flex-shrink: 0;
 }
@@ -280,11 +276,15 @@
 }
 
 #project-panel-toolbar-row2 {
-    display: flex; gap: var(--space-sm);
+    display: flex !important; flex-direction: row !important; gap: var(--space-sm);
+}
+
+#project-panel-toolbar-row2 > .project-btn {
+    flex: 1;
 }
 
 .project-btn {
-    flex: 1; display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     height: 34px; padding: 0 var(--space-md); font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold); color: var(--color-brand);
     background-color: var(--color-surface); border: 1px solid var(--color-border);
@@ -295,22 +295,30 @@
 .project-btn:hover:not(:disabled) { color: var(--color-brand-dark); background-color: var(--color-brand-light); border-color: var(--color-brand); }
 .project-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.project-btn-preview {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
-    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.25);
+/* Preview Schedule — full-width blue prominent button */
+#btn-preview-schedule {
+    width: 100%;
+    height: 42px;
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-bold);
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 84, 166, 0.35);
+    letter-spacing: 0.01em;
 }
-.project-btn-preview:hover:not(:disabled) {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand-dark);
-    border-color: var(--color-brand-dark);
-    box-shadow: 0 4px 12px rgba(0, 84, 166, 0.3);
+#btn-preview-schedule:hover:not(:disabled) {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #002D5C 0%, var(--color-brand-dark) 100%);
+    border: none;
+    box-shadow: 0 4px 14px rgba(0, 84, 166, 0.45);
+    transform: translateY(-1px);
 }
-.project-btn-preview:disabled {
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
+#btn-preview-schedule:disabled {
+    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
+    border: none;
+    opacity: 0.45;
 }
 
 #project-panel-body { flex: 1; overflow-y: auto; padding: var(--space-lg) var(--space-xl); }
