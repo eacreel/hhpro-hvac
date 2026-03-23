@@ -47,6 +47,7 @@ const Project = (function () {
     let _panelTitle;
     let _btnActiveTarget, _activeTargetName, _btnClearTarget;
     let _activeTargetIconProject, _activeTargetIconCart;
+    let _btnFloatingSidebar, _floatingSidebarCount;
 
     // -----------------------------------------------------------------------
     // Initialization
@@ -83,6 +84,9 @@ const Project = (function () {
         _activeTargetIconProject = document.querySelector(".active-target-icon-project");
         _activeTargetIconCart    = document.querySelector(".active-target-icon-cart");
 
+        _btnFloatingSidebar    = document.getElementById("btn-floating-sidebar");
+        _floatingSidebarCount  = document.getElementById("floating-sidebar-count");
+
         if (_btnClearTarget) {
             _btnClearTarget.addEventListener("click", function (e) { e.stopPropagation(); clearActiveTarget(); });
         }
@@ -109,6 +113,17 @@ const Project = (function () {
         _btnLoadCsv.addEventListener("click", function () { _csvInput.click(); });
         _csvInput.addEventListener("change", handleLoadCsv);
 
+        // Floating sidebar button
+        if (_btnFloatingSidebar) {
+            _btnFloatingSidebar.addEventListener("click", function () {
+                if (_openTarget) {
+                    openTargetInPanel(_openTarget);
+                } else if (_activeTarget) {
+                    openTargetInPanel(_activeTarget);
+                }
+            });
+        }
+
         var tabs = document.querySelectorAll(".product-tab");
         for (var t = 0; t < tabs.length; t++) {
             tabs[t].addEventListener("click", function () { if (_currentView === "projects") showScheduleView(); });
@@ -118,6 +133,7 @@ const Project = (function () {
         migrateOldData();
         loadProjectsList();
         updateBadge();
+        updateFloatingButton();
 
         console.log("[Project] Initialized with " + _projects.length + " projects");
     }
@@ -186,7 +202,7 @@ const Project = (function () {
 
         var deleteBtn = document.createElement("button"); deleteBtn.type = "button"; deleteBtn.className = "projects-card-action-btn projects-card-delete-btn"; deleteBtn.title = "Delete";
         deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
-        deleteBtn.addEventListener("click", function (e) { e.stopPropagation(); showConfirmDialog("Delete Project", 'Delete "' + project.name + '"? All systems and data will be removed.', "Delete", function () { deleteProject(project.id); renderProjectsPage(); updateBadge(); notifyChange(); }); });
+        deleteBtn.addEventListener("click", function (e) { e.stopPropagation(); showConfirmDialog("Delete Project", 'Delete "' + project.name + '"? All systems and data will be removed.', "Delete", function () { deleteProject(project.id); renderProjectsPage(); updateBadge(); updateFloatingButton(); notifyChange(); }); });
 
         actionsEl.appendChild(renameBtn); actionsEl.appendChild(deleteBtn);
         header.appendChild(nameEl); header.appendChild(actionsEl);
@@ -212,7 +228,7 @@ const Project = (function () {
     function showCreateProjectDialog() {
         showInputDialog("Create Project", "Project Name", "", "Create", function (name) {
             if (!name || !name.trim()) { showToast("Please enter a project name", "toast-warning"); return false; }
-            var project = createProject(name.trim()); renderProjectsPage(); updateBadge();
+            var project = createProject(name.trim()); renderProjectsPage(); updateBadge(); updateFloatingButton();
             showToast('Project "' + project.name + '" created', "toast-success"); return true;
         });
     }
@@ -220,15 +236,15 @@ const Project = (function () {
     function showRenameProjectDialog(projectId, currentName) {
         showInputDialog("Rename Project", "Project Name", currentName, "Rename", function (name) {
             if (!name || !name.trim()) { showToast("Please enter a project name", "toast-warning"); return false; }
-            renameProject(projectId, name.trim()); renderProjectsPage(); showToast("Project renamed", "toast-success"); return true;
+            renameProject(projectId, name.trim()); renderProjectsPage(); updateFloatingButton(); showToast("Project renamed", "toast-success"); return true;
         });
     }
 
     // -----------------------------------------------------------------------
     // Active Target
     // -----------------------------------------------------------------------
-    function setActiveTarget(target) { _activeTarget = target; updateActiveTargetIndicator(); updateBadge(); }
-    function clearActiveTarget() { _activeTarget = null; updateActiveTargetIndicator(); updateBadge(); notifyChange(); }
+    function setActiveTarget(target) { _activeTarget = target; updateActiveTargetIndicator(); updateBadge(); updateFloatingButton(); }
+    function clearActiveTarget() { _activeTarget = null; updateActiveTargetIndicator(); updateBadge(); updateFloatingButton(); notifyChange(); }
     function getActiveTarget() { return _activeTarget; }
 
     function updateActiveTargetIndicator() {
@@ -242,6 +258,39 @@ const Project = (function () {
             var proj = getProjectById(_activeTarget.projectId);
             _activeTargetName.textContent = proj ? proj.name : "Project";
             _activeTargetIconProject.classList.remove("hidden"); _activeTargetIconCart.classList.add("hidden");
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Floating Sidebar Button
+    // -----------------------------------------------------------------------
+    function updateFloatingButton() {
+        if (!_btnFloatingSidebar) return;
+        var hasTarget = !!_openTarget || !!_activeTarget;
+        if (hasTarget && !isPanelOpen()) {
+            _btnFloatingSidebar.classList.remove("hidden");
+            // Update count
+            var count = 0;
+            var target = _openTarget || _activeTarget;
+            if (target) {
+                if (target.type === "cart") count = _cartEntries.length;
+                else if (target.type === "project") count = getProjectEntryCount(target.projectId);
+            }
+            if (_floatingSidebarCount) {
+                _floatingSidebarCount.textContent = count;
+            }
+            // Update label
+            var labelEl = _btnFloatingSidebar.querySelector(".floating-sidebar-label");
+            if (labelEl && target) {
+                if (target.type === "cart") {
+                    labelEl.textContent = "Cart";
+                } else {
+                    var proj = getProjectById(target.projectId);
+                    labelEl.textContent = proj ? proj.name : "Project";
+                }
+            }
+        } else {
+            _btnFloatingSidebar.classList.add("hidden");
         }
     }
 
@@ -277,7 +326,7 @@ const Project = (function () {
             showInputDialog("Create Project", "Project Name", "", "Create & Add", function (name) {
                 if (!name || !name.trim()) { showToast("Please enter a project name", "toast-warning"); return false; }
                 var project = createProject(name.trim()); setActiveTarget({ type: "project", projectId: project.id });
-                addSystemToTarget(systemId, _activeTarget); updateBadge(); showToast('Project "' + project.name + '" created', "toast-success"); return true;
+                addSystemToTarget(systemId, _activeTarget); updateBadge(); updateFloatingButton(); showToast('Project "' + project.name + '" created', "toast-success"); return true;
             });
         });
 
@@ -363,7 +412,7 @@ const Project = (function () {
         }
 
         if (_openTarget && isSameTarget(_openTarget, target)) { loadOpenTarget(); renderList(); renderAccessoriesNotes(); }
-        updateBadge(); updateExportButtons(); notifyChange();
+        updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange();
 
         if (_currentView === "schedule") {
             var count = target.type === "cart" ? _cartEntries.length : getProjectEntryCount(target.projectId);
@@ -383,7 +432,7 @@ const Project = (function () {
             entries.splice(removeIdx, 1);
             saveProjectEntries(_openTarget.projectId, entries);
         }
-        loadOpenTarget(); renderList(); updateBadge(); updateExportButtons(); notifyChange();
+        loadOpenTarget(); renderList(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange();
         showToast("System removed", "toast-warning");
     }
 
@@ -414,8 +463,8 @@ const Project = (function () {
     // Panel Open / Close
     // -----------------------------------------------------------------------
     function togglePanel() { if (_panel.classList.contains("open")) closePanel(); else openPanel(); }
-    function openPanel() { _panel.classList.add("open"); _panel.classList.remove("closed"); _overlay.classList.remove("hidden"); _overlay.classList.add("visible"); document.body.classList.add("project-open"); }
-    function closePanel() { _panel.classList.remove("open"); _panel.classList.add("closed"); _overlay.classList.remove("visible"); _overlay.classList.add("hidden"); document.body.classList.remove("project-open"); }
+    function openPanel() { _panel.classList.add("open"); _panel.classList.remove("closed"); _overlay.classList.remove("hidden"); _overlay.classList.add("visible"); document.body.classList.add("project-open"); updateFloatingButton(); }
+    function closePanel() { _panel.classList.remove("open"); _panel.classList.add("closed"); _overlay.classList.remove("visible"); _overlay.classList.add("hidden"); document.body.classList.remove("project-open"); updateFloatingButton(); }
     function isPanelOpen() { return _panel.classList.contains("open"); }
 
     // -----------------------------------------------------------------------
@@ -512,23 +561,7 @@ const Project = (function () {
             iduTagInput.dataset.entryIndex = entryIndex; iduTagInput.dataset.field = "iduTag"; iduTagInput.dataset.iduIndex = i; iduTagInput.addEventListener("input", handleTagInput);
             var iduModel = document.createElement("span"); iduModel.className = "project-indoor-model"; iduModel.textContent = getUnitDisplayModel(idu);
             iduRow.appendChild(iduLabel); iduRow.appendChild(iduTagInput); iduRow.appendChild(iduModel); body.appendChild(iduRow);
-
-            var iAccRow = document.createElement("div"); iAccRow.className = "project-accessories-row project-idu-acc-row";
-            var iAccLabel = document.createElement("span"); iAccLabel.className = "project-accessories-label"; iAccLabel.textContent = "IDU #" + (i + 1) + " Acc.";
-            var iAccInput = document.createElement("textarea"); iAccInput.className = "project-accessories-input"; iAccInput.rows = 1;
-            iAccInput.value = (entry.iduAccessories && i < entry.iduAccessories.length) ? (entry.iduAccessories[i] || "") : "";
-            iAccInput.placeholder = "Accessories..."; iAccInput.dataset.entryIndex = entryIndex; iAccInput.dataset.field = "iduAccessories"; iAccInput.dataset.iduIndex = i;
-            iAccInput.addEventListener("input", handleTagInput);
-            iAccRow.appendChild(iAccLabel); iAccRow.appendChild(iAccInput); body.appendChild(iAccRow);
         }
-
-        var oAccRow = document.createElement("div"); oAccRow.className = "project-accessories-row";
-        var oAccLabel = document.createElement("span"); oAccLabel.className = "project-accessories-label"; oAccLabel.textContent = "ODU Acc.";
-        var oAccInput = document.createElement("textarea"); oAccInput.className = "project-accessories-input"; oAccInput.rows = 1;
-        oAccInput.value = entry.outdoorAccessories || ""; oAccInput.placeholder = "Outdoor accessories...";
-        oAccInput.dataset.entryIndex = entryIndex; oAccInput.dataset.field = "outdoorAccessories";
-        oAccInput.addEventListener("input", handleTagInput);
-        oAccRow.appendChild(oAccLabel); oAccRow.appendChild(oAccInput); body.appendChild(oAccRow);
 
         var docCount = DataLoader.getSystemDocCount(entry.systemId);
         if (docCount > 0) {
@@ -551,7 +584,7 @@ const Project = (function () {
             entries.splice(index, 1);
             saveProjectEntries(_openTarget.projectId, entries);
         }
-        loadOpenTarget(); renderList(); updateBadge(); updateExportButtons(); notifyChange();
+        loadOpenTarget(); renderList(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange();
         showToast("System removed", "toast-warning");
     }
 
@@ -716,7 +749,7 @@ const Project = (function () {
         showConfirmDialog("Clear Systems", "Remove all systems and notes from this view?", "Clear All", function () {
             if (_openTarget.type === "cart") { _cartEntries = []; _cartIdSet = new Set(); _cartIndoorNotes = []; _cartOutdoorNotes = []; initCartNotes(); }
             else { saveProjectEntries(_openTarget.projectId, []); saveProjectNotes(_openTarget.projectId, [], []); }
-            loadOpenTarget(); renderList(); renderAccessoriesNotes(); updateBadge(); updateExportButtons(); notifyChange(); showToast("Cleared", "toast-warning");
+            loadOpenTarget(); renderList(); renderAccessoriesNotes(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange(); showToast("Cleared", "toast-warning");
         });
     }
 
@@ -764,7 +797,7 @@ const Project = (function () {
             _entries.push({ systemId: systemId, oduTag: cols[1] || "ODU-", iduTags: (cols[6] || "").split(";"), iduAccessories: (cols[10] || "").split(";"), outdoorAccessories: cols[11] || "" });
             _idSet.add(systemId); imported++;
         }
-        saveOpenTarget(); renderList(); updateBadge(); updateExportButtons(); notifyChange();
+        saveOpenTarget(); renderList(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange();
         showToast(imported > 0 ? imported + " system(s) loaded" : "No new systems found", imported > 0 ? "toast-success" : "toast-warning");
     }
 

@@ -292,6 +292,18 @@
         </div>
     </main>
 
+    <!-- FLOATING SIDEBAR TOGGLE BUTTON -->
+    <button id="btn-floating-sidebar" class="floating-sidebar-btn hidden" type="button" title="Open project panel">
+        <svg class="floating-sidebar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="floating-sidebar-label">Project</span>
+        <span id="floating-sidebar-count" class="floating-sidebar-count">0</span>
+        <svg class="floating-sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+        </svg>
+    </button>
+
     <!-- PROJECT PANEL -->
     <aside id="project-panel" class="closed">
         <div id="project-panel-header">
@@ -301,8 +313,15 @@
             </button>
         </div>
         <div id="project-panel-toolbar">
-            <button id="btn-new-project" class="project-btn" type="button">Clear All</button>
-            <button id="btn-load-csv" class="project-btn" type="button">Load CSV</button>
+            <button id="btn-preview-schedule" class="project-btn project-btn-preview" type="button" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview Schedule
+            </button>
+            <div id="project-panel-toolbar-row2">
+                <button id="btn-new-project" class="project-btn" type="button">Clear All</button>
+                <button id="btn-load-csv" class="project-btn" type="button">Load CSV</button>
+                <button id="btn-export-csv" class="project-btn" type="button" disabled>Save CSV</button>
+            </div>
             <input type="file" id="csv-file-input" accept=".csv" class="hidden">
         </div>
         <div id="project-panel-body">
@@ -314,11 +333,6 @@
         </div>
         <div id="project-panel-footer">
             <div id="project-export-group">
-                <button id="btn-preview-schedule" class="export-btn export-btn-preview" type="button" disabled>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Preview Schedule &amp; Project Files
-                </button>
-                <button id="btn-export-csv" class="export-btn" type="button" disabled>Save Project (CSV)</button>
                 <button id="btn-export-schedule-xlsx" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (Excel)</button>
                 <button id="btn-export-schedule-pdf" class="export-btn panel-hidden-btn" type="button" disabled>Download Schedule (PDF)</button>
                 <button id="btn-download-docs" class="export-btn panel-hidden-btn" type="button" disabled>Download All Documents</button>
