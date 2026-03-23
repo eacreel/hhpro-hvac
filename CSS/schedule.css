@@ -137,7 +137,6 @@
 .idu-col-mca            { width: 3.4%; }
 .idu-col-mop            { width: 3.4%; }
 .idu-col-mfg            { width: 11.0%; }
-.idu-col-accessories    { width: 9.4%; }
 
 
 /* --------------------------------------------------------------------------
@@ -155,7 +154,6 @@
 .odu-col-mfg            { width: 10.8%; }
 .odu-col-refrig         { width: 8.6%; }
 .odu-col-lineset        { width: 13.0%; }
-.odu-col-accessories    { width: 8.6%; }
 
 
 /* --------------------------------------------------------------------------
@@ -182,7 +180,6 @@
 .mps-idu-col-mca         { width: 3.2%; }
 .mps-idu-col-mop         { width: 3.2%; }
 .mps-idu-col-weight      { width: 3.8%; }
-.mps-idu-col-accessories { width: 7.0%; }
 
 
 /* --------------------------------------------------------------------------
@@ -203,7 +200,6 @@
 .mps-odu-col-efficiency  { width: 10.0%; }
 .mps-odu-col-weight      { width: 4.2%; }
 .mps-odu-col-compressor  { width: 6.2%; }
-.mps-odu-col-accessories { width: 7.0%; }
 
 
 /* --------------------------------------------------------------------------

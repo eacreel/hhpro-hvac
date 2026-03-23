@@ -260,7 +260,6 @@ const Schedule = (function () {
             }
 
             tr.appendChild(createCell(idu.manufacturer || "", "cell-model"));
-            tr.appendChild(createCell("", "cell-editable cell-text"));
 
             rows.push(tr);
         }
@@ -300,7 +299,6 @@ const Schedule = (function () {
         tr.appendChild(createCell(odu.manufacturer || "", "cell-model"));
         tr.appendChild(createCell(odu.refrigerant || "", "cell-text"));
         tr.appendChild(createCell(odu.lineSet || "", "cell-text"));
-        tr.appendChild(createCell("", "cell-editable cell-text"));
 
         return tr;
     }
@@ -368,8 +366,6 @@ const Schedule = (function () {
         tr.appendChild(createCell(formatNum(idu.mop), "cell-numeric"));
         // Weight
         tr.appendChild(createCell(formatNum(idu.weight), "cell-numeric"));
-        // Accessories
-        tr.appendChild(createCell("", "cell-editable cell-text"));
 
         return tr;
     }
@@ -418,8 +414,6 @@ const Schedule = (function () {
         tr.appendChild(createCell(formatNum(odu.weight), "cell-numeric"));
         // Compressor Stages
         tr.appendChild(createCell(odu.compressorStages || "", "cell-text"));
-        // Accessories
-        tr.appendChild(createCell("", "cell-editable cell-text"));
 
         return tr;
     }

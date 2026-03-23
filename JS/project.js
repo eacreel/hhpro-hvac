@@ -894,8 +894,8 @@ const Project = (function () {
             var sysSize = sys.filters.outdoorSize || sys.filters.size || "";
             lines.push([csvEscape(entry.systemId),csvEscape(entry.oduTag),csvEscape(oduModel),csvEscape(sysType),csvEscape(String(sysSize)),csvEscape(String(sys.indoorUnits.length)),csvEscape(entry.iduTags.join(";")),csvEscape(iduModels.join(";")),csvEscape(iduTypes.join(";")),csvEscape(iduSizes.join(";")),csvEscape((entry.iduAccessories || []).join(";")),csvEscape(entry.outdoorAccessories)].join(","));
         }
-        lines.push(""); lines.push("ACCESSORIES (INDOOR UNIT)"); var ai = getActiveIndoorNotes(); for (var j = 0; j < ai.length; j++) lines.push(csvEscape((j+1)+"- "+ai[j]));
-        lines.push(""); lines.push("ACCESSORIES (OUTDOOR UNIT)"); var ao = getActiveOutdoorNotes(); for (var k = 0; k < ao.length; k++) lines.push(csvEscape((k+1)+"- "+ao[k]));
+        lines.push(""); lines.push("NOTES (INDOOR UNIT)"); var ai = getActiveIndoorNotes(); for (var j = 0; j < ai.length; j++) lines.push(csvEscape((j+1)+"- "+ai[j]));
+        lines.push(""); lines.push("NOTES (OUTDOOR UNIT)"); var ao = getActiveOutdoorNotes(); for (var k = 0; k < ao.length; k++) lines.push(csvEscape((k+1)+"- "+ao[k]));
         var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
         var fn = "HHpro_Project.csv";
         if (_openTarget && _openTarget.type === "project") { var proj = getProjectById(_openTarget.projectId); if (proj) fn = "HHpro_" + proj.name.replace(/[^a-zA-Z0-9]/g, "_") + ".csv"; }
@@ -922,7 +922,7 @@ const Project = (function () {
         var lines = csvText.split("\n").filter(function (l) { return l.trim() !== ""; }); if (lines.length < 2) { showToast("CSV is empty", "toast-danger"); return; }
         var imported = 0;
         for (var i = 1; i < lines.length; i++) {
-            var line = lines[i].trim(); if (line === "ACCESSORIES (INDOOR UNIT)" || line === "ACCESSORIES (OUTDOOR UNIT)" || line === "") break;
+            var line = lines[i].trim(); if (line === "NOTES (INDOOR UNIT)" || line === "NOTES (OUTDOOR UNIT)" || line === "ACCESSORIES (INDOOR UNIT)" || line === "ACCESSORIES (OUTDOOR UNIT)" || line === "") break;
             var cols = parseCsvLine(line); if (cols.length < 7) continue;
             var systemId = cols[0]; if (!DataLoader.getSystemById(systemId)) continue;
             _entries.push({ systemId: systemId, oduTag: cols[1] || "ODU-", iduTags: (cols[6] || "").split(";"), iduAccessories: (cols[10] || "").split(";"), outdoorAccessories: cols[11] || "" });

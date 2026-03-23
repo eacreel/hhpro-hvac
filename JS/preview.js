@@ -460,7 +460,7 @@ const SchedulePreview = (function () {
         if (isColVisible("idu-type")) h += '<th rowspan="2" class="sp-col-type">INDOOR UNIT<br>TYPE</th>';
         if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL</th>';
         if (isColVisible("idu-manufacturer")) h += '<th rowspan="2" class="sp-col-mfg">MANUFACTURER<br>DAIKIN</th>';
-        h += '<th rowspan="2" class="sp-col-acc">ACCESSORIES</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
         h += '</tr><tr class="sp-hdr2">';
         if (isColVisible("idu-coolingEdb")) h += '<th>EDB</th>';
         if (isColVisible("idu-coolingEwb")) h += '<th>EWB</th>';
@@ -541,7 +541,7 @@ const SchedulePreview = (function () {
         if (auxVis > 0) h += '<th colspan="' + auxVis + '" class="sp-col-group">AUX. ELECTRIC HEAT</th>';
         if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL DATA</th>';
         if (v("mps-idu-weight")) h += '<th rowspan="2">WEIGHT</th>';
-        h += '<th rowspan="2" class="sp-col-acc">ACCESSORIES</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
         h += '</tr><tr class="sp-hdr2">';
         if (v("mps-idu-airflow")) h += '<th>AIRFLOW<br>(CFM)</th>';
         if (v("mps-idu-motorHp")) h += '<th>MOTOR<br>(HP)</th>';
@@ -653,7 +653,7 @@ const SchedulePreview = (function () {
         if (isColVisible("odu-manufacturer")) h += '<th rowspan="2" class="sp-col-mfg">MANUFACTURER<br>DAIKIN</th>';
         if (isColVisible("odu-refrigerant")) h += '<th rowspan="2">REFRIGERANT</th>';
         if (isColVisible("odu-lineSet")) h += '<th rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>';
-        h += '<th rowspan="2" class="sp-col-acc">ACCESSORIES</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
         h += '</tr><tr class="sp-hdr2">';
         if (isColVisible("odu-voltage")) h += '<th>Voltage</th>';
         if (isColVisible("odu-mca")) h += '<th>MCA</th>';
@@ -708,7 +708,7 @@ const SchedulePreview = (function () {
         if (v("mps-odu-efficiency")) h += '<th rowspan="2">EFFICIENCY</th>';
         if (v("mps-odu-weight")) h += '<th rowspan="2">WEIGHT</th>';
         if (v("mps-odu-compressor")) h += '<th rowspan="2">COMPRESSOR<br>STAGES</th>';
-        h += '<th rowspan="2" class="sp-col-acc">ACCESSORIES</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
         h += '</tr><tr class="sp-hdr2">';
         if (v("mps-odu-heatAmb")) h += '<th>OUTDOOR<br>AMBIENT (DB)</th>';
         if (v("mps-odu-heatTotal")) h += '<th>TOTAL<br>CAPACITY</th>';
@@ -756,12 +756,12 @@ const SchedulePreview = (function () {
         var indoorNotes = notes.indoor || [];
         var outdoorNotes = notes.outdoor || [];
 
-        var h = '<div class="sp-notes"><div class="sp-notes-col"><div class="sp-notes-heading">ACCESSORIES (INDOOR UNIT):</div>';
+        var h = '<div class="sp-notes"><div class="sp-notes-col"><div class="sp-notes-heading">NOTES (INDOOR UNIT):</div>';
         for (var i = 0; i < MAX_NOTES; i++) {
             h += '<div class="sp-notes-line"><span class="sp-notes-num">' + (i + 1) + '-</span>';
             h += '<input class="sp-input sp-input-note" type="text" value="' + esc(indoorNotes[i] || "") + '" data-note-type="indoor" data-note-product="' + productKey + '" data-note-index="' + i + '"></div>';
         }
-        h += '</div><div class="sp-notes-col"><div class="sp-notes-heading">ACCESSORIES (OUTDOOR UNIT):</div>';
+        h += '</div><div class="sp-notes-col"><div class="sp-notes-heading">NOTES (OUTDOOR UNIT):</div>';
         for (var j = 0; j < MAX_NOTES; j++) {
             h += '<div class="sp-notes-line"><span class="sp-notes-num">' + (j + 1) + '-</span>';
             h += '<input class="sp-input sp-input-note" type="text" value="' + esc(outdoorNotes[j] || "") + '" data-note-type="outdoor" data-note-product="' + productKey + '" data-note-index="' + j + '"></div>';

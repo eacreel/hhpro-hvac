@@ -232,7 +232,7 @@ const Export = (function () {
             ws.mergeCells(h1, 12, h2, 12); applyStyle(ws.getCell(h1, 12), "INDOOR UNIT\nTYPE", styles.headerInnerWrap);
             ws.mergeCells(h1, 13, h1, 15); applyStyle(ws.getCell(h1, 13), "ELECTRICAL", styles.headerInner);
             applyStyle(ws.getCell(h1, 16), "MANUFACTURER", styles.headerInner);
-            ws.mergeCells(h1, 17, h2, 17); applyStyle(ws.getCell(h1, 17), "ACCESSORIES", styles.headerOuter);
+            ws.mergeCells(h1, 17, h2, 17); applyStyle(ws.getCell(h1, 17), "NOTES", styles.headerOuter);
             applyStyle(ws.getCell(h2, 5), "EDB", styles.headerSub);
             applyStyle(ws.getCell(h2, 6), "EWB", styles.headerSub);
             applyStyle(ws.getCell(h2, 7), "TOTAL\nCAPACITY", styles.headerSubWrap);
@@ -311,7 +311,7 @@ const Export = (function () {
             applyStyle(ws.getCell(oh1, 10), "MANUFACTURER", styles.headerInner);
             ws.mergeCells(oh1, 11, oh2, 11); applyStyle(ws.getCell(oh1, 11), "REFRIGERANT", styles.headerInnerWrap);
             ws.mergeCells(oh1, 12, oh2, 12); applyStyle(ws.getCell(oh1, 12), "MAX ALLOWABLE\nLINE-SET LENGTHS", styles.headerInnerWrap);
-            ws.mergeCells(oh1, 13, oh2, 13); applyStyle(ws.getCell(oh1, 13), "ACCESSORIES", styles.headerOuterOdu);
+            ws.mergeCells(oh1, 13, oh2, 13); applyStyle(ws.getCell(oh1, 13), "NOTES", styles.headerOuterOdu);
             applyStyle(ws.getCell(oh2, 7), "Voltage", styles.headerSub);
             applyStyle(ws.getCell(oh2, 8), "MCA", styles.headerSub);
             applyStyle(ws.getCell(oh2, 9), "MOP", styles.headerSub);
@@ -341,7 +341,7 @@ const Export = (function () {
             }
             ws.getRow(row - 1).height = 15.75;
 
-            // ACCESSORIES NOTES
+            // NOTES SECTION
             writeAccessoriesNotes(ws, row, styles, "mini-splits");
 
             // GENERATE
@@ -430,7 +430,7 @@ const Export = (function () {
             ws.mergeCells(h1, 13, h1, 14); applyStyle(ws.getCell(h1, 13), "AUX. ELECTRIC HEAT", styles.headerInner);
             ws.mergeCells(h1, 15, h1, 17); applyStyle(ws.getCell(h1, 15), "ELECTRICAL DATA", styles.headerInner);
             ws.mergeCells(h1, 18, h2, 18); applyStyle(ws.getCell(h1, 18), "WEIGHT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 19, h2, 19); applyStyle(ws.getCell(h1, 19), "ACCESSORIES", styles.headerOuter);
+            ws.mergeCells(h1, 19, h2, 19); applyStyle(ws.getCell(h1, 19), "NOTES", styles.headerOuter);
             applyStyle(ws.getCell(h2, 4), "AIRFLOW\n(CFM)", styles.headerSubWrap);
             applyStyle(ws.getCell(h2, 5), "MOTOR\n(HP)", styles.headerSubWrap);
             applyStyle(ws.getCell(h2, 6), "MOTOR\nTYPE", styles.headerSubWrap);
@@ -505,7 +505,7 @@ const Export = (function () {
             ws.mergeCells(oh1, 12, oh2, 12); applyStyle(ws.getCell(oh1, 12), "EFFICIENCY", styles.headerInnerWrap);
             ws.mergeCells(oh1, 13, oh2, 13); applyStyle(ws.getCell(oh1, 13), "WEIGHT", styles.headerInnerWrap);
             ws.mergeCells(oh1, 14, oh2, 14); applyStyle(ws.getCell(oh1, 14), "COMPRESSOR\nSTAGES", styles.headerInnerWrap);
-            ws.mergeCells(oh1, 15, oh2, 15); applyStyle(ws.getCell(oh1, 15), "ACCESSORIES", styles.headerOuterOdu || styles.headerOuter);
+            ws.mergeCells(oh1, 15, oh2, 15); applyStyle(ws.getCell(oh1, 15), "NOTES", styles.headerOuterOdu || styles.headerOuter);
             applyStyle(ws.getCell(oh2, 4), "OUTDOOR\nAMBIENT (DB)", styles.headerSubWrap);
             applyStyle(ws.getCell(oh2, 5), "TOTAL\nCAPACITY", styles.headerSubWrap);
             applyStyle(ws.getCell(oh2, 6), "EFFICIENCY", styles.headerSub);
@@ -541,7 +541,7 @@ const Export = (function () {
             }
             ws.getRow(row - 1).height = 15.75;
 
-            // ACCESSORIES NOTES
+            // NOTES SECTION
             writeAccessoriesNotes(ws, row, styles, "multi-position");
 
             // GENERATE
@@ -558,7 +558,7 @@ const Export = (function () {
 
 
     // =====================================================================
-    //  ACCESSORIES NOTES WRITER (shared)
+    //  NOTES SECTION WRITER (shared)
     // =====================================================================
     function writeAccessoriesNotes(ws, row, styles, productKey) {
         var pNotes = Project.getProductActiveNotes(productKey);
@@ -567,11 +567,11 @@ const Export = (function () {
         var maxNotes = Math.max(activeIndoor.length, activeOutdoor.length, 0);
 
         if (maxNotes > 0) {
-            applyStyle(ws.getCell(row, 2), "ACCESSORIES (INDOOR UNIT):", styles.notesHeader);
+            applyStyle(ws.getCell(row, 2), "NOTES (INDOOR UNIT):", styles.notesHeader);
             ws.getCell(row, 2).border = { top: _medium, left: _medium };
             for (var nh = 3; nh <= 7; nh++) ws.getCell(row, nh).border = { top: _medium };
             ws.getCell(row, 8).border = { top: _medium, right: _medium };
-            applyStyle(ws.getCell(row, 9), "ACCESSORIES (OUTDOOR UNIT):", styles.notesHeader);
+            applyStyle(ws.getCell(row, 9), "NOTES (OUTDOOR UNIT):", styles.notesHeader);
             ws.getCell(row, 9).border = { top: _medium, left: _medium };
             for (var nh2 = 10; nh2 <= 12; nh2++) ws.getCell(row, nh2).border = { top: _medium };
             ws.getCell(row, 13).border = { top: _medium, right: _medium };
@@ -772,7 +772,7 @@ const Export = (function () {
             { content: "INDOOR UNIT\nTYPE", rowSpan: 2 },
             { content: "ELECTRICAL", colSpan: 3 },
             { content: "MANUFACTURER", rowSpan: 1 },
-            { content: "ACCESSORIES", rowSpan: 2 },
+            { content: "NOTES", rowSpan: 2 },
         ];
         var iHeadRow2 = ["EDB","EWB","TOTAL\nCAPACITY","SENSIBLE\nCAPACITY","EDB","TOTAL\nCAPACITY","Voltage","MCA","MOP","DAIKIN"];
 
@@ -810,7 +810,7 @@ const Export = (function () {
             { content: "MANUFACTURER", rowSpan: 1 },
             { content: "REFRIGERANT", rowSpan: 2 },
             { content: "MAX ALLOWABLE\nLINE-SET LENGTHS", rowSpan: 2 },
-            { content: "ACCESSORIES", rowSpan: 2 },
+            { content: "NOTES", rowSpan: 2 },
         ];
         var oHeadRow2 = ["Voltage","MCA","MOP","DAIKIN"];
 
@@ -996,7 +996,7 @@ const Export = (function () {
         if (oBodyStartY !== null) { doc.setDrawColor(0); doc.setLineWidth(M); doc.rect(lm, oBodyStartY, oTableW, oFinalY - oBodyStartY, "S"); }
         curY = oFinalY;
 
-        // ACCESSORIES NOTES
+        // NOTES SECTION
         var pNotes = productKey ? Project.getProductActiveNotes(productKey) : { indoor: [], outdoor: [] };
         var aI = pNotes.indoor.length > 0 ? pNotes.indoor : Project.getActiveIndoorNotes();
         var aO = pNotes.outdoor.length > 0 ? pNotes.outdoor : Project.getActiveOutdoorNotes();
@@ -1008,13 +1008,13 @@ const Export = (function () {
             if (curY + boxH > doc.internal.pageSize.getHeight() - 30) { doc.addPage(); curY = 20; }
             doc.setLineWidth(M); doc.setDrawColor(0); doc.rect(lm, curY, boxW, boxH, "S");
             doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
-            doc.text("ACCESSORIES (INDOOR UNIT):", lm + 4, curY + 12);
+            doc.text("NOTES (INDOOR UNIT):", lm + 4, curY + 12);
             doc.setFont("helvetica", "normal"); doc.setFontSize(7);
             for (var ai = 0; ai < aI.length; ai++) doc.text((ai+1) + "-  " + aI[ai], lm + 8, curY + noteHeaderH + 4 + (ai * noteLineH));
             var oBoxX = lm + boxW;
             doc.setLineWidth(M); doc.rect(oBoxX, curY, boxW, boxH, "S");
             doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
-            doc.text("ACCESSORIES (OUTDOOR UNIT):", oBoxX + 4, curY + 12);
+            doc.text("NOTES (OUTDOOR UNIT):", oBoxX + 4, curY + 12);
             doc.setFont("helvetica", "normal"); doc.setFontSize(7);
             for (var ao = 0; ao < aO.length; ao++) doc.text((ao+1) + "-  " + aO[ao], oBoxX + 8, curY + noteHeaderH + 4 + (ao * noteLineH));
         }
@@ -1084,7 +1084,7 @@ const Export = (function () {
             { text: "INDOOR TYPE", start: 10, span: 1 },
             { text: "ELECTRICAL", start: 11, span: 3 },
             { text: "MFG DAIKIN", start: 14, span: 1 },
-            { text: "ACCESSORIES", start: 15, span: 1 },
+            { text: "NOTES", start: 15, span: 1 },
         ];
 
         var rows = [];
@@ -1111,7 +1111,7 @@ const Export = (function () {
             { text: "MFG DAIKIN", start: 8, span: 1 },
             { text: "REFRIGERANT", start: 9, span: 1 },
             { text: "LINE-SET LENGTHS", start: 10, span: 1 },
-            { text: "ACCESSORIES", start: 11, span: 1 },
+            { text: "NOTES", start: 11, span: 1 },
         ];
 
         var oRows = [];
@@ -1156,7 +1156,7 @@ const Export = (function () {
             { text: "AUX. ELECTRIC HEAT", start: 11, span: 2 },
             { text: "ELECTRICAL DATA", start: 13, span: 3 },
             { text: "WEIGHT", start: 16, span: 1 },
-            { text: "ACCESSORIES", start: 17, span: 1 },
+            { text: "NOTES", start: 17, span: 1 },
         ];
 
         var rows = [];
@@ -1180,7 +1180,7 @@ const Export = (function () {
             { text: "EFFICIENCY", start: 10, span: 1 },
             { text: "WEIGHT", start: 11, span: 1 },
             { text: "COMP. STAGES", start: 12, span: 1 },
-            { text: "ACCESSORIES", start: 13, span: 1 },
+            { text: "NOTES", start: 13, span: 1 },
         ];
 
         var oRows = [];
@@ -1361,7 +1361,7 @@ const Export = (function () {
 
             // Indoor accessories box
             entities.push(rect(X0, y, noteBoxW, noteBoxH, "BORDERS"));
-            entities.push(mtext(X0 + PAD, y - 3, TXT_HDR, "ACCESSORIES (INDOOR UNIT):", "HEADERS", 1));
+            entities.push(mtext(X0 + PAD, y - 3, TXT_HDR, "NOTES (INDOOR UNIT):", "HEADERS", 1));
             if (accIndoor) {
                 for (var ai = 0; ai < accIndoor.length; ai++) {
                     entities.push(mtext(X0 + PAD, y - 6 - (ai * NOTE_H) - NOTE_H / 2, TXT_NOTE, (ai + 1) + "- " + accIndoor[ai], "DATA", 1));
@@ -1371,7 +1371,7 @@ const Export = (function () {
             // Outdoor accessories box
             var oNoteX = X0 + noteBoxW;
             entities.push(rect(oNoteX, y, noteBoxW, noteBoxH, "BORDERS"));
-            entities.push(mtext(oNoteX + PAD, y - 3, TXT_HDR, "ACCESSORIES (OUTDOOR UNIT):", "HEADERS", 1));
+            entities.push(mtext(oNoteX + PAD, y - 3, TXT_HDR, "NOTES (OUTDOOR UNIT):", "HEADERS", 1));
             if (accOutdoor) {
                 for (var ao = 0; ao < accOutdoor.length; ao++) {
                     entities.push(mtext(oNoteX + PAD, y - 6 - (ao * NOTE_H) - NOTE_H / 2, TXT_NOTE, (ao + 1) + "- " + accOutdoor[ao], "DATA", 1));
