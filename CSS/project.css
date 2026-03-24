@@ -1110,13 +1110,12 @@ body.preview-open {
 
 .sp-schedules-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--space-2xl);
     margin-bottom: var(--space-2xl);
 }
 
 .sp-schedules-grid > .sp-schedule-wrap:only-child {
-    grid-column: 1 / -1;
     max-width: 1300px;
     margin: 0 auto;
 }
@@ -1848,10 +1847,6 @@ body.preview-open {
     .sp-bulk-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-sm); }
     .sp-col-action { width: 110px; min-width: 110px; max-width: 110px; }
 
-    .sp-docs-body { flex-direction: column; }
-    .sp-docs-type-filter { width: 100%; border-right: none; border-bottom: 1px solid var(--color-border); }
-    .sp-docs-type-filter-list { flex-direction: row; flex-wrap: wrap; gap: var(--space-sm); }
-
     .floating-sidebar-btn {
         padding: var(--space-sm) var(--space-md);
     }
@@ -1860,16 +1855,6 @@ body.preview-open {
 
 @media (max-width: 480px) {
     #project-panel { max-width: 100%; }
-}
-
-@media (max-width: 2100px) {
-    .sp-schedules-grid {
-        grid-template-columns: 1fr;
-    }
-    .sp-schedules-grid > .sp-schedule-wrap {
-        max-width: 1500px;
-        margin: 0 auto;
-    }
 }
 
 /* --------------------------------------------------------------------------
@@ -1882,10 +1867,6 @@ body.preview-open {
 
     .sp-schedules-grid {
         gap: var(--space-xl);
-    }
-
-    .sp-schedules-grid > .sp-schedule-wrap {
-        max-width: 100%;
     }
 
     .sp-schedule-title {
