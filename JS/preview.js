@@ -1,1900 +1,1750 @@
 /* ==========================================================================
-   project.css — Projects page, project panel sidebar, system cards,
-   selection dialog, active target indicator, schedule preview, exports
+   preview.js — Schedule Preview overlay.
+   Renders a formatted schedule matching the PDF/Excel output with
+   editable tag, accessories, and notes fields. Changes auto-save
+   back to the Project entries.
+
+   Features:
+     - Drag-to-reorder systems
+     - Reorder indoor units within multi-zone groups
+     - Duplicate / Delete systems
+     - Auto-number tags
+     - Multi-select with bulk operations
+     - Undo / Redo
+     - Column visibility toggles (affects preview + exports)
+     - Multi-product support (mini-splits + multi-position)
    ========================================================================== */
 
-
-/* --------------------------------------------------------------------------
-   Active Target Button  (top bar — clickable to open side panel)
-   -------------------------------------------------------------------------- */
-#btn-active-target {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-sm);
-    margin-right: 2px;
-    border-radius: var(--border-radius) 0 0 var(--border-radius);
-    background-color: rgba(255, 255, 255, 0.12);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgba(255, 255, 255, 0.9);
-    white-space: nowrap;
-    max-width: 220px;
-    transition: background-color var(--transition-fast);
-    backdrop-filter: blur(4px);
-}
-
-#btn-active-target:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-}
-
-.active-target-icon { flex-shrink: 0; }
-
-#active-target-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-#btn-clear-target {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    margin-right: var(--space-sm);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    background-color: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.5);
-    transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-
-#btn-clear-target:hover {
-    color: rgba(255, 255, 255, 1);
-    background-color: rgba(255, 255, 255, 0.25);
-}
-
-
-/* --------------------------------------------------------------------------
-   Floating Sidebar Toggle Button
-   -------------------------------------------------------------------------- */
-.floating-sidebar-btn {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 180;
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg) var(--space-md) var(--space-lg);
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
-    color: var(--color-text-inverse);
-    border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
-    box-shadow: -3px 2px 12px rgba(0, 30, 70, 0.35);
-    cursor: pointer;
-    transition: transform var(--transition-base), box-shadow var(--transition-base), padding var(--transition-base);
-    writing-mode: horizontal-tb;
-    white-space: nowrap;
-    border: none;
-    outline: none;
-}
-
-.floating-sidebar-btn:hover {
-    transform: translateY(-50%) translateX(-4px);
-    box-shadow: -5px 4px 20px rgba(0, 30, 70, 0.45);
-}
-
-.floating-sidebar-icon {
-    flex-shrink: 0;
-}
-
-.floating-sidebar-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.floating-sidebar-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 var(--space-xs);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    background-color: var(--color-accent);
-    color: var(--color-text-inverse);
-    border-radius: 999px;
-}
-
-.floating-sidebar-chevron {
-    flex-shrink: 0;
-    opacity: 0.7;
-}
-
-
-/* --------------------------------------------------------------------------
-   Projects Page
-   -------------------------------------------------------------------------- */
-#projects-page { max-width: 960px; margin: 0 auto; }
-
-#projects-page-header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: var(--space-lg); margin-bottom: var(--space-2xl);
-}
-
-#projects-page-header-left { display: flex; align-items: center; gap: var(--space-lg); }
-
-#projects-page-title {
-    font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);
-    color: var(--color-text); letter-spacing: -0.03em;
-}
-
-#btn-back-to-schedule {
-    display: flex; align-items: center; gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md); font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold); color: var(--color-brand);
-    border-radius: var(--border-radius); transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-#btn-back-to-schedule:hover { color: var(--color-brand-dark); background-color: var(--color-brand-light); }
-
-#btn-create-project {
-    display: flex; align-items: center; gap: var(--space-sm); height: 40px;
-    padding: 0 var(--space-xl); font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold); color: var(--color-text-inverse);
-    background-color: var(--color-brand); border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.25);
-}
-#btn-create-project:hover {
-    background-color: var(--color-brand-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 84, 166, 0.3);
-}
-
-
-/* --------------------------------------------------------------------------
-   Projects Grid & Cards
-   -------------------------------------------------------------------------- */
-#projects-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-lg);
-}
-
-.projects-card {
-    background-color: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg); overflow: hidden;
-    transition: box-shadow var(--transition-base), border-color var(--transition-base);
-}
-.projects-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-brand); }
-.projects-card-active { border-color: var(--color-brand); border-left: 3px solid var(--color-brand); }
-
-.projects-card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--space-lg) var(--space-lg) var(--space-sm); gap: var(--space-sm);
-}
-.projects-card-name { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.projects-card-actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
-.projects-card-action-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--border-radius); color: var(--color-text-muted); transition: color var(--transition-fast), background-color var(--transition-fast); }
-.projects-card-action-btn:hover { color: var(--color-brand); background-color: var(--color-brand-light); }
-.projects-card-delete-btn:hover { color: var(--color-danger); background-color: var(--color-danger-bg); }
-
-.projects-card-body {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--space-sm) var(--space-lg); gap: var(--space-md);
-}
-.projects-card-count { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
-.projects-card-status { font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
-.projects-card-status-active { color: var(--color-success); }
-
-.projects-card-footer { padding: var(--space-sm) var(--space-lg) var(--space-lg); }
-.projects-card-open-btn {
-    width: 100%; height: 34px;
-    font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
-    color: var(--color-brand); background-color: var(--color-brand-light);
-    border: 1px solid var(--color-brand); border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-.projects-card-open-btn:hover { color: var(--color-text-inverse); background-color: var(--color-brand); }
-
-#projects-empty {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: var(--space-3xl); text-align: center; gap: var(--space-md);
-}
-#projects-empty-icon { color: var(--color-brand); margin-bottom: var(--space-md); }
-#projects-empty-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text); }
-#projects-empty-subtitle { font-size: var(--font-size-md); color: var(--color-text-muted); }
-
-
-/* --------------------------------------------------------------------------
-   Selection Dialog
-   -------------------------------------------------------------------------- */
-.selection-dialog { width: 400px; }
-.selection-dialog-body { max-height: 350px; overflow-y: auto; }
-.selection-dialog-footer { flex-wrap: wrap; }
-.selection-options { display: flex; flex-direction: column; gap: var(--space-sm); margin-top: var(--space-md); }
-.selection-option { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-md); border: 1px solid var(--color-border); border-radius: var(--border-radius); cursor: pointer; transition: border-color var(--transition-fast), background-color var(--transition-fast); }
-.selection-option:hover { border-color: var(--color-brand); background-color: var(--color-brand-lighter); }
-.selection-option:has(.selection-radio:checked) { border-color: var(--color-brand); background-color: var(--color-brand-light); }
-.selection-radio { accent-color: var(--color-brand); width: 16px; height: 16px; }
-.selection-option-label { flex: 1; font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text); }
-.selection-option-count { font-size: var(--font-size-xs); color: var(--color-text-muted); }
-.selection-option-cart { border-style: dashed; }
-.selection-btn-cart { color: var(--color-text-secondary); background-color: var(--color-surface-alt); border: 1px solid var(--color-border); }
-.selection-btn-cart:hover { background-color: var(--color-surface); }
-
-/* Input Dialog */
-.input-dialog-label { display: block; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
-.input-dialog-input {
-    display: block; width: 100%; height: 40px; padding: 0 var(--space-md);
-    font-family: var(--font-primary); font-size: var(--font-size-md); color: var(--color-text);
-    background-color: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius); transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-.input-dialog-input:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.12); }
-.confirm-btn-primary { color: var(--color-text-inverse); background-color: var(--color-brand); border: 1px solid var(--color-brand); }
-.confirm-btn-primary:hover { background-color: var(--color-brand-dark); border-color: var(--color-brand-dark); }
-
-
-/* --------------------------------------------------------------------------
-   Panel Container
-   -------------------------------------------------------------------------- */
-#project-panel {
-    position: fixed; top: 0; right: 0; bottom: 0;
-    width: var(--project-panel-width); z-index: 200;
-    display: flex; flex-direction: column;
-    background-color: var(--color-surface); border-left: 1px solid var(--color-border);
-    box-shadow: var(--shadow-panel); transform: translateX(100%); transition: transform var(--transition-slow);
-}
-#project-panel.open { transform: translateX(0); }
-
-#project-panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    height: var(--top-bar-height); padding: 0 var(--space-xl);
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
-    color: var(--color-text-inverse); flex-shrink: 0;
-}
-#project-panel-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-#btn-project-close {
-    display: flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; border-radius: var(--border-radius);
-    color: var(--color-text-inverse); transition: background-color var(--transition-fast);
-}
-#btn-project-close:hover { background-color: rgba(255, 255, 255, 0.2); }
-
-#project-panel-toolbar {
-    display: flex; flex-direction: column; gap: var(--space-sm);
-    padding: var(--space-md) var(--space-xl);
-    border-bottom: 1px solid var(--color-border-light); background-color: var(--color-surface-alt); flex-shrink: 0;
-}
-
-#project-panel-toolbar-row2 {
-    display: flex !important; flex-direction: row !important; gap: var(--space-sm);
-}
-
-#project-panel-toolbar-row2 > .project-btn {
-    flex: 1;
-}
-
-.project-btn {
-    display: flex; align-items: center; justify-content: center;
-    height: 34px; padding: 0 var(--space-md); font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold); color: var(--color-brand);
-    background-color: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-    gap: var(--space-xs);
-}
-.project-btn:hover:not(:disabled) { color: var(--color-brand-dark); background-color: var(--color-brand-light); border-color: var(--color-brand); }
-.project-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-/* Preview Schedule — full-width blue prominent button */
-#btn-preview-schedule {
-    width: 100%;
-    height: 42px;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
-    color: #FFFFFF;
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
-    border: none;
-    border-radius: var(--border-radius);
-    box-shadow: 0 2px 8px rgba(0, 84, 166, 0.35);
-    letter-spacing: 0.01em;
-}
-#btn-preview-schedule:hover:not(:disabled) {
-    color: #FFFFFF;
-    background: linear-gradient(135deg, #002D5C 0%, var(--color-brand-dark) 100%);
-    border: none;
-    box-shadow: 0 4px 14px rgba(0, 84, 166, 0.45);
-    transform: translateY(-1px);
-}
-#btn-preview-schedule:disabled {
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
-    border: none;
-    opacity: 0.45;
-}
-
-#project-panel-body { flex: 1; overflow-y: auto; padding: var(--space-lg) var(--space-xl); }
-
-#project-empty {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: var(--space-md); padding: var(--space-3xl) var(--space-lg); text-align: center;
-}
-
-/* Empty state icon for project panel */
-#project-empty::before {
-    content: '';
-    display: block;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background-color: var(--color-brand-light);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230054A6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='12' y1='5' x2='12' y2='19'/%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    margin-bottom: var(--space-sm);
-    flex-shrink: 0;
-}
-
-#project-empty p { font-size: var(--font-size-sm); color: var(--color-text-muted); line-height: 1.7; }
-#project-empty strong { color: var(--color-text-secondary); }
-
-
-/* --------------------------------------------------------------------------
-   System Cards
-   -------------------------------------------------------------------------- */
-#project-systems-list { display: flex; flex-direction: column; gap: var(--space-md); }
-
-.project-system-card {
-    background-color: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg); overflow: hidden;
-    border-left: 3px solid var(--color-brand);
-    transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
-}
-.project-system-card:hover {
-    border-color: var(--color-brand);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-}
-
-.project-card-header {
-    display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md); background-color: var(--color-brand-light);
-    border-bottom: 1px solid var(--color-border-light);
-}
-.project-card-title-wrap { display: flex; align-items: center; min-width: 0; flex: 1; }
-.project-card-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--color-brand-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.project-card-subtitle { font-size: var(--font-size-xs); font-weight: var(--font-weight-regular); color: var(--color-text-secondary); margin-left: var(--space-sm); white-space: nowrap; }
-
-.btn-remove-system {
-    display: flex; align-items: center; justify-content: center;
-    width: 26px; height: 26px; flex-shrink: 0; border-radius: var(--border-radius);
-    color: var(--color-text-muted); transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-.btn-remove-system:hover { color: var(--color-danger); background-color: var(--color-danger-bg); }
-
-.project-card-body { padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm); }
-
-.project-indoor-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) 0; }
-.project-indoor-row:not(:last-child) { border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-sm); }
-.project-indoor-label { flex-shrink: 0; width: 80px; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
-.project-indoor-model { font-size: var(--font-size-xs); font-family: var(--font-mono); color: var(--color-text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.project-outdoor-row { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) 0; border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-sm); margin-bottom: var(--space-xs); }
-.project-outdoor-label { flex-shrink: 0; width: 80px; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
-.project-outdoor-model { font-size: var(--font-size-xs); font-family: var(--font-mono); color: var(--color-text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.project-tag-input {
-    width: 72px; height: 26px; padding: 0 var(--space-xs);
-    font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium);
-    color: var(--color-text); background-color: var(--color-cell-editable-bg);
-    border: 1px solid var(--color-border); border-radius: var(--border-radius); text-align: center;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-.project-tag-input:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.12); }
-
-.project-accessories-row { display: flex; align-items: flex-start; gap: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--color-border-light); margin-top: var(--space-xs); }
-.project-idu-acc-row { border-top: none; margin-top: 0; padding-top: var(--space-xxs); padding-left: var(--space-sm); }
-.project-accessories-label { flex-shrink: 0; width: 80px; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; padding-top: var(--space-xxs); }
-.project-accessories-input {
-    flex: 1; min-height: 26px; padding: var(--space-xs) var(--space-sm);
-    font-family: var(--font-primary); font-size: var(--font-size-xs); color: var(--color-text);
-    background-color: var(--color-cell-editable-bg); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius); resize: vertical;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-.project-accessories-input:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.12); }
-
-.project-card-docs-badge {
-    display: inline-flex; align-items: center; gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm); margin-top: var(--space-sm);
-    font-size: var(--font-size-xs); font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted); background-color: var(--color-surface-alt);
-    border-radius: 999px; border: 1px solid var(--color-border-light);
-}
-.project-card-docs-badge svg { flex-shrink: 0; }
-
-/* Docs badge as clickable button */
-.project-card-docs-btn {
-    cursor: pointer;
-    width: 100%;
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-}
-.project-card-docs-btn:hover {
-    color: var(--color-brand);
-    background-color: var(--color-brand-light);
-    border-color: var(--color-brand);
-    transform: translateY(-1px);
-}
-.docs-badge-chevron {
-    flex-shrink: 0;
-    margin-left: auto;
-    opacity: 0.5;
-    transition: opacity var(--transition-fast);
-}
-.project-card-docs-btn:hover .docs-badge-chevron {
-    opacity: 1;
-}
-
-/* --------------------------------------------------------------------------
-   Documents Popup
-   -------------------------------------------------------------------------- */
-.docs-popup-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 250;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 10, 30, 0.4);
-    backdrop-filter: blur(3px);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-.docs-popup-backdrop.docs-popup-visible {
-    opacity: 1;
-}
-
-.docs-popup {
-    width: 440px;
-    max-width: 92vw;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius-xl);
-    box-shadow: 0 12px 40px rgba(0, 20, 60, 0.25);
-    overflow: hidden;
-    transform: translateY(10px);
-    transition: transform 0.2s ease;
-}
-.docs-popup-backdrop.docs-popup-visible .docs-popup {
-    transform: translateY(0);
-}
-
-.docs-popup-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-lg) var(--space-xl);
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 100%);
-    color: var(--color-text-inverse);
-    flex-shrink: 0;
-}
-
-.docs-popup-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.01em;
-}
-
-.docs-popup-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: var(--border-radius);
-    color: rgba(255, 255, 255, 0.7);
-    transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-.docs-popup-close:hover {
-    color: #FFFFFF;
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.docs-popup-subtitle {
-    padding: var(--space-sm) var(--space-xl);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand-dark);
-    background-color: var(--color-brand-light);
-    border-bottom: 1px solid var(--color-border-light);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-shrink: 0;
-}
-
-.docs-popup-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--space-sm) 0;
-}
-
-.docs-popup-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-xl);
-    transition: background-color var(--transition-fast);
-}
-.docs-popup-row:hover {
-    background-color: var(--color-surface-alt);
-}
-
-.docs-popup-icon {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--border-radius);
-    background-color: var(--color-brand-light);
-    color: var(--color-brand);
-}
-
-.docs-popup-label {
-    flex: 1;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.docs-popup-type {
-    flex-shrink: 0;
-    font-size: 10px;
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    padding: 2px var(--space-xs);
-    background-color: var(--color-surface-alt);
-    border-radius: var(--border-radius);
-    letter-spacing: 0.03em;
-}
-
-.docs-popup-action {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--border-radius);
-    color: var(--color-text-muted);
-    transition: color var(--transition-fast), background-color var(--transition-fast);
-    text-decoration: none;
-}
-.docs-popup-open:hover {
-    color: var(--color-brand);
-    background-color: var(--color-brand-light);
-}
-.docs-popup-download:hover {
-    color: var(--color-success);
-    background-color: var(--color-success-bg);
-}
-
-@media (max-width: 480px) {
-    .docs-popup {
-        width: 100%;
-        max-width: 100%;
-        max-height: 90vh;
-        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-        margin-top: auto;
-    }
-    .docs-popup-backdrop {
-        align-items: flex-end;
-    }
-}
-
-
-/* --------------------------------------------------------------------------
-   Panel Footer
-   -------------------------------------------------------------------------- */
-#project-panel-footer {
-    flex-shrink: 0; padding: 0;
-    border-top: none; background-color: var(--color-surface-alt);
-}
-#project-export-group { display: flex; flex-direction: column; gap: var(--space-sm); }
-
-.export-btn {
-    display: flex; align-items: center; justify-content: center; gap: var(--space-sm);
-    width: 100%; height: 38px; padding: 0 var(--space-lg);
-    font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
-    color: var(--color-brand); background-color: var(--color-surface);
-    border: 1px solid var(--color-border); border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-}
-.export-btn:hover:not(:disabled) { color: var(--color-brand-dark); background-color: var(--color-brand-light); border-color: var(--color-brand); transform: translateY(-1px); }
-
-.export-btn-preview {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
-    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.25);
-}
-.export-btn-preview:hover:not(:disabled) {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand-dark);
-    border-color: var(--color-brand-dark);
-    box-shadow: 0 4px 12px rgba(0, 84, 166, 0.3);
-}
-.export-btn-preview:disabled {
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
-}
-
-.export-btn-primary { color: var(--color-text-inverse); background-color: var(--color-brand); border-color: var(--color-brand); }
-.export-btn-primary:hover:not(:disabled) { color: var(--color-text-inverse); background-color: var(--color-brand-dark); border-color: var(--color-brand-dark); }
-.export-btn-primary:disabled { background-color: var(--color-brand); border-color: var(--color-brand); }
-
-/* Hide download buttons from panel (still in DOM for JS triggers) */
-.panel-hidden-btn {
-    display: none !important;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Documents Section
-   -------------------------------------------------------------------------- */
-.sp-docs-section {
-    border-top: 3px solid var(--color-brand);
-    background-color: var(--color-surface);
-    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
-    overflow: hidden;
-}
-
-.sp-docs-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    padding: var(--space-lg) var(--space-xl);
-    background: linear-gradient(135deg, var(--color-brand-dark) 0%, #004E8C 100%);
-    color: var(--color-text-inverse);
-}
-
-.sp-docs-header-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.sp-docs-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sp-docs-download-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    height: 36px;
-    padding: 0 var(--space-xl);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand-dark);
-    background-color: #FFFFFF;
-    border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-
-.sp-docs-download-btn:hover {
-    background-color: var(--color-brand-light);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.sp-docs-download-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.sp-docs-download-btn .sp-dl-spinner {
-    display: none;
-    animation: loading-spin 0.7s linear infinite;
-}
-
-.sp-docs-download-btn.sp-dl-loading .sp-dl-icon {
-    display: none;
-}
-
-.sp-docs-download-btn.sp-dl-loading .sp-dl-spinner {
-    display: inline-block;
-}
-
-.sp-docs-download-btn.sp-dl-loading {
-    opacity: 0.85;
-    pointer-events: none;
-}
-
-/* Schedule include options */
-.sp-docs-options {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xl);
-    padding: var(--space-md) var(--space-xl);
-    background-color: var(--color-surface-alt);
-    border-bottom: 1px solid var(--color-border);
-}
-
-.sp-docs-option {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-    cursor: pointer;
-}
-
-.sp-docs-option input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--color-brand);
-}
-
-.sp-docs-select-all-wrap {
-    margin-left: auto;
-}
-
-/* System document cards */
-.sp-docs-list {
-    flex: 1;
-    min-width: 0;
-    padding: var(--space-lg) var(--space-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-}
-
-.sp-doc-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
-}
-
-.sp-doc-card:hover {
-    box-shadow: var(--shadow-sm);
-    border-color: var(--color-brand);
-}
-
-.sp-doc-card-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
-    background-color: var(--color-brand-light);
-    border-bottom: 1px solid var(--color-border-light);
-    cursor: pointer;
-    user-select: none;
-}
-
-.sp-doc-card-header:hover {
-    background-color: #D4E4F5;
-}
-
-.sp-doc-card-checkbox {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--color-brand);
-    flex-shrink: 0;
-}
-
-.sp-doc-card-toggle {
-    font-size: 10px;
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-    transition: transform var(--transition-fast);
-}
-
-.sp-doc-card-toggle.sp-collapsed {
-    transform: rotate(-90deg);
-}
-
-.sp-doc-card-title {
-    flex: 1;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand-dark);
-}
-
-.sp-doc-card-count {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-}
-
-.sp-doc-card-body {
-    padding: 0;
-}
-
-.sp-doc-card-body.sp-collapsed {
-    display: none;
-}
-
-/* Unit group within a system card */
-.sp-doc-unit {
-    border-top: 1px solid var(--color-border-light);
-}
-
-.sp-doc-unit:first-child {
-    border-top: none;
-}
-
-.sp-doc-unit-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg) var(--space-sm) var(--space-xl);
-    background-color: var(--color-surface-alt);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sp-doc-unit-header input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--color-brand);
-}
-
-/* Individual document rows */
-.sp-doc-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg) var(--space-sm) calc(var(--space-xl) + var(--space-md));
-    border-top: 1px solid var(--color-border-light);
-    transition: background-color var(--transition-fast);
-}
-
-.sp-doc-row:hover {
-    background-color: var(--color-surface-alt);
-}
-
-.sp-doc-row input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--color-brand);
-    flex-shrink: 0;
-}
-
-.sp-doc-row-label {
-    flex: 1;
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-}
-
-.sp-doc-row-type {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    flex-shrink: 0;
-    width: 36px;
-    text-align: center;
-    padding: var(--space-xxs) var(--space-xs);
-    background-color: var(--color-surface-alt);
-    border-radius: var(--border-radius);
-}
-
-
-/* --------------------------------------------------------------------------
-   Document Type Filter Pane + Body Layout
-   -------------------------------------------------------------------------- */
-.sp-docs-body {
-    display: flex;
-    gap: 0;
-}
-
-.sp-docs-type-filter {
-    flex-shrink: 0;
-    width: 220px;
-    border-right: 1px solid var(--color-border);
-    background-color: var(--color-surface-alt);
-}
-
-.sp-docs-type-filter-header {
-    padding: var(--space-md) var(--space-lg);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    border-bottom: 1px solid var(--color-border-light);
-    background-color: var(--color-surface);
-}
-
-.sp-docs-type-filter-list {
-    padding: var(--space-md) var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.sp-docs-type-option {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-    cursor: pointer;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast);
-}
-
-.sp-docs-type-option:hover {
-    background-color: var(--color-brand-lighter);
-}
-
-.sp-docs-type-option input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--color-brand);
-    flex-shrink: 0;
-}
-
-/* --------------------------------------------------------------------------
-   Overlay
-   -------------------------------------------------------------------------- */
-#project-overlay {
-    position: fixed; inset: 0; z-index: 190;
-    background-color: rgba(0, 10, 30, 0.4); opacity: 0;
-    transition: opacity var(--transition-slow); pointer-events: none;
-    backdrop-filter: blur(2px);
-}
-#project-overlay.visible { opacity: 1; pointer-events: auto; }
-
-
-/* --------------------------------------------------------------------------
-   Confirmation / Input Dialogs
-   -------------------------------------------------------------------------- */
-.confirm-overlay { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 10, 30, 0.5); backdrop-filter: blur(4px); }
-.confirm-dialog { width: 380px; max-width: 90vw; background-color: var(--color-surface); border-radius: var(--border-radius-xl); box-shadow: var(--shadow-lg); overflow: hidden; }
-.confirm-dialog-header { padding: var(--space-xl) var(--space-xl) var(--space-lg); border-bottom: 1px solid var(--color-border-light); }
-.confirm-dialog-header h3 { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text); }
-.confirm-dialog-body { padding: var(--space-lg) var(--space-xl); }
-.confirm-dialog-body p { font-size: var(--font-size-md); color: var(--color-text-secondary); line-height: 1.7; }
-.confirm-dialog-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); padding: var(--space-lg) var(--space-xl); border-top: 1px solid var(--color-border-light); background-color: var(--color-surface-alt); }
-.confirm-btn { height: 36px; padding: 0 var(--space-xl); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); border-radius: var(--border-radius); transition: background-color var(--transition-fast), transform var(--transition-fast); }
-.confirm-btn:hover { transform: translateY(-1px); }
-.confirm-btn-cancel { color: var(--color-text-secondary); background-color: var(--color-surface); border: 1px solid var(--color-border); }
-.confirm-btn-cancel:hover { background-color: var(--color-surface-alt); }
-.confirm-btn-danger { color: var(--color-text-inverse); background-color: var(--color-danger); border: 1px solid var(--color-danger); }
-.confirm-btn-danger:hover { background-color: #B8223A; }
-
-
-/* --------------------------------------------------------------------------
-   Toast
-   -------------------------------------------------------------------------- */
-.toast {
-    position: fixed; bottom: var(--space-2xl); left: 50%;
-    transform: translateX(-50%) translateY(80px); z-index: 400;
-    display: flex; align-items: center; gap: var(--space-sm);
-    padding: var(--space-md) var(--space-xl); background-color: var(--color-text);
-    color: var(--color-text-inverse); font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold); border-radius: 999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity var(--transition-slow);
-    pointer-events: none; white-space: nowrap;
-}
-.toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-.toast-success { background-color: var(--color-success); }
-.toast-warning { background-color: var(--color-warning); }
-.toast-danger { background-color: var(--color-danger); }
-
-
-/* ==========================================================================
-   SCHEDULE PREVIEW OVERLAY
-   Full-screen preview of the schedule matching the PDF/Excel output.
-   Editable tag, accessories, and notes fields.
-   ========================================================================== */
-
-#schedule-preview-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-bg);
-    overflow: hidden;
-}
-
-body.preview-open {
-    overflow: hidden;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Toolbar
-   -------------------------------------------------------------------------- */
-.sp-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: var(--top-bar-height);
-    padding: 0 var(--space-xl);
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 60%, #1B6CBF 100%);
-    color: var(--color-text-inverse);
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 30, 70, 0.25);
-}
-
-.sp-toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-lg);
-}
-
-.sp-close-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--border-radius);
-    color: var(--color-text-inverse);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: background-color var(--transition-fast);
-}
-
-.sp-close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.sp-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.02em;
-}
-
-.sp-toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-
-.sp-dl-btn {
-    height: 34px;
-    padding: 0 var(--space-lg);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-brand);
-    background-color: var(--color-text-inverse);
-    border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast), transform var(--transition-fast);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-.sp-dl-btn:hover {
-    background-color: var(--color-brand-light);
-    transform: translateY(-1px);
-}
-
-.sp-dl-btn-email {
-    background-color: rgba(255, 255, 255, 0.12);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: none;
-    gap: var(--space-xs);
-}
-.sp-dl-btn-email:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-    color: #FFFFFF;
-    transform: translateY(-1px);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Content  (scrollable area)
-   -------------------------------------------------------------------------- */
-.sp-content {
-    flex: 1;
-    overflow: auto;
-    padding: var(--space-2xl);
-}
-
-.sp-schedules-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-2xl);
-    margin-bottom: var(--space-2xl);
-}
-
-.sp-schedules-grid > .sp-schedule-wrap:only-child {
-    max-width: 1300px;
-    margin: 0 auto;
-}
-
-.sp-schedule-wrap {
-    background-color: var(--color-surface);
-    border: 2px solid var(--color-brand);
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    overflow-x: auto;
-    box-shadow: var(--shadow-lg);
-    min-width: 0;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Title Bar
-   -------------------------------------------------------------------------- */
-.sp-schedule-title {
-    text-align: center;
-    padding: var(--space-lg);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    background-color: var(--color-surface);
-    border-bottom: 2px solid var(--color-brand);
-    letter-spacing: -0.01em;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Section Labels
-   -------------------------------------------------------------------------- */
-.sp-section-label {
-    text-align: center;
-    padding: var(--space-sm) var(--space-lg);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-inverse);
-    background: linear-gradient(135deg, var(--color-brand-dark) 0%, #004E8C 100%);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Tables
-   -------------------------------------------------------------------------- */
-.sp-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-xs);
-    line-height: 1.35;
-    table-layout: auto;
-}
-
-.sp-table thead th {
-    background-color: var(--color-header-bg);
-    color: var(--color-header-text);
-    font-size: 10px;
-    font-weight: var(--font-weight-semibold);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    padding: var(--space-sm) var(--space-sm);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    white-space: normal;
-    vertical-align: middle;
-    line-height: 1.35;
-}
-
-.sp-hdr1 th {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    background: linear-gradient(180deg, #1A6AB8 0%, var(--color-header-bg) 100%);
-}
-
-.sp-hdr2 th {
-    font-size: 10px;
-    font-weight: var(--font-weight-medium);
-    background-color: var(--color-header-bg-sub);
-    padding: var(--space-xs) var(--space-xs);
-}
-
-.sp-table tbody td {
-    padding: var(--space-sm) var(--space-sm);
-    border: 1px solid var(--color-cell-border);
-    text-align: center;
-    vertical-align: middle;
-    font-size: var(--font-size-xs);
-    font-family: var(--font-mono);
-    color: var(--color-text);
-    white-space: nowrap;
-    transition: background-color var(--transition-fast);
-}
-
-.sp-cell-text {
-    text-align: left;
-    font-family: var(--font-primary);
-}
-
-.sp-cell-model {
-    font-family: var(--font-mono);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-xs);
-    letter-spacing: 0.01em;
-}
-
-.sp-cell-powered {
-    font-family: var(--font-primary);
-    font-style: italic;
-    color: var(--color-text-muted);
-    text-align: center;
-    font-size: var(--font-size-xs);
-}
-
-.sp-empty {
-    color: var(--color-text-muted);
-}
-
-.sp-cell-edit {
-    padding: 0;
-    background-color: var(--color-cell-editable-bg);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Tag / Symbol Column Widths
-   -------------------------------------------------------------------------- */
-.sp-col-sym,
-.sp-col-odu-sym {
-    min-width: 100px;
-    width: 100px;
-}
-
-.sp-table td:has(.sp-input-tag) {
-    min-width: 100px;
-    width: 100px;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Editable Inputs
-   -------------------------------------------------------------------------- */
-.sp-input {
-    width: 100%;
-    height: 100%;
-    min-height: 28px;
-    padding: var(--space-xs) var(--space-xs);
-    border: none;
-    background: transparent;
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-    text-align: center;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.sp-input:focus {
-    outline: none;
-    background-color: #FFFFFF;
-    box-shadow: inset 0 0 0 2px var(--color-brand);
-}
-
-.sp-input-tag {
-    min-width: 100px;
-    text-align: center;
-}
-
-.sp-input-acc {
-    text-align: left;
-    font-family: var(--font-primary);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Notes Section
-   -------------------------------------------------------------------------- */
-.sp-notes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2xl);
-    padding: var(--space-xl) var(--space-2xl);
-    border-top: 2px solid var(--color-border);
-    background-color: var(--color-surface);
-}
-
-.sp-notes-heading {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-md);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding-bottom: var(--space-sm);
-    border-bottom: 2px solid var(--color-brand-light);
-}
-
-.sp-notes-line {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-xs);
-}
-
-.sp-notes-num {
-    flex-shrink: 0;
-    width: 24px;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-muted);
-    text-align: right;
-}
-
-.sp-input-note {
-    flex: 1;
-    height: 30px;
-    padding: 0 var(--space-md);
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--border-radius);
-    background-color: var(--color-surface);
-    font-family: var(--font-primary);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    text-align: left;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.sp-input-note:focus {
-    outline: none;
-    border-color: var(--color-brand);
-    box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.1);
-}
-
-.sp-input-note:not(:placeholder-shown) {
-    background-color: var(--color-cell-editable-bg);
-    border-color: var(--color-border);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Toolbar Buttons (undo/redo, auto-number, columns)
-   -------------------------------------------------------------------------- */
-.sp-tool-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-xs);
-    height: 32px;
-    padding: 0 var(--space-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgba(255, 255, 255, 0.85);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-    white-space: nowrap;
-}
-
-.sp-tool-btn:hover:not(:disabled) {
-    color: #FFFFFF;
-    background-color: rgba(255, 255, 255, 0.22);
-    transform: translateY(-1px);
-}
-
-.sp-tool-btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-}
-
-.sp-tool-btn svg {
-    flex-shrink: 0;
-}
-
-.sp-toolbar-sep {
-    display: inline-block;
-    width: 1px;
-    height: 22px;
-    background-color: rgba(255, 255, 255, 0.15);
-    margin: 0 var(--space-xs);
-}
-
-.sp-col-btn-wrap {
-    position: relative;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Column Visibility Panel
-   -------------------------------------------------------------------------- */
-.sp-col-panel {
-    position: absolute;
-    top: var(--top-bar-height);
-    right: var(--space-xl);
-    z-index: 520;
-    width: 270px;
-    max-height: calc(100vh - var(--top-bar-height) - 20px);
-    overflow-y: auto;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-}
-
-.sp-col-panel-header {
-    padding: var(--space-md) var(--space-lg);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    border-bottom: 1px solid var(--color-border-light);
-    background-color: var(--color-surface-alt);
-}
-
-.sp-col-panel-section {
-    padding: var(--space-sm) var(--space-lg);
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-.sp-col-panel-section:last-child {
-    border-bottom: none;
-}
-
-.sp-col-panel-label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-xs);
-}
-
-.sp-col-panel-schedule-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand);
-    padding: var(--space-sm) var(--space-lg);
-    margin-top: var(--space-xs);
-    border-top: 1px solid var(--color-border-light);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sp-col-panel-schedule-label:first-child {
-    border-top: none;
-    margin-top: 0;
-}
-
-.sp-autonumber-section-title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand);
-    padding: var(--space-sm) 0 var(--space-xs) 0;
-    margin-top: var(--space-md);
-    border-top: 1px solid var(--color-border-light);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sp-autonumber-section-title:first-child {
-    border-top: none;
-    margin-top: 0;
-}
-
-.sp-col-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    cursor: pointer;
-}
-
-.sp-col-toggle input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--color-brand);
-    flex-shrink: 0;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Bulk Action Bar
-   -------------------------------------------------------------------------- */
-.sp-bulk-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-sm) var(--space-xl);
-    background-color: var(--color-brand-light);
-    border-bottom: 1px solid var(--color-brand);
-    flex-shrink: 0;
-}
-
-#sp-bulk-count {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand-dark);
-    margin-right: auto;
-}
-
-.sp-bulk-btn {
-    height: 28px;
-    padding: 0 var(--space-lg);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-brand);
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-brand);
-    border-radius: var(--border-radius);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
-}
-
-.sp-bulk-btn:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-}
-
-.sp-bulk-btn-danger {
-    color: var(--color-danger);
-    border-color: var(--color-danger);
-}
-
-.sp-bulk-btn-danger:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-danger);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Action Column (checkboxes, drag handle, reorder, duplicate, delete)
-   -------------------------------------------------------------------------- */
-.sp-col-action {
-    width: 140px;
-    min-width: 140px;
-    max-width: 140px;
-}
-
-.sp-cell-action {
-    padding: var(--space-sm) var(--space-xs) !important;
-    background-color: var(--color-surface-alt) !important;
-    vertical-align: top !important;
-    border-right: 2px solid var(--color-brand) !important;
-}
-
-.sp-action-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    padding: var(--space-xxs) 0;
-}
-
-/* Top row: checkbox + system label + drag handle */
-.sp-action-top {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-.sp-row-checkbox {
-    width: 15px;
-    height: 15px;
-    accent-color: var(--color-brand);
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.sp-entry-num {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand-dark);
-    flex: 1;
-    white-space: nowrap;
-}
-
-.sp-drag-handle {
-    cursor: grab;
-    font-size: 14px;
-    color: var(--color-text-muted);
-    line-height: 1;
-    user-select: none;
-    flex-shrink: 0;
-    transition: color var(--transition-fast);
-}
-
-.sp-drag-handle:hover {
-    color: var(--color-brand);
-}
-
-.sp-drag-handle:active {
-    cursor: grabbing;
-}
-
-/* Move up/down buttons row */
-.sp-action-move {
-    display: flex;
-    gap: 3px;
-}
-
-.sp-act-move {
-    flex: 1;
-}
-
-/* Duplicate / Delete row */
-.sp-action-ops {
-    display: flex;
-    gap: 3px;
-}
-
-.sp-act-dup,
-.sp-act-del {
-    flex: 1;
-}
-
-/* Shared button base */
-.sp-act-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    height: 24px;
-    padding: 0 var(--space-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-brand);
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.sp-act-btn:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
-}
-
-/* Duplicate button */
-.sp-act-dup {
-    color: var(--color-brand);
-    border-color: var(--color-brand);
-    background-color: var(--color-brand-light);
-}
-
-.sp-act-dup:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-}
-
-/* Delete button */
-.sp-act-del {
-    color: var(--color-danger);
-    border-color: var(--color-danger);
-    background-color: var(--color-danger-bg);
-}
-
-.sp-act-del:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-danger);
-    border-color: var(--color-danger);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Indoor Unit Reorder (multi-zone systems)
-   -------------------------------------------------------------------------- */
-.sp-idu-reorder {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: var(--space-xs);
-    padding-top: var(--space-xs);
-    border-top: 1px solid var(--color-border);
-    width: 100%;
-}
-
-.sp-idu-reorder-title {
-    font-size: 9px;
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    text-align: center;
-    margin-bottom: 1px;
-}
-
-.sp-idu-reorder-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-}
-
-.sp-idu-reorder-label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-secondary);
-    width: 52px;
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sp-idu-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 20px;
-    font-size: 10px;
-    color: var(--color-brand);
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-    line-height: 1;
-    cursor: pointer;
-}
-
-.sp-idu-btn:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-brand);
-    border-color: var(--color-brand);
-}
-
-.sp-idu-btn-spacer {
-    display: inline-block;
-    width: 22px;
-    height: 20px;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Drag & Drop States
-   -------------------------------------------------------------------------- */
-.sp-table tbody tr.sp-dragging td {
-    opacity: 0.35;
-}
-
-.sp-table tbody tr.sp-drop-above td {
-    box-shadow: inset 0 3px 0 0 var(--color-brand);
-}
-
-.sp-table tbody tr.sp-drop-below td {
-    box-shadow: inset 0 -3px 0 0 var(--color-brand);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Selected Row Highlight
-   -------------------------------------------------------------------------- */
-.sp-table tbody tr.sp-row-selected td {
-    background-color: var(--color-brand-light) !important;
-}
-
-.sp-table tbody tr.sp-row-selected td.sp-cell-edit {
-    background-color: #DCE8F5 !important;
-}
-
-.sp-table tbody tr.sp-row-selected td.sp-cell-action {
-    background-color: var(--color-brand-light) !important;
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Select-All Checkbox in Header
-   -------------------------------------------------------------------------- */
-.sp-table thead th.sp-col-action {
-    padding: var(--space-xs);
-    text-align: center;
-}
-
-.sp-table thead th.sp-col-action input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    accent-color: #FFFFFF;
-    cursor: pointer;
-}
-
-
-/* --------------------------------------------------------------------------
-   Auto-Number Dialog Labels
-   -------------------------------------------------------------------------- */
-.sp-autonumber-label {
-    margin-top: var(--space-sm);
-}
-
-
-/* --------------------------------------------------------------------------
-   Preview Dialog Overlay (must sit above the z-500 preview)
-   -------------------------------------------------------------------------- */
-.sp-dialog-overlay {
-    z-index: 600;
-}
-
-
-/* --------------------------------------------------------------------------
-   Responsive
-   -------------------------------------------------------------------------- */
-@media (max-width: 1200px) {
-    #project-panel { box-shadow: var(--shadow-panel); }
-}
-
-@media (max-width: 768px) {
-    #project-panel { width: 100%; max-width: 400px; }
-    #project-panel-header { padding: 0 var(--space-lg); }
-    #project-panel-toolbar { padding: var(--space-sm) var(--space-lg); }
-    #project-panel-body { padding: var(--space-md) var(--space-lg); }
-    #project-panel-footer { padding: 0; }
-    #projects-page-header { flex-direction: column; align-items: flex-start; }
-    #projects-grid { grid-template-columns: 1fr; }
-    #btn-active-target { max-width: 140px; }
-    .selection-dialog { width: 90vw; }
-
-    .sp-toolbar { padding: 0 var(--space-md); }
-    .sp-content { padding: var(--space-md); }
-    .sp-notes { grid-template-columns: 1fr; gap: var(--space-lg); padding: var(--space-lg); }
-    .sp-toolbar-right { gap: var(--space-xs); }
-    .sp-dl-btn { font-size: var(--font-size-xs); padding: 0 var(--space-sm); }
-    .sp-tool-btn { font-size: var(--font-size-xs); padding: 0 var(--space-xs); height: 28px; }
-    .sp-col-panel { right: var(--space-md); width: 220px; }
-    .sp-bulk-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-sm); }
-    .sp-col-action { width: 110px; min-width: 110px; max-width: 110px; }
-
-    .floating-sidebar-btn {
-        padding: var(--space-sm) var(--space-md);
-    }
-    .floating-sidebar-label { max-width: 80px; }
-}
-
-@media (max-width: 480px) {
-    #project-panel { max-width: 100%; }
-}
-
-/* --------------------------------------------------------------------------
-   1080p-specific adjustments  (1920×1080 and similar)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1920px) {
-    .sp-content {
-        padding: var(--space-xl);
+const SchedulePreview = (function () {
+
+    let _overlay = null;
+    let _isOpen = false;
+    let _saveTimeout = null;
+
+    // Working copies (deep-cloned from Project on open)
+    let _entries = [];
+    let _notesByProduct = {};  // { "mini-splits": { indoor: [], outdoor: [] }, "multi-position": { indoor: [], outdoor: [] } }
+    const MAX_NOTES = 10;
+
+    // -----------------------------------------------------------------------
+    // History (undo / redo)
+    // -----------------------------------------------------------------------
+    let _history = [];
+    let _historyIndex = -1;
+    const MAX_HISTORY = 50;
+
+    function pushHistory() {
+        _history = _history.slice(0, _historyIndex + 1);
+        _history.push({
+            entries: JSON.parse(JSON.stringify(_entries)),
+            notesByProduct: JSON.parse(JSON.stringify(_notesByProduct))
+        });
+        if (_history.length > MAX_HISTORY) _history.shift();
+        _historyIndex = _history.length - 1;
+        updateUndoRedoButtons();
     }
 
-    .sp-schedules-grid {
-        gap: var(--space-xl);
+    function undo() {
+        if (_historyIndex <= 0) return;
+        collectEditsFromDom();
+        if (_historyIndex === _history.length - 1) {
+            _history[_historyIndex] = {
+                entries: JSON.parse(JSON.stringify(_entries)),
+                notesByProduct: JSON.parse(JSON.stringify(_notesByProduct))
+            };
+        }
+        _historyIndex--;
+        restoreFromHistory();
     }
 
-    .sp-schedule-title {
-        padding: var(--space-md);
-        font-size: var(--font-size-lg);
+    function redo() {
+        if (_historyIndex >= _history.length - 1) return;
+        _historyIndex++;
+        restoreFromHistory();
     }
 
-    .sp-col-action {
-        width: 120px;
-        min-width: 120px;
-        max-width: 120px;
+    function restoreFromHistory() {
+        var snap = _history[_historyIndex];
+        _entries = JSON.parse(JSON.stringify(snap.entries));
+        _notesByProduct = JSON.parse(JSON.stringify(snap.notesByProduct));
+        _selectedEntries.clear();
+        saveState();
+        rebuildContent();
+        updateUndoRedoButtons();
     }
-}
+
+    function updateUndoRedoButtons() {
+        var undoBtn = document.getElementById("sp-btn-undo");
+        var redoBtn = document.getElementById("sp-btn-redo");
+        if (undoBtn) undoBtn.disabled = _historyIndex <= 0;
+        if (redoBtn) redoBtn.disabled = _historyIndex >= _history.length - 1;
+    }
+
+    // -----------------------------------------------------------------------
+    // Column Visibility
+    // -----------------------------------------------------------------------
+    let _hiddenColumns = new Set();
+    let _colPanelOpen = false;
+
+    // Mini Split column definitions
+    const MS_COLUMN_GROUPS = [
+        { id: "ms-heating", label: "Heat Pump Heating", cols: ["idu-heatingEdb","idu-heatingTotal","odu-heatingAmbient"] },
+        { id: "ms-cooling-detail", label: "Cooling EDB/EWB", cols: ["idu-coolingEdb","idu-coolingEwb"] },
+        { id: "ms-electrical", label: "Electrical (V/MCA/MOP)", cols: ["idu-voltage","idu-mca","idu-mop","odu-voltage","odu-mca","odu-mop"] },
+    ];
+
+    const MS_INDIVIDUAL_COLUMNS = [
+        { key: "idu-coolingTotal", label: "Cooling Total Capacity" },
+        { key: "idu-coolingSensible", label: "Sensible Capacity" },
+        { key: "idu-weight", label: "Indoor Weight" },
+        { key: "idu-type", label: "Indoor Unit Type" },
+        { key: "idu-cfm", label: "CFM" },
+        { key: "idu-manufacturer", label: "Manufacturer (Indoor)" },
+        { key: "odu-coolingAmbient", label: "OA Ambient (Cooling)" },
+        { key: "odu-heatingAmbient", label: "OA Ambient (Heating)" },
+        { key: "odu-weight", label: "Outdoor Weight" },
+        { key: "odu-seer", label: "SEER2/EER2/HSPF2" },
+        { key: "odu-manufacturer", label: "Manufacturer (Outdoor)" },
+        { key: "odu-refrigerant", label: "Refrigerant" },
+        { key: "odu-lineSet", label: "Line-Set Lengths" },
+    ];
+
+    // Multi Position Split column definitions
+    const MPS_COLUMN_GROUPS = [
+        { id: "mps-fan", label: "Supply Fan (HP / Type)", cols: ["mps-idu-motorHp","mps-idu-motorType"] },
+        { id: "mps-cooling-detail", label: "Cooling EAT/LAT", cols: ["mps-idu-eatDb","mps-idu-eatWb","mps-idu-latDb"] },
+        { id: "mps-aux-heat", label: "Aux. Electric Heat", cols: ["mps-idu-auxKw","mps-idu-auxRise"] },
+        { id: "mps-idu-elec", label: "Indoor Electrical (V/MCA/MOP)", cols: ["mps-idu-voltage","mps-idu-mca","mps-idu-mop"] },
+        { id: "mps-odu-heat", label: "Heating Data", cols: ["mps-odu-heatAmb","mps-odu-heatTotal","mps-odu-heatEff"] },
+        { id: "mps-odu-elec", label: "Outdoor Electrical (V/MCA/MOP)", cols: ["mps-odu-voltage","mps-odu-mca","mps-odu-mop"] },
+    ];
+
+    const MPS_INDIVIDUAL_COLUMNS = [
+        { key: "mps-idu-airflow", label: "Airflow (CFM)" },
+        { key: "mps-idu-coolTotal", label: "Cooling Total Capacity" },
+        { key: "mps-idu-coolSensible", label: "Sensible Capacity" },
+        { key: "mps-idu-hpTotal", label: "Heat Pump Total Capacity" },
+        { key: "mps-idu-weight", label: "Indoor Weight" },
+        { key: "mps-odu-coolAmb", label: "Outdoor Ambient (Cooling)" },
+        { key: "mps-odu-refrig", label: "Refrigerant" },
+        { key: "mps-odu-efficiency", label: "Efficiency" },
+        { key: "mps-odu-weight", label: "Outdoor Weight" },
+        { key: "mps-odu-compressor", label: "Compressor Stages" },
+    ];
+
+    // Combined lookups for legacy compatibility
+    var COLUMN_GROUPS = MS_COLUMN_GROUPS;
+    var INDIVIDUAL_COLUMNS = MS_INDIVIDUAL_COLUMNS;
+
+    function isColVisible(key) { return !_hiddenColumns.has(key); }
+    function getHiddenColumns() { return new Set(_hiddenColumns); }
+
+    function toggleColumnGroup(groupId) {
+        var allGroups = MS_COLUMN_GROUPS.concat(MPS_COLUMN_GROUPS);
+        var grp = allGroups.find(function (g) { return g.id === groupId; });
+        if (!grp) return;
+        var cb = document.getElementById("sp-grp-" + groupId);
+        var visible = cb && cb.checked;
+        for (var i = 0; i < grp.cols.length; i++) {
+            if (visible) _hiddenColumns.delete(grp.cols[i]);
+            else _hiddenColumns.add(grp.cols[i]);
+        }
+        updateColPanel(); rebuildContent();
+    }
+
+    function toggleSingleColumn(key) {
+        var cb = document.getElementById("sp-col-" + key);
+        if (cb && cb.checked) _hiddenColumns.delete(key);
+        else _hiddenColumns.add(key);
+        updateColPanel(); rebuildContent();
+    }
+
+    function updateColPanel() {
+        var allGroups = MS_COLUMN_GROUPS.concat(MPS_COLUMN_GROUPS);
+        for (var gi = 0; gi < allGroups.length; gi++) {
+            var grp = allGroups[gi];
+            var allVisible = true;
+            for (var ci = 0; ci < grp.cols.length; ci++) {
+                if (_hiddenColumns.has(grp.cols[ci])) { allVisible = false; break; }
+            }
+            var gcb = document.getElementById("sp-grp-" + grp.id);
+            if (gcb) gcb.checked = allVisible;
+        }
+        var allCols = MS_INDIVIDUAL_COLUMNS.concat(MPS_INDIVIDUAL_COLUMNS);
+        for (var ii = 0; ii < allCols.length; ii++) {
+            var ccb = document.getElementById("sp-col-" + allCols[ii].key);
+            if (ccb) ccb.checked = !_hiddenColumns.has(allCols[ii].key);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Multi-Select
+    // -----------------------------------------------------------------------
+    let _selectedEntries = new Set();
+
+    function toggleSelect(idx) {
+        if (_selectedEntries.has(idx)) _selectedEntries.delete(idx);
+        else _selectedEntries.add(idx);
+        updateSelectionUI();
+    }
+
+    function toggleSelectAll() {
+        var selAll = document.getElementById("sp-select-all");
+        if (!selAll) return;
+        if (selAll.checked) { for (var i = 0; i < _entries.length; i++) _selectedEntries.add(i); }
+        else _selectedEntries.clear();
+        updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+        var cbs = _overlay.querySelectorAll(".sp-row-checkbox");
+        for (var i = 0; i < cbs.length; i++) {
+            cbs[i].checked = _selectedEntries.has(parseInt(cbs[i].dataset.entry, 10));
+        }
+        var bulkBar = document.getElementById("sp-bulk-bar");
+        var bulkCount = document.getElementById("sp-bulk-count");
+        if (_selectedEntries.size > 0) {
+            bulkBar.classList.remove("hidden");
+            bulkCount.textContent = _selectedEntries.size + " selected";
+        } else {
+            bulkBar.classList.add("hidden");
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Initialization
+    // -----------------------------------------------------------------------
+    function init() {
+        _overlay = document.getElementById("schedule-preview-overlay");
+        var btn = document.getElementById("btn-preview-schedule");
+        if (btn) btn.addEventListener("click", open);
+        console.log("[SchedulePreview] Initialized");
+    }
+
+    // -----------------------------------------------------------------------
+    // Open / Close
+    // -----------------------------------------------------------------------
+    function open() {
+        if (_isOpen) return;
+        var entries = Project.getEntries();
+        if (entries.length === 0) return;
+
+        _isOpen = true;
+        _entries = JSON.parse(JSON.stringify(entries));
+
+        // Initialize per-product notes
+        var existingProductNotes = Project.getProductNotes();
+        var msNotes = existingProductNotes["mini-splits"];
+        var mpsNotes = existingProductNotes["multi-position"];
+
+        // Backward compat: if no per-product notes exist, use the legacy flat notes for mini-splits
+        if (!msNotes) {
+            msNotes = { indoor: Project.getIndoorNotes(), outdoor: Project.getOutdoorNotes() };
+        }
+        if (!mpsNotes) {
+            mpsNotes = { indoor: [], outdoor: [] };
+            while (mpsNotes.indoor.length < MAX_NOTES) mpsNotes.indoor.push("");
+            while (mpsNotes.outdoor.length < MAX_NOTES) mpsNotes.outdoor.push("");
+        }
+
+        _notesByProduct = {
+            "mini-splits": { indoor: msNotes.indoor.slice(), outdoor: msNotes.outdoor.slice() },
+            "multi-position": { indoor: mpsNotes.indoor.slice(), outdoor: mpsNotes.outdoor.slice() }
+        };
+
+        // Ensure all note arrays are padded to MAX_NOTES
+        var pks = Object.keys(_notesByProduct);
+        for (var p = 0; p < pks.length; p++) {
+            while (_notesByProduct[pks[p]].indoor.length < MAX_NOTES) _notesByProduct[pks[p]].indoor.push("");
+            while (_notesByProduct[pks[p]].outdoor.length < MAX_NOTES) _notesByProduct[pks[p]].outdoor.push("");
+        }
+
+        _selectedEntries.clear();
+        _history = [];
+        _historyIndex = -1;
+        pushHistory();
+
+        buildPreview();
+        _overlay.classList.remove("hidden");
+        document.body.classList.add("preview-open");
+        document.addEventListener("keydown", handleKeyDown);
+    }
+
+    function close() {
+        if (!_isOpen) return;
+        clearTimeout(_saveTimeout);
+        collectEditsFromDom();
+        saveState();
+        _isOpen = false;
+        _overlay.classList.add("hidden");
+        _overlay.innerHTML = "";
+        document.body.classList.remove("preview-open");
+        document.removeEventListener("keydown", handleKeyDown);
+        Project.refreshPanel();
+    }
+
+    function handleKeyDown(e) {
+        if (!_isOpen) return;
+        if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+            if (e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+            else if (e.key === "y" || (e.key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Group entries by product type
+    // -----------------------------------------------------------------------
+    function groupEntriesByProduct() {
+        var groups = {};
+        for (var i = 0; i < _entries.length; i++) {
+            var sys = DataLoader.getSystemById(_entries[i].systemId);
+            var pk = (sys && sys.productKey === "multi-position") ? "multi-position" : "mini-splits";
+            if (!groups[pk]) groups[pk] = [];
+            groups[pk].push(i);
+        }
+        return groups;
+    }
+
+    // -----------------------------------------------------------------------
+    // Build Preview
+    // -----------------------------------------------------------------------
+    function buildPreview() {
+        var html = "";
+
+        // Toolbar
+        html += '<div class="sp-toolbar">';
+        html += '  <div class="sp-toolbar-left">';
+        html += '    <button class="sp-close-btn" id="sp-btn-close" type="button" title="Close preview">';
+        html += '      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>';
+        html += '      Back';
+        html += '    </button>';
+        html += '    <h2 class="sp-title">Schedule Preview</h2>';
+        html += '  </div>';
+        html += '  <div class="sp-toolbar-right">';
+        html += '    <button class="sp-tool-btn" id="sp-btn-undo" type="button" title="Undo (Ctrl+Z)" disabled>';
+        html += '      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+        html += '    </button>';
+        html += '    <button class="sp-tool-btn" id="sp-btn-redo" type="button" title="Redo (Ctrl+Y)" disabled>';
+        html += '      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>';
+        html += '    </button>';
+        html += '    <span class="sp-toolbar-sep"></span>';
+        html += '    <button class="sp-tool-btn" id="sp-btn-autonumber" type="button" title="Auto-number tags">Auto #</button>';
+        html += '    <div class="sp-col-btn-wrap">';
+        html += '      <button class="sp-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button>';
+        html += '    </div>';
+        html += '    <span class="sp-toolbar-sep"></span>';
+        html += '    <button class="sp-dl-btn sp-dl-btn-email" id="sp-btn-email" type="button" title="Download CSV and open email client">';
+        html += '      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+        html += '      Email Project';
+        html += '    </button>';
+        html += '    <span class="sp-toolbar-sep"></span>';
+        html += '    <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
+        html += '    <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
+        html += '    <button class="sp-dl-btn" id="sp-btn-dxf" type="button">Download DXF</button>';
+        html += '  </div>';
+        html += '</div>';
+
+        // Column visibility panel — per schedule type
+        var colGroups = groupEntriesByProduct();
+        var colHasMs = colGroups["mini-splits"] && colGroups["mini-splits"].length > 0;
+        var colHasMps = colGroups["multi-position"] && colGroups["multi-position"].length > 0;
+
+        html += '<div id="sp-col-panel" class="sp-col-panel hidden">';
+        html += '  <div class="sp-col-panel-header">Column Visibility</div>';
+
+        if (colHasMs) {
+            html += '  <div class="sp-col-panel-schedule-label">Mini Splits</div>';
+            html += '  <div class="sp-col-panel-section"><div class="sp-col-panel-label">Group Toggles</div>';
+            for (var msgi = 0; msgi < MS_COLUMN_GROUPS.length; msgi++) {
+                var msgrp = MS_COLUMN_GROUPS[msgi];
+                html += '<label class="sp-col-toggle"><input type="checkbox" id="sp-grp-' + msgrp.id + '" data-group="' + msgrp.id + '" checked> ' + msgrp.label + '</label>';
+            }
+            html += '  </div><div class="sp-col-panel-section"><div class="sp-col-panel-label">Individual Columns</div>';
+            for (var msci = 0; msci < MS_INDIVIDUAL_COLUMNS.length; msci++) {
+                var mscol = MS_INDIVIDUAL_COLUMNS[msci];
+                html += '<label class="sp-col-toggle"><input type="checkbox" id="sp-col-' + mscol.key + '" data-colkey="' + mscol.key + '" checked> ' + mscol.label + '</label>';
+            }
+            html += '  </div>';
+        }
+
+        if (colHasMps) {
+            html += '  <div class="sp-col-panel-schedule-label">Multi Position Splits</div>';
+            html += '  <div class="sp-col-panel-section"><div class="sp-col-panel-label">Group Toggles</div>';
+            for (var mpsgi = 0; mpsgi < MPS_COLUMN_GROUPS.length; mpsgi++) {
+                var mpsgrp = MPS_COLUMN_GROUPS[mpsgi];
+                html += '<label class="sp-col-toggle"><input type="checkbox" id="sp-grp-' + mpsgrp.id + '" data-group="' + mpsgrp.id + '" checked> ' + mpsgrp.label + '</label>';
+            }
+            html += '  </div><div class="sp-col-panel-section"><div class="sp-col-panel-label">Individual Columns</div>';
+            for (var mpsci = 0; mpsci < MPS_INDIVIDUAL_COLUMNS.length; mpsci++) {
+                var mpscol = MPS_INDIVIDUAL_COLUMNS[mpsci];
+                html += '<label class="sp-col-toggle"><input type="checkbox" id="sp-col-' + mpscol.key + '" data-colkey="' + mpscol.key + '" checked> ' + mpscol.label + '</label>';
+            }
+            html += '  </div>';
+        }
+
+        html += '</div>';
+
+        // Bulk bar
+        html += '<div id="sp-bulk-bar" class="sp-bulk-bar hidden">';
+        html += '  <span id="sp-bulk-count">0 selected</span>';
+        html += '  <button class="sp-bulk-btn" id="sp-bulk-duplicate" type="button">Duplicate Selected</button>';
+        html += '  <button class="sp-bulk-btn sp-bulk-btn-danger" id="sp-bulk-delete" type="button">Delete Selected</button>';
+        html += '  <button class="sp-bulk-btn" id="sp-bulk-deselect" type="button">Deselect All</button>';
+        html += '</div>';
+
+        // Content
+        html += '<div class="sp-content" id="sp-content">';
+        html += buildContentHtml();
+        html += '</div>';
+
+        _overlay.innerHTML = html;
+        wireEvents();
+        updateColPanel();
+    }
+
+    function buildContentHtml() {
+        var groups = groupEntriesByProduct();
+        var html = '<div class="sp-schedules-grid">';
+
+        // Mini Splits schedule
+        if (groups["mini-splits"] && groups["mini-splits"].length > 0) {
+            html += '<div class="sp-schedule-wrap">';
+            html += '<div class="sp-schedule-title">SPLIT SYSTEM SCHEDULE</div>';
+            html += '<div class="sp-section-label">INDOOR UNIT</div>';
+            html += buildIndoorTable(groups["mini-splits"]);
+            html += '<div class="sp-section-label">OUTDOOR UNIT</div>';
+            html += buildOutdoorTable(groups["mini-splits"]);
+            html += buildNotesSection("mini-splits");
+            html += '</div>';
+        }
+
+        // Multi Position Splits schedule
+        if (groups["multi-position"] && groups["multi-position"].length > 0) {
+            html += '<div class="sp-schedule-wrap">';
+            html += '<div class="sp-schedule-title">MULTI POSITION SPLIT SYSTEM SCHEDULE</div>';
+            html += '<div class="sp-section-label">INDOOR AIR HANDLING UNIT</div>';
+            html += buildMpsIndoorTable(groups["multi-position"]);
+            html += '<div class="sp-section-label">OUTDOOR CONDENSING UNIT</div>';
+            html += buildMpsOutdoorTable(groups["multi-position"]);
+            html += buildNotesSection("multi-position");
+            html += '</div>';
+        }
+
+        html += '</div>'; // close grid
+        html += buildDocumentsSection();
+        return html;
+    }
+
+    function rebuildContent() {
+        var el = document.getElementById("sp-content");
+        if (el) { el.innerHTML = buildContentHtml(); wireContentEvents(); updateSelectionUI(); }
+    }
+
+    // -----------------------------------------------------------------------
+    // Indoor Table — Mini Splits
+    // -----------------------------------------------------------------------
+    function buildIndoorTable(indices) {
+        var h = '<table class="sp-table sp-table-indoor"><thead>';
+        var coolVis = countVisible(["idu-coolingEdb","idu-coolingEwb","idu-coolingTotal","idu-coolingSensible"]);
+        var heatVis = countVisible(["idu-heatingEdb","idu-heatingTotal"]);
+        var elecVis = countVisible(["idu-voltage","idu-mca","idu-mop"]);
+
+        h += '<tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all" title="Select all"></th>';
+        h += '<th rowspan="2" class="sp-col-sym">SYMBOL</th>';
+        h += '<th rowspan="2" class="sp-col-odu-sym">SYMBOL<br>(OUTDOOR UNIT)</th>';
+        if (isColVisible("idu-cfm")) h += '<th rowspan="2" class="sp-col-cfm">CFM</th>';
+        if (coolVis > 0) h += '<th colspan="' + coolVis + '" class="sp-col-group">COOLING CAPACITY</th>';
+        if (heatVis > 0) h += '<th colspan="' + heatVis + '" class="sp-col-group">HEAT PUMP HEATING CAPACITY</th>';
+        if (isColVisible("idu-weight")) h += '<th rowspan="2" class="sp-col-wt">OPERATING<br>WEIGHT</th>';
+        if (isColVisible("idu-type")) h += '<th rowspan="2" class="sp-col-type">INDOOR UNIT<br>TYPE</th>';
+        if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL</th>';
+        if (isColVisible("idu-manufacturer")) h += '<th rowspan="2" class="sp-col-mfg">MANUFACTURER<br>DAIKIN</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr><tr class="sp-hdr2">';
+        if (isColVisible("idu-coolingEdb")) h += '<th>EDB</th>';
+        if (isColVisible("idu-coolingEwb")) h += '<th>EWB</th>';
+        if (isColVisible("idu-coolingTotal")) h += '<th>TOTAL<br>CAPACITY</th>';
+        if (isColVisible("idu-coolingSensible")) h += '<th>SENSIBLE<br>CAPACITY</th>';
+        if (isColVisible("idu-heatingEdb")) h += '<th>EDB</th>';
+        if (isColVisible("idu-heatingTotal")) h += '<th>TOTAL<br>CAPACITY</th>';
+        if (isColVisible("idu-voltage")) h += '<th>Voltage</th>';
+        if (isColVisible("idu-mca")) h += '<th>MCA</th>';
+        if (isColVisible("idu-mop")) h += '<th>MOP</th>';
+        h += '</tr></thead><tbody>';
+
+        var entryIndices = indices || [];
+        for (var ii = 0; ii < entryIndices.length; ii++) {
+            var ei = entryIndices[ii];
+            var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId);
+            if (!sys) continue;
+            var numIdu = sys.indoorUnits.length;
+
+            for (var j = 0; j < numIdu; j++) {
+                var idu = sys.indoorUnits[j];
+                var iduTag = (j < entry.iduTags.length) ? entry.iduTags[j] : "IDU-";
+                var iduAcc = (entry.iduAccessories && j < entry.iduAccessories.length) ? (entry.iduAccessories[j] || "") : "";
+
+                h += '<tr data-entry-idx="' + ei + '" data-idu-idx="' + j + '"' + (j === 0 ? ' draggable="true"' : '') + '>';
+
+                if (j === 0) {
+                    h += buildActionCell(ei, numIdu, entry);
+                }
+
+                h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="' + j + '"></td>';
+                h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag) + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+                if (isColVisible("idu-cfm")) h += '<td>' + fmt(idu.cfm) + '</td>';
+                if (isColVisible("idu-coolingEdb")) h += '<td>' + fmt(idu.coolingEdb) + '</td>';
+                if (isColVisible("idu-coolingEwb")) h += '<td>' + fmt(idu.coolingEwb) + '</td>';
+                if (isColVisible("idu-coolingTotal")) h += '<td>' + fmt(idu.coolingTotal) + '</td>';
+                if (isColVisible("idu-coolingSensible")) h += '<td>' + fmt(idu.coolingSensible) + '</td>';
+                if (isColVisible("idu-heatingEdb")) h += '<td>' + fmt(idu.heatingEdb) + '</td>';
+                if (isColVisible("idu-heatingTotal")) h += '<td>' + fmt(idu.heatingTotal) + '</td>';
+                if (isColVisible("idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
+                if (isColVisible("idu-type")) h += '<td class="sp-cell-text">' + esc(idu.type || "") + '</td>';
+
+                if (idu.poweredFromOutdoor) {
+                    if (elecVis > 0) h += '<td colspan="' + elecVis + '" class="sp-cell-powered">Indoor Powered From Outdoor Unit</td>';
+                } else {
+                    if (isColVisible("idu-voltage")) h += '<td>' + esc(idu.voltage || "") + '</td>';
+                    if (isColVisible("idu-mca")) h += '<td>' + fmt(idu.mca) + '</td>';
+                    if (isColVisible("idu-mop")) h += '<td>' + fmt(idu.mop) + '</td>';
+                }
+                if (isColVisible("idu-manufacturer")) h += '<td class="sp-cell-model">' + esc(idu.manufacturer || "") + '</td>';
+                h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(iduAcc) + '" data-entry="' + ei + '" data-field="iduAccessories" data-idu="' + j + '"></td>';
+                h += '</tr>';
+            }
+        }
+        h += '</tbody></table>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Indoor Table — Multi Position Splits
+    // -----------------------------------------------------------------------
+    function buildMpsIndoorTable(indices) {
+        var v = isColVisible;
+        var fanVis = countVisible(["mps-idu-airflow","mps-idu-motorHp","mps-idu-motorType"]);
+        var coolVis = countVisible(["mps-idu-eatDb","mps-idu-eatWb","mps-idu-latDb","mps-idu-coolTotal","mps-idu-coolSensible"]);
+        var auxVis = countVisible(["mps-idu-auxKw","mps-idu-auxRise"]);
+        var elecVis = countVisible(["mps-idu-voltage","mps-idu-mca","mps-idu-mop"]);
+
+        var h = '<table class="sp-table sp-table-indoor"><thead>';
+        h += '<tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all-mps" title="Select all"></th>';
+        h += '<th rowspan="2">TAG</th>';
+        h += '<th rowspan="2">MODEL<br>(DAIKIN)</th>';
+        if (fanVis > 0) h += '<th colspan="' + fanVis + '" class="sp-col-group">SUPPLY FAN</th>';
+        if (coolVis > 0) h += '<th colspan="' + coolVis + '" class="sp-col-group">COOLING</th>';
+        if (v("mps-idu-hpTotal")) h += '<th rowspan="2">HEAT PUMP<br>TOTAL<br>CAPACITY</th>';
+        if (auxVis > 0) h += '<th colspan="' + auxVis + '" class="sp-col-group">AUX. ELECTRIC HEAT</th>';
+        if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL DATA</th>';
+        if (v("mps-idu-weight")) h += '<th rowspan="2">WEIGHT</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr><tr class="sp-hdr2">';
+        if (v("mps-idu-airflow")) h += '<th>AIRFLOW<br>(CFM)</th>';
+        if (v("mps-idu-motorHp")) h += '<th>MOTOR<br>(HP)</th>';
+        if (v("mps-idu-motorType")) h += '<th>MOTOR<br>TYPE</th>';
+        if (v("mps-idu-eatDb")) h += '<th>EAT<br>(DB)</th>';
+        if (v("mps-idu-eatWb")) h += '<th>EAT<br>(WB)</th>';
+        if (v("mps-idu-latDb")) h += '<th>LAT<br>(DB)</th>';
+        if (v("mps-idu-coolTotal")) h += '<th>TOTAL<br>CAPACITY</th>';
+        if (v("mps-idu-coolSensible")) h += '<th>SENSIBLE<br>CAPACITY</th>';
+        if (v("mps-idu-auxKw")) h += '<th>kW</th>';
+        if (v("mps-idu-auxRise")) h += '<th>TEMP<br>RISE (DB)</th>';
+        if (v("mps-idu-voltage")) h += '<th>VOLTAGE<br>/ PHASE</th>';
+        if (v("mps-idu-mca")) h += '<th>MCA</th>';
+        if (v("mps-idu-mop")) h += '<th>MOP</th>';
+        h += '</tr></thead><tbody>';
+
+        var entryIndices = indices || [];
+        for (var ii = 0; ii < entryIndices.length; ii++) {
+            var ei = entryIndices[ii];
+            var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId);
+            if (!sys) continue;
+            var idu = sys.indoorUnits[0];
+            var iduTag = (entry.iduTags.length > 0) ? entry.iduTags[0] : "AHU-";
+            var iduAcc = (entry.iduAccessories && entry.iduAccessories.length > 0) ? (entry.iduAccessories[0] || "") : "";
+
+            h += '<tr data-entry-idx="' + ei + '" data-idu-idx="0" draggable="true">';
+            h += buildActionCell(ei, 1, entry);
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="0"></td>';
+            h += '<td class="sp-cell-model">' + esc(idu.model || "") + '</td>';
+            if (v("mps-idu-airflow")) h += '<td>' + fmt(idu.airflow) + '</td>';
+            if (v("mps-idu-motorHp")) h += '<td>' + fmt(idu.motorHp) + '</td>';
+            if (v("mps-idu-motorType")) h += '<td class="sp-cell-text">' + esc(idu.motorType || "") + '</td>';
+            if (v("mps-idu-eatDb")) h += '<td>' + fmt(idu.coolingEatDb) + '</td>';
+            if (v("mps-idu-eatWb")) h += '<td>' + fmt(idu.coolingEatWb) + '</td>';
+            if (v("mps-idu-latDb")) h += '<td>' + fmt(idu.coolingLatDb) + '</td>';
+            if (v("mps-idu-coolTotal")) h += '<td>' + fmt(idu.coolingTotal) + '</td>';
+            if (v("mps-idu-coolSensible")) h += '<td>' + fmt(idu.coolingSensible) + '</td>';
+            if (v("mps-idu-hpTotal")) h += '<td>' + fmt(idu.heatPumpTotalCapacity) + '</td>';
+            if (v("mps-idu-auxKw")) h += '<td>' + esc(idu.auxHeatKw || "") + '</td>';
+            if (v("mps-idu-auxRise")) h += '<td>' + esc(idu.auxHeatTempRise || "") + '</td>';
+            if (v("mps-idu-voltage")) h += '<td>' + esc(idu.voltage || "") + '</td>';
+            if (v("mps-idu-mca")) h += '<td>' + fmt(idu.mca) + '</td>';
+            if (v("mps-idu-mop")) h += '<td>' + fmt(idu.mop) + '</td>';
+            if (v("mps-idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(iduAcc) + '" data-entry="' + ei + '" data-field="iduAccessories" data-idu="0"></td>';
+            h += '</tr>';
+        }
+        h += '</tbody></table>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Action Cell Builder (shared)
+    // -----------------------------------------------------------------------
+    function buildActionCell(ei, numIdu, entry) {
+        var h = '<td class="sp-cell-action"' + (numIdu > 1 ? ' rowspan="' + numIdu + '"' : '') + '>';
+        h += '<div class="sp-action-wrap">';
+        h += '<div class="sp-action-top">';
+        h += '<input type="checkbox" class="sp-row-checkbox" data-entry="' + ei + '">';
+        h += '<span class="sp-entry-num">System #' + (ei + 1) + '</span>';
+        h += '<span class="sp-drag-handle" title="Drag to reorder">&#9776;</span>';
+        h += '</div>';
+        h += '<div class="sp-action-move">';
+        if (ei > 0) h += '<button class="sp-act-btn sp-act-move" data-action="move-up" data-entry="' + ei + '" title="Move system up">&#9650; Up</button>';
+        if (ei < _entries.length - 1) h += '<button class="sp-act-btn sp-act-move" data-action="move-down" data-entry="' + ei + '" title="Move system down">&#9660; Down</button>';
+        h += '</div>';
+        h += '<div class="sp-action-ops">';
+        h += '<button class="sp-act-btn sp-act-dup" data-action="duplicate" data-entry="' + ei + '" title="Duplicate this system">Dup</button>';
+        h += '<button class="sp-act-btn sp-act-del" data-action="delete" data-entry="' + ei + '" title="Delete this system">Del</button>';
+        h += '</div>';
+
+        // IDU reorder (multi-zone only, mini-splits)
+        if (numIdu > 1) {
+            h += '<div class="sp-idu-reorder">';
+            h += '<div class="sp-idu-reorder-title">Reorder Indoor Units</div>';
+            for (var ri = 0; ri < numIdu; ri++) {
+                var riTag = (ri < entry.iduTags.length && entry.iduTags[ri]) ? entry.iduTags[ri] : "IDU-";
+                h += '<div class="sp-idu-reorder-row">';
+                h += '<span class="sp-idu-reorder-label" title="' + esc(riTag) + '">' + esc(riTag) + '</span>';
+                if (ri > 0) h += '<button class="sp-idu-btn" data-action="idu-up" data-entry="' + ei + '" data-idu="' + ri + '" title="Move up">&#9650;</button>';
+                else h += '<span class="sp-idu-btn-spacer"></span>';
+                if (ri < numIdu - 1) h += '<button class="sp-idu-btn" data-action="idu-down" data-entry="' + ei + '" data-idu="' + ri + '" title="Move down">&#9660;</button>';
+                else h += '<span class="sp-idu-btn-spacer"></span>';
+                h += '</div>';
+            }
+            h += '</div>';
+        }
+
+        h += '</div></td>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Outdoor Table — Mini Splits
+    // -----------------------------------------------------------------------
+    function buildOutdoorTable(indices) {
+        var h = '<table class="sp-table sp-table-outdoor">';
+        var elecVis = countVisible(["odu-voltage","odu-mca","odu-mop"]);
+
+        h += '<thead><tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><!-- --></th>';
+        h += '<th rowspan="2" class="sp-col-sym">SYMBOL</th>';
+        if (isColVisible("odu-coolingAmbient")) h += '<th rowspan="2">OA AMBIENT<br>(COOLING)</th>';
+        if (isColVisible("odu-heatingAmbient")) h += '<th rowspan="2">OA AMBIENT<br>(HEATING)</th>';
+        if (isColVisible("odu-weight")) h += '<th rowspan="2" class="sp-col-wt">OPERATING<br>WEIGHT</th>';
+        if (isColVisible("odu-seer")) h += '<th rowspan="2">SEER2/EER2/<br>HSPF2</th>';
+        if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL</th>';
+        if (isColVisible("odu-manufacturer")) h += '<th rowspan="2" class="sp-col-mfg">MANUFACTURER<br>DAIKIN</th>';
+        if (isColVisible("odu-refrigerant")) h += '<th rowspan="2">REFRIGERANT</th>';
+        if (isColVisible("odu-lineSet")) h += '<th rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr><tr class="sp-hdr2">';
+        if (isColVisible("odu-voltage")) h += '<th>Voltage</th>';
+        if (isColVisible("odu-mca")) h += '<th>MCA</th>';
+        if (isColVisible("odu-mop")) h += '<th>MOP</th>';
+        h += '</tr></thead><tbody>';
+
+        var entryIndices = indices || [];
+        for (var ii = 0; ii < entryIndices.length; ii++) {
+            var ei = entryIndices[ii];
+            var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId);
+            if (!sys) continue;
+            var odu = sys.outdoorUnit;
+
+            h += '<tr data-entry-idx="' + ei + '">';
+            h += '<td class="sp-cell-action"><span class="sp-entry-num">#' + (ei + 1) + '</span></td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag) + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            if (isColVisible("odu-coolingAmbient")) h += '<td>' + fmt(odu.coolingAmbient) + '</td>';
+            if (isColVisible("odu-heatingAmbient")) h += '<td>' + fmt(odu.heatingAmbient) + '</td>';
+            if (isColVisible("odu-weight")) h += '<td>' + fmt(odu.weight) + '</td>';
+            if (isColVisible("odu-seer")) h += '<td class="sp-cell-text">' + esc(odu.seer || "") + '</td>';
+            if (isColVisible("odu-voltage")) h += '<td class="sp-cell-text">' + esc(odu.voltage || "") + '</td>';
+            if (isColVisible("odu-mca")) h += '<td>' + fmt(odu.mca) + '</td>';
+            if (isColVisible("odu-mop")) h += '<td>' + fmt(odu.mop) + '</td>';
+            if (isColVisible("odu-manufacturer")) h += '<td class="sp-cell-model">' + esc(odu.manufacturer || "") + '</td>';
+            if (isColVisible("odu-refrigerant")) h += '<td>' + esc(odu.refrigerant || "") + '</td>';
+            if (isColVisible("odu-lineSet")) h += '<td class="sp-cell-text">' + esc(odu.lineSet || "") + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories || "") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
+            h += '</tr>';
+        }
+        h += '</tbody></table>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Outdoor Table — Multi Position Splits
+    // -----------------------------------------------------------------------
+    function buildMpsOutdoorTable(indices) {
+        var v = isColVisible;
+        var heatVis = countVisible(["mps-odu-heatAmb","mps-odu-heatTotal","mps-odu-heatEff"]);
+        var elecVis = countVisible(["mps-odu-voltage","mps-odu-mca","mps-odu-mop"]);
+
+        var h = '<table class="sp-table sp-table-outdoor"><thead>';
+        h += '<tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><!-- --></th>';
+        h += '<th rowspan="2">TAG</th>';
+        h += '<th rowspan="2">MODEL<br>(DAIKIN)</th>';
+        if (heatVis > 0) h += '<th colspan="' + heatVis + '" class="sp-col-group">HEAT PUMP HEATING DATA</th>';
+        if (elecVis > 0) h += '<th colspan="' + elecVis + '" class="sp-col-group">ELECTRICAL DATA</th>';
+        if (v("mps-odu-coolAmb")) h += '<th rowspan="2">OUTDOOR<br>AMBIENT<br>(COOLING)</th>';
+        if (v("mps-odu-refrig")) h += '<th rowspan="2">REFRIGERANT</th>';
+        if (v("mps-odu-efficiency")) h += '<th rowspan="2">EFFICIENCY</th>';
+        if (v("mps-odu-weight")) h += '<th rowspan="2">WEIGHT</th>';
+        if (v("mps-odu-compressor")) h += '<th rowspan="2">COMPRESSOR<br>STAGES</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr><tr class="sp-hdr2">';
+        if (v("mps-odu-heatAmb")) h += '<th>OUTDOOR<br>AMBIENT (DB)</th>';
+        if (v("mps-odu-heatTotal")) h += '<th>TOTAL<br>CAPACITY</th>';
+        if (v("mps-odu-heatEff")) h += '<th>EFFICIENCY</th>';
+        if (v("mps-odu-voltage")) h += '<th>VOLTAGE<br>/ PHASE</th>';
+        if (v("mps-odu-mca")) h += '<th>MCA</th>';
+        if (v("mps-odu-mop")) h += '<th>MOP</th>';
+        h += '</tr></thead><tbody>';
+
+        var entryIndices = indices || [];
+        for (var ii = 0; ii < entryIndices.length; ii++) {
+            var ei = entryIndices[ii];
+            var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId);
+            if (!sys) continue;
+            var odu = sys.outdoorUnit;
+
+            h += '<tr data-entry-idx="' + ei + '">';
+            h += '<td class="sp-cell-action"><span class="sp-entry-num">#' + (ei + 1) + '</span></td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag) + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            h += '<td class="sp-cell-model">' + esc(odu.model || "") + '</td>';
+            if (v("mps-odu-heatAmb")) h += '<td>' + fmt(odu.heatingAmbient) + '</td>';
+            if (v("mps-odu-heatTotal")) h += '<td>' + fmt(odu.heatingTotal) + '</td>';
+            if (v("mps-odu-heatEff")) h += '<td class="sp-cell-text">' + esc(odu.heatingEfficiency || "") + '</td>';
+            if (v("mps-odu-voltage")) h += '<td>' + esc(odu.voltage || "") + '</td>';
+            if (v("mps-odu-mca")) h += '<td>' + fmt(odu.mca) + '</td>';
+            if (v("mps-odu-mop")) h += '<td>' + fmt(odu.mop) + '</td>';
+            if (v("mps-odu-coolAmb")) h += '<td>' + fmt(odu.coolingAmbient) + '</td>';
+            if (v("mps-odu-refrig")) h += '<td>' + esc(odu.refrigerant || "") + '</td>';
+            if (v("mps-odu-efficiency")) h += '<td class="sp-cell-text">' + esc(odu.efficiency || "") + '</td>';
+            if (v("mps-odu-weight")) h += '<td>' + fmt(odu.weight) + '</td>';
+            if (v("mps-odu-compressor")) h += '<td>' + esc(odu.compressorStages || "") + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories || "") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
+            h += '</tr>';
+        }
+        h += '</tbody></table>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Notes Section
+    // -----------------------------------------------------------------------
+    function buildNotesSection(productKey) {
+        var notes = _notesByProduct[productKey] || { indoor: [], outdoor: [] };
+        var indoorNotes = notes.indoor || [];
+        var outdoorNotes = notes.outdoor || [];
+
+        var h = '<div class="sp-notes"><div class="sp-notes-col"><div class="sp-notes-heading">NOTES (INDOOR UNIT):</div>';
+        for (var i = 0; i < MAX_NOTES; i++) {
+            h += '<div class="sp-notes-line"><span class="sp-notes-num">' + (i + 1) + '-</span>';
+            h += '<input class="sp-input sp-input-note" type="text" value="' + esc(indoorNotes[i] || "") + '" data-note-type="indoor" data-note-product="' + productKey + '" data-note-index="' + i + '"></div>';
+        }
+        h += '</div><div class="sp-notes-col"><div class="sp-notes-heading">NOTES (OUTDOOR UNIT):</div>';
+        for (var j = 0; j < MAX_NOTES; j++) {
+            h += '<div class="sp-notes-line"><span class="sp-notes-num">' + (j + 1) + '-</span>';
+            h += '<input class="sp-input sp-input-note" type="text" value="' + esc(outdoorNotes[j] || "") + '" data-note-type="outdoor" data-note-product="' + productKey + '" data-note-index="' + j + '"></div>';
+        }
+        h += '</div></div>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
+    // Documents Section
+    // -----------------------------------------------------------------------
+    function getEntryDocStructure(entry) {
+        var sys = DataLoader.getSystemById(entry.systemId);
+        if (!sys || !sys.docs) return { oduTag: entry.oduTag, units: [] };
+        var d = sys.docs;
+        var result = { oduTag: entry.oduTag, units: [] };
+
+        if (sys.productKey === "multi-position") {
+            // MPS: flat doc structure — group into outdoor and indoor
+            var oduDocs = [];
+            if (d.submittalSystem) oduDocs.push({ label: "Submittal (System)", path: d.submittalSystem, folder: "Submittals" });
+            if (d.submittalOutdoor) oduDocs.push({ label: "Submittal (Outdoor)", path: d.submittalOutdoor, folder: "Submittals" });
+            if (d.engineeringManualSystem) oduDocs.push({ label: "Engineering Manual (System)", path: d.engineeringManualSystem, folder: "Engineering" });
+            if (d.engineeringManualOutdoor) oduDocs.push({ label: "Engineering Manual (Outdoor)", path: d.engineeringManualOutdoor, folder: "Engineering" });
+            if (d.capacityTable) oduDocs.push({ label: "Capacity Table", path: d.capacityTable, folder: "Engineering" });
+            if (d.installManualOutdoor) oduDocs.push({ label: "Installation Manual (Outdoor)", path: d.installManualOutdoor, folder: "Installation Manuals" });
+            if (d.revitOutdoor) oduDocs.push({ label: "Revit (Outdoor)", path: d.revitOutdoor, folder: "Revit" });
+            if (d.cadOutdoor) oduDocs.push({ label: "CAD (Outdoor)", path: d.cadOutdoor, folder: "CAD" });
+            if (oduDocs.length > 0) result.units.push({ tag: entry.oduTag, label: entry.oduTag + " — Outdoor Unit", docs: oduDocs });
+
+            var iduDocs = [];
+            if (d.submittalIndoor) iduDocs.push({ label: "Submittal (Indoor)", path: d.submittalIndoor, folder: "Submittals" });
+            if (d.engineeringManualIndoor) iduDocs.push({ label: "Engineering Manual (Indoor)", path: d.engineeringManualIndoor, folder: "Engineering" });
+            if (d.installManualIndoor) iduDocs.push({ label: "Installation Manual (Indoor)", path: d.installManualIndoor, folder: "Installation Manuals" });
+            if (d.revitIndoor) iduDocs.push({ label: "Revit (Indoor)", path: d.revitIndoor, folder: "Revit" });
+            if (d.cadIndoor) iduDocs.push({ label: "CAD (Indoor)", path: d.cadIndoor, folder: "CAD" });
+            var iduTag = (entry.iduTags.length > 0) ? entry.iduTags[0] : "AHU-";
+            if (iduDocs.length > 0) result.units.push({ tag: iduTag, label: iduTag + " — Indoor Unit", docs: iduDocs });
+        } else {
+            // Mini Splits: nested doc structure
+            var oduDocs2 = [];
+            if (d.submittalSystem) oduDocs2.push({ label: "Submittal (System)", path: d.submittalSystem, folder: "Submittals" });
+            if (d.submittalOutdoor) oduDocs2.push({ label: "Submittal (Outdoor)", path: d.submittalOutdoor, folder: "Submittals" });
+            if (d.engineeringManual) oduDocs2.push({ label: "Engineering Manual", path: d.engineeringManual, folder: "Engineering" });
+            if (d.capacityTable) oduDocs2.push({ label: "Capacity Table", path: d.capacityTable, folder: "Engineering" });
+            if (d.installManualOutdoor) oduDocs2.push({ label: "Installation Manual", path: d.installManualOutdoor, folder: "Installation Manuals" });
+            if (d.revitOutdoor) oduDocs2.push({ label: "Revit", path: d.revitOutdoor, folder: "Revit" });
+            if (d.cadOutdoor) oduDocs2.push({ label: "CAD", path: d.cadOutdoor, folder: "CAD" });
+            if (oduDocs2.length > 0) result.units.push({ tag: entry.oduTag, label: entry.oduTag + " — Outdoor Unit", docs: oduDocs2 });
+
+            for (var i = 0; i < sys.indoorUnits.length; i++) {
+                var iduDocs2 = [];
+                if (d.indoorDocs && d.indoorDocs[i]) {
+                    var id = d.indoorDocs[i];
+                    if (id.submittalIndoor) iduDocs2.push({ label: "Submittal (Indoor)", path: id.submittalIndoor, folder: "Submittals" });
+                    if (id.installManualIndoor) iduDocs2.push({ label: "Installation Manual", path: id.installManualIndoor, folder: "Installation Manuals" });
+                    if (id.operationManual) iduDocs2.push({ label: "Operation Manual", path: id.operationManual, folder: "Operation Manuals" });
+                    if (id.revitIndoor) iduDocs2.push({ label: "Revit", path: id.revitIndoor, folder: "Revit" });
+                    if (id.cadIndoor) iduDocs2.push({ label: "CAD", path: id.cadIndoor, folder: "CAD" });
+                }
+                var iduTag2 = (i < entry.iduTags.length) ? entry.iduTags[i] : "IDU-";
+                if (iduDocs2.length > 0) result.units.push({ tag: iduTag2, label: iduTag2 + " — Indoor Unit", docs: iduDocs2 });
+            }
+        }
+
+        return result;
+    }
+
+    function buildDocumentsSection() {
+        var h = '<div class="sp-docs-section">';
+
+        h += '<div class="sp-docs-header">';
+        h += '<div class="sp-docs-header-left"><span class="sp-docs-title">Project Files</span></div>';
+        h += '<button class="sp-docs-download-btn" id="sp-btn-download-bundle" type="button">';
+        h += '<svg class="sp-dl-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+        h += '<svg class="sp-dl-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>';
+        h += '<span class="sp-dl-label">Download Selected Files</span>';
+        h += '</button>';
+        h += '</div>';
+
+        h += '<div class="sp-docs-options">';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-xlsx" checked> Include Excel Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-pdf" checked> Include PDF Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-dxf" checked> Include DXF Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-submittal-pkg" checked> Include Submittal Package</label>';
+        h += '<label class="sp-docs-option sp-docs-select-all-wrap"><input type="checkbox" id="sp-doc-select-all" checked> Select / Deselect All Documents</label>';
+        h += '</div>';
+
+        // Collect unique doc type labels across all entries
+        var docTypesMap = {};
+        var docTypesOrder = [];
+        for (var ei2 = 0; ei2 < _entries.length; ei2++) {
+            var structure2 = getEntryDocStructure(_entries[ei2]);
+            for (var u2 = 0; u2 < structure2.units.length; u2++) {
+                for (var d2 = 0; d2 < structure2.units[u2].docs.length; d2++) {
+                    var typeKey = getDocTypeKey(structure2.units[u2].docs[d2].label);
+                    if (!docTypesMap[typeKey]) {
+                        docTypesMap[typeKey] = true;
+                        docTypesOrder.push(typeKey);
+                    }
+                }
+            }
+        }
+
+        h += '<div class="sp-docs-body">';
+
+        // Document type filter pane (left)
+        h += '<div class="sp-docs-type-filter">';
+        h += '<div class="sp-docs-type-filter-header">Document Types</div>';
+        h += '<div class="sp-docs-type-filter-list">';
+        for (var dt = 0; dt < docTypesOrder.length; dt++) {
+            var dtKey = docTypesOrder[dt];
+            h += '<label class="sp-docs-type-option">';
+            h += '<input type="checkbox" class="sp-doc-type-cb" data-doc-type-key="' + esc(dtKey) + '" checked>';
+            h += ' ' + esc(dtKey);
+            h += '</label>';
+        }
+        h += '</div></div>';
+
+        // System file tree (right)
+        h += '<div class="sp-docs-list">';
+        for (var ei = 0; ei < _entries.length; ei++) {
+            var entry = _entries[ei];
+            var structure = getEntryDocStructure(entry);
+            var totalDocs = 0;
+            for (var u = 0; u < structure.units.length; u++) totalDocs += structure.units[u].docs.length;
+            if (totalDocs === 0) continue;
+
+            var sys = DataLoader.getSystemById(entry.systemId);
+            var iduTagList = [];
+            if (sys) { for (var ti = 0; ti < sys.indoorUnits.length; ti++) iduTagList.push((ti < entry.iduTags.length ? entry.iduTags[ti] : "IDU-")); }
+
+            h += '<div class="sp-doc-card" data-doc-entry="' + ei + '">';
+            h += '<div class="sp-doc-card-header" data-doc-toggle="' + ei + '">';
+            h += '<input type="checkbox" class="sp-doc-card-checkbox" data-doc-system="' + ei + '" checked>';
+            h += '<span class="sp-doc-card-toggle">&#9660;</span>';
+            h += '<span class="sp-doc-card-title">' + esc(entry.oduTag) + ' System';
+            if (iduTagList.length > 0) h += ' (' + esc(iduTagList.join(", ")) + ')';
+            h += '</span>';
+            h += '<span class="sp-doc-card-count">' + totalDocs + ' file' + (totalDocs !== 1 ? 's' : '') + '</span>';
+            h += '</div>';
+
+            h += '<div class="sp-doc-card-body" id="sp-doc-body-' + ei + '">';
+            for (var ui = 0; ui < structure.units.length; ui++) {
+                var unit = structure.units[ui];
+                h += '<div class="sp-doc-unit">';
+                h += '<div class="sp-doc-unit-header">';
+                h += '<input type="checkbox" data-doc-unit="' + ei + '-' + ui + '" checked>';
+                h += ' ' + esc(unit.label);
+                h += '</div>';
+
+                for (var di = 0; di < unit.docs.length; di++) {
+                    var doc = unit.docs[di];
+                    var ext = doc.path.split('.').pop().toUpperCase();
+                    var docTypeKey = getDocTypeKey(doc.label);
+                    h += '<div class="sp-doc-row">';
+                    h += '<input type="checkbox" class="sp-doc-file-cb" data-doc-path="' + esc(doc.path) + '" data-doc-entry="' + ei + '" data-doc-unit="' + ei + '-' + ui + '" data-doc-folder="' + esc(entry.oduTag + " System/" + unit.tag + "/" + doc.folder) + '" data-doc-type-key="' + esc(docTypeKey) + '" checked>';
+                    h += '<span class="sp-doc-row-label">' + esc(doc.label) + '</span>';
+                    h += '<span class="sp-doc-row-type">' + ext + '</span>';
+                    h += '</div>';
+                }
+                h += '</div>';
+            }
+            h += '</div></div>';
+        }
+        h += '</div>';
+
+        h += '</div>'; // sp-docs-body
+        h += '</div>';
+        return h;
+    }
+
+    /** Map a doc label to a type key for the filter pane */
+    function getDocTypeKey(label) {
+        if (/^Submittal/i.test(label)) return "Submittals";
+        if (/^Engineering Manual/i.test(label)) return "Engineering Manuals";
+        if (/^Capacity Table/i.test(label)) return "Capacity Tables";
+        if (/^Installation Manual/i.test(label)) return "Installation Manuals";
+        if (/^Operation Manual/i.test(label)) return "Operation Manuals";
+        if (/^Revit/i.test(label)) return "Revit";
+        if (/^CAD/i.test(label)) return "CAD";
+        return label;
+    }
+
+    // -----------------------------------------------------------------------
+    // Document Section Events
+    // -----------------------------------------------------------------------
+    function wireDocumentEvents() {
+        var dlBtn = document.getElementById("sp-btn-download-bundle");
+        if (dlBtn) dlBtn.addEventListener("click", downloadBundle);
+
+        var selAll = document.getElementById("sp-doc-select-all");
+        if (selAll) selAll.addEventListener("change", function () {
+            var checked = this.checked;
+            var allCbs = _overlay.querySelectorAll(".sp-doc-file-cb, .sp-doc-card-checkbox, [data-doc-unit]");
+            for (var i = 0; i < allCbs.length; i++) allCbs[i].checked = checked;
+            // Also sync doc type filter checkboxes
+            var typeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+            for (var j = 0; j < typeCbs.length; j++) typeCbs[j].checked = checked;
+        });
+
+        var toggles = _overlay.querySelectorAll("[data-doc-toggle]");
+        for (var t = 0; t < toggles.length; t++) {
+            toggles[t].addEventListener("click", function (e) {
+                if (e.target.tagName === "INPUT") return;
+                var idx = this.dataset.docToggle;
+                var body = document.getElementById("sp-doc-body-" + idx);
+                var arrow = this.querySelector(".sp-doc-card-toggle");
+                if (body) body.classList.toggle("sp-collapsed");
+                if (arrow) arrow.classList.toggle("sp-collapsed");
+            });
+        }
+
+        var sysCbs = _overlay.querySelectorAll(".sp-doc-card-checkbox");
+        for (var s = 0; s < sysCbs.length; s++) {
+            sysCbs[s].addEventListener("change", function () {
+                var entryIdx = this.dataset.docSystem;
+                var card = _overlay.querySelector('.sp-doc-card[data-doc-entry="' + entryIdx + '"]');
+                if (card) {
+                    var cbs = card.querySelectorAll(".sp-doc-file-cb, [data-doc-unit]");
+                    for (var i = 0; i < cbs.length; i++) cbs[i].checked = this.checked;
+                }
+            });
+        }
+
+        var unitCbs = _overlay.querySelectorAll("[data-doc-unit]:not(.sp-doc-file-cb)");
+        for (var u = 0; u < unitCbs.length; u++) {
+            unitCbs[u].addEventListener("change", function () {
+                var unitKey = this.dataset.docUnit;
+                var fileCbs = _overlay.querySelectorAll('.sp-doc-file-cb[data-doc-unit="' + unitKey + '"]');
+                for (var i = 0; i < fileCbs.length; i++) fileCbs[i].checked = this.checked;
+            });
+        }
+
+        // Document type filter checkboxes
+        var docTypeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+        for (var dt = 0; dt < docTypeCbs.length; dt++) {
+            docTypeCbs[dt].addEventListener("change", function () {
+                var typeKey = this.dataset.docTypeKey;
+                var checked = this.checked;
+                var matchingCbs = _overlay.querySelectorAll('.sp-doc-file-cb[data-doc-type-key="' + typeKey + '"]');
+                for (var i = 0; i < matchingCbs.length; i++) matchingCbs[i].checked = checked;
+            });
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Generate Combined Submittal Package PDF (using pdf-lib)
+    // -----------------------------------------------------------------------
+    async function generateSubmittalPackage() {
+        if (typeof PDFLib === "undefined") {
+            console.warn("[Preview] PDFLib not loaded — skipping submittal package");
+            return null;
+        }
+
+        // 1. Collect checked submittal PDFs grouped by system/unit tag
+        var checkedSubmittals = _overlay.querySelectorAll('.sp-doc-file-cb:checked[data-doc-type-key="Submittals"]');
+        if (checkedSubmittals.length === 0) return null;
+
+        // Build ordered list of { tag, path } using the doc structure order
+        var orderedDocs = [];
+        var seenPaths = {};
+        for (var ei = 0; ei < _entries.length; ei++) {
+            var entry = _entries[ei];
+            var structure = getEntryDocStructure(entry);
+            for (var ui = 0; ui < structure.units.length; ui++) {
+                var unit = structure.units[ui];
+                for (var di = 0; di < unit.docs.length; di++) {
+                    var doc = unit.docs[di];
+                    if (!/^Submittal/i.test(doc.label)) continue;
+                    // Check if this submittal is checked in the UI
+                    var matchCb = _overlay.querySelector('.sp-doc-file-cb:checked[data-doc-path="' + doc.path.replace(/"/g, '\\"') + '"][data-doc-type-key="Submittals"]');
+                    if (!matchCb) continue;
+                    if (seenPaths[doc.path]) continue;
+                    seenPaths[doc.path] = true;
+
+                    // For system submittals, build a combined outdoor / indoor tag
+                    var docTag = unit.tag;
+                    if (/Submittal \(System\)/i.test(doc.label)) {
+                        var iduTagsList = entry.iduTags.filter(function (t) { return t && t.length > 0; });
+                        if (iduTagsList.length > 0) {
+                            docTag = entry.oduTag + " / " + iduTagsList.join(", ");
+                        }
+                    }
+
+                    orderedDocs.push({ tag: docTag, path: doc.path, label: doc.label });
+                }
+            }
+        }
+
+        if (orderedDocs.length === 0) return null;
+
+        // 2. Fetch all PDFs as ArrayBuffers
+        var fetchedDocs = [];
+        for (var f = 0; f < orderedDocs.length; f++) {
+            try {
+                var resp = await fetch(orderedDocs[f].path);
+                if (!resp.ok) throw new Error(resp.status);
+                var buf = await resp.arrayBuffer();
+                fetchedDocs.push({ tag: orderedDocs[f].tag, label: orderedDocs[f].label, buffer: buf });
+            } catch (err) {
+                console.warn("[Preview] Submittal fetch failed: " + orderedDocs[f].path, err);
+            }
+        }
+
+        if (fetchedDocs.length === 0) return null;
+
+        // 3. Merge all PDFs into a single document and track page ranges
+        var mergedPdf = await PDFLib.PDFDocument.create();
+        var tocEntries = []; // { tag, startPage, endPage }
+
+        for (var m = 0; m < fetchedDocs.length; m++) {
+            var srcDoc;
+            try {
+                srcDoc = await PDFLib.PDFDocument.load(fetchedDocs[m].buffer, { ignoreEncryption: true });
+            } catch (loadErr) {
+                console.warn("[Preview] Could not load PDF for: " + fetchedDocs[m].tag, loadErr);
+                continue;
+            }
+            var srcPageCount = srcDoc.getPageCount();
+            if (srcPageCount === 0) continue;
+            var pageIndices = [];
+            for (var pi = 0; pi < srcPageCount; pi++) pageIndices.push(pi);
+            var copiedPages = await mergedPdf.copyPages(srcDoc, pageIndices);
+            var startPage = mergedPdf.getPageCount();
+            for (var cp = 0; cp < copiedPages.length; cp++) {
+                mergedPdf.addPage(copiedPages[cp]);
+            }
+            var endPage = mergedPdf.getPageCount() - 1;
+            tocEntries.push({ tag: fetchedDocs[m].tag, startPage: startPage, endPage: endPage });
+        }
+
+        if (mergedPdf.getPageCount() === 0) return null;
+
+        // 4. Embed fonts for overlay text
+        var helvetica = await mergedPdf.embedFont(PDFLib.StandardFonts.Helvetica);
+        var helveticaBold = await mergedPdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+        var totalContentPages = mergedPdf.getPageCount();
+
+        // 5. Draw tag labels (top-right) and page numbers (bottom-right) on each content page
+        for (var pg = 0; pg < totalContentPages; pg++) {
+            var page = mergedPdf.getPage(pg);
+            var pageWidth = page.getWidth();
+            var pageHeight = page.getHeight();
+
+            // Find the tag for this page
+            var pageTag = "";
+            for (var te = 0; te < tocEntries.length; te++) {
+                if (pg >= tocEntries[te].startPage && pg <= tocEntries[te].endPage) {
+                    pageTag = tocEntries[te].tag;
+                    break;
+                }
+            }
+
+            // Draw tag in top-right
+            if (pageTag) {
+                var tagFontSize = 10;
+                var tagWidth = helveticaBold.widthOfTextAtSize(pageTag, tagFontSize);
+                page.drawText(pageTag, {
+                    x: pageWidth - tagWidth - 36,
+                    y: pageHeight - 30,
+                    size: tagFontSize,
+                    font: helveticaBold,
+                    color: PDFLib.rgb(0, 0, 0),
+                });
+            }
+
+            // Draw page number in bottom-right (page numbering starts at 2 since TOC is page 1)
+            var pageNumStr = "Page " + (pg + 2) + " of " + (totalContentPages + 1);
+            var numFontSize = 9;
+            var numWidth = helvetica.widthOfTextAtSize(pageNumStr, numFontSize);
+            page.drawText(pageNumStr, {
+                x: pageWidth - numWidth - 36,
+                y: 24,
+                size: numFontSize,
+                font: helvetica,
+                color: PDFLib.rgb(0.3, 0.3, 0.3),
+            });
+        }
+
+        // 6. Create Table of Contents page (letter size: 612 x 792)
+        var tocWidth = 612;
+        var tocHeight = 792;
+        var tocPage = mergedPdf.insertPage(0, [tocWidth, tocHeight]);
+
+        // Title
+        var tocTitle = "Table of Contents";
+        var titleFontSize = 20;
+        var titleWidth = helveticaBold.widthOfTextAtSize(tocTitle, titleFontSize);
+        tocPage.drawText(tocTitle, {
+            x: (tocWidth - titleWidth) / 2,
+            y: tocHeight - 60,
+            size: titleFontSize,
+            font: helveticaBold,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        // Draw underline below title
+        tocPage.drawLine({
+            start: { x: 72, y: tocHeight - 70 },
+            end: { x: tocWidth - 72, y: tocHeight - 70 },
+            thickness: 1,
+            color: PDFLib.rgb(0.6, 0.6, 0.6),
+        });
+
+        // TOC entries with dot leaders
+        var tocY = tocHeight - 100;
+        var tocFontSize = 12;
+        var dotLeaderChar = ".";
+        var dotWidth = helvetica.widthOfTextAtSize(dotLeaderChar, tocFontSize);
+        var leftMargin = 72;
+        var rightMargin = tocWidth - 72;
+        var pageNumAreaWidth = 30;
+
+        for (var ti = 0; ti < tocEntries.length; ti++) {
+            if (tocY < 60) break; // Safety: don't go below page
+
+            var entryTag = tocEntries[ti].tag;
+            // Page number displayed is startPage + 2 (because TOC is page 1, content starts at page 2)
+            var displayPageNum = String(tocEntries[ti].startPage + 2);
+            var tagTextWidth = helveticaBold.widthOfTextAtSize(entryTag, tocFontSize);
+            var numTextWidth = helvetica.widthOfTextAtSize(displayPageNum, tocFontSize);
+
+            // Draw tag name (left)
+            tocPage.drawText(entryTag, {
+                x: leftMargin,
+                y: tocY,
+                size: tocFontSize,
+                font: helveticaBold,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+
+            // Draw page number (right-aligned)
+            tocPage.drawText(displayPageNum, {
+                x: rightMargin - numTextWidth,
+                y: tocY,
+                size: tocFontSize,
+                font: helvetica,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+
+            // Draw dot leaders between tag and page number
+            var dotStartX = leftMargin + tagTextWidth + 8;
+            var dotEndX = rightMargin - numTextWidth - 8;
+            var dotX = dotStartX;
+            var dotSpacing = dotWidth + 1.5;
+            while (dotX < dotEndX) {
+                tocPage.drawText(dotLeaderChar, {
+                    x: dotX,
+                    y: tocY,
+                    size: tocFontSize,
+                    font: helvetica,
+                    color: PDFLib.rgb(0.5, 0.5, 0.5),
+                });
+                dotX += dotSpacing;
+            }
+
+            tocY -= 22;
+        }
+
+        // TOC page number ("Page 1 of X")
+        var tocPageNumStr = "Page 1 of " + (totalContentPages + 1);
+        var tocNumWidth = helvetica.widthOfTextAtSize(tocPageNumStr, 9);
+        tocPage.drawText(tocPageNumStr, {
+            x: tocWidth - tocNumWidth - 36,
+            y: 24,
+            size: 9,
+            font: helvetica,
+            color: PDFLib.rgb(0.3, 0.3, 0.3),
+        });
+
+        // 7. Save and return as blob
+        var mergedBytes = await mergedPdf.save();
+        return new Blob([mergedBytes], { type: "application/pdf" });
+    }
+
+    // -----------------------------------------------------------------------
+    // Download Bundle (structured ZIP)
+    // -----------------------------------------------------------------------
+    async function downloadBundle() {
+        if (typeof JSZip === "undefined") { showToast("JSZip library not loaded"); return; }
+
+        var dlBtn = document.getElementById("sp-btn-download-bundle");
+        if (dlBtn && dlBtn.disabled) return; // Already running
+        var dlLabel = dlBtn ? dlBtn.querySelector(".sp-dl-label") : null;
+        if (dlBtn) { dlBtn.disabled = true; dlBtn.classList.add("sp-dl-loading"); }
+        if (dlLabel) dlLabel.textContent = "Preparing…";
+
+        try {
+
+        collectEditsFromDom();
+        saveState();
+
+        var zip = new JSZip();
+        var includeXlsx = document.getElementById("sp-doc-include-xlsx");
+        var includePdf = document.getElementById("sp-doc-include-pdf");
+        var includeDxf = document.getElementById("sp-doc-include-dxf");
+        var includeSubmittalPkg = document.getElementById("sp-doc-include-submittal-pkg");
+        var wantXlsx = includeXlsx && includeXlsx.checked;
+        var wantPdf = includePdf && includePdf.checked;
+        var wantDxf = includeDxf && includeDxf.checked;
+        var wantSubmittalPkg = includeSubmittalPkg && includeSubmittalPkg.checked;
+
+        var target = Project.getActiveTarget();
+        var projectName = "Project";
+        if (target && target.type === "project") {
+            var titleEl = document.getElementById("project-panel-title");
+            if (titleEl) projectName = titleEl.textContent || "Project";
+        } else if (target && target.type === "cart") {
+            projectName = "Cart";
+        }
+        var today = new Date();
+        var dateStr = (today.getMonth() + 1) + "-" + today.getDate() + "-" + today.getFullYear();
+        var zipName = projectName + " - " + dateStr;
+
+        showToast("Preparing download bundle…");
+
+        var checkedCbs = _overlay.querySelectorAll(".sp-doc-file-cb:checked");
+        var filesToFetch = [];
+        for (var i = 0; i < checkedCbs.length; i++) {
+            filesToFetch.push({
+                path: checkedCbs[i].dataset.docPath,
+                folder: checkedCbs[i].dataset.docFolder
+            });
+        }
+
+        var fetched = 0, failed = 0;
+        for (var f = 0; f < filesToFetch.length; f++) {
+            try {
+                var response = await fetch(filesToFetch[f].path);
+                if (!response.ok) throw new Error(response.status);
+                var blob = await response.blob();
+                var filename = filesToFetch[f].path.split("/").pop();
+                var zipPath = filesToFetch[f].folder + "/" + filename;
+                zip.file(zipPath, blob);
+                fetched++;
+            } catch (err) {
+                console.warn("[Preview] Failed to fetch: " + filesToFetch[f].path, err);
+                failed++;
+            }
+        }
+
+        if (wantXlsx && typeof Export !== "undefined" && Export.exportScheduleXlsx) {
+            try {
+                var xlsxBlobs = await Export.exportScheduleXlsx({ returnBlobs: true });
+                if (xlsxBlobs) {
+                    for (var xi = 0; xi < xlsxBlobs.length; xi++) {
+                        zip.file(xlsxBlobs[xi].name, xlsxBlobs[xi].blob);
+                    }
+                }
+            } catch (e) { console.warn("[Preview] Excel schedule generation failed:", e); }
+        }
+
+        if (wantPdf && typeof Export !== "undefined" && Export.exportSchedulePdf) {
+            try {
+                var pdfBlobs = Export.exportSchedulePdf({ returnBlobs: true });
+                if (pdfBlobs) {
+                    for (var pi = 0; pi < pdfBlobs.length; pi++) {
+                        zip.file(pdfBlobs[pi].name, pdfBlobs[pi].blob);
+                    }
+                }
+            } catch (e) { console.warn("[Preview] PDF schedule generation failed:", e); }
+        }
+
+        if (wantDxf && typeof Export !== "undefined" && Export.exportScheduleDxf) {
+            try {
+                var dxfBlobs = Export.exportScheduleDxf({ returnBlobs: true });
+                if (dxfBlobs) {
+                    for (var di = 0; di < dxfBlobs.length; di++) {
+                        zip.file(dxfBlobs[di].name, dxfBlobs[di].blob);
+                    }
+                }
+            } catch (e) { console.warn("[Preview] DXF schedule generation failed:", e); }
+        }
+
+        if (wantSubmittalPkg) {
+            try {
+                var submittalBlob = await generateSubmittalPackage();
+                if (submittalBlob) {
+                    zip.file("Submittal Package.pdf", submittalBlob);
+                }
+            } catch (e) { console.warn("[Preview] Submittal package generation failed:", e); }
+        }
+
+        if (fetched === 0 && !wantXlsx && !wantPdf && !wantDxf && !wantSubmittalPkg) { showToast("No files selected"); return; }
+
+        try {
+            var zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+            Project.downloadBlob(zipBlob, zipName + ".zip");
+            var msg = fetched + " document(s) downloaded";
+            if (failed > 0) msg += " (" + failed + " unavailable)";
+            if (wantXlsx || wantPdf || wantDxf || wantSubmittalPkg) msg += " + schedule(s)";
+            showToast(msg);
+        } catch (err) {
+            console.error("[Preview] ZIP generation failed:", err);
+            showToast("Failed to create ZIP");
+        }
+
+        } finally {
+            if (dlBtn) { dlBtn.disabled = false; dlBtn.classList.remove("sp-dl-loading"); }
+            if (dlLabel) dlLabel.textContent = "Download Selected Files";
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Email Project CSV
+    // -----------------------------------------------------------------------
+    function emailProjectCsv() {
+        var csvData = Project.getCsvData();
+        if (!csvData) {
+            showToast("No systems to export");
+            return;
+        }
+
+        // 1. Download the CSV file
+        Project.downloadBlob(csvData.blob, csvData.filename);
+
+        // 2. Build mailto link
+        var subject = encodeURIComponent("HHpro Equipment Selections — " + csvData.filename.replace(/\.csv$/, "").replace(/HHpro_/g, "").replace(/_/g, " "));
+        var body = encodeURIComponent(
+            "Hi,\n\n" +
+            "Please find my HHpro equipment selections attached.\n\n" +
+            "File: " + csvData.filename + "\n" +
+            "Systems: " + _entries.length + "\n\n" +
+            "This CSV file can be loaded into HHpro using the \"Load CSV\" button in the project panel.\n\n" +
+            "Thanks"
+        );
+        var mailto = "mailto:?subject=" + subject + "&body=" + body;
+
+        // 3. Small delay so the download triggers first, then open email
+        setTimeout(function () {
+            window.location.href = mailto;
+        }, 500);
+
+        showToast("CSV downloaded — attach it to the email");
+    }
+
+    // -----------------------------------------------------------------------
+    // Wire Events
+    // -----------------------------------------------------------------------
+    function wireEvents() {
+        document.getElementById("sp-btn-close").addEventListener("click", close);
+        document.getElementById("sp-btn-undo").addEventListener("click", undo);
+        document.getElementById("sp-btn-redo").addEventListener("click", redo);
+        document.getElementById("sp-btn-autonumber").addEventListener("click", showAutoNumberDialog);
+        document.getElementById("sp-btn-xlsx").addEventListener("click", function () { collectEditsFromDom(); saveState(); document.getElementById("btn-export-schedule-xlsx").click(); });
+        document.getElementById("sp-btn-pdf").addEventListener("click", function () { collectEditsFromDom(); saveState(); document.getElementById("btn-export-schedule-pdf").click(); });
+        document.getElementById("sp-btn-dxf").addEventListener("click", function () { collectEditsFromDom(); saveState(); if (Export.exportScheduleDxf) Export.exportScheduleDxf(); });
+        document.getElementById("sp-btn-email").addEventListener("click", function () { collectEditsFromDom(); saveState(); emailProjectCsv(); });
+
+        document.getElementById("sp-btn-columns").addEventListener("click", function (e) {
+            e.stopPropagation();
+            _colPanelOpen = !_colPanelOpen;
+            document.getElementById("sp-col-panel").classList.toggle("hidden", !_colPanelOpen);
+        });
+        document.getElementById("sp-col-panel").addEventListener("click", function (e) { e.stopPropagation(); });
+
+        var grpCbs = _overlay.querySelectorAll("[data-group]");
+        for (var g = 0; g < grpCbs.length; g++) grpCbs[g].addEventListener("change", function () { toggleColumnGroup(this.dataset.group); });
+        var colCbs = _overlay.querySelectorAll("[data-colkey]");
+        for (var c = 0; c < colCbs.length; c++) colCbs[c].addEventListener("change", function () { toggleSingleColumn(this.dataset.colkey); });
+
+        document.getElementById("sp-bulk-duplicate").addEventListener("click", bulkDuplicate);
+        document.getElementById("sp-bulk-delete").addEventListener("click", bulkDelete);
+        document.getElementById("sp-bulk-deselect").addEventListener("click", function () { _selectedEntries.clear(); updateSelectionUI(); });
+
+        _overlay.addEventListener("click", function (e) {
+            if (_colPanelOpen && !e.target.closest(".sp-col-panel") && !e.target.closest("#sp-btn-columns")) {
+                _colPanelOpen = false;
+                document.getElementById("sp-col-panel").classList.add("hidden");
+            }
+        });
+
+        wireContentEvents();
+    }
+
+    function wireContentEvents() {
+        var inputs = _overlay.querySelectorAll(".sp-input");
+        for (var i = 0; i < inputs.length; i++) inputs[i].addEventListener("input", handleEdit);
+
+        var cbs = _overlay.querySelectorAll(".sp-row-checkbox");
+        for (var j = 0; j < cbs.length; j++) cbs[j].addEventListener("change", function () { toggleSelect(parseInt(this.dataset.entry, 10)); });
+
+        var selAll = document.getElementById("sp-select-all");
+        if (selAll) selAll.addEventListener("change", toggleSelectAll);
+
+        var actBtns = _overlay.querySelectorAll(".sp-act-btn, .sp-idu-btn");
+        for (var k = 0; k < actBtns.length; k++) actBtns[k].addEventListener("click", handleActionButton);
+
+        var draggableRows = _overlay.querySelectorAll("tr[draggable='true']");
+        for (var d = 0; d < draggableRows.length; d++) {
+            draggableRows[d].addEventListener("dragstart", handleDragStart);
+            draggableRows[d].addEventListener("dragend", handleDragEnd);
+        }
+        var indoorTbody = _overlay.querySelector(".sp-table-indoor tbody");
+        if (indoorTbody) {
+            indoorTbody.addEventListener("dragover", handleDragOver);
+            indoorTbody.addEventListener("drop", handleDrop);
+            indoorTbody.addEventListener("dragleave", handleDragLeave);
+        }
+
+        wireDocumentEvents();
+    }
+
+    // -----------------------------------------------------------------------
+    // Drag and Drop
+    // -----------------------------------------------------------------------
+    let _dragEntryIdx = -1;
+
+    function handleDragStart(e) {
+        var tr = e.target.closest("tr");
+        if (!tr) return;
+        _dragEntryIdx = parseInt(tr.dataset.entryIdx, 10);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(_dragEntryIdx));
+        setTimeout(function () {
+            var rows = _overlay.querySelectorAll('tr[data-entry-idx="' + _dragEntryIdx + '"]');
+            for (var i = 0; i < rows.length; i++) rows[i].classList.add("sp-dragging");
+        }, 0);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        var tr = e.target.closest("tr[data-entry-idx]");
+        if (!tr) return;
+        var overIdx = parseInt(tr.dataset.entryIdx, 10);
+        if (overIdx === _dragEntryIdx) return;
+        clearDropIndicators();
+        var rect = tr.getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) tr.classList.add("sp-drop-above");
+        else tr.classList.add("sp-drop-below");
+    }
+
+    function handleDragLeave(e) {
+        var tr = e.target.closest("tr[data-entry-idx]");
+        if (tr) tr.classList.remove("sp-drop-above", "sp-drop-below");
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        clearDropIndicators();
+        var tr = e.target.closest("tr[data-entry-idx]");
+        if (!tr || _dragEntryIdx < 0) return;
+        var dropIdx = parseInt(tr.dataset.entryIdx, 10);
+        if (dropIdx === _dragEntryIdx) return;
+        var rect = tr.getBoundingClientRect();
+        var targetIdx = e.clientY < rect.top + rect.height / 2 ? dropIdx : dropIdx + 1;
+        if (targetIdx > _dragEntryIdx) targetIdx--;
+        if (targetIdx !== _dragEntryIdx) {
+            collectEditsFromDom();
+            var moved = _entries.splice(_dragEntryIdx, 1)[0];
+            _entries.splice(targetIdx, 0, moved);
+            pushHistory(); saveState(); rebuildContent();
+        }
+        _dragEntryIdx = -1;
+    }
+
+    function handleDragEnd() {
+        _dragEntryIdx = -1;
+        var d = _overlay.querySelectorAll(".sp-dragging");
+        for (var i = 0; i < d.length; i++) d[i].classList.remove("sp-dragging");
+        clearDropIndicators();
+    }
+
+    function clearDropIndicators() {
+        var ind = _overlay.querySelectorAll(".sp-drop-above, .sp-drop-below");
+        for (var i = 0; i < ind.length; i++) ind[i].classList.remove("sp-drop-above", "sp-drop-below");
+    }
+
+    // -----------------------------------------------------------------------
+    // Action Buttons
+    // -----------------------------------------------------------------------
+    function handleActionButton(e) {
+        var btn = e.currentTarget;
+        var action = btn.dataset.action;
+        var ei = parseInt(btn.dataset.entry, 10);
+        collectEditsFromDom();
+
+        if (action === "move-up" && ei > 0) {
+            var t = _entries[ei]; _entries[ei] = _entries[ei - 1]; _entries[ei - 1] = t;
+            pushHistory(); saveState(); rebuildContent();
+        } else if (action === "move-down" && ei < _entries.length - 1) {
+            var t2 = _entries[ei]; _entries[ei] = _entries[ei + 1]; _entries[ei + 1] = t2;
+            pushHistory(); saveState(); rebuildContent();
+        } else if (action === "duplicate") {
+            _entries.splice(ei + 1, 0, JSON.parse(JSON.stringify(_entries[ei])));
+            pushHistory(); saveState(); rebuildContent();
+            showToast("System duplicated");
+        } else if (action === "delete") {
+            _entries.splice(ei, 1); _selectedEntries.delete(ei);
+            pushHistory(); saveState(); rebuildContent();
+            showToast("System removed");
+        } else if (action === "idu-up") {
+            swapIndoorUnits(ei, parseInt(btn.dataset.idu, 10), parseInt(btn.dataset.idu, 10) - 1);
+        } else if (action === "idu-down") {
+            swapIndoorUnits(ei, parseInt(btn.dataset.idu, 10), parseInt(btn.dataset.idu, 10) + 1);
+        }
+    }
+
+    function swapIndoorUnits(entryIdx, a, b) {
+        var entry = _entries[entryIdx];
+        var tt = entry.iduTags[a]; entry.iduTags[a] = entry.iduTags[b]; entry.iduTags[b] = tt;
+        if (entry.iduAccessories) { var ta = entry.iduAccessories[a]; entry.iduAccessories[a] = entry.iduAccessories[b]; entry.iduAccessories[b] = ta; }
+        pushHistory(); saveState(); rebuildContent();
+    }
+
+    // -----------------------------------------------------------------------
+    // Bulk Operations
+    // -----------------------------------------------------------------------
+    function bulkDuplicate() {
+        if (_selectedEntries.size === 0) return;
+        collectEditsFromDom();
+        var indices = Array.from(_selectedEntries).sort(function (a, b) { return b - a; });
+        for (var i = 0; i < indices.length; i++) _entries.splice(indices[i] + 1, 0, JSON.parse(JSON.stringify(_entries[indices[i]])));
+        _selectedEntries.clear();
+        pushHistory(); saveState(); rebuildContent();
+        showToast(indices.length + " system(s) duplicated");
+    }
+
+    function bulkDelete() {
+        if (_selectedEntries.size === 0) return;
+        collectEditsFromDom();
+        var indices = Array.from(_selectedEntries).sort(function (a, b) { return b - a; });
+        for (var i = 0; i < indices.length; i++) _entries.splice(indices[i], 1);
+        _selectedEntries.clear();
+        pushHistory(); saveState(); rebuildContent();
+        showToast(indices.length + " system(s) deleted");
+    }
+
+    // -----------------------------------------------------------------------
+    // Auto-Number Tags
+    // -----------------------------------------------------------------------
+    function showAutoNumberDialog() {
+        var groups = groupEntriesByProduct();
+        var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
+        var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
+
+        var ov = document.createElement("div"); ov.className = "confirm-overlay sp-dialog-overlay";
+        var d = document.createElement("div"); d.className = "confirm-dialog";
+        var hd = document.createElement("div"); hd.className = "confirm-dialog-header";
+        var h3 = document.createElement("h3"); h3.textContent = "Auto-Number Tags"; hd.appendChild(h3);
+        var bd = document.createElement("div"); bd.className = "confirm-dialog-body";
+
+        function addField(container, labelText, value, placeholder) {
+            var lbl = document.createElement("label"); lbl.className = "input-dialog-label sp-autonumber-label"; lbl.textContent = labelText;
+            var inp = document.createElement("input"); inp.type = "text"; inp.className = "input-dialog-input"; inp.value = value; inp.placeholder = placeholder;
+            container.appendChild(lbl); container.appendChild(inp);
+            return inp;
+        }
+
+        function addSectionTitle(container, text) {
+            var title = document.createElement("div"); title.className = "sp-autonumber-section-title"; title.textContent = text;
+            container.appendChild(title);
+        }
+
+        var msIduInp, msOduInp, msStartInp;
+        var mpsIduInp, mpsOduInp, mpsStartInp;
+
+        if (hasMs) {
+            addSectionTitle(bd, "Mini Splits");
+            msIduInp = addField(bd, "Indoor Unit Prefix", "IDU-", "IDU-");
+            msOduInp = addField(bd, "Outdoor Unit Prefix", "ODU-", "ODU-");
+            var msStartLbl = document.createElement("label"); msStartLbl.className = "input-dialog-label sp-autonumber-label"; msStartLbl.textContent = "Start Number";
+            msStartInp = document.createElement("input"); msStartInp.type = "number"; msStartInp.className = "input-dialog-input"; msStartInp.value = "1"; msStartInp.min = "0";
+            bd.appendChild(msStartLbl); bd.appendChild(msStartInp);
+        }
+
+        if (hasMps) {
+            addSectionTitle(bd, "Multi Position Splits");
+            mpsIduInp = addField(bd, "Indoor Unit Prefix", "AHU-", "AHU-");
+            mpsOduInp = addField(bd, "Outdoor Unit Prefix", "CU-", "CU-");
+            var mpsStartLbl = document.createElement("label"); mpsStartLbl.className = "input-dialog-label sp-autonumber-label"; mpsStartLbl.textContent = "Start Number";
+            mpsStartInp = document.createElement("input"); mpsStartInp.type = "number"; mpsStartInp.className = "input-dialog-input"; mpsStartInp.value = "1"; mpsStartInp.min = "0";
+            bd.appendChild(mpsStartLbl); bd.appendChild(mpsStartInp);
+        }
+
+        var ft = document.createElement("div"); ft.className = "confirm-dialog-footer";
+        var cb = document.createElement("button"); cb.type = "button"; cb.className = "confirm-btn confirm-btn-cancel"; cb.textContent = "Cancel";
+        cb.addEventListener("click", function () { document.body.removeChild(ov); });
+        var cfb = document.createElement("button"); cfb.type = "button"; cfb.className = "confirm-btn confirm-btn-primary"; cfb.textContent = "Apply";
+        cfb.addEventListener("click", function () {
+            document.body.removeChild(ov);
+            collectEditsFromDom();
+            if (hasMs) {
+                applyAutoNumberForProduct(groups["mini-splits"], msIduInp.value, msOduInp.value, parseInt(msStartInp.value, 10) || 1);
+            }
+            if (hasMps) {
+                applyAutoNumberForProduct(groups["multi-position"], mpsIduInp.value, mpsOduInp.value, parseInt(mpsStartInp.value, 10) || 1);
+            }
+            pushHistory(); saveState(); rebuildContent();
+            showToast("Tags auto-numbered");
+        });
+        ft.appendChild(cb); ft.appendChild(cfb);
+        d.appendChild(hd); d.appendChild(bd); d.appendChild(ft);
+        ov.appendChild(d); document.body.appendChild(ov);
+        var firstInput = hasMs ? msIduInp : mpsIduInp;
+        if (firstInput) requestAnimationFrame(function () { firstInput.focus(); firstInput.select(); });
+    }
+
+    function applyAutoNumberForProduct(entryIndices, iduPrefix, oduPrefix, startNum) {
+        var iduCount = startNum, oduCount = startNum;
+        for (var i = 0; i < entryIndices.length; i++) {
+            var ei = entryIndices[i];
+            var sys = DataLoader.getSystemById(_entries[ei].systemId);
+            if (!sys) continue;
+            _entries[ei].oduTag = oduPrefix + String(oduCount).padStart(2, "0");
+            oduCount++;
+            for (var j = 0; j < sys.indoorUnits.length; j++) {
+                _entries[ei].iduTags[j] = iduPrefix + String(iduCount).padStart(2, "0");
+                iduCount++;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Edit Handling
+    // -----------------------------------------------------------------------
+    function handleEdit() {
+        clearTimeout(_saveTimeout);
+        _saveTimeout = setTimeout(function () { collectEditsFromDom(); pushHistory(); saveState(); }, 600);
+    }
+
+    function collectEditsFromDom() {
+        if (!_isOpen || !_overlay || _overlay.innerHTML === "") return;
+        var tagInputs = _overlay.querySelectorAll("[data-entry][data-field]");
+        for (var i = 0; i < tagInputs.length; i++) {
+            var el = tagInputs[i], idx = parseInt(el.dataset.entry, 10), field = el.dataset.field;
+            if (idx < 0 || idx >= _entries.length) continue;
+            if (field === "oduTag") _entries[idx].oduTag = el.value;
+            else if (field === "iduTag") _entries[idx].iduTags[parseInt(el.dataset.idu, 10)] = el.value;
+            else if (field === "iduAccessories") {
+                if (!_entries[idx].iduAccessories) _entries[idx].iduAccessories = [];
+                _entries[idx].iduAccessories[parseInt(el.dataset.idu, 10)] = el.value;
+            } else if (field === "outdoorAccessories") _entries[idx].outdoorAccessories = el.value;
+        }
+        var noteInputs = _overlay.querySelectorAll("[data-note-type][data-note-product]");
+        for (var j = 0; j < noteInputs.length; j++) {
+            var nel = noteInputs[j];
+            var pk = nel.dataset.noteProduct;
+            var noteType = nel.dataset.noteType;
+            var noteIdx = parseInt(nel.dataset.noteIndex, 10);
+            if (!_notesByProduct[pk]) _notesByProduct[pk] = { indoor: [], outdoor: [] };
+            while (_notesByProduct[pk][noteType].length <= noteIdx) _notesByProduct[pk][noteType].push("");
+            _notesByProduct[pk][noteType][noteIdx] = nel.value;
+        }
+    }
+
+    function saveState() {
+        Project._saveEntriesDirect(JSON.parse(JSON.stringify(_entries)));
+        // Save legacy flat notes (mini-splits) for backward compat
+        var msNotes = _notesByProduct["mini-splits"] || { indoor: [], outdoor: [] };
+        Project._saveNotesDirect(msNotes.indoor.slice(), msNotes.outdoor.slice());
+        // Save per-product notes
+        Project._saveProductNotesDirect(JSON.parse(JSON.stringify(_notesByProduct)));
+    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    function countVisible(keys) { var c = 0; for (var i = 0; i < keys.length; i++) if (isColVisible(keys[i])) c++; return c; }
+
+    function fmt(val) {
+        if (val === null || val === undefined || val === "") return '<span class="sp-empty">&mdash;</span>';
+        if (typeof val === "number" && Number.isInteger(val) && val >= 1000) return esc(val.toLocaleString("en-US"));
+        return esc(String(val));
+    }
+
+    function esc(str) {
+        if (!str) return "";
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function showToast(msg) { if (Project && Project.showToast) Project.showToast(msg, "toast-success"); }
+
+    // -----------------------------------------------------------------------
+    // Public API
+    // -----------------------------------------------------------------------
+    return {
+        init: init,
+        open: open,
+        close: close,
+        getHiddenColumns: getHiddenColumns,
+    };
+
+})();
