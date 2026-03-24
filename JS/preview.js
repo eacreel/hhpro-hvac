@@ -844,6 +844,7 @@ const SchedulePreview = (function () {
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-xlsx" checked> Include Excel Schedule</label>';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-pdf" checked> Include PDF Schedule</label>';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-dxf" checked> Include DXF Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-submittal-pkg" checked> Include Submittal Package</label>';
         h += '<label class="sp-docs-option sp-docs-select-all-wrap"><input type="checkbox" id="sp-doc-select-all" checked> Select / Deselect All Documents</label>';
         h += '</div>';
 
@@ -1006,6 +1007,226 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
+    // Generate Combined Submittal Package PDF (using pdf-lib)
+    // -----------------------------------------------------------------------
+    async function generateSubmittalPackage() {
+        if (typeof PDFLib === "undefined") {
+            console.warn("[Preview] PDFLib not loaded — skipping submittal package");
+            return null;
+        }
+
+        // 1. Collect checked submittal PDFs grouped by system/unit tag
+        var checkedSubmittals = _overlay.querySelectorAll('.sp-doc-file-cb:checked[data-doc-type-key="Submittals"]');
+        if (checkedSubmittals.length === 0) return null;
+
+        // Build ordered list of { tag, path } using the doc structure order
+        var orderedDocs = [];
+        var seenPaths = {};
+        for (var ei = 0; ei < _entries.length; ei++) {
+            var entry = _entries[ei];
+            var structure = getEntryDocStructure(entry);
+            for (var ui = 0; ui < structure.units.length; ui++) {
+                var unit = structure.units[ui];
+                for (var di = 0; di < unit.docs.length; di++) {
+                    var doc = unit.docs[di];
+                    if (!/^Submittal/i.test(doc.label)) continue;
+                    // Check if this submittal is checked in the UI
+                    var matchCb = _overlay.querySelector('.sp-doc-file-cb:checked[data-doc-path="' + doc.path.replace(/"/g, '\\"') + '"][data-doc-type-key="Submittals"]');
+                    if (!matchCb) continue;
+                    if (seenPaths[doc.path]) continue;
+                    seenPaths[doc.path] = true;
+                    orderedDocs.push({ tag: unit.tag, path: doc.path, label: doc.label });
+                }
+            }
+        }
+
+        if (orderedDocs.length === 0) return null;
+
+        // 2. Fetch all PDFs as ArrayBuffers
+        var fetchedDocs = [];
+        for (var f = 0; f < orderedDocs.length; f++) {
+            try {
+                var resp = await fetch(orderedDocs[f].path);
+                if (!resp.ok) throw new Error(resp.status);
+                var buf = await resp.arrayBuffer();
+                fetchedDocs.push({ tag: orderedDocs[f].tag, label: orderedDocs[f].label, buffer: buf });
+            } catch (err) {
+                console.warn("[Preview] Submittal fetch failed: " + orderedDocs[f].path, err);
+            }
+        }
+
+        if (fetchedDocs.length === 0) return null;
+
+        // 3. Merge all PDFs into a single document and track page ranges
+        var mergedPdf = await PDFLib.PDFDocument.create();
+        var tocEntries = []; // { tag, startPage, endPage }
+
+        for (var m = 0; m < fetchedDocs.length; m++) {
+            var srcDoc;
+            try {
+                srcDoc = await PDFLib.PDFDocument.load(fetchedDocs[m].buffer, { ignoreEncryption: true });
+            } catch (loadErr) {
+                console.warn("[Preview] Could not load PDF for: " + fetchedDocs[m].tag, loadErr);
+                continue;
+            }
+            var srcPageCount = srcDoc.getPageCount();
+            if (srcPageCount === 0) continue;
+            var pageIndices = [];
+            for (var pi = 0; pi < srcPageCount; pi++) pageIndices.push(pi);
+            var copiedPages = await mergedPdf.copyPages(srcDoc, pageIndices);
+            var startPage = mergedPdf.getPageCount();
+            for (var cp = 0; cp < copiedPages.length; cp++) {
+                mergedPdf.addPage(copiedPages[cp]);
+            }
+            var endPage = mergedPdf.getPageCount() - 1;
+            tocEntries.push({ tag: fetchedDocs[m].tag, startPage: startPage, endPage: endPage });
+        }
+
+        if (mergedPdf.getPageCount() === 0) return null;
+
+        // 4. Embed fonts for overlay text
+        var helvetica = await mergedPdf.embedFont(PDFLib.StandardFonts.Helvetica);
+        var helveticaBold = await mergedPdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+        var totalContentPages = mergedPdf.getPageCount();
+
+        // 5. Draw tag labels (top-right) and page numbers (bottom-right) on each content page
+        for (var pg = 0; pg < totalContentPages; pg++) {
+            var page = mergedPdf.getPage(pg);
+            var pageWidth = page.getWidth();
+            var pageHeight = page.getHeight();
+
+            // Find the tag for this page
+            var pageTag = "";
+            for (var te = 0; te < tocEntries.length; te++) {
+                if (pg >= tocEntries[te].startPage && pg <= tocEntries[te].endPage) {
+                    pageTag = tocEntries[te].tag;
+                    break;
+                }
+            }
+
+            // Draw tag in top-right
+            if (pageTag) {
+                var tagFontSize = 10;
+                var tagWidth = helveticaBold.widthOfTextAtSize(pageTag, tagFontSize);
+                page.drawText(pageTag, {
+                    x: pageWidth - tagWidth - 36,
+                    y: pageHeight - 30,
+                    size: tagFontSize,
+                    font: helveticaBold,
+                    color: PDFLib.rgb(0, 0, 0),
+                });
+            }
+
+            // Draw page number in bottom-right (page numbering starts at 2 since TOC is page 1)
+            var pageNumStr = "Page " + (pg + 2) + " of " + (totalContentPages + 1);
+            var numFontSize = 9;
+            var numWidth = helvetica.widthOfTextAtSize(pageNumStr, numFontSize);
+            page.drawText(pageNumStr, {
+                x: pageWidth - numWidth - 36,
+                y: 24,
+                size: numFontSize,
+                font: helvetica,
+                color: PDFLib.rgb(0.3, 0.3, 0.3),
+            });
+        }
+
+        // 6. Create Table of Contents page (letter size: 612 x 792)
+        var tocWidth = 612;
+        var tocHeight = 792;
+        var tocPage = mergedPdf.insertPage(0, [tocWidth, tocHeight]);
+
+        // Title
+        var tocTitle = "Table of Contents";
+        var titleFontSize = 20;
+        var titleWidth = helveticaBold.widthOfTextAtSize(tocTitle, titleFontSize);
+        tocPage.drawText(tocTitle, {
+            x: (tocWidth - titleWidth) / 2,
+            y: tocHeight - 60,
+            size: titleFontSize,
+            font: helveticaBold,
+            color: PDFLib.rgb(0, 0, 0),
+        });
+
+        // Draw underline below title
+        tocPage.drawLine({
+            start: { x: 72, y: tocHeight - 70 },
+            end: { x: tocWidth - 72, y: tocHeight - 70 },
+            thickness: 1,
+            color: PDFLib.rgb(0.6, 0.6, 0.6),
+        });
+
+        // TOC entries with dot leaders
+        var tocY = tocHeight - 100;
+        var tocFontSize = 12;
+        var dotLeaderChar = ".";
+        var dotWidth = helvetica.widthOfTextAtSize(dotLeaderChar, tocFontSize);
+        var leftMargin = 72;
+        var rightMargin = tocWidth - 72;
+        var pageNumAreaWidth = 30;
+
+        for (var ti = 0; ti < tocEntries.length; ti++) {
+            if (tocY < 60) break; // Safety: don't go below page
+
+            var entryTag = tocEntries[ti].tag;
+            // Page number displayed is startPage + 2 (because TOC is page 1, content starts at page 2)
+            var displayPageNum = String(tocEntries[ti].startPage + 2);
+            var tagTextWidth = helveticaBold.widthOfTextAtSize(entryTag, tocFontSize);
+            var numTextWidth = helvetica.widthOfTextAtSize(displayPageNum, tocFontSize);
+
+            // Draw tag name (left)
+            tocPage.drawText(entryTag, {
+                x: leftMargin,
+                y: tocY,
+                size: tocFontSize,
+                font: helveticaBold,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+
+            // Draw page number (right-aligned)
+            tocPage.drawText(displayPageNum, {
+                x: rightMargin - numTextWidth,
+                y: tocY,
+                size: tocFontSize,
+                font: helvetica,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+
+            // Draw dot leaders between tag and page number
+            var dotStartX = leftMargin + tagTextWidth + 8;
+            var dotEndX = rightMargin - numTextWidth - 8;
+            var dotX = dotStartX;
+            var dotSpacing = dotWidth + 1.5;
+            while (dotX < dotEndX) {
+                tocPage.drawText(dotLeaderChar, {
+                    x: dotX,
+                    y: tocY,
+                    size: tocFontSize,
+                    font: helvetica,
+                    color: PDFLib.rgb(0.5, 0.5, 0.5),
+                });
+                dotX += dotSpacing;
+            }
+
+            tocY -= 22;
+        }
+
+        // TOC page number ("Page 1 of X")
+        var tocPageNumStr = "Page 1 of " + (totalContentPages + 1);
+        var tocNumWidth = helvetica.widthOfTextAtSize(tocPageNumStr, 9);
+        tocPage.drawText(tocPageNumStr, {
+            x: tocWidth - tocNumWidth - 36,
+            y: 24,
+            size: 9,
+            font: helvetica,
+            color: PDFLib.rgb(0.3, 0.3, 0.3),
+        });
+
+        // 7. Save and return as blob
+        var mergedBytes = await mergedPdf.save();
+        return new Blob([mergedBytes], { type: "application/pdf" });
+    }
+
+    // -----------------------------------------------------------------------
     // Download Bundle (structured ZIP)
     // -----------------------------------------------------------------------
     async function downloadBundle() {
@@ -1018,9 +1239,11 @@ const SchedulePreview = (function () {
         var includeXlsx = document.getElementById("sp-doc-include-xlsx");
         var includePdf = document.getElementById("sp-doc-include-pdf");
         var includeDxf = document.getElementById("sp-doc-include-dxf");
+        var includeSubmittalPkg = document.getElementById("sp-doc-include-submittal-pkg");
         var wantXlsx = includeXlsx && includeXlsx.checked;
         var wantPdf = includePdf && includePdf.checked;
         var wantDxf = includeDxf && includeDxf.checked;
+        var wantSubmittalPkg = includeSubmittalPkg && includeSubmittalPkg.checked;
 
         var target = Project.getActiveTarget();
         var projectName = "Project";
@@ -1094,14 +1317,23 @@ const SchedulePreview = (function () {
             } catch (e) { console.warn("[Preview] DXF schedule generation failed:", e); }
         }
 
-        if (fetched === 0 && !wantXlsx && !wantPdf && !wantDxf) { showToast("No files selected"); return; }
+        if (wantSubmittalPkg) {
+            try {
+                var submittalBlob = await generateSubmittalPackage();
+                if (submittalBlob) {
+                    zip.file("Submittal Package.pdf", submittalBlob);
+                }
+            } catch (e) { console.warn("[Preview] Submittal package generation failed:", e); }
+        }
+
+        if (fetched === 0 && !wantXlsx && !wantPdf && !wantDxf && !wantSubmittalPkg) { showToast("No files selected"); return; }
 
         try {
             var zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
             Project.downloadBlob(zipBlob, zipName + ".zip");
             var msg = fetched + " document(s) downloaded";
             if (failed > 0) msg += " (" + failed + " unavailable)";
-            if (wantXlsx || wantPdf || wantDxf) msg += " + schedule(s)";
+            if (wantXlsx || wantPdf || wantDxf || wantSubmittalPkg) msg += " + schedule(s)";
             showToast(msg);
         } catch (err) {
             console.error("[Preview] ZIP generation failed:", err);
