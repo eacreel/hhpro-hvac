@@ -836,8 +836,10 @@ const SchedulePreview = (function () {
         h += '<div class="sp-docs-header">';
         h += '<div class="sp-docs-header-left"><span class="sp-docs-title">Project Files</span></div>';
         h += '<button class="sp-docs-download-btn" id="sp-btn-download-bundle" type="button">';
-        h += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-        h += ' Download Selected Files</button>';
+        h += '<svg class="sp-dl-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+        h += '<svg class="sp-dl-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>';
+        h += '<span class="sp-dl-label">Download Selected Files</span>';
+        h += '</button>';
         h += '</div>';
 
         h += '<div class="sp-docs-options">';
@@ -1232,6 +1234,14 @@ const SchedulePreview = (function () {
     async function downloadBundle() {
         if (typeof JSZip === "undefined") { showToast("JSZip library not loaded"); return; }
 
+        var dlBtn = document.getElementById("sp-btn-download-bundle");
+        if (dlBtn && dlBtn.disabled) return; // Already running
+        var dlLabel = dlBtn ? dlBtn.querySelector(".sp-dl-label") : null;
+        if (dlBtn) { dlBtn.disabled = true; dlBtn.classList.add("sp-dl-loading"); }
+        if (dlLabel) dlLabel.textContent = "Preparing…";
+
+        try {
+
         collectEditsFromDom();
         saveState();
 
@@ -1338,6 +1348,11 @@ const SchedulePreview = (function () {
         } catch (err) {
             console.error("[Preview] ZIP generation failed:", err);
             showToast("Failed to create ZIP");
+        }
+
+        } finally {
+            if (dlBtn) { dlBtn.disabled = false; dlBtn.classList.remove("sp-dl-loading"); }
+            if (dlLabel) dlLabel.textContent = "Download Selected Files";
         }
     }
 

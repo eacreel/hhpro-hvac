@@ -716,6 +716,24 @@
     cursor: not-allowed;
 }
 
+.sp-docs-download-btn .sp-dl-spinner {
+    display: none;
+    animation: loading-spin 0.7s linear infinite;
+}
+
+.sp-docs-download-btn.sp-dl-loading .sp-dl-icon {
+    display: none;
+}
+
+.sp-docs-download-btn.sp-dl-loading .sp-dl-spinner {
+    display: inline-block;
+}
+
+.sp-docs-download-btn.sp-dl-loading {
+    opacity: 0.85;
+    pointer-events: none;
+}
+
 /* Schedule include options */
 .sp-docs-options {
     display: flex;
