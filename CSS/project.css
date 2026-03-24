@@ -1067,6 +1067,7 @@ body.preview-open {
     border: 2px solid var(--color-brand);
     border-radius: var(--border-radius-lg);
     overflow: hidden;
+    overflow-x: auto;
     box-shadow: var(--shadow-lg);
     min-width: 0;
 }
@@ -1798,12 +1799,40 @@ body.preview-open {
     #project-panel { max-width: 100%; }
 }
 
-@media (max-width: 1800px) {
+@media (max-width: 2100px) {
     .sp-schedules-grid {
         grid-template-columns: 1fr;
     }
     .sp-schedules-grid > .sp-schedule-wrap {
-        max-width: 1300px;
+        max-width: 1500px;
         margin: 0 auto;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   1080p-specific adjustments  (1920×1080 and similar)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1920px) {
+    .sp-content {
+        padding: var(--space-xl);
+    }
+
+    .sp-schedules-grid {
+        gap: var(--space-xl);
+    }
+
+    .sp-schedules-grid > .sp-schedule-wrap {
+        max-width: 100%;
+    }
+
+    .sp-schedule-title {
+        padding: var(--space-md);
+        font-size: var(--font-size-lg);
+    }
+
+    .sp-col-action {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
     }
 }
