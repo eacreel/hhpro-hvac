@@ -843,10 +843,42 @@ const SchedulePreview = (function () {
         h += '<div class="sp-docs-options">';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-xlsx" checked> Include Excel Schedule</label>';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-pdf" checked> Include PDF Schedule</label>';
-        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-dxf"> Include DXF Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-dxf" checked> Include DXF Schedule</label>';
         h += '<label class="sp-docs-option sp-docs-select-all-wrap"><input type="checkbox" id="sp-doc-select-all" checked> Select / Deselect All Documents</label>';
         h += '</div>';
 
+        // Collect unique doc type labels across all entries
+        var docTypesMap = {};
+        var docTypesOrder = [];
+        for (var ei2 = 0; ei2 < _entries.length; ei2++) {
+            var structure2 = getEntryDocStructure(_entries[ei2]);
+            for (var u2 = 0; u2 < structure2.units.length; u2++) {
+                for (var d2 = 0; d2 < structure2.units[u2].docs.length; d2++) {
+                    var typeKey = getDocTypeKey(structure2.units[u2].docs[d2].label);
+                    if (!docTypesMap[typeKey]) {
+                        docTypesMap[typeKey] = true;
+                        docTypesOrder.push(typeKey);
+                    }
+                }
+            }
+        }
+
+        h += '<div class="sp-docs-body">';
+
+        // Document type filter pane (left)
+        h += '<div class="sp-docs-type-filter">';
+        h += '<div class="sp-docs-type-filter-header">Document Types</div>';
+        h += '<div class="sp-docs-type-filter-list">';
+        for (var dt = 0; dt < docTypesOrder.length; dt++) {
+            var dtKey = docTypesOrder[dt];
+            h += '<label class="sp-docs-type-option">';
+            h += '<input type="checkbox" class="sp-doc-type-cb" data-doc-type-key="' + esc(dtKey) + '" checked>';
+            h += ' ' + esc(dtKey);
+            h += '</label>';
+        }
+        h += '</div></div>';
+
+        // System file tree (right)
         h += '<div class="sp-docs-list">';
         for (var ei = 0; ei < _entries.length; ei++) {
             var entry = _entries[ei];
@@ -881,8 +913,9 @@ const SchedulePreview = (function () {
                 for (var di = 0; di < unit.docs.length; di++) {
                     var doc = unit.docs[di];
                     var ext = doc.path.split('.').pop().toUpperCase();
+                    var docTypeKey = getDocTypeKey(doc.label);
                     h += '<div class="sp-doc-row">';
-                    h += '<input type="checkbox" class="sp-doc-file-cb" data-doc-path="' + esc(doc.path) + '" data-doc-entry="' + ei + '" data-doc-unit="' + ei + '-' + ui + '" data-doc-folder="' + esc(entry.oduTag + " System/" + unit.tag + "/" + doc.folder) + '" checked>';
+                    h += '<input type="checkbox" class="sp-doc-file-cb" data-doc-path="' + esc(doc.path) + '" data-doc-entry="' + ei + '" data-doc-unit="' + ei + '-' + ui + '" data-doc-folder="' + esc(entry.oduTag + " System/" + unit.tag + "/" + doc.folder) + '" data-doc-type-key="' + esc(docTypeKey) + '" checked>';
                     h += '<span class="sp-doc-row-label">' + esc(doc.label) + '</span>';
                     h += '<span class="sp-doc-row-type">' + ext + '</span>';
                     h += '</div>';
@@ -891,8 +924,23 @@ const SchedulePreview = (function () {
             }
             h += '</div></div>';
         }
-        h += '</div></div>';
+        h += '</div>';
+
+        h += '</div>'; // sp-docs-body
+        h += '</div>';
         return h;
+    }
+
+    /** Map a doc label to a type key for the filter pane */
+    function getDocTypeKey(label) {
+        if (/^Submittal/i.test(label)) return "Submittals";
+        if (/^Engineering Manual/i.test(label)) return "Engineering Manuals";
+        if (/^Capacity Table/i.test(label)) return "Capacity Tables";
+        if (/^Installation Manual/i.test(label)) return "Installation Manuals";
+        if (/^Operation Manual/i.test(label)) return "Operation Manuals";
+        if (/^Revit/i.test(label)) return "Revit";
+        if (/^CAD/i.test(label)) return "CAD";
+        return label;
     }
 
     // -----------------------------------------------------------------------
@@ -907,6 +955,9 @@ const SchedulePreview = (function () {
             var checked = this.checked;
             var allCbs = _overlay.querySelectorAll(".sp-doc-file-cb, .sp-doc-card-checkbox, [data-doc-unit]");
             for (var i = 0; i < allCbs.length; i++) allCbs[i].checked = checked;
+            // Also sync doc type filter checkboxes
+            var typeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+            for (var j = 0; j < typeCbs.length; j++) typeCbs[j].checked = checked;
         });
 
         var toggles = _overlay.querySelectorAll("[data-doc-toggle]");
@@ -939,6 +990,17 @@ const SchedulePreview = (function () {
                 var unitKey = this.dataset.docUnit;
                 var fileCbs = _overlay.querySelectorAll('.sp-doc-file-cb[data-doc-unit="' + unitKey + '"]');
                 for (var i = 0; i < fileCbs.length; i++) fileCbs[i].checked = this.checked;
+            });
+        }
+
+        // Document type filter checkboxes
+        var docTypeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+        for (var dt = 0; dt < docTypeCbs.length; dt++) {
+            docTypeCbs[dt].addEventListener("change", function () {
+                var typeKey = this.dataset.docTypeKey;
+                var checked = this.checked;
+                var matchingCbs = _overlay.querySelectorAll('.sp-doc-file-cb[data-doc-type-key="' + typeKey + '"]');
+                for (var i = 0; i < matchingCbs.length; i++) matchingCbs[i].checked = checked;
             });
         }
     }

@@ -18,7 +18,6 @@ const Schedule = (function () {
     let _outdoorTbody = null;
     let _indoorWrapper = null;
     let _outdoorWrapper = null;
-    let _accessoriesNotes = null;
     let _section = null;
     let _emptyState = null;
 
@@ -29,7 +28,6 @@ const Schedule = (function () {
     let _mpsOutdoorTbody = null;
     let _mpsIndoorWrapper = null;
     let _mpsOutdoorWrapper = null;
-    let _mpsAccessoriesNotes = null;
     let _mpsSection = null;
     let _mpsEmptyState = null;
 
@@ -47,7 +45,6 @@ const Schedule = (function () {
         _outdoorTbody   = document.getElementById("outdoor-schedule-tbody");
         _indoorWrapper  = document.getElementById("indoor-schedule-wrapper");
         _outdoorWrapper = document.getElementById("outdoor-schedule-wrapper");
-        _accessoriesNotes = document.getElementById("accessories-notes");
         _section        = document.getElementById("schedule-section");
         _emptyState     = document.getElementById("schedule-empty");
 
@@ -56,7 +53,6 @@ const Schedule = (function () {
         _mpsOutdoorTbody   = document.getElementById("mps-outdoor-schedule-tbody");
         _mpsIndoorWrapper  = document.getElementById("mps-indoor-schedule-wrapper");
         _mpsOutdoorWrapper = document.getElementById("mps-outdoor-schedule-wrapper");
-        _mpsAccessoriesNotes = document.getElementById("mps-accessories-notes");
         _mpsSection        = document.getElementById("mps-schedule-section");
         _mpsEmptyState     = document.getElementById("mps-schedule-empty");
 
@@ -116,14 +112,12 @@ const Schedule = (function () {
         if (!systems || systems.length === 0) {
             _indoorWrapper.classList.add("hidden");
             _outdoorWrapper.classList.add("hidden");
-            _accessoriesNotes.classList.add("hidden");
             _emptyState.classList.remove("hidden");
             return;
         }
 
         _indoorWrapper.classList.remove("hidden");
         _outdoorWrapper.classList.remove("hidden");
-        _accessoriesNotes.classList.remove("hidden");
         _emptyState.classList.add("hidden");
 
         var indoorFragment = document.createDocumentFragment();
@@ -159,14 +153,12 @@ const Schedule = (function () {
         if (!systems || systems.length === 0) {
             _mpsIndoorWrapper.classList.add("hidden");
             _mpsOutdoorWrapper.classList.add("hidden");
-            _mpsAccessoriesNotes.classList.add("hidden");
             _mpsEmptyState.classList.remove("hidden");
             return;
         }
 
         _mpsIndoorWrapper.classList.remove("hidden");
         _mpsOutdoorWrapper.classList.remove("hidden");
-        _mpsAccessoriesNotes.classList.remove("hidden");
         _mpsEmptyState.classList.add("hidden");
 
         var indoorFragment = document.createDocumentFragment();
@@ -237,8 +229,6 @@ const Schedule = (function () {
                 tr.appendChild(actionTd);
             }
 
-            tr.appendChild(createCell(idu.symbol || "IDU-", "cell-editable cell-text"));
-            tr.appendChild(createCell(sys.outdoorUnit.symbol || "ODU-", "cell-odu-ref"));
             tr.appendChild(createCell(formatNum(idu.cfm), "cell-numeric"));
             tr.appendChild(createCell(formatNum(idu.coolingEdb), "cell-numeric"));
             tr.appendChild(createCell(formatNum(idu.coolingEwb), "cell-numeric"));
@@ -288,7 +278,6 @@ const Schedule = (function () {
         }
         tr.appendChild(actionTd);
 
-        tr.appendChild(createCell(odu.symbol || "ODU-", "cell-editable cell-text"));
         tr.appendChild(createCell(formatNum(odu.coolingAmbient), "cell-numeric"));
         tr.appendChild(createCell(formatNum(odu.heatingAmbient), "cell-numeric"));
         tr.appendChild(createCell(formatNum(odu.weight), "cell-numeric"));
@@ -341,8 +330,6 @@ const Schedule = (function () {
         actionTd.appendChild(btn);
         tr.appendChild(actionTd);
 
-        // TAG
-        tr.appendChild(createCell(idu.symbol || "AHU-", "cell-editable cell-text"));
         // MODEL
         tr.appendChild(createCell(idu.model || "", "cell-model"));
         // Supply Fan: Airflow, Motor HP, Motor Type
@@ -392,8 +379,6 @@ const Schedule = (function () {
         }
         tr.appendChild(actionTd);
 
-        // TAG
-        tr.appendChild(createCell(odu.symbol || "CU-", "cell-editable cell-text"));
         // MODEL
         tr.appendChild(createCell(odu.model || "", "cell-model"));
         // Heat Pump Heating Data: Ambient DB, Total Capacity, Efficiency

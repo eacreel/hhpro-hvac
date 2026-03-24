@@ -748,6 +748,8 @@
 
 /* System document cards */
 .sp-docs-list {
+    flex: 1;
+    min-width: 0;
     padding: var(--space-lg) var(--space-xl);
     display: flex;
     flex-direction: column;
@@ -888,6 +890,63 @@
     border-radius: var(--border-radius);
 }
 
+
+/* --------------------------------------------------------------------------
+   Document Type Filter Pane + Body Layout
+   -------------------------------------------------------------------------- */
+.sp-docs-body {
+    display: flex;
+    gap: 0;
+}
+
+.sp-docs-type-filter {
+    flex-shrink: 0;
+    width: 220px;
+    border-right: 1px solid var(--color-border);
+    background-color: var(--color-surface-alt);
+}
+
+.sp-docs-type-filter-header {
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--color-border-light);
+    background-color: var(--color-surface);
+}
+
+.sp-docs-type-filter-list {
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.sp-docs-type-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-fast);
+}
+
+.sp-docs-type-option:hover {
+    background-color: var(--color-brand-lighter);
+}
+
+.sp-docs-type-option input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--color-brand);
+    flex-shrink: 0;
+}
 
 /* --------------------------------------------------------------------------
    Overlay
@@ -1788,6 +1847,10 @@ body.preview-open {
     .sp-col-panel { right: var(--space-md); width: 220px; }
     .sp-bulk-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-sm); }
     .sp-col-action { width: 110px; min-width: 110px; max-width: 110px; }
+
+    .sp-docs-body { flex-direction: column; }
+    .sp-docs-type-filter { width: 100%; border-right: none; border-bottom: 1px solid var(--color-border); }
+    .sp-docs-type-filter-list { flex-direction: row; flex-wrap: wrap; gap: var(--space-sm); }
 
     .floating-sidebar-btn {
         padding: var(--space-sm) var(--space-md);

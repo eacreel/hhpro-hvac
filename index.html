@@ -156,7 +156,7 @@
                         <table id="indoor-schedule-table" class="schedule-table">
                             <thead>
                                 <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th><th class="idu-col-symbol" rowspan="2">SYMBOL</th><th class="idu-col-odu-symbol" rowspan="2">SYMBOL<br>(OUTDOOR UNIT)</th><th class="idu-col-cfm" rowspan="2">CFM</th><th class="idu-col-cooling" colspan="4">COOLING CAPACITY</th><th class="idu-col-heating" colspan="2">HEAT PUMP HEATING CAPACITY</th><th class="idu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="idu-col-type" rowspan="2">INDOOR UNIT<br>TYPE</th><th class="idu-col-elec" colspan="3">ELECTRICAL</th><th class="idu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th>
+                                    <th class="col-action" rowspan="2"></th><th class="idu-col-cfm" rowspan="2">CFM</th><th class="idu-col-cooling" colspan="4">COOLING CAPACITY</th><th class="idu-col-heating" colspan="2">HEAT PUMP HEATING CAPACITY</th><th class="idu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="idu-col-type" rowspan="2">INDOOR UNIT<br>TYPE</th><th class="idu-col-elec" colspan="3">ELECTRICAL</th><th class="idu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th>
                                 </tr>
                                 <tr class="schedule-header-row header-row-2">
                                     <th class="idu-col-edb">EDB</th><th class="idu-col-ewb">EWB</th><th class="idu-col-total-cool">TOTAL<br>CAPACITY</th><th class="idu-col-sensible">SENSIBLE<br>CAPACITY</th><th class="idu-col-heat-edb">EDB</th><th class="idu-col-heat-total">TOTAL<br>CAPACITY</th><th class="idu-col-voltage">Voltage</th><th class="idu-col-mca">MCA</th><th class="idu-col-mop">MOP</th>
@@ -170,7 +170,7 @@
                         <table id="outdoor-schedule-table" class="schedule-table">
                             <thead>
                                 <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th><th class="odu-col-symbol" rowspan="2">SYMBOL</th><th class="odu-col-cool-amb" rowspan="2">OA AMBIENT<br>(COOLING)</th><th class="odu-col-heat-amb" rowspan="2">OA AMBIENT<br>(HEATING)</th><th class="odu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="odu-col-seer" rowspan="2">SEER2/EER2/<br>HSPF2</th><th class="odu-col-elec" colspan="3">ELECTRICAL</th><th class="odu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th><th class="odu-col-refrig" rowspan="2">REFRIGERANT</th><th class="odu-col-lineset" rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>
+                                    <th class="col-action" rowspan="2"></th><th class="odu-col-cool-amb" rowspan="2">OA AMBIENT<br>(COOLING)</th><th class="odu-col-heat-amb" rowspan="2">OA AMBIENT<br>(HEATING)</th><th class="odu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="odu-col-seer" rowspan="2">SEER2/EER2/<br>HSPF2</th><th class="odu-col-elec" colspan="3">ELECTRICAL</th><th class="odu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th><th class="odu-col-refrig" rowspan="2">REFRIGERANT</th><th class="odu-col-lineset" rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>
                                 </tr>
                                 <tr class="schedule-header-row header-row-2">
                                     <th class="odu-col-voltage">Voltage</th><th class="odu-col-mca">MCA</th><th class="odu-col-mop">MOP</th>
@@ -178,10 +178,6 @@
                             </thead>
                             <tbody id="outdoor-schedule-tbody"></tbody>
                         </table>
-                    </div>
-                    <div id="accessories-notes">
-                        <div id="accessories-indoor"><h3 class="accessories-heading">NOTES (INDOOR UNIT):</h3><div id="accessories-indoor-list" class="accessories-list"></div></div>
-                        <div id="accessories-outdoor"><h3 class="accessories-heading">NOTES (OUTDOOR UNIT):</h3><div id="accessories-outdoor-list" class="accessories-list"></div></div>
                     </div>
                     <div id="schedule-empty" class="hidden"><p id="empty-message">Select filters above to view available systems.</p></div>
                 </section>
@@ -222,7 +218,6 @@
                             <thead>
                                 <tr class="schedule-header-row header-row-1">
                                     <th class="col-action" rowspan="2"></th>
-                                    <th class="mps-idu-col-tag" rowspan="2">TAG</th>
                                     <th class="mps-idu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
                                     <th class="mps-idu-col-fan" colspan="3">SUPPLY FAN</th>
                                     <th class="mps-idu-col-cool" colspan="5">COOLING</th>
@@ -256,7 +251,6 @@
                             <thead>
                                 <tr class="schedule-header-row header-row-1">
                                     <th class="col-action" rowspan="2"></th>
-                                    <th class="mps-odu-col-tag" rowspan="2">TAG</th>
                                     <th class="mps-odu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
                                     <th class="mps-odu-col-heat" colspan="3">HEAT PUMP HEATING DATA</th>
                                     <th class="mps-odu-col-elec" colspan="3">ELECTRICAL DATA</th>
@@ -277,10 +271,6 @@
                             </thead>
                             <tbody id="mps-outdoor-schedule-tbody"></tbody>
                         </table>
-                    </div>
-                    <div id="mps-accessories-notes" class="accessories-notes-common">
-                        <div id="mps-accessories-indoor"><h3 class="accessories-heading">NOTES (INDOOR UNIT):</h3><div id="mps-accessories-indoor-list" class="accessories-list"></div></div>
-                        <div id="mps-accessories-outdoor"><h3 class="accessories-heading">NOTES (OUTDOOR UNIT):</h3><div id="mps-accessories-outdoor-list" class="accessories-list"></div></div>
                     </div>
                     <div id="mps-schedule-empty" class="hidden"><p class="empty-message-text">Select filters above to view available systems.</p></div>
                 </section>
