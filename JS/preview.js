@@ -1167,7 +1167,7 @@ const SchedulePreview = (function () {
             color: PDFLib.rgb(0.6, 0.6, 0.6),
         });
 
-        // TOC entries with dot leaders
+        // TOC entries with dot leaders and clickable links
         var tocY = tocHeight - 100;
         var tocFontSize = 12;
         var dotLeaderChar = ".";
@@ -1175,6 +1175,7 @@ const SchedulePreview = (function () {
         var leftMargin = 72;
         var rightMargin = tocWidth - 72;
         var pageNumAreaWidth = 30;
+        var tocLinkData = []; // collect link rectangles and target pages
 
         for (var ti = 0; ti < tocEntries.length; ti++) {
             if (tocY < 60) break; // Safety: don't go below page
@@ -1219,7 +1220,39 @@ const SchedulePreview = (function () {
                 dotX += dotSpacing;
             }
 
+            // Save link rect data: target page index is startPage + 1 (shifted by TOC insertion)
+            tocLinkData.push({
+                rect: [leftMargin, tocY - 4, rightMargin, tocY + tocFontSize + 2],
+                targetPageIndex: tocEntries[ti].startPage + 1
+            });
+
             tocY -= 22;
+        }
+
+        // Add clickable link annotations to TOC page
+        var context = mergedPdf.context;
+        var linkAnnotRefs = [];
+        for (var li = 0; li < tocLinkData.length; li++) {
+            var ld = tocLinkData[li];
+            var targetPageRef = mergedPdf.getPage(ld.targetPageIndex).ref;
+            var linkDict = context.obj({
+                Type: 'Annot',
+                Subtype: 'Link',
+                Rect: ld.rect,
+                Border: [0, 0, 0],
+                C: [0, 0, 0],
+                Dest: [targetPageRef, 'XYZ', null, null, null],
+            });
+            var linkRef = context.register(linkDict);
+            linkAnnotRefs.push(linkRef);
+        }
+        if (linkAnnotRefs.length > 0) {
+            var existingAnnots = tocPage.node.lookup(PDFLib.PDFName.of('Annots'));
+            if (existingAnnots && existingAnnots instanceof PDFLib.PDFArray) {
+                for (var la = 0; la < linkAnnotRefs.length; la++) existingAnnots.push(linkAnnotRefs[la]);
+            } else {
+                tocPage.node.set(PDFLib.PDFName.of('Annots'), context.obj(linkAnnotRefs));
+            }
         }
 
         // TOC page number ("Page 1 of X")
