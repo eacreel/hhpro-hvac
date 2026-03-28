@@ -1,7 +1,7 @@
 /* ==========================================================================
    app.js — Application entry point. Initializes all modules and wires
    the data flow via EventBus: DataLoader → Filters → Schedule → Project → Export.
-   Handles product tab switching between Mini Splits and Multi Position.
+   Handles product tab switching between Mini Splits, Multi Position, and Gas Packs.
    Manages loading states for data load and product switching.
    ========================================================================== */
 
@@ -47,6 +47,7 @@
         }
         // Pre-load other products (non-blocking — failures are OK)
         await DataLoader.loadProduct("multi-position");
+        await DataLoader.loadProduct("gas-packs");
 
         // ---- 2. Subscribe to EventBus events ----
         wireEventBus();
@@ -106,33 +107,21 @@
     // Loading State Management
     // -----------------------------------------------------------------------
 
-    /**
-     * Show the full-page loading overlay with a message.
-     */
     function showLoading(message) {
         if (!_loadingOverlay) return;
         if (_loadingMessage) _loadingMessage.textContent = message || "Loading…";
         _loadingOverlay.classList.remove("loading-hidden");
     }
 
-    /**
-     * Hide the full-page loading overlay with a fade-out.
-     */
     function hideLoading() {
         if (!_loadingOverlay) return;
         _loadingOverlay.classList.add("loading-hidden");
     }
 
-    /**
-     * Show the slim loading bar below the tab bar (for product switching).
-     */
     function showTabLoading() {
         if (_tabLoadingBar) _tabLoadingBar.classList.add("active");
     }
 
-    /**
-     * Hide the slim loading bar below the tab bar.
-     */
     function hideTabLoading() {
         if (_tabLoadingBar) _tabLoadingBar.classList.remove("active");
     }
@@ -159,7 +148,6 @@
     }
 
     async function switchProduct(productKey) {
-        // Show tab loading indicator
         showTabLoading();
 
         EventBus.emit("product:switching", productKey);
@@ -203,7 +191,6 @@
         // Render with new data
         performFilterAndRender();
 
-        // Hide tab loading indicator
         hideTabLoading();
 
         EventBus.emit("product:switched", productKey);
@@ -226,23 +213,14 @@
     // Filter → Schedule Flow
     // -----------------------------------------------------------------------
 
-    /**
-     * Core render pipeline:
-     *   1. Read filter state
-     *   2. Filter systems through DataLoader
-     *   3. Render filtered results into the schedule table
-     *   4. Update result count display
-     */
     function performFilterAndRender() {
         var filterState = Filters.getState();
         var allSystems = DataLoader.getSystems();
         var filtered = DataLoader.filterSystems(filterState);
         var projectIds = Project.getProjectIds();
 
-        // Render schedule
         Schedule.render(filtered, projectIds);
 
-        // Update result count
         Filters.setResultCount(filtered.length, allSystems.length);
     }
 

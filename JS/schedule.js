@@ -1,6 +1,6 @@
 /* ==========================================================================
-   schedule.js — Render filtered systems into split indoor/outdoor tables.
-   Supports: mini-splits and multi-position product types.
+   schedule.js — Render filtered systems into schedule tables.
+   Supports: mini-splits, multi-position, and gas-packs product types.
    Emits system:add via EventBus when user clicks "+".
    ========================================================================== */
 
@@ -31,6 +31,14 @@ const Schedule = (function () {
     let _mpsSection = null;
     let _mpsEmptyState = null;
 
+    // -----------------------------------------------------------------------
+    // DOM References — Gas Packs (single table)
+    // -----------------------------------------------------------------------
+    let _gpTbody = null;
+    let _gpWrapper = null;
+    let _gpSection = null;
+    let _gpEmptyState = null;
+
     // Track current hover for cross-table sync
     let _currentHoverSystemId = null;
 
@@ -56,6 +64,12 @@ const Schedule = (function () {
         _mpsSection        = document.getElementById("mps-schedule-section");
         _mpsEmptyState     = document.getElementById("mps-schedule-empty");
 
+        // Gas Packs DOM
+        _gpTbody      = document.getElementById("gp-schedule-tbody");
+        _gpWrapper    = document.getElementById("gp-schedule-wrapper");
+        _gpSection    = document.getElementById("gp-schedule-section");
+        _gpEmptyState = document.getElementById("gp-schedule-empty");
+
         // Bind cross-table hover events — Mini Splits
         if (_indoorTbody) {
             _indoorTbody.addEventListener("mouseover", handleRowHover);
@@ -76,6 +90,12 @@ const Schedule = (function () {
             _mpsOutdoorTbody.addEventListener("mouseout", handleRowHoverOut);
         }
 
+        // Bind hover events — Gas Packs
+        if (_gpTbody) {
+            _gpTbody.addEventListener("mouseover", handleRowHover);
+            _gpTbody.addEventListener("mouseout", handleRowHoverOut);
+        }
+
         console.log("[Schedule] Initialized");
     }
 
@@ -94,6 +114,8 @@ const Schedule = (function () {
     function render(systems, projectIds) {
         if (_activeProduct === "multi-position") {
             renderMps(systems, projectIds);
+        } else if (_activeProduct === "gas-packs") {
+            renderGasPacks(systems, projectIds);
         } else {
             renderMiniSplits(systems, projectIds);
         }
@@ -174,6 +196,35 @@ const Schedule = (function () {
 
         _mpsIndoorTbody.appendChild(indoorFragment);
         _mpsOutdoorTbody.appendChild(outdoorFragment);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Render — Gas Packs (single table)
+    // -----------------------------------------------------------------------
+    function renderGasPacks(systems, projectIds) {
+        if (!_gpTbody) return;
+
+        _gpTbody.innerHTML = "";
+
+        if (!systems || systems.length === 0) {
+            _gpWrapper.classList.add("hidden");
+            _gpEmptyState.classList.remove("hidden");
+            return;
+        }
+
+        _gpWrapper.classList.remove("hidden");
+        _gpEmptyState.classList.add("hidden");
+
+        var fragment = document.createDocumentFragment();
+
+        for (var s = 0; s < systems.length; s++) {
+            var sys = systems[s];
+            var isInProject = projectIds && projectIds.has(sys.id);
+            fragment.appendChild(buildGpRow(sys, isInProject));
+        }
+
+        _gpTbody.appendChild(fragment);
     }
 
 
@@ -294,7 +345,7 @@ const Schedule = (function () {
 
 
     // -----------------------------------------------------------------------
-    // Build Indoor Row — Multi Position Splits (one row per system)
+    // Build Indoor Row — Multi Position Splits
     // -----------------------------------------------------------------------
     function buildMpsIndoorRow(sys, isInProject) {
         var tr = document.createElement("tr");
@@ -303,7 +354,6 @@ const Schedule = (function () {
 
         var idu = sys.indoorUnits[0];
 
-        // Action column
         var actionTd = createCell("", "cell-action");
         var pdfBtn = document.createElement("button");
         pdfBtn.type = "button";
@@ -330,28 +380,21 @@ const Schedule = (function () {
         actionTd.appendChild(btn);
         tr.appendChild(actionTd);
 
-        // MODEL
         tr.appendChild(createCell(idu.model || "", "cell-model"));
-        // Supply Fan: Airflow, Motor HP, Motor Type
         tr.appendChild(createCell(formatNum(idu.airflow), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.motorHp), "cell-numeric"));
         tr.appendChild(createCell(idu.motorType || "", "cell-text"));
-        // Cooling: EAT DB, EAT WB, LAT DB, Total Capacity, Sensible Capacity
         tr.appendChild(createCell(formatNum(idu.coolingEatDb), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.coolingEatWb), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.coolingLatDb), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.coolingTotal), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.coolingSensible), "cell-numeric"));
-        // Heat Pump Total Capacity
         tr.appendChild(createCell(formatNum(idu.heatPumpTotalCapacity), "cell-numeric"));
-        // Aux Electric Heat: kW, Temp Rise
         tr.appendChild(createCell(idu.auxHeatKw || "", "cell-text"));
         tr.appendChild(createCell(idu.auxHeatTempRise || "", "cell-text"));
-        // Electrical: Voltage, MCA, MOP
         tr.appendChild(createCell(idu.voltage || "", "cell-text"));
         tr.appendChild(createCell(formatNum(idu.mca), "cell-numeric"));
         tr.appendChild(createCell(formatNum(idu.mop), "cell-numeric"));
-        // Weight
         tr.appendChild(createCell(formatNum(idu.weight), "cell-numeric"));
 
         return tr;
@@ -368,7 +411,6 @@ const Schedule = (function () {
 
         var odu = sys.outdoorUnit;
 
-        // Action column
         var actionTd = createCell("", "cell-action");
         if (isInProject) {
             var indicator = document.createElement("span");
@@ -379,26 +421,83 @@ const Schedule = (function () {
         }
         tr.appendChild(actionTd);
 
-        // MODEL
         tr.appendChild(createCell(odu.model || "", "cell-model"));
-        // Heat Pump Heating Data: Ambient DB, Total Capacity, Efficiency
         tr.appendChild(createCell(formatNum(odu.heatingAmbient), "cell-numeric"));
         tr.appendChild(createCell(formatNum(odu.heatingTotal), "cell-numeric"));
         tr.appendChild(createCell(odu.heatingEfficiency || "", "cell-text"));
-        // Electrical: Voltage, MCA, MOP
         tr.appendChild(createCell(odu.voltage || "", "cell-text"));
         tr.appendChild(createCell(formatNum(odu.mca), "cell-numeric"));
         tr.appendChild(createCell(formatNum(odu.mop), "cell-numeric"));
-        // Outdoor Ambient (Cooling)
         tr.appendChild(createCell(formatNum(odu.coolingAmbient), "cell-numeric"));
-        // Refrigerant
         tr.appendChild(createCell(odu.refrigerant || "", "cell-text"));
-        // Efficiency (SEER2/EER2)
         tr.appendChild(createCell(odu.efficiency || "", "cell-text"));
-        // Weight
         tr.appendChild(createCell(formatNum(odu.weight), "cell-numeric"));
-        // Compressor Stages
         tr.appendChild(createCell(odu.compressorStages || "", "cell-text"));
+
+        return tr;
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Build Row — Gas Packs (one row per unit, single table)
+    // -----------------------------------------------------------------------
+    function buildGpRow(sys, isInProject) {
+        var tr = document.createElement("tr");
+        tr.className = "schedule-row system-first-row system-last-row";
+        tr.dataset.systemId = sys.id;
+
+        var s = sys.schedule;
+
+        // Action column
+        var actionTd = createCell("", "cell-action");
+        var pdfBtn = document.createElement("button");
+        pdfBtn.type = "button";
+        pdfBtn.className = "btn-view-pdf";
+        pdfBtn.dataset.systemId = sys.id;
+        pdfBtn.textContent = "PDF";
+        pdfBtn.title = "View submittal PDF";
+        pdfBtn.addEventListener("click", handleViewPdf);
+        actionTd.appendChild(pdfBtn);
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn-add-system";
+        btn.dataset.systemId = sys.id;
+        btn.title = "Add to project";
+        if (isInProject) {
+            btn.classList.add("added");
+            btn.innerHTML = checkIconSvg();
+            btn.title = "In project — click to add again";
+        } else {
+            btn.innerHTML = plusIconSvg();
+        }
+        btn.addEventListener("click", handleAddClick);
+        actionTd.appendChild(btn);
+        tr.appendChild(actionTd);
+
+        // Data columns matching the HTML header order
+        tr.appendChild(createCell(s.model || "", "cell-model"));
+        tr.appendChild(createCell(formatNum(s.nomTons), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.cfm), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.esp), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.tesp), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.totalCapacity), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.sensibleCapacity), "cell-numeric"));
+        tr.appendChild(createCell(s.efficiency || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(s.edb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.ewb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.ldb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.lwb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.inputMbh), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.outputMbh), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.heatingEat), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.heatingLat), "cell-numeric"));
+        tr.appendChild(createCell(s.hgrh || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(s.coolingStages), "cell-numeric"));
+        tr.appendChild(createCell(s.voltPh || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(s.indoorMotorHp), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.mca), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(s.mocp), "cell-numeric"));
 
         return tr;
     }
@@ -462,8 +561,7 @@ const Schedule = (function () {
         var related = e.relatedTarget;
 
         if (related) {
-            // Check all possible tbodies
-            var tbodies = [_indoorTbody, _outdoorTbody, _mpsIndoorTbody, _mpsOutdoorTbody];
+            var tbodies = [_indoorTbody, _outdoorTbody, _mpsIndoorTbody, _mpsOutdoorTbody, _gpTbody];
             for (var i = 0; i < tbodies.length; i++) {
                 if (tbodies[i] && tbodies[i].contains(related)) return;
             }
@@ -475,10 +573,14 @@ const Schedule = (function () {
     function applyHoverToSystem(sysId) {
         var selector = 'tr[data-system-id="' + sysId + '"]';
 
-        // Apply across all active tbodies
-        var tbodies = _activeProduct === "multi-position"
-            ? [_mpsIndoorTbody, _mpsOutdoorTbody]
-            : [_indoorTbody, _outdoorTbody];
+        var tbodies;
+        if (_activeProduct === "multi-position") {
+            tbodies = [_mpsIndoorTbody, _mpsOutdoorTbody];
+        } else if (_activeProduct === "gas-packs") {
+            tbodies = [_gpTbody];
+        } else {
+            tbodies = [_indoorTbody, _outdoorTbody];
+        }
 
         for (var t = 0; t < tbodies.length; t++) {
             if (!tbodies[t]) continue;
@@ -515,22 +617,23 @@ const Schedule = (function () {
         var d = sys.docs;
         var pdfs = [];
         var seen = {};
+        var assetBase = DataLoader.getAssetBase(sys.productKey);
 
         function addPdf(path) {
             if (!path || seen[path]) return;
-            // Only add PDF paths (not ZIP)
             if (!path.toLowerCase().endsWith(".pdf")) return;
             seen[path] = true;
             pdfs.push(path);
         }
 
-        if (sys.productKey === "multi-position") {
-            // MPS: flat doc structure
+        if (sys.productKey === "gas-packs") {
+            // Gas Packs: flat doc structure — paths are relative, prepend asset base
+            if (d.submittal) addPdf(assetBase + d.submittal);
+        } else if (sys.productKey === "multi-position") {
             addPdf(d.submittalSystem);
             addPdf(d.submittalOutdoor);
             addPdf(d.submittalIndoor);
         } else {
-            // Mini Splits: nested doc structure
             addPdf(d.submittalSystem);
             addPdf(d.submittalOutdoor);
             if (d.indoorDocs) {
@@ -569,12 +672,11 @@ const Schedule = (function () {
             updateOutdoorIndicator(systemId, true);
         }
 
-        // Emit via EventBus instead of calling a callback
         EventBus.emit("system:add", systemId);
     }
 
     function updateOutdoorIndicator(systemId, added) {
-        // Check both mini-splits and MPS outdoor tbodies
+        // Only applies to mini-splits and MPS (gas packs has no separate outdoor table)
         var tbodies = [_outdoorTbody, _mpsOutdoorTbody];
 
         for (var t = 0; t < tbodies.length; t++) {
@@ -608,9 +710,9 @@ const Schedule = (function () {
     // Update Add Buttons
     // -----------------------------------------------------------------------
     function updateAddButtons(projectIds) {
-        // Update both product tables
         updateAddButtonsForTbody(_indoorTbody, _outdoorTbody, projectIds);
         updateAddButtonsForTbody(_mpsIndoorTbody, _mpsOutdoorTbody, projectIds);
+        updateAddButtonsForSingleTbody(_gpTbody, projectIds);
     }
 
     function updateAddButtonsForTbody(indoorTbody, outdoorTbody, projectIds) {
@@ -642,12 +744,41 @@ const Schedule = (function () {
         }
     }
 
+    function updateAddButtonsForSingleTbody(tbody, projectIds) {
+        if (!tbody) return;
+
+        var buttons = tbody.querySelectorAll(".btn-add-system");
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var sysId = btn.dataset.systemId;
+
+            if (projectIds.has(sysId)) {
+                btn.classList.add("added");
+                btn.innerHTML = checkIconSvg();
+                btn.title = "In project — click to add again";
+            } else {
+                btn.classList.remove("added");
+                btn.innerHTML = plusIconSvg();
+                btn.title = "Add to project";
+            }
+            btn.removeEventListener("click", handleAddClick);
+            btn.addEventListener("click", handleAddClick);
+        }
+    }
+
 
     // -----------------------------------------------------------------------
     // Scroll to Top
     // -----------------------------------------------------------------------
     function scrollToTop() {
-        var target = _activeProduct === "multi-position" ? _mpsSection : _section;
+        var target;
+        if (_activeProduct === "multi-position") {
+            target = _mpsSection;
+        } else if (_activeProduct === "gas-packs") {
+            target = _gpSection;
+        } else {
+            target = _section;
+        }
         if (target) {
             target.scrollIntoView({ behavior: "smooth", block: "start" });
         }

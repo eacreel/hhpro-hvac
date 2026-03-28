@@ -1,14 +1,15 @@
 /* ==========================================================================
    schedule.css — Split indoor/outdoor schedule tables matching the
    PDF/Excel template layout, plus accessories notes section.
-   Supports both Mini Split and Multi Position Split column layouts.
+   Supports Mini Split, Multi Position Split, and Gas Pack column layouts.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    Schedule Section Wrapper  (contains both tables + accessories)
    -------------------------------------------------------------------------- */
 #schedule-section,
-#mps-schedule-section {
+#mps-schedule-section,
+#gp-schedule-section {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
@@ -21,7 +22,8 @@
    Schedule Toolbar  (title bar)
    -------------------------------------------------------------------------- */
 #schedule-toolbar,
-#mps-schedule-toolbar {
+#mps-schedule-toolbar,
+#gp-schedule-toolbar {
     display: flex;
     align-items: baseline;
     gap: var(--space-md);
@@ -73,7 +75,7 @@
 
 
 /* --------------------------------------------------------------------------
-   Section Labels  ("INDOOR UNIT" / "OUTDOOR UNIT" bars)
+   Section Labels  ("INDOOR UNIT" / "OUTDOOR UNIT" / "PACKAGED ROOFTOP UNITS" bars)
    -------------------------------------------------------------------------- */
 .schedule-section-label {
     background: linear-gradient(135deg, var(--color-brand-dark) 0%, #004E8C 100%);
@@ -111,6 +113,10 @@
 
 #mps-outdoor-schedule-table {
     min-width: 1050px;
+}
+
+#gp-schedule-table {
+    min-width: 1700px;
 }
 
 
@@ -200,6 +206,37 @@
 .mps-odu-col-efficiency  { width: 10.0%; }
 .mps-odu-col-weight      { width: 4.2%; }
 .mps-odu-col-compressor  { width: 6.2%; }
+
+
+/* --------------------------------------------------------------------------
+   Gas Packs — Packaged Rooftop Unit Column Widths
+   -------------------------------------------------------------------------- */
+.gp-col-model          { width: 7.0%; }
+.gp-col-tons           { width: 3.0%; }
+.gp-col-fan-group      { /* colspan 3 */ }
+.gp-col-cfm            { width: 3.4%; }
+.gp-col-esp            { width: 3.0%; }
+.gp-col-tesp           { width: 3.0%; }
+.gp-col-cool-group     { /* colspan 7 */ }
+.gp-col-total-cap      { width: 5.4%; }
+.gp-col-sens-cap       { width: 5.0%; }
+.gp-col-efficiency     { width: 8.5%; }
+.gp-col-edb            { width: 2.8%; }
+.gp-col-ewb            { width: 2.8%; }
+.gp-col-ldb            { width: 2.8%; }
+.gp-col-lwb            { width: 2.8%; }
+.gp-col-heat-group     { /* colspan 4 */ }
+.gp-col-input          { width: 3.6%; }
+.gp-col-output         { width: 3.6%; }
+.gp-col-eat            { width: 2.8%; }
+.gp-col-lat            { width: 2.8%; }
+.gp-col-hgrh           { width: 3.0%; }
+.gp-col-stages         { width: 3.4%; }
+.gp-col-elec-group     { /* colspan 4 */ }
+.gp-col-voltage        { width: 3.6%; }
+.gp-col-motor-hp       { width: 3.6%; }
+.gp-col-mca            { width: 3.0%; }
+.gp-col-mocp           { width: 3.0%; }
 
 
 /* --------------------------------------------------------------------------
@@ -554,7 +591,8 @@
    Schedule Empty State
    -------------------------------------------------------------------------- */
 #schedule-empty,
-#mps-schedule-empty {
+#mps-schedule-empty,
+#gp-schedule-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -566,7 +604,8 @@
 
 /* Empty state icon — SVG illustration placeholder via CSS */
 #schedule-empty::before,
-#mps-schedule-empty::before {
+#mps-schedule-empty::before,
+#gp-schedule-empty::before {
     content: '';
     display: block;
     width: 56px;
@@ -591,7 +630,8 @@
    Schedule Loading State
    -------------------------------------------------------------------------- */
 #schedule-section.loading .schedule-table-wrapper,
-#mps-schedule-section.loading .schedule-table-wrapper {
+#mps-schedule-section.loading .schedule-table-wrapper,
+#gp-schedule-section.loading .schedule-table-wrapper {
     opacity: 0.4;
     pointer-events: none;
 }
@@ -610,7 +650,8 @@
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     #schedule-toolbar,
-    #mps-schedule-toolbar {
+    #mps-schedule-toolbar,
+    #gp-schedule-toolbar {
         padding: var(--space-sm) var(--space-lg);
     }
 

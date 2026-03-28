@@ -1,7 +1,8 @@
 /* ==========================================================================
    filters.js — Populate dropdowns, cascading dependent filters,
    dynamic indoor visibility, emit changes via EventBus.
-   Supports: mini-splits (complex cascading) and multi-position (flat).
+   Supports: mini-splits (complex cascading), multi-position (flat),
+   and gas-packs (flat).
    ========================================================================== */
 
 const Filters = (function () {
@@ -45,6 +46,21 @@ const Filters = (function () {
         fanType:          null,
         clearBtn:         null,
         resultCount:      null,
+    };
+
+
+    // -----------------------------------------------------------------------
+    // DOM References — Gas Packs
+    // -----------------------------------------------------------------------
+    const gp = {
+        size:           null,
+        electrical:     null,
+        efficiency:     null,
+        coolingStages:  null,
+        gasHeat:        null,
+        hgrh:           null,
+        clearBtn:       null,
+        resultCount:    null,
     };
 
 
@@ -102,6 +118,25 @@ const Filters = (function () {
         if (mps.fanType) mps.fanType.addEventListener("change", handleFilterChange);
         if (mps.clearBtn) mps.clearBtn.addEventListener("click", clearAll);
 
+        // ---- Gas Packs DOM ----
+        gp.size          = document.getElementById("gp-filter-size");
+        gp.electrical    = document.getElementById("gp-filter-electrical");
+        gp.efficiency    = document.getElementById("gp-filter-efficiency");
+        gp.coolingStages = document.getElementById("gp-filter-cooling-stages");
+        gp.gasHeat       = document.getElementById("gp-filter-gas-heat");
+        gp.hgrh          = document.getElementById("gp-filter-hgrh");
+        gp.clearBtn      = document.getElementById("gp-btn-clear-filters");
+        gp.resultCount   = document.getElementById("gp-filter-result-count");
+
+        // Gas Packs events
+        if (gp.size) gp.size.addEventListener("change", handleFilterChange);
+        if (gp.electrical) gp.electrical.addEventListener("change", handleFilterChange);
+        if (gp.efficiency) gp.efficiency.addEventListener("change", handleFilterChange);
+        if (gp.coolingStages) gp.coolingStages.addEventListener("change", handleFilterChange);
+        if (gp.gasHeat) gp.gasHeat.addEventListener("change", handleFilterChange);
+        if (gp.hgrh) gp.hgrh.addEventListener("change", handleFilterChange);
+        if (gp.clearBtn) gp.clearBtn.addEventListener("click", clearAll);
+
         // Initial population (mini-splits is active at boot)
         populateAllDropdowns();
         updateIndoorVisibility();
@@ -118,6 +153,8 @@ const Filters = (function () {
 
         if (productKey === "multi-position") {
             populateMpsDropdowns();
+        } else if (productKey === "gas-packs") {
+            populateGpDropdowns();
         } else {
             populateAllDropdowns();
             updateIndoorVisibility();
@@ -161,7 +198,6 @@ const Filters = (function () {
         populateSelect(mps.nominalEfficiency, opts.nominalEfficiencies || [], formatIdentity);
         populateSelect(mps.electrical, opts.electricalTypes || [], formatIdentity);
 
-        // Electric Heat kW: add "None" option at the top, then numeric values
         var heatKwValues = opts.electricHeatKw || [];
         populateSelectCustom(mps.electricHeatKw, heatKwValues, function (val) {
             return val + " kW";
@@ -169,6 +205,22 @@ const Filters = (function () {
 
         populateSelect(mps.compressorStages, opts.compressorStages || [], formatIdentity);
         populateSelect(mps.fanType, opts.fanTypes || [], formatIdentity);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Populate Dropdowns — Gas Packs
+    // -----------------------------------------------------------------------
+    function populateGpDropdowns() {
+        var opts = DataLoader.getFilterOptions();
+        if (!opts) return;
+
+        populateSelect(gp.size, opts.size || [], formatTon);
+        populateSelect(gp.electrical, opts.electrical || [], formatIdentity);
+        populateSelect(gp.efficiency, opts.efficiency || [], formatIdentity);
+        populateSelect(gp.coolingStages, opts.coolingStages || [], formatIdentity);
+        populateSelect(gp.gasHeat, opts.gasHeat || [], formatIdentity);
+        populateSelect(gp.hgrh, opts.hgrh || [], formatIdentity);
     }
 
 
@@ -182,19 +234,15 @@ const Filters = (function () {
         var state = getStateMiniSplits();
         var numIndoorVal = state.numIndoor ? parseInt(state.numIndoor, 10) : 0;
 
-        // System Type
         var stOptions = getValidValues(allSystems, state, "systemType", function (sys) { return sys.filters.systemType; });
         repopulateSelect(ms.systemType, stOptions, formatIdentity, state.systemType);
 
-        // Electrical Type
         var etOptions = getValidValues(allSystems, state, "electricalType", function (sys) { return sys.filters.electricalType; });
         repopulateSelect(ms.electricalType, etOptions, formatIdentity, state.electricalType);
 
-        // Outdoor Size
         var osOptions = getValidValues(allSystems, state, "outdoorSize", function (sys) { return sys.filters.outdoorSize; });
         repopulateSelect(ms.outdoorSize, osOptions, formatTon, state.outdoorSize);
 
-        // Number of Indoor Units
         var niOptions = getValidValues(allSystems, state, "numIndoor", function (sys) { return sys.filters.numIndoor; });
         repopulateSelect(ms.numIndoor, niOptions, formatString, state.numIndoor);
 
@@ -232,7 +280,6 @@ const Filters = (function () {
         var allSystems = DataLoader.getSystems();
         var state = getStateMps();
 
-        // For each filter, find valid values given all other active filters
         var fields = [
             { key: "size",             el: mps.size,             extract: function (s) { return s.filters.size; },             fmt: formatTon },
             { key: "systemType",       el: mps.systemType,       extract: function (s) { return s.filters.systemType; },       fmt: formatIdentity },
@@ -248,20 +295,15 @@ const Filters = (function () {
             var validValues = getMpsValidValues(allSystems, state, field.key, field.extract);
 
             if (field.key === "electricHeatKw") {
-                // Special handling: add "None" option, and handle NONE current value
                 repopulateSelectWithNone(field.el, validValues, field.fmt, state[field.key], allSystems, state);
             } else {
                 repopulateSelect(field.el, validValues, field.fmt, state[field.key]);
             }
 
-            // Re-read state after each repopulate
             state = getStateMps();
         }
     }
 
-    /**
-     * Get valid values for an MPS filter by applying all OTHER active filters.
-     */
     function getMpsValidValues(allSystems, state, excludeKey, extractor) {
         var modified = {
             size:              state.size,
@@ -285,8 +327,6 @@ const Filters = (function () {
         }
 
         var values = Object.keys(valueSet).map(function (v) {
-            // Only convert to number if the ENTIRE string is numeric
-            // (prevents "208/1" from becoming 208)
             if (/^-?\d+(\.\d+)?$/.test(v)) {
                 return parseFloat(v);
             }
@@ -301,9 +341,6 @@ const Filters = (function () {
         return values;
     }
 
-    /**
-     * Repopulate the Electric Heat kW dropdown with a "None" option at the top.
-     */
     function repopulateSelectWithNone(selectEl, values, formatLabel, currentValue, allSystems, state) {
         if (!selectEl) return;
         var prevValue = currentValue || selectEl.value;
@@ -312,7 +349,6 @@ const Filters = (function () {
             selectEl.remove(1);
         }
 
-        // Check if any systems with null electricHeatKw exist given other filters
         var modifiedForNone = {
             size:              state.size,
             systemType:        state.systemType,
@@ -345,7 +381,6 @@ const Filters = (function () {
             selectEl.appendChild(opt);
         }
 
-        // Restore or auto-select
         if (prevValue) {
             var found = false;
             for (var j = 1; j < selectEl.options.length; j++) {
@@ -361,6 +396,69 @@ const Filters = (function () {
         }
 
         updateSelectHighlight(selectEl);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Cascading Filter Update — Gas Packs
+    // -----------------------------------------------------------------------
+    function updateGpAvailableOptions() {
+        if (_activeProduct !== "gas-packs") return;
+
+        var allSystems = DataLoader.getSystems();
+        var state = getStateGp();
+
+        var fields = [
+            { key: "size",          el: gp.size,          extract: function (s) { return s.filters.size; },          fmt: formatTon },
+            { key: "electrical",    el: gp.electrical,    extract: function (s) { return s.filters.electrical; },    fmt: formatIdentity },
+            { key: "efficiency",    el: gp.efficiency,    extract: function (s) { return s.filters.efficiency; },    fmt: formatIdentity },
+            { key: "coolingStages", el: gp.coolingStages, extract: function (s) { return s.filters.coolingStages; }, fmt: formatIdentity },
+            { key: "gasHeat",       el: gp.gasHeat,       extract: function (s) { return s.filters.gasHeat; },       fmt: formatIdentity },
+            { key: "hgrh",          el: gp.hgrh,          extract: function (s) { return s.filters.hgrh; },          fmt: formatIdentity },
+        ];
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            var validValues = getGpValidValues(allSystems, state, field.key, field.extract);
+            repopulateSelect(field.el, validValues, field.fmt, state[field.key]);
+            state = getStateGp();
+        }
+    }
+
+    function getGpValidValues(allSystems, state, excludeKey, extractor) {
+        var modified = {
+            size:          state.size,
+            electrical:    state.electrical,
+            efficiency:    state.efficiency,
+            coolingStages: state.coolingStages,
+            gasHeat:       state.gasHeat,
+            hgrh:          state.hgrh,
+        };
+        modified[excludeKey] = "";
+
+        var compatible = DataLoader.filterSystems(modified);
+
+        var valueSet = {};
+        for (var i = 0; i < compatible.length; i++) {
+            var val = extractor(compatible[i]);
+            if (val !== null && val !== undefined) {
+                valueSet[val] = true;
+            }
+        }
+
+        var values = Object.keys(valueSet).map(function (v) {
+            if (/^-?\d+(\.\d+)?$/.test(v)) {
+                return parseFloat(v);
+            }
+            return v;
+        });
+
+        values.sort(function (a, b) {
+            if (typeof a === "number" && typeof b === "number") return a - b;
+            return String(a).localeCompare(String(b));
+        });
+
+        return values;
     }
 
 
@@ -476,9 +574,6 @@ const Filters = (function () {
         }
     }
 
-    /**
-     * Populate a select with optional special first value (like "None").
-     */
     function populateSelectCustom(selectEl, values, formatLabel, specialValue, specialLabel) {
         if (!selectEl) return;
         while (selectEl.options.length > 1) {
@@ -549,6 +644,8 @@ const Filters = (function () {
             updateAvailableOptions();
         } else if (_activeProduct === "multi-position") {
             updateMpsAvailableOptions();
+        } else if (_activeProduct === "gas-packs") {
+            updateGpAvailableOptions();
         }
 
         updateAllHighlights();
@@ -594,6 +691,13 @@ const Filters = (function () {
             updateSelectHighlight(mps.electricHeatKw);
             updateSelectHighlight(mps.compressorStages);
             updateSelectHighlight(mps.fanType);
+        } else if (_activeProduct === "gas-packs") {
+            updateSelectHighlight(gp.size);
+            updateSelectHighlight(gp.electrical);
+            updateSelectHighlight(gp.efficiency);
+            updateSelectHighlight(gp.coolingStages);
+            updateSelectHighlight(gp.gasHeat);
+            updateSelectHighlight(gp.hgrh);
         }
     }
 
@@ -613,6 +717,9 @@ const Filters = (function () {
     function getState() {
         if (_activeProduct === "multi-position") {
             return getStateMps();
+        }
+        if (_activeProduct === "gas-packs") {
+            return getStateGp();
         }
         return getStateMiniSplits();
     }
@@ -648,10 +755,26 @@ const Filters = (function () {
         };
     }
 
+    function getStateGp() {
+        return {
+            size:          gp.size ? gp.size.value : "",
+            electrical:    gp.electrical ? gp.electrical.value : "",
+            efficiency:    gp.efficiency ? gp.efficiency.value : "",
+            coolingStages: gp.coolingStages ? gp.coolingStages.value : "",
+            gasHeat:       gp.gasHeat ? gp.gasHeat.value : "",
+            hgrh:          gp.hgrh ? gp.hgrh.value : "",
+        };
+    }
+
     function hasActiveFilters() {
         if (_activeProduct === "multi-position") {
             var s = getStateMps();
             return !!(s.size || s.systemType || s.nominalEfficiency || s.electrical || s.electricHeatKw || s.compressorStages || s.fanType);
+        }
+
+        if (_activeProduct === "gas-packs") {
+            var g = getStateGp();
+            return !!(g.size || g.electrical || g.efficiency || g.coolingStages || g.gasHeat || g.hgrh);
         }
 
         var state = getStateMiniSplits();
@@ -669,6 +792,8 @@ const Filters = (function () {
     function clearAll() {
         if (_activeProduct === "multi-position") {
             clearMps();
+        } else if (_activeProduct === "gas-packs") {
+            clearGp();
         } else {
             clearMiniSplits();
         }
@@ -705,12 +830,32 @@ const Filters = (function () {
         emitChange();
     }
 
+    function clearGp() {
+        if (gp.size) gp.size.value = "";
+        if (gp.electrical) gp.electrical.value = "";
+        if (gp.efficiency) gp.efficiency.value = "";
+        if (gp.coolingStages) gp.coolingStages.value = "";
+        if (gp.gasHeat) gp.gasHeat.value = "";
+        if (gp.hgrh) gp.hgrh.value = "";
+
+        populateGpDropdowns();
+        updateAllHighlights();
+        emitChange();
+    }
+
 
     // -----------------------------------------------------------------------
     // Update Result Count Display
     // -----------------------------------------------------------------------
     function setResultCount(count, total) {
-        var el = _activeProduct === "multi-position" ? mps.resultCount : ms.resultCount;
+        var el;
+        if (_activeProduct === "multi-position") {
+            el = mps.resultCount;
+        } else if (_activeProduct === "gas-packs") {
+            el = gp.resultCount;
+        } else {
+            el = ms.resultCount;
+        }
         if (!el) return;
 
         if (count === total) {
