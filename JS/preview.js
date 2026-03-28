@@ -298,7 +298,7 @@ const SchedulePreview = (function () {
         var groups = {};
         for (var i = 0; i < _entries.length; i++) {
             var sys = DataLoader.getSystemById(_entries[i].systemId);
-            var pk = (sys && sys.productKey === "multi-position") ? "multi-position" : "mini-splits";
+            var pk = (sys && sys.productKey) ? sys.productKey : "mini-splits";
             if (!groups[pk]) groups[pk] = [];
             groups[pk].push(i);
         }
@@ -427,6 +427,15 @@ const SchedulePreview = (function () {
             html += '<div class="sp-section-label">OUTDOOR CONDENSING UNIT</div>';
             html += buildMpsOutdoorTable(groups["multi-position"]);
             html += buildNotesSection("multi-position");
+            html += '</div>';
+        }
+
+        // Gas Packs schedule
+        if (groups["gas-packs"] && groups["gas-packs"].length > 0) {
+            html += '<div class="sp-schedule-wrap">';
+            html += '<div class="sp-schedule-title">PACKAGED ROOFTOP UNIT SCHEDULE</div>';
+            html += buildGpTable(groups["gas-packs"]);
+            html += buildNotesSection("gas-packs");
             html += '</div>';
         }
 
@@ -748,6 +757,72 @@ const SchedulePreview = (function () {
         return h;
     }
 
+
+    // -----------------------------------------------------------------------
+    // Gas Packs Table
+    // -----------------------------------------------------------------------
+    function buildGpTable(indices) {
+        var h = '<table class="sp-table sp-table-gp"><thead>';
+        h += '<tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all-gp" title="Select all"></th>';
+        h += '<th rowspan="2">TAG</th>';
+        h += '<th rowspan="2">MODEL<br>(DAIKIN)</th>';
+        h += '<th rowspan="2">NOM<br>TONS</th>';
+        h += '<th colspan="3" class="sp-col-group">FAN DATA</th>';
+        h += '<th colspan="7" class="sp-col-group">COOLING PERFORMANCE</th>';
+        h += '<th colspan="4" class="sp-col-group">HEATING PERFORMANCE</th>';
+        h += '<th rowspan="2">HGRH</th>';
+        h += '<th rowspan="2">COOLING<br>STAGES</th>';
+        h += '<th colspan="4" class="sp-col-group">ELECTRICAL DATA</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr><tr class="sp-hdr2">';
+        h += '<th>CFM</th><th>ESP<br>(IWG)</th><th>TESP<br>(IWG)</th>';
+        h += '<th>TOTAL CAP<br>(BTU/h)</th><th>SENSIBLE<br>(BTU/h)</th><th>EFFICIENCY</th><th>EDB<br>(°F)</th><th>EWB<br>(°F)</th><th>LDB<br>(°F)</th><th>LWB<br>(°F)</th>';
+        h += '<th>INPUT<br>(MBH)</th><th>OUTPUT<br>(MBH)</th><th>EAT<br>(°F)</th><th>LAT<br>(°F)</th>';
+        h += '<th>VOLT/PH</th><th>INDOOR<br>MOTOR HP</th><th>MCA</th><th>MOCP</th>';
+        h += '</tr></thead><tbody>';
+
+        var entryIndices = indices || [];
+        for (var ii = 0; ii < entryIndices.length; ii++) {
+            var ei = entryIndices[ii];
+            var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId);
+            if (!sys) continue;
+            var s = sys.schedule;
+
+            h += '<tr data-entry-idx="' + ei + '" draggable="true">';
+            h += buildActionCell(ei, 1, entry);
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag) + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            h += '<td class="sp-cell-model">' + esc(s.model || "") + '</td>';
+            h += '<td>' + fmt(s.nomTons) + '</td>';
+            h += '<td>' + fmt(s.cfm) + '</td>';
+            h += '<td>' + fmt(s.esp) + '</td>';
+            h += '<td>' + fmt(s.tesp) + '</td>';
+            h += '<td>' + fmt(s.totalCapacity) + '</td>';
+            h += '<td>' + fmt(s.sensibleCapacity) + '</td>';
+            h += '<td class="sp-cell-text">' + esc(s.efficiency || "") + '</td>';
+            h += '<td>' + fmt(s.edb) + '</td>';
+            h += '<td>' + fmt(s.ewb) + '</td>';
+            h += '<td>' + fmt(s.ldb) + '</td>';
+            h += '<td>' + fmt(s.lwb) + '</td>';
+            h += '<td>' + fmt(s.inputMbh) + '</td>';
+            h += '<td>' + fmt(s.outputMbh) + '</td>';
+            h += '<td>' + fmt(s.heatingEat) + '</td>';
+            h += '<td>' + fmt(s.heatingLat) + '</td>';
+            h += '<td>' + esc(s.hgrh || "") + '</td>';
+            h += '<td>' + fmt(s.coolingStages) + '</td>';
+            h += '<td>' + esc(s.voltPh || "") + '</td>';
+            h += '<td>' + fmt(s.indoorMotorHp) + '</td>';
+            h += '<td>' + fmt(s.mca) + '</td>';
+            h += '<td>' + fmt(s.mocp) + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories || "") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
+            h += '</tr>';
+        }
+        h += '</tbody></table>';
+        return h;
+    }
+
+
     // -----------------------------------------------------------------------
     // Notes Section
     // -----------------------------------------------------------------------
@@ -779,7 +854,16 @@ const SchedulePreview = (function () {
         var d = sys.docs;
         var result = { oduTag: entry.oduTag, units: [] };
 
-        if (sys.productKey === "multi-position") {
+        if (sys.productKey === "gas-packs") {
+            // Gas packs: single unit, flat doc structure
+            var gpDocs = [];
+            if (d.submittal) gpDocs.push({ label: "Submittal", path: d.submittal, folder: "Submittals" });
+            if (d.engineeringManual) gpDocs.push({ label: "Engineering Manual", path: d.engineeringManual, folder: "Engineering" });
+            if (d.installationManual) gpDocs.push({ label: "Installation Manual", path: d.installationManual, folder: "Installation Manuals" });
+            if (d.revit) gpDocs.push({ label: "Revit", path: d.revit, folder: "Revit" });
+            if (d.cad) gpDocs.push({ label: "CAD", path: d.cad, folder: "CAD" });
+            if (gpDocs.length > 0) result.units.push({ tag: entry.oduTag, label: entry.oduTag + " — Packaged Unit", docs: gpDocs });
+        } else if (sys.productKey === "multi-position") {
             // MPS: flat doc structure — group into outdoor and indoor
             var oduDocs = [];
             if (d.submittalSystem) oduDocs.push({ label: "Submittal (System)", path: d.submittalSystem, folder: "Submittals" });
@@ -892,7 +976,7 @@ const SchedulePreview = (function () {
 
             var sys = DataLoader.getSystemById(entry.systemId);
             var iduTagList = [];
-            if (sys) { for (var ti = 0; ti < sys.indoorUnits.length; ti++) iduTagList.push((ti < entry.iduTags.length ? entry.iduTags[ti] : "IDU-")); }
+            if (sys && sys.indoorUnits) { for (var ti = 0; ti < sys.indoorUnits.length; ti++) iduTagList.push((ti < entry.iduTags.length ? entry.iduTags[ti] : "IDU-")); }
 
             h += '<div class="sp-doc-card" data-doc-entry="' + ei + '">';
             h += '<div class="sp-doc-card-header" data-doc-toggle="' + ei + '">';
@@ -1632,6 +1716,7 @@ const SchedulePreview = (function () {
         var groups = groupEntriesByProduct();
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
+        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
 
         var ov = document.createElement("div"); ov.className = "confirm-overlay sp-dialog-overlay";
         var d = document.createElement("div"); d.className = "confirm-dialog";
@@ -1653,6 +1738,7 @@ const SchedulePreview = (function () {
 
         var msIduInp, msOduInp, msStartInp;
         var mpsIduInp, mpsOduInp, mpsStartInp;
+        var gpUnitInp, gpStartInp;
 
         if (hasMs) {
             addSectionTitle(bd, "Mini Splits");
@@ -1672,6 +1758,14 @@ const SchedulePreview = (function () {
             bd.appendChild(mpsStartLbl); bd.appendChild(mpsStartInp);
         }
 
+        if (hasGp) {
+            addSectionTitle(bd, "Light Commercial RTUs - Gas");
+            gpUnitInp = addField(bd, "Unit Prefix", "RTU-", "RTU-");
+            var gpStartLbl = document.createElement("label"); gpStartLbl.className = "input-dialog-label sp-autonumber-label"; gpStartLbl.textContent = "Start Number";
+            gpStartInp = document.createElement("input"); gpStartInp.type = "number"; gpStartInp.className = "input-dialog-input"; gpStartInp.value = "1"; gpStartInp.min = "0";
+            bd.appendChild(gpStartLbl); bd.appendChild(gpStartInp);
+        }
+
         var ft = document.createElement("div"); ft.className = "confirm-dialog-footer";
         var cb = document.createElement("button"); cb.type = "button"; cb.className = "confirm-btn confirm-btn-cancel"; cb.textContent = "Cancel";
         cb.addEventListener("click", function () { document.body.removeChild(ov); });
@@ -1685,13 +1779,16 @@ const SchedulePreview = (function () {
             if (hasMps) {
                 applyAutoNumberForProduct(groups["multi-position"], mpsIduInp.value, mpsOduInp.value, parseInt(mpsStartInp.value, 10) || 1);
             }
+            if (hasGp) {
+                applyAutoNumberForGasPacks(groups["gas-packs"], gpUnitInp.value, parseInt(gpStartInp.value, 10) || 1);
+            }
             pushHistory(); saveState(); rebuildContent();
             showToast("Tags auto-numbered");
         });
         ft.appendChild(cb); ft.appendChild(cfb);
         d.appendChild(hd); d.appendChild(bd); d.appendChild(ft);
         ov.appendChild(d); document.body.appendChild(ov);
-        var firstInput = hasMs ? msIduInp : mpsIduInp;
+        var firstInput = hasMs ? msIduInp : (hasMps ? mpsIduInp : gpUnitInp);
         if (firstInput) requestAnimationFrame(function () { firstInput.focus(); firstInput.select(); });
     }
 
@@ -1703,10 +1800,20 @@ const SchedulePreview = (function () {
             if (!sys) continue;
             _entries[ei].oduTag = oduPrefix + String(oduCount).padStart(2, "0");
             oduCount++;
-            for (var j = 0; j < sys.indoorUnits.length; j++) {
+            var indoorUnits = sys.indoorUnits || [];
+            for (var j = 0; j < indoorUnits.length; j++) {
                 _entries[ei].iduTags[j] = iduPrefix + String(iduCount).padStart(2, "0");
                 iduCount++;
             }
+        }
+    }
+
+    function applyAutoNumberForGasPacks(entryIndices, unitPrefix, startNum) {
+        var count = startNum;
+        for (var i = 0; i < entryIndices.length; i++) {
+            var ei = entryIndices[i];
+            _entries[ei].oduTag = unitPrefix + String(count).padStart(2, "0");
+            count++;
         }
     }
 

@@ -219,7 +219,17 @@ const Filters = (function () {
         populateSelect(gp.electrical, opts.electrical || [], formatIdentity);
         populateSelect(gp.efficiency, opts.efficiency || [], formatIdentity);
         populateSelect(gp.coolingStages, opts.coolingStages || [], formatIdentity);
-        populateSelect(gp.gasHeat, opts.gasHeat || [], formatIdentity);
+
+        // Custom sort for gasHeat: LOW, MEDIUM, HIGH
+        var gasHeatValues = (opts.gasHeat || []).slice();
+        var heatOrder = { "LOW": 0, "MEDIUM": 1, "HIGH": 2 };
+        gasHeatValues.sort(function (a, b) {
+            var aO = heatOrder[String(a).toUpperCase()];
+            var bO = heatOrder[String(b).toUpperCase()];
+            if (aO !== undefined && bO !== undefined) return aO - bO;
+            return String(a).localeCompare(String(b));
+        });
+        populateSelect(gp.gasHeat, gasHeatValues, formatIdentity);
         populateSelect(gp.hgrh, opts.hgrh || [], formatIdentity);
     }
 
@@ -457,6 +467,17 @@ const Filters = (function () {
             if (typeof a === "number" && typeof b === "number") return a - b;
             return String(a).localeCompare(String(b));
         });
+
+        // Custom sort for gasHeat: LOW, MEDIUM, HIGH
+        if (excludeKey === "gasHeat") {
+            var heatOrder = { "LOW": 0, "MEDIUM": 1, "HIGH": 2 };
+            values.sort(function (a, b) {
+                var aO = heatOrder[String(a).toUpperCase()];
+                var bO = heatOrder[String(b).toUpperCase()];
+                if (aO !== undefined && bO !== undefined) return aO - bO;
+                return String(a).localeCompare(String(b));
+            });
+        }
 
         return values;
     }

@@ -50,7 +50,7 @@ const Export = (function () {
         var groups = {};
         for (var i = 0; i < entries.length; i++) {
             var sys = DataLoader.getSystemById(entries[i].systemId);
-            var pk = (sys && sys.productKey === "multi-position") ? "multi-position" : "mini-splits";
+            var pk = (sys && sys.productKey) ? sys.productKey : "mini-splits";
             if (!groups[pk]) groups[pk] = [];
             groups[pk].push(entries[i]);
         }

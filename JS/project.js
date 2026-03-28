@@ -387,19 +387,32 @@ const Project = (function () {
         if (!target) return;
         var sys = DataLoader.getSystemById(systemId); if (!sys) return;
 
-        // Build entry — works for both mini-splits and multi-position
-        var iduTags = [], iduAccessories = [];
-        for (var i = 0; i < sys.indoorUnits.length; i++) {
-            iduTags.push(sys.indoorUnits[i].symbol || "IDU-");
-            iduAccessories.push("");
+        var entry;
+
+        if (sys.productKey === "gas-packs") {
+            // Gas packs are single packaged units — no indoor/outdoor split
+            entry = {
+                systemId: systemId,
+                oduTag: "RTU-",
+                iduTags: [],
+                iduAccessories: [],
+                outdoorAccessories: ""
+            };
+        } else {
+            // Build entry — works for both mini-splits and multi-position
+            var iduTags = [], iduAccessories = [];
+            for (var i = 0; i < sys.indoorUnits.length; i++) {
+                iduTags.push(sys.indoorUnits[i].symbol || "IDU-");
+                iduAccessories.push("");
+            }
+            entry = {
+                systemId: systemId,
+                oduTag: sys.outdoorUnit.symbol || "ODU-",
+                iduTags: iduTags,
+                iduAccessories: iduAccessories,
+                outdoorAccessories: ""
+            };
         }
-        var entry = {
-            systemId: systemId,
-            oduTag: sys.outdoorUnit.symbol || "ODU-",
-            iduTags: iduTags,
-            iduAccessories: iduAccessories,
-            outdoorAccessories: ""
-        };
 
         if (target.type === "cart") {
             _cartEntries.push(entry); _cartIdSet.add(systemId);
@@ -557,21 +570,31 @@ const Project = (function () {
 
         var body = document.createElement("div"); body.className = "project-card-body";
 
-        var oduRow = document.createElement("div"); oduRow.className = "project-outdoor-row";
-        var oduLabel = document.createElement("span"); oduLabel.className = "project-outdoor-label"; oduLabel.textContent = "Outdoor";
-        var oduTagInput = document.createElement("input"); oduTagInput.type = "text"; oduTagInput.className = "project-tag-input"; oduTagInput.value = entry.oduTag;
-        oduTagInput.dataset.entryIndex = entryIndex; oduTagInput.dataset.field = "oduTag"; oduTagInput.addEventListener("input", handleTagInput);
-        var oduModel = document.createElement("span"); oduModel.className = "project-outdoor-model"; oduModel.textContent = getUnitDisplayModel(sys.outdoorUnit);
-        oduRow.appendChild(oduLabel); oduRow.appendChild(oduTagInput); oduRow.appendChild(oduModel); body.appendChild(oduRow);
+        if (sys.productKey === "gas-packs") {
+            // Gas packs — single packaged unit row
+            var unitRow = document.createElement("div"); unitRow.className = "project-outdoor-row";
+            var unitLabel = document.createElement("span"); unitLabel.className = "project-outdoor-label"; unitLabel.textContent = "Unit";
+            var unitTagInput = document.createElement("input"); unitTagInput.type = "text"; unitTagInput.className = "project-tag-input"; unitTagInput.value = entry.oduTag;
+            unitTagInput.dataset.entryIndex = entryIndex; unitTagInput.dataset.field = "oduTag"; unitTagInput.addEventListener("input", handleTagInput);
+            var unitModel = document.createElement("span"); unitModel.className = "project-outdoor-model"; unitModel.textContent = sys.schedule.model || "";
+            unitRow.appendChild(unitLabel); unitRow.appendChild(unitTagInput); unitRow.appendChild(unitModel); body.appendChild(unitRow);
+        } else {
+            var oduRow = document.createElement("div"); oduRow.className = "project-outdoor-row";
+            var oduLabel = document.createElement("span"); oduLabel.className = "project-outdoor-label"; oduLabel.textContent = "Outdoor";
+            var oduTagInput = document.createElement("input"); oduTagInput.type = "text"; oduTagInput.className = "project-tag-input"; oduTagInput.value = entry.oduTag;
+            oduTagInput.dataset.entryIndex = entryIndex; oduTagInput.dataset.field = "oduTag"; oduTagInput.addEventListener("input", handleTagInput);
+            var oduModel = document.createElement("span"); oduModel.className = "project-outdoor-model"; oduModel.textContent = getUnitDisplayModel(sys.outdoorUnit);
+            oduRow.appendChild(oduLabel); oduRow.appendChild(oduTagInput); oduRow.appendChild(oduModel); body.appendChild(oduRow);
 
-        for (var i = 0; i < sys.indoorUnits.length; i++) {
-            var idu = sys.indoorUnits[i];
-            var iduRow = document.createElement("div"); iduRow.className = "project-indoor-row";
-            var iduLabel = document.createElement("span"); iduLabel.className = "project-indoor-label"; iduLabel.textContent = "Indoor #" + (i + 1);
-            var iduTagInput = document.createElement("input"); iduTagInput.type = "text"; iduTagInput.className = "project-tag-input"; iduTagInput.value = entry.iduTags[i] || "IDU-";
-            iduTagInput.dataset.entryIndex = entryIndex; iduTagInput.dataset.field = "iduTag"; iduTagInput.dataset.iduIndex = i; iduTagInput.addEventListener("input", handleTagInput);
-            var iduModel = document.createElement("span"); iduModel.className = "project-indoor-model"; iduModel.textContent = getUnitDisplayModel(idu);
-            iduRow.appendChild(iduLabel); iduRow.appendChild(iduTagInput); iduRow.appendChild(iduModel); body.appendChild(iduRow);
+            for (var i = 0; i < sys.indoorUnits.length; i++) {
+                var idu = sys.indoorUnits[i];
+                var iduRow = document.createElement("div"); iduRow.className = "project-indoor-row";
+                var iduLabel = document.createElement("span"); iduLabel.className = "project-indoor-label"; iduLabel.textContent = "Indoor #" + (i + 1);
+                var iduTagInput = document.createElement("input"); iduTagInput.type = "text"; iduTagInput.className = "project-tag-input"; iduTagInput.value = entry.iduTags[i] || "IDU-";
+                iduTagInput.dataset.entryIndex = entryIndex; iduTagInput.dataset.field = "iduTag"; iduTagInput.dataset.iduIndex = i; iduTagInput.addEventListener("input", handleTagInput);
+                var iduModel = document.createElement("span"); iduModel.className = "project-indoor-model"; iduModel.textContent = getUnitDisplayModel(idu);
+                iduRow.appendChild(iduLabel); iduRow.appendChild(iduTagInput); iduRow.appendChild(iduModel); body.appendChild(iduRow);
+            }
         }
 
         var docCount = DataLoader.getSystemDocCount(entry.systemId);
