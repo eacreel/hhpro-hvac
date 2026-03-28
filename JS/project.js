@@ -808,7 +808,7 @@ const Project = (function () {
         try {
             var j = localStorage.getItem(STORAGE_PREFIX_ENTRIES + pid);
             if (j) { var p = JSON.parse(j); if (Array.isArray(p)) return p.filter(function (e) { return e.systemId && DataLoader.getSystemById(e.systemId); }).map(function (e) {
-                var sys = DataLoader.getSystemById(e.systemId); var n = sys ? sys.indoorUnits.length : 1;
+                var sys = DataLoader.getSystemById(e.systemId); var n = (sys && sys.indoorUnits) ? sys.indoorUnits.length : 0;
                 if (!Array.isArray(e.iduAccessories)) e.iduAccessories = []; while (e.iduAccessories.length < n) e.iduAccessories.push("");
                 if (e.outdoorAccessories === undefined) e.outdoorAccessories = ""; return e;
             }); }
@@ -872,7 +872,7 @@ const Project = (function () {
             var migrated = [];
             for (var i = 0; i < entries.length; i++) {
                 var e = entries[i]; if (!e.systemId) continue; var sys = DataLoader.getSystemById(e.systemId); if (!sys) continue;
-                var n = sys.indoorUnits.length;
+                var n = (sys.indoorUnits) ? sys.indoorUnits.length : 0;
                 if (e.accessories !== undefined && e.iduAccessories === undefined) { e.iduAccessories = [e.accessories || ""]; e.outdoorAccessories = ""; delete e.accessories; }
                 if (e.indoorAccessories !== undefined && e.iduAccessories === undefined) { e.iduAccessories = [e.indoorAccessories || ""]; delete e.indoorAccessories; }
                 if (!Array.isArray(e.iduAccessories)) e.iduAccessories = []; while (e.iduAccessories.length < n) e.iduAccessories.push("");
@@ -909,13 +909,14 @@ const Project = (function () {
         lines.push(["System ID","ODU Tag","ODU Model","System Type","Size","Num Indoor","IDU Tags","IDU Models","IDU Types","IDU Sizes","IDU Accessories","Outdoor Accessories"].join(","));
         for (var i = 0; i < _entries.length; i++) {
             var entry = _entries[i]; var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
-            var iduModels = sys.indoorUnits.map(function (u) { return u.manufacturer || u.model || ""; });
-            var iduTypes = sys.indoorUnits.map(function (u) { return u.type || ""; });
+            var indoorUnits = sys.indoorUnits || [];
+            var iduModels = indoorUnits.map(function (u) { return u.manufacturer || u.model || ""; });
+            var iduTypes = indoorUnits.map(function (u) { return u.type || ""; });
             var iduSizes = (sys.filters.indoorSizes || (sys.filters.size ? [sys.filters.size] : []));
-            var oduModel = sys.outdoorUnit.manufacturer || sys.outdoorUnit.model || "";
+            var oduModel = sys.outdoorUnit ? (sys.outdoorUnit.manufacturer || sys.outdoorUnit.model || "") : (sys.schedule ? (sys.schedule.model || "") : "");
             var sysType = sys.filters.systemType || "";
             var sysSize = sys.filters.outdoorSize || sys.filters.size || "";
-            lines.push([csvEscape(entry.systemId),csvEscape(entry.oduTag),csvEscape(oduModel),csvEscape(sysType),csvEscape(String(sysSize)),csvEscape(String(sys.indoorUnits.length)),csvEscape(entry.iduTags.join(";")),csvEscape(iduModels.join(";")),csvEscape(iduTypes.join(";")),csvEscape(iduSizes.join(";")),csvEscape((entry.iduAccessories || []).join(";")),csvEscape(entry.outdoorAccessories)].join(","));
+            lines.push([csvEscape(entry.systemId),csvEscape(entry.oduTag),csvEscape(oduModel),csvEscape(sysType),csvEscape(String(sysSize)),csvEscape(String(indoorUnits.length)),csvEscape(entry.iduTags.join(";")),csvEscape(iduModels.join(";")),csvEscape(iduTypes.join(";")),csvEscape(iduSizes.join(";")),csvEscape((entry.iduAccessories || []).join(";")),csvEscape(entry.outdoorAccessories)].join(","));
         }
         lines.push(""); lines.push("NOTES (INDOOR UNIT)"); var ai = getActiveIndoorNotes(); for (var j = 0; j < ai.length; j++) lines.push(csvEscape((j+1)+"- "+ai[j]));
         lines.push(""); lines.push("NOTES (OUTDOOR UNIT)"); var ao = getActiveOutdoorNotes(); for (var k = 0; k < ao.length; k++) lines.push(csvEscape((k+1)+"- "+ao[k]));
