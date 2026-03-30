@@ -78,7 +78,6 @@
     <nav id="product-tabs">
         <button class="product-tab active" data-product="mini-splits">Mini Splits</button>
         <button class="product-tab" data-product="multi-position">Multi Position Splits</button>
-        <button class="product-tab" data-product="gas-packs">Light Commercial RTUs - Gas</button>
     </nav>
 
     <!-- MAIN CONTENT -->
@@ -277,77 +276,6 @@
                 </section>
 
             </div><!-- /product-multi-position -->
-
-
-            <!-- ============================================================
-                 LIGHT COMMERCIAL RTUs - GAS PRODUCT CONTENT
-                 ============================================================ -->
-            <div id="product-gas-packs" class="product-content hidden">
-
-                <section id="gp-filter-bar" class="filter-bar-section">
-                    <div id="gp-filter-bar-header" class="filter-bar-header-common">
-                        <h2 class="filter-title-common">System Filters</h2>
-                        <button id="gp-btn-clear-filters" type="button" class="btn-clear-filters-common">Clear All</button>
-                    </div>
-                    <div id="gp-filter-controls" class="filter-controls-common">
-                        <div class="filter-group" id="gp-fg-size"><label class="filter-label" for="gp-filter-size">Unit Size (Tons)</label><select id="gp-filter-size" class="filter-select"><option value="">All</option></select></div>
-                        <div class="filter-group" id="gp-fg-electrical"><label class="filter-label" for="gp-filter-electrical">Electrical</label><select id="gp-filter-electrical" class="filter-select"><option value="">All</option></select></div>
-                        <div class="filter-group" id="gp-fg-efficiency"><label class="filter-label" for="gp-filter-efficiency">Efficiency</label><select id="gp-filter-efficiency" class="filter-select"><option value="">All</option></select></div>
-                        <div class="filter-group" id="gp-fg-cooling-stages"><label class="filter-label" for="gp-filter-cooling-stages">Cooling Stages</label><select id="gp-filter-cooling-stages" class="filter-select"><option value="">All</option></select></div>
-                        <div class="filter-group" id="gp-fg-gas-heat"><label class="filter-label" for="gp-filter-gas-heat">Gas Heat Level</label><select id="gp-filter-gas-heat" class="filter-select"><option value="">All</option></select></div>
-                        <div class="filter-group" id="gp-fg-hgrh"><label class="filter-label" for="gp-filter-hgrh">Hot Gas Reheat</label><select id="gp-filter-hgrh" class="filter-select"><option value="">All</option></select></div>
-                    </div>
-                    <div id="gp-filter-status" class="filter-status-common"><span id="gp-filter-result-count">0 systems found</span></div>
-                </section>
-
-                <section id="gp-schedule-section" class="schedule-section-common">
-                    <div id="gp-schedule-toolbar" class="schedule-toolbar-common">
-                        <h2 class="schedule-title-text">Packaged Rooftop Unit Schedule</h2>
-                        <span class="schedule-subtitle-text">DAIKIN</span>
-                    </div>
-                    <div id="gp-schedule-wrapper" class="schedule-table-wrapper">
-                        <div class="schedule-section-label">PACKAGED ROOFTOP UNITS</div>
-                        <table id="gp-schedule-table" class="schedule-table gp-table">
-                            <thead>
-                                <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th>
-                                    <th class="gp-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
-                                    <th class="gp-col-tons" rowspan="2">NOM<br>TONS</th>
-                                    <th class="gp-col-fan-group" colspan="3">FAN DATA</th>
-                                    <th class="gp-col-cool-group" colspan="7">COOLING PERFORMANCE</th>
-                                    <th class="gp-col-heat-group" colspan="4">HEATING PERFORMANCE</th>
-                                    <th class="gp-col-hgrh" rowspan="2">HGRH</th>
-                                    <th class="gp-col-stages" rowspan="2">COOLING<br>STAGES</th>
-                                    <th class="gp-col-elec-group" colspan="4">ELECTRICAL DATA</th>
-                                </tr>
-                                <tr class="schedule-header-row header-row-2">
-                                    <th class="gp-col-cfm">CFM</th>
-                                    <th class="gp-col-esp">ESP<br>(IWG)</th>
-                                    <th class="gp-col-tesp">TESP<br>(IWG)</th>
-                                    <th class="gp-col-total-cap">TOTAL CAP<br>(BTU/h)</th>
-                                    <th class="gp-col-sens-cap">SENSIBLE<br>(BTU/h)</th>
-                                    <th class="gp-col-efficiency">EFFICIENCY</th>
-                                    <th class="gp-col-edb">EDB<br>(°F)</th>
-                                    <th class="gp-col-ewb">EWB<br>(°F)</th>
-                                    <th class="gp-col-ldb">LDB<br>(°F)</th>
-                                    <th class="gp-col-lwb">LWB<br>(°F)</th>
-                                    <th class="gp-col-input">INPUT<br>(MBH)</th>
-                                    <th class="gp-col-output">OUTPUT<br>(MBH)</th>
-                                    <th class="gp-col-eat">EAT<br>(°F)</th>
-                                    <th class="gp-col-lat">LAT<br>(°F)</th>
-                                    <th class="gp-col-voltage">VOLT/PH</th>
-                                    <th class="gp-col-motor-hp">INDOOR<br>MOTOR HP</th>
-                                    <th class="gp-col-mca">MCA</th>
-                                    <th class="gp-col-mocp">MOCP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="gp-schedule-tbody"></tbody>
-                        </table>
-                    </div>
-                    <div id="gp-schedule-empty" class="hidden"><p class="empty-message-text">Select filters above to view available systems.</p></div>
-                </section>
-
-            </div><!-- /product-gas-packs -->
 
         </div>
     </main>
