@@ -29,7 +29,7 @@
     gap: var(--space-md);
     padding: var(--space-lg) var(--space-xl);
     border-bottom: 1px solid var(--color-border-light);
-    background-color: var(--color-surface);
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-alt) 100%);
 }
 
 #schedule-title,
@@ -42,15 +42,15 @@
 
 #schedule-subtitle,
 .schedule-subtitle-text {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-brand);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     padding: var(--space-xxs) var(--space-sm);
-    background-color: var(--color-surface-alt);
+    background-color: var(--color-brand-light);
     border-radius: var(--border-radius);
-    border: 1px solid var(--color-border-light);
+    border: 1px solid rgba(0, 84, 166, 0.15);
 }
 
 
@@ -78,14 +78,15 @@
    Section Labels  ("INDOOR UNIT" / "OUTDOOR UNIT" bars)
    -------------------------------------------------------------------------- */
 .schedule-section-label {
-    background: linear-gradient(135deg, var(--color-brand-dark) 0%, #004E8C 100%);
+    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
     color: var(--color-text-inverse);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     text-align: center;
     padding: var(--space-sm) var(--space-lg);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -252,7 +253,7 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: var(--space-sm) var(--space-xs);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -264,20 +265,21 @@
 .header-row-1 th {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
-    background: linear-gradient(180deg, #1A6AB8 0%, var(--color-header-bg) 100%);
+    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
     padding: var(--space-sm) var(--space-sm);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
 }
 
 /* Row 1 action column: blank dark cell */
 .header-row-1 .col-action {
-    background: linear-gradient(180deg, #1A6AB8 0%, var(--color-header-bg) 100%);
+    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
 }
 
 /* Row 2: detail sub-headers */
 .header-row-2 th {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    background-color: var(--color-header-bg-sub);
+    background: linear-gradient(180deg, #2A7BC5 0%, var(--color-header-bg-sub) 100%);
     padding: var(--space-xs) var(--space-xs);
 }
 
@@ -298,7 +300,11 @@
    Row Striping  (alternating system backgrounds)
    -------------------------------------------------------------------------- */
 .schedule-row {
-    background-color: var(--color-surface);
+    background-color: var(--color-row-even);
+}
+
+.schedule-row:nth-child(even) {
+    background-color: var(--color-row-odd);
 }
 
 
@@ -318,7 +324,7 @@
    Cross-Table Hover  (highlight entire system on hover)
    -------------------------------------------------------------------------- */
 .schedule-row.system-hover td {
-    background-color: var(--color-brand-light);
+    background-color: var(--color-row-hover);
 }
 
 
@@ -342,7 +348,7 @@
 .cell-model {
     font-family: var(--font-mono);
     font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     color: var(--color-brand);
     text-align: center;
     letter-spacing: 0.02em;
@@ -383,16 +389,16 @@
     height: 28px;
     border-radius: 50%;
     color: var(--color-text-inverse);
-    background-color: var(--color-brand);
+    background: linear-gradient(135deg, var(--color-brand) 0%, #1A6AB8 100%);
     cursor: pointer;
     transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 1px 4px rgba(0, 84, 166, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.3);
 }
 
 .btn-add-system:hover {
-    background-color: var(--color-accent);
+    background: linear-gradient(135deg, var(--color-accent) 0%, #F08030 100%);
     transform: scale(1.15);
-    box-shadow: 0 2px 8px rgba(232, 106, 16, 0.35);
+    box-shadow: 0 3px 10px rgba(232, 106, 16, 0.4);
 }
 
 .btn-add-system:active {
@@ -402,13 +408,13 @@
 /* "Added" state — checkmark (still clickable for duplicates) */
 .btn-add-system.added {
     color: var(--color-text-inverse);
-    background-color: var(--color-success);
+    background: linear-gradient(135deg, #1A8A4A 0%, #22A55B 100%);
     cursor: pointer;
-    box-shadow: 0 1px 4px rgba(26, 138, 74, 0.3);
+    box-shadow: 0 2px 6px rgba(26, 138, 74, 0.3);
 }
 
 .btn-add-system.added:hover {
-    background-color: var(--color-brand);
+    background: linear-gradient(135deg, var(--color-brand) 0%, #1A6AB8 100%);
     transform: scale(1.15);
 }
 

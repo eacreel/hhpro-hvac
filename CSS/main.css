@@ -17,23 +17,23 @@
     --color-accent-light:       #FFF3E8;
 
     /* Neutrals — warmer tones */
-    --color-bg:                 #F5F6FA;
+    --color-bg:                 #F0F2F7;
     --color-surface:            #FFFFFF;
-    --color-surface-alt:        #F8F9FC;
-    --color-border:             #D8DCE5;
-    --color-border-light:       #EAEDF3;
+    --color-surface-alt:        #F6F7FB;
+    --color-border:             #D0D5E0;
+    --color-border-light:       #E4E8F0;
     --color-text:               #1B1F27;
-    --color-text-secondary:     #555D6E;
-    --color-text-muted:         #8B92A0;
+    --color-text-secondary:     #4A5268;
+    --color-text-muted:         #7E8698;
     --color-text-inverse:       #FFFFFF;
 
     /* Schedule-specific */
-    --color-header-bg:          #1A5FA8;
-    --color-header-bg-sub:      #2A7ACC;
+    --color-header-bg:          #17528F;
+    --color-header-bg-sub:      #2670B5;
     --color-header-text:        #FFFFFF;
     --color-row-even:           #FFFFFF;
-    --color-row-odd:            #F7F8FC;
-    --color-row-hover:          #E4EFFA;
+    --color-row-odd:            #F4F6FA;
+    --color-row-hover:          #DCEAF8;
     --color-cell-border:        #DEE2EA;
     --color-cell-editable-bg:   #FFFDE7;
 
@@ -71,8 +71,8 @@
     --space-3xl:                48px;
 
     /* Layout */
-    --top-bar-height:           54px;
-    --tab-bar-height:           44px;
+    --top-bar-height:           56px;
+    --tab-bar-height:           46px;
     --filter-bar-min-height:    56px;
     --project-panel-width:      420px;
     --border-radius:            6px;
@@ -80,10 +80,10 @@
     --border-radius-xl:         14px;
 
     /* Shadows — more layered and refined */
-    --shadow-sm:                0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
-    --shadow-md:                0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
-    --shadow-lg:                0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.1);
-    --shadow-panel:             -2px 0 12px rgba(0, 0, 0, 0.08), -8px 0 32px rgba(0, 0, 0, 0.12);
+    --shadow-sm:                0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md:                0 2px 6px rgba(0, 0, 0, 0.05), 0 6px 16px rgba(0, 0, 0, 0.06);
+    --shadow-lg:                0 4px 8px rgba(0, 0, 0, 0.05), 0 12px 28px rgba(0, 0, 0, 0.1);
+    --shadow-panel:             -2px 0 16px rgba(0, 0, 0, 0.08), -8px 0 40px rgba(0, 0, 0, 0.12);
     --shadow-card-hover:        0 4px 12px rgba(0, 84, 166, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06);
 
     /* Transitions */
@@ -191,7 +191,7 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 60%, #1B6CBF 100%);
+    background: linear-gradient(145deg, #002B5C 0%, #0054A6 45%, #1873C4 100%);
     opacity: 1;
     transition: opacity 0.4s ease-out;
 }
@@ -202,16 +202,16 @@ a:hover {
 }
 
 #login-card {
-    width: 360px;
+    width: 380px;
     padding: var(--space-3xl) var(--space-2xl) var(--space-2xl);
     background-color: var(--color-surface);
     border-radius: var(--border-radius-xl);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
     text-align: center;
 }
 
 #login-logo {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
     letter-spacing: -0.03em;
@@ -236,10 +236,10 @@ a:hover {
 
 #login-password {
     flex: 1;
-    height: 42px;
+    height: 44px;
     padding: 0 var(--space-lg);
     font-size: var(--font-size-md);
-    border: 1px solid var(--color-border);
+    border: 1.5px solid var(--color-border);
     border-radius: var(--border-radius);
     background-color: var(--color-surface);
     color: var(--color-text);
@@ -253,20 +253,23 @@ a:hover {
 }
 
 #login-submit {
-    height: 42px;
+    height: 44px;
     padding: 0 var(--space-xl);
     font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text-inverse);
-    background-color: var(--color-brand);
+    background: linear-gradient(135deg, var(--color-brand) 0%, #1873C4 100%);
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: background-color var(--transition-fast);
+    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.3);
 }
 
 #login-submit:hover {
-    background-color: var(--color-brand-dark);
+    background: linear-gradient(135deg, var(--color-brand-dark) 0%, var(--color-brand) 100%);
+    box-shadow: 0 4px 12px rgba(0, 84, 166, 0.4);
+    transform: translateY(-1px);
 }
 
 #login-error {
@@ -385,9 +388,9 @@ a:hover {
     align-items: center;
     justify-content: space-between;
     padding: 0 var(--space-2xl);
-    background: linear-gradient(135deg, #003A75 0%, var(--color-brand) 60%, #1B6CBF 100%);
+    background: linear-gradient(160deg, #002B5C 0%, #004A8F 40%, #1873C4 100%);
     color: var(--color-text-inverse);
-    box-shadow: 0 2px 8px rgba(0, 30, 70, 0.3);
+    box-shadow: 0 2px 12px rgba(0, 20, 60, 0.35), 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 #top-bar-left {
@@ -397,10 +400,11 @@ a:hover {
 }
 
 #logo {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: var(--font-weight-bold);
     letter-spacing: -0.03em;
     user-select: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 #logo-accent {
@@ -409,15 +413,15 @@ a:hover {
 
 #logo-divider {
     width: 1px;
-    height: 24px;
-    background-color: rgba(255, 255, 255, 0.2);
+    height: 26px;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.25), transparent);
 }
 
 #logo-tagline {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    opacity: 0.7;
-    letter-spacing: 0.06em;
+    opacity: 0.65;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
@@ -436,13 +440,15 @@ a:hover {
     background-color: rgba(255, 255, 255, 0.1);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 #btn-project-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.22);
+    background-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 #project-badge {
@@ -475,8 +481,8 @@ a:hover {
     align-items: stretch;
     height: var(--tab-bar-height);
     padding: 0 var(--space-2xl);
-    background-color: var(--color-brand-dark);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    background: linear-gradient(180deg, #003264 0%, #002B5C 100%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     gap: 2px;
 }
 
@@ -487,31 +493,32 @@ a:hover {
     padding: 0 var(--space-2xl);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.45);
     background: transparent;
     letter-spacing: 0.02em;
     white-space: nowrap;
     transition: color var(--transition-base), background-color var(--transition-base);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .product-tab:hover:not(.disabled) {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.85);
     background-color: rgba(255, 255, 255, 0.06);
 }
 
 .product-tab.active {
     color: var(--color-text-inverse);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 .product-tab.active::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: var(--space-lg);
-    right: var(--space-lg);
+    left: var(--space-md);
+    right: var(--space-md);
     height: 3px;
-    background-color: var(--color-accent);
+    background: linear-gradient(90deg, var(--color-accent), #F59E3B);
     border-radius: 2px 2px 0 0;
 }
 
