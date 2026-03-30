@@ -20,6 +20,7 @@ const Export = (function () {
     const TEMPLATE_PATHS = {
         "mini-splits":     "DATA/MINI SPLIT SCHEDULE.xlsx",
         "multi-position":  "DATA/MULTI POSITION SPLIT SCHEDULE.xlsx",
+        "gas-packs":       "DATA/GAS PACKS SCHEDULE.xlsx",
     };
 
     // -----------------------------------------------------------------------
@@ -50,7 +51,9 @@ const Export = (function () {
         var groups = {};
         for (var i = 0; i < entries.length; i++) {
             var sys = DataLoader.getSystemById(entries[i].systemId);
-            var pk = (sys && sys.productKey === "multi-position") ? "multi-position" : "mini-splits";
+            var pk = "mini-splits";
+            if (sys && sys.productKey === "multi-position") pk = "multi-position";
+            else if (sys && sys.productKey === "gas-packs") pk = "gas-packs";
             if (!groups[pk]) groups[pk] = [];
             groups[pk].push(entries[i]);
         }
@@ -87,7 +90,8 @@ const Export = (function () {
                 // Strip the ASSETS/product/ prefix for cleaner zip paths
                 var zipPath = allDocs[j].path
                     .replace(/^ASSETS\/MINI SPLITS\//, "")
-                    .replace(/^ASSETS\/MULTI POSITION SPLITS\//, "");
+                    .replace(/^ASSETS\/MULTI POSITION SPLITS\//, "")
+                    .replace(/^ASSETS\/GAS PACKS\//, "");
                 zip.file(zipPath, blob);
                 fetched++;
             } catch (err) { console.warn("[Export] Failed to fetch: " + allDocs[j].path, err); failed++; }
@@ -127,6 +131,7 @@ const Export = (function () {
         var groups = groupEntriesByProduct();
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
+        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
 
         // Return array of { name, blob } for ZIP bundle
         if (options && options.returnBlobs) {
@@ -139,11 +144,16 @@ const Export = (function () {
                 var mpsBlob = await exportMpsScheduleXlsx({ returnBlob: true, entries: groups["multi-position"] });
                 if (mpsBlob) blobs.push({ name: "Multi Position Split Schedule.xlsx", blob: mpsBlob });
             }
+            if (hasGp) {
+                var gpBlob = await exportGpScheduleXlsx({ returnBlob: true, entries: groups["gas-packs"] });
+                if (gpBlob) blobs.push({ name: "Gas Pack RTU Schedule.xlsx", blob: gpBlob });
+            }
             return blobs;
         }
 
         // Return single blob (legacy)
         if (options && options.returnBlob) {
+            if (hasGp && !hasMs && !hasMps) return exportGpScheduleXlsx(options);
             if (hasMps && !hasMs) return exportMpsScheduleXlsx(options);
             return exportMsScheduleXlsx(options);
         }
@@ -151,6 +161,7 @@ const Export = (function () {
         // Direct download — download each product separately
         if (hasMs) await exportMsScheduleXlsx({ entries: groups["mini-splits"] });
         if (hasMps) await exportMpsScheduleXlsx({ entries: groups["multi-position"] });
+        if (hasGp) await exportGpScheduleXlsx({ entries: groups["gas-packs"] });
     }
 
 
@@ -715,6 +726,7 @@ const Export = (function () {
         var groups = groupEntriesByProduct();
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
+        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
 
         // Return array of { name, blob } for ZIP bundle
         if (options && options.returnBlobs) {
@@ -727,11 +739,16 @@ const Export = (function () {
                 var mpsBlob = exportMpsSchedulePdf({ returnBlob: true, entries: groups["multi-position"] });
                 if (mpsBlob) blobs.push({ name: "Multi Position Split Schedule.pdf", blob: mpsBlob });
             }
+            if (hasGp) {
+                var gpBlob = exportGpSchedulePdf({ returnBlob: true, entries: groups["gas-packs"] });
+                if (gpBlob) blobs.push({ name: "Gas Pack RTU Schedule.pdf", blob: gpBlob });
+            }
             return blobs;
         }
 
         // Return single blob (legacy)
         if (options && options.returnBlob) {
+            if (hasGp && !hasMs && !hasMps) return exportGpSchedulePdf(options);
             if (hasMps && !hasMs) return exportMpsSchedulePdf(options);
             return exportMsSchedulePdf(options);
         }
@@ -739,6 +756,7 @@ const Export = (function () {
         // Direct download — download each product separately
         if (hasMs) exportMsSchedulePdf({ entries: groups["mini-splits"] });
         if (hasMps) exportMpsSchedulePdf({ entries: groups["multi-position"] });
+        if (hasGp) exportGpSchedulePdf({ entries: groups["gas-packs"] });
     }
 
 
@@ -1420,6 +1438,257 @@ const Export = (function () {
         dxf += "0\nEOF\n";
 
         return dxf;
+    }
+
+
+    // =====================================================================
+    //  GAS PACKS — EXCEL EXPORT (template-based)
+    // =====================================================================
+    async function exportGpScheduleXlsx(options) {
+        var entries = (options && options.entries) ? options.entries : Project.getEntries();
+        if (entries.length === 0) return;
+        if (typeof ExcelJS === "undefined") {
+            Project.showToast("ExcelJS library not loaded", "toast-danger"); return;
+        }
+
+        Project.showToast("Generating Excel schedule…", "toast-success");
+
+        try {
+            var resp = await fetch(TEMPLATE_PATHS["gas-packs"]);
+            if (!resp.ok) throw new Error("Gas Packs Template not found");
+            var buf = await resp.arrayBuffer();
+            var wb = new ExcelJS.Workbook();
+            await wb.xlsx.load(buf);
+            var tws = wb.getWorksheet(1);
+            var styles = extractStyles(tws);
+            var colWidths = [];
+            var numCols = 25; // A through Y
+            for (var ci = 1; ci <= numCols; ci++) {
+                var col = tws.getColumn(ci);
+                colWidths.push(col.width || 8.43);
+            }
+            var templateId = tws.id;
+            wb.removeWorksheet(templateId);
+
+            var ws = wb.addWorksheet("Gas Pack RTU Schedule", {
+                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
+            });
+            for (var wi = 0; wi < colWidths.length; wi++) {
+                ws.getColumn(wi + 1).width = colWidths[wi];
+            }
+
+            // Row 1: Title
+            var row = 1;
+            ws.mergeCells(row, 1, row, numCols);
+            applyStyle(ws.getCell(row, 1), "PACKAGED ROOFTOP UNITS", styles.headerOuter);
+            ws.getRow(row).height = 20;
+            row++;
+
+            // Row 2: Group headers
+            var h1 = row;
+            ws.mergeCells(h1, 1, h1 + 1, 1); applyStyle(ws.getCell(h1, 1), "TAG", styles.headerOuter);
+            ws.mergeCells(h1, 2, h1 + 1, 2); applyStyle(ws.getCell(h1, 2), "MAKE", styles.headerOuter);
+            ws.mergeCells(h1, 3, h1 + 1, 3); applyStyle(ws.getCell(h1, 3), "MODEL NUMBER", styles.headerOuter);
+            ws.mergeCells(h1, 4, h1 + 1, 4); applyStyle(ws.getCell(h1, 4), "NOM TONS", styles.headerOuter);
+            ws.mergeCells(h1, 5, h1, 7); applyStyle(ws.getCell(h1, 5), "Fan Data", styles.headerInner);
+            ws.mergeCells(h1, 8, h1, 14); applyStyle(ws.getCell(h1, 8), "Cooling Performance", styles.headerInner);
+            ws.mergeCells(h1, 15, h1, 18); applyStyle(ws.getCell(h1, 15), "Heating Performance", styles.headerInner);
+            ws.mergeCells(h1, 19, h1 + 1, 19); applyStyle(ws.getCell(h1, 19), "MODULATING\nHOT GAS\nREHEAT", styles.headerInnerWrap);
+            ws.mergeCells(h1, 20, h1 + 1, 20); applyStyle(ws.getCell(h1, 20), "COOLING\nSTAGES", styles.headerInnerWrap);
+            ws.mergeCells(h1, 21, h1, 24); applyStyle(ws.getCell(h1, 21), "Electrical Data", styles.headerInner);
+            ws.mergeCells(h1, 25, h1 + 1, 25); applyStyle(ws.getCell(h1, 25), "NOTES", styles.headerOuter);
+
+            // Row 3: Sub headers
+            var h2 = h1 + 1;
+            applyStyle(ws.getCell(h2, 5), "CFM", styles.headerSub);
+            applyStyle(ws.getCell(h2, 6), "ESP (IWG)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 7), "TESP (IWG)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 8), "TOTAL CAPACITY\n(BTU/h)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 9), "SENSIBLE CAPACITY\n(BTU/h)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 10), "EFFICIENCY\n(AT AHRI)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 11), "EDB (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 12), "EWB (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 13), "LDB (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 14), "LWB (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 15), "INPUT (MBH)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 16), "OUTPUT (MBH)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 17), "EAT (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 18), "LAT (°F)", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 21), "VOLT/PH", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 22), "INDOOR\nMOTOR HP", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 23), "Unit MCA", styles.headerSubWrap);
+            applyStyle(ws.getCell(h2, 24), "Unit MOCP", styles.headerSubWrap);
+            ws.getRow(h1).height = 16; ws.getRow(h2).height = 31;
+            row = h2 + 1;
+
+            // DATA ROWS
+            for (var ei = 0; ei < entries.length; ei++) {
+                var entry = entries[ei];
+                var sys = DataLoader.getSystemById(entry.systemId);
+                if (!sys) continue;
+                var sc = sys.schedule;
+                var r = row;
+                var isFirst = true; var isLast = true;
+
+                applyDataCell(ws.getCell(r, 1), entry.oduTag || "RTU-", styles, isFirst, isLast, true, false);
+                applyDataCell(ws.getCell(r, 2), sc.manufacturer, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 3), sc.model, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 4), sc.nomTons, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 5), sc.cfm, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 6), sc.esp, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 7), sc.tesp, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 8), sc.coolingTotalCapacity, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 9), sc.coolingSensibleCapacity, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 10), sc.efficiency, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 11), sc.edb, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 12), sc.ewb, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 13), sc.ldb, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 14), sc.lwb, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 15), sc.heatingInput, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 16), sc.heatingOutput, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 17), sc.heatingEat, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 18), sc.heatingLat, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 19), sc.hgrh, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 20), sc.coolingStages, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 21), sc.voltage, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 22), sc.motorHp, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 23), sc.mca, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 24), sc.mocp, styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 25), entry.outdoorAccessories || "", styles, isFirst, isLast, false, true);
+                ws.getRow(r).height = 15.75;
+                row++;
+            }
+
+            // NOTES SECTION
+            row++;
+            var gpNotes = Project.getProductActiveNotes("gas-packs");
+            var unitNotes = gpNotes.indoor || [];
+            if (unitNotes.length > 0) {
+                ws.getCell(row, 1).value = "NOTES:";
+                ws.getCell(row, 1).font = styles.notesHeader.font;
+                ws.getCell(row, 1).alignment = styles.notesHeader.alignment;
+                row++;
+                for (var ni = 0; ni < unitNotes.length; ni++) {
+                    ws.getCell(row, 1).value = (ni + 1) + "-";
+                    ws.getCell(row, 1).font = styles.notesNum.font;
+                    ws.getCell(row, 1).alignment = styles.notesNum.alignment;
+                    ws.mergeCells(row, 2, row, numCols);
+                    ws.getCell(row, 2).value = unitNotes[ni];
+                    ws.getCell(row, 2).font = styles.notesText.font;
+                    ws.getCell(row, 2).alignment = styles.notesText.alignment;
+                    row++;
+                }
+            }
+
+            // GENERATE
+            var buffer = await wb.xlsx.writeBuffer();
+            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            if (options && options.returnBlob) return blob;
+            Project.downloadBlob(blob, "Gas Pack RTU Schedule.xlsx");
+            Project.showToast("Schedule exported as Excel", "toast-success");
+        } catch (err) {
+            console.error("[Export] Gas Pack Excel generation failed:", err);
+            Project.showToast("Excel export failed — see console", "toast-danger");
+        }
+    }
+
+
+    // =====================================================================
+    //  GAS PACKS — PDF EXPORT
+    // =====================================================================
+    function exportGpSchedulePdf(options) {
+        var entries = (options && options.entries) ? options.entries : Project.getEntries();
+        if (entries.length === 0) return;
+        if (typeof window.jspdf === "undefined" && typeof jsPDF === "undefined") {
+            Project.showToast("jsPDF library not loaded", "toast-danger"); return;
+        }
+
+        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
+        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
+        var pw = doc.internal.pageSize.getWidth();
+        var lm = 20; var M = 1.0; var T = 0.25;
+
+        var colWidths = [40,40,55,28,35,28,28,50,50,60,28,28,28,28,35,35,28,28,28,28,38,35,35,35];
+        var tableW = 0; for (var cw = 0; cw < colWidths.length; cw++) tableW += colWidths[cw];
+        var colW = {}; for (var cw2 = 0; cw2 < colWidths.length; cw2++) colW[cw2] = colWidths[cw2];
+
+        var headRow1 = [
+            { content: "TAG", rowSpan: 2 },
+            { content: "MAKE", rowSpan: 2 },
+            { content: "MODEL\nNUMBER", rowSpan: 2 },
+            { content: "NOM\nTONS", rowSpan: 2 },
+            { content: "FAN DATA", colSpan: 3 },
+            { content: "COOLING PERFORMANCE", colSpan: 7 },
+            { content: "HEATING\nPERFORMANCE", colSpan: 4 },
+            { content: "HGRH", rowSpan: 2 },
+            { content: "COOLING\nSTAGES", rowSpan: 2 },
+            { content: "ELECTRICAL DATA", colSpan: 4 },
+        ];
+
+        var headRow2 = [
+            "CFM","ESP\n(IWG)","TESP\n(IWG)",
+            "TOTAL\nCAP.","SENS.\nCAP.","EFF.","EDB","EWB","LDB","LWB",
+            "INPUT\n(MBH)","OUTPUT\n(MBH)","EAT","LAT",
+            "VOLT/\nPH","MOTOR\nHP","MCA","MOCP"
+        ];
+
+        var rows = [];
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i], s = DataLoader.getSystemById(e.systemId);
+            if (!s) continue;
+            var sc = s.schedule;
+            rows.push([
+                e.oduTag || "RTU-", sc.manufacturer || "", sc.model || "", fp(sc.nomTons),
+                fp(sc.cfm), fp(sc.esp), fp(sc.tesp),
+                fp(sc.coolingTotalCapacity), fp(sc.coolingSensibleCapacity), sc.efficiency || "",
+                fp(sc.edb), fp(sc.ewb), fp(sc.ldb), fp(sc.lwb),
+                fp(sc.heatingInput), fp(sc.heatingOutput), fp(sc.heatingEat), fp(sc.heatingLat),
+                sc.hgrh || "", fp(sc.coolingStages),
+                sc.voltage || "", fp(sc.motorHp), fp(sc.mca), fp(sc.mocp)
+            ]);
+        }
+
+        var sx = (pw - tableW) / 2; if (sx < lm) sx = lm;
+        doc.setFontSize(9);
+        doc.text("PACKAGED ROOFTOP UNITS", pw / 2, 30, { align: "center" });
+
+        doc.autoTable({
+            startY: 40,
+            margin: { left: sx },
+            head: [headRow1, headRow2],
+            body: rows,
+            theme: "grid",
+            styles: { font: "helvetica", fontSize: 6, cellPadding: 2, halign: "center", valign: "middle", lineWidth: T, lineColor: [0, 0, 0] },
+            headStyles: { fillColor: [30, 80, 140], textColor: 255, fontStyle: "bold", lineWidth: T },
+            columnStyles: colW,
+            tableLineWidth: M, tableLineColor: [0, 0, 0],
+            didParseCell: function (data) {
+                if (data.section === "body") {
+                    data.cell.styles.lineWidth = T;
+                    if (data.row.index === 0) data.cell.styles.lineWidth = { top: M, bottom: T, left: T, right: T };
+                    if (data.row.index === rows.length - 1) data.cell.styles.lineWidth = { top: T, bottom: M, left: T, right: T };
+                    if (data.column.index === 0) { data.cell.styles.lineWidth = typeof data.cell.styles.lineWidth === "object" ? Object.assign({}, data.cell.styles.lineWidth, { left: M }) : { top: T, bottom: T, left: M, right: T }; }
+                    if (data.column.index === colWidths.length - 1) { data.cell.styles.lineWidth = typeof data.cell.styles.lineWidth === "object" ? Object.assign({}, data.cell.styles.lineWidth, { right: M }) : { top: T, bottom: T, left: T, right: M }; }
+                }
+            }
+        });
+
+        // Notes
+        var gpNotes = Project.getProductActiveNotes("gas-packs");
+        var unitNotes = gpNotes.indoor || [];
+        if (unitNotes.length > 0) {
+            var nY = doc.lastAutoTable.finalY + 14;
+            doc.setFontSize(7); doc.setFont("helvetica", "bold");
+            doc.text("NOTES:", sx, nY); nY += 10;
+            doc.setFont("helvetica", "normal");
+            for (var ni = 0; ni < unitNotes.length; ni++) {
+                doc.text((ni + 1) + "- " + unitNotes[ni], sx + 15, nY); nY += 9;
+            }
+        }
+
+        if (options && options.returnBlob) return doc.output("blob");
+        doc.save("Gas Pack RTU Schedule.pdf");
+        Project.showToast("Schedule exported as PDF", "toast-success");
     }
 
 

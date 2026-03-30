@@ -1,6 +1,7 @@
 /* ==========================================================================
-   schedule.js — Render filtered systems into split indoor/outdoor tables.
-   Supports: mini-splits and multi-position product types.
+   schedule.js — Render filtered systems into schedule tables.
+   Supports: mini-splits, multi-position, and gas-packs product types.
+   Gas packs use a single table (no indoor/outdoor split).
    Emits system:add via EventBus when user clicks "+".
    ========================================================================== */
 
@@ -31,6 +32,14 @@ const Schedule = (function () {
     let _mpsSection = null;
     let _mpsEmptyState = null;
 
+    // -----------------------------------------------------------------------
+    // DOM References — Gas Packs
+    // -----------------------------------------------------------------------
+    let _gpTbody = null;
+    let _gpWrapper = null;
+    let _gpSection = null;
+    let _gpEmptyState = null;
+
     // Track current hover for cross-table sync
     let _currentHoverSystemId = null;
 
@@ -56,6 +65,12 @@ const Schedule = (function () {
         _mpsSection        = document.getElementById("mps-schedule-section");
         _mpsEmptyState     = document.getElementById("mps-schedule-empty");
 
+        // Gas Packs DOM
+        _gpTbody      = document.getElementById("gp-schedule-tbody");
+        _gpWrapper    = document.getElementById("gp-schedule-wrapper");
+        _gpSection    = document.getElementById("gp-schedule-section");
+        _gpEmptyState = document.getElementById("gp-schedule-empty");
+
         // Bind cross-table hover events — Mini Splits
         if (_indoorTbody) {
             _indoorTbody.addEventListener("mouseover", handleRowHover);
@@ -76,6 +91,12 @@ const Schedule = (function () {
             _mpsOutdoorTbody.addEventListener("mouseout", handleRowHoverOut);
         }
 
+        // Bind hover events — Gas Packs (single table)
+        if (_gpTbody) {
+            _gpTbody.addEventListener("mouseover", handleRowHover);
+            _gpTbody.addEventListener("mouseout", handleRowHoverOut);
+        }
+
         console.log("[Schedule] Initialized");
     }
 
@@ -94,6 +115,8 @@ const Schedule = (function () {
     function render(systems, projectIds) {
         if (_activeProduct === "multi-position") {
             renderMps(systems, projectIds);
+        } else if (_activeProduct === "gas-packs") {
+            renderGasPacks(systems, projectIds);
         } else {
             renderMiniSplits(systems, projectIds);
         }
@@ -174,6 +197,35 @@ const Schedule = (function () {
 
         _mpsIndoorTbody.appendChild(indoorFragment);
         _mpsOutdoorTbody.appendChild(outdoorFragment);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Render — Gas Packs (single table, no indoor/outdoor split)
+    // -----------------------------------------------------------------------
+    function renderGasPacks(systems, projectIds) {
+        if (!_gpTbody) return;
+
+        _gpTbody.innerHTML = "";
+
+        if (!systems || systems.length === 0) {
+            if (_gpWrapper) _gpWrapper.classList.add("hidden");
+            if (_gpEmptyState) _gpEmptyState.classList.remove("hidden");
+            return;
+        }
+
+        if (_gpWrapper) _gpWrapper.classList.remove("hidden");
+        if (_gpEmptyState) _gpEmptyState.classList.add("hidden");
+
+        var fragment = document.createDocumentFragment();
+
+        for (var s = 0; s < systems.length; s++) {
+            var sys = systems[s];
+            var isInProject = projectIds && projectIds.has(sys.id);
+            fragment.appendChild(buildGpRow(sys, isInProject));
+        }
+
+        _gpTbody.appendChild(fragment);
     }
 
 
@@ -405,6 +457,77 @@ const Schedule = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Build Row — Gas Packs (single row per unit, flat schedule object)
+    // -----------------------------------------------------------------------
+    function buildGpRow(sys, isInProject) {
+        var tr = document.createElement("tr");
+        tr.className = "schedule-row system-first-row system-last-row";
+        tr.dataset.systemId = sys.id;
+
+        var sc = sys.schedule;
+
+        // Action column
+        var actionTd = createCell("", "cell-action");
+        var pdfBtn = document.createElement("button");
+        pdfBtn.type = "button";
+        pdfBtn.className = "btn-view-pdf";
+        pdfBtn.dataset.systemId = sys.id;
+        pdfBtn.textContent = "PDF";
+        pdfBtn.title = "View submittal PDF";
+        pdfBtn.addEventListener("click", handleViewPdf);
+        actionTd.appendChild(pdfBtn);
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn-add-system";
+        btn.dataset.systemId = sys.id;
+        btn.title = "Add to project";
+        if (isInProject) {
+            btn.classList.add("added");
+            btn.innerHTML = checkIconSvg();
+            btn.title = "In project — click to add again";
+        } else {
+            btn.innerHTML = plusIconSvg();
+        }
+        btn.addEventListener("click", handleAddClick);
+        actionTd.appendChild(btn);
+        tr.appendChild(actionTd);
+
+        // Schedule data columns (matches GAS PACKS DATA cols B-X, excluding TAG and NOTES)
+        tr.appendChild(createCell(sc.manufacturer || "", "cell-text"));
+        tr.appendChild(createCell(sc.model || "", "cell-model"));
+        tr.appendChild(createCell(formatNum(sc.nomTons), "cell-numeric"));
+        // Fan Data
+        tr.appendChild(createCell(formatNum(sc.cfm), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.esp), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.tesp), "cell-numeric"));
+        // Cooling Performance
+        tr.appendChild(createCell(formatNum(sc.coolingTotalCapacity), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.coolingSensibleCapacity), "cell-numeric"));
+        tr.appendChild(createCell(sc.efficiency || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.edb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.ewb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.ldb), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.lwb), "cell-numeric"));
+        // Heating Performance
+        tr.appendChild(createCell(formatNum(sc.heatingInput), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.heatingOutput), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.heatingEat), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.heatingLat), "cell-numeric"));
+        // HGRH & Cooling Stages
+        tr.appendChild(createCell(sc.hgrh || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.coolingStages), "cell-text"));
+        // Electrical Data
+        tr.appendChild(createCell(sc.voltage || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.motorHp), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.mca), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.mocp), "cell-numeric"));
+
+        return tr;
+    }
+
+
+    // -----------------------------------------------------------------------
     // Cell Helpers
     // -----------------------------------------------------------------------
     function createCell(content, className) {
@@ -463,7 +586,7 @@ const Schedule = (function () {
 
         if (related) {
             // Check all possible tbodies
-            var tbodies = [_indoorTbody, _outdoorTbody, _mpsIndoorTbody, _mpsOutdoorTbody];
+            var tbodies = [_indoorTbody, _outdoorTbody, _mpsIndoorTbody, _mpsOutdoorTbody, _gpTbody];
             for (var i = 0; i < tbodies.length; i++) {
                 if (tbodies[i] && tbodies[i].contains(related)) return;
             }
@@ -476,9 +599,14 @@ const Schedule = (function () {
         var selector = 'tr[data-system-id="' + sysId + '"]';
 
         // Apply across all active tbodies
-        var tbodies = _activeProduct === "multi-position"
-            ? [_mpsIndoorTbody, _mpsOutdoorTbody]
-            : [_indoorTbody, _outdoorTbody];
+        var tbodies;
+        if (_activeProduct === "multi-position") {
+            tbodies = [_mpsIndoorTbody, _mpsOutdoorTbody];
+        } else if (_activeProduct === "gas-packs") {
+            tbodies = [_gpTbody];
+        } else {
+            tbodies = [_indoorTbody, _outdoorTbody];
+        }
 
         for (var t = 0; t < tbodies.length; t++) {
             if (!tbodies[t]) continue;
@@ -524,7 +652,10 @@ const Schedule = (function () {
             pdfs.push(path);
         }
 
-        if (sys.productKey === "multi-position") {
+        if (sys.productKey === "gas-packs") {
+            // Gas Packs: flat doc structure, single unit
+            addPdf(d.submittal);
+        } else if (sys.productKey === "multi-position") {
             // MPS: flat doc structure
             addPdf(d.submittalSystem);
             addPdf(d.submittalOutdoor);
@@ -574,7 +705,7 @@ const Schedule = (function () {
     }
 
     function updateOutdoorIndicator(systemId, added) {
-        // Check both mini-splits and MPS outdoor tbodies
+        // Check mini-splits and MPS outdoor tbodies (gas-packs has no separate outdoor table)
         var tbodies = [_outdoorTbody, _mpsOutdoorTbody];
 
         for (var t = 0; t < tbodies.length; t++) {
@@ -608,9 +739,11 @@ const Schedule = (function () {
     // Update Add Buttons
     // -----------------------------------------------------------------------
     function updateAddButtons(projectIds) {
-        // Update both product tables
+        // Update all product tables
         updateAddButtonsForTbody(_indoorTbody, _outdoorTbody, projectIds);
         updateAddButtonsForTbody(_mpsIndoorTbody, _mpsOutdoorTbody, projectIds);
+        // Gas packs: single table, no separate outdoor
+        updateAddButtonsForTbody(_gpTbody, null, projectIds);
     }
 
     function updateAddButtonsForTbody(indoorTbody, outdoorTbody, projectIds) {
@@ -647,7 +780,10 @@ const Schedule = (function () {
     // Scroll to Top
     // -----------------------------------------------------------------------
     function scrollToTop() {
-        var target = _activeProduct === "multi-position" ? _mpsSection : _section;
+        var target;
+        if (_activeProduct === "multi-position") target = _mpsSection;
+        else if (_activeProduct === "gas-packs") target = _gpSection;
+        else target = _section;
         if (target) {
             target.scrollIntoView({ behavior: "smooth", block: "start" });
         }

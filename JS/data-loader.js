@@ -5,6 +5,7 @@
    Supports:
      - mini-splits
      - multi-position (Multi Position Splits)
+     - gas-packs (Light Commercial RTUs - Gas Heat)
    ========================================================================== */
 
 const DataLoader = (function () {
@@ -20,6 +21,10 @@ const DataLoader = (function () {
         "multi-position": {
             jsonPath: "DATA/JSON/multi-position-splits.json",
             assetBase: "ASSETS/MULTI POSITION SPLITS/",
+        },
+        "gas-packs": {
+            jsonPath: "DATA/JSON/gas-packs.json",
+            assetBase: "ASSETS/GAS PACKS/",
         },
     };
 
@@ -264,11 +269,38 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Filtering — Gas Packs
+    // All filter values are compared as strings (no parseFloat) to avoid
+    // corrupting slash-delimited values like "208/3".
+    // -----------------------------------------------------------------------
+    function filterGasPacks(filters) {
+        var p = _products["gas-packs"];
+        if (!p) return [];
+
+        return p.systems.filter(function (sys) {
+            var f = sys.filters;
+
+            if (filters.size && f.size !== filters.size) return false;
+            if (filters.electrical && f.electrical !== filters.electrical) return false;
+            if (filters.efficiency && f.efficiency !== filters.efficiency) return false;
+            if (filters.coolingStages && f.coolingStages !== filters.coolingStages) return false;
+            if (filters.gasHeat && f.gasHeat !== filters.gasHeat) return false;
+            if (filters.hgrh && f.hgrh !== filters.hgrh) return false;
+
+            return true;
+        });
+    }
+
+
+    // -----------------------------------------------------------------------
     // Unified Filter Dispatch
     // -----------------------------------------------------------------------
     function filterSystems(filters) {
         if (_activeProductKey === "multi-position") {
             return filterMultiPosition(filters);
+        }
+        if (_activeProductKey === "gas-packs") {
+            return filterGasPacks(filters);
         }
         return filterMiniSplits(filters);
     }
@@ -359,12 +391,43 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Document Helpers — Gas Packs (single unit — no indoor/outdoor split)
+    // -----------------------------------------------------------------------
+    function getGasPacksDocuments(systemId) {
+        var sys = getSystemById(systemId);
+        if (!sys || !sys.docs) return [];
+
+        var docs = [];
+        var seen = {};
+
+        function add(label, path, type) {
+            if (!path || seen[path]) return;
+            seen[path] = true;
+            docs.push({ label: label, path: path, type: type });
+        }
+
+        var d = sys.docs;
+
+        add("Submittal", d.submittal, "pdf");
+        add("Engineering Manual", d.engineeringManual, "pdf");
+        add("Installation Manual", d.installationManual, "pdf");
+        add("Revit", d.revit, "zip");
+        add("CAD", d.cad, "zip");
+
+        return docs;
+    }
+
+
+    // -----------------------------------------------------------------------
     // Unified Document Access
     // -----------------------------------------------------------------------
     function getSystemDocuments(systemId) {
         var sys = getSystemById(systemId);
         if (!sys) return [];
 
+        if (sys.productKey === "gas-packs") {
+            return getGasPacksDocuments(systemId);
+        }
         if (sys.productKey === "multi-position") {
             return getMultiPositionDocuments(systemId);
         }
@@ -383,6 +446,9 @@ const DataLoader = (function () {
         var sys = getSystemById(systemId);
         if (!sys) return "";
 
+        if (sys.productKey === "gas-packs") {
+            return getGasPacksSummary(sys);
+        }
         if (sys.productKey === "multi-position") {
             return getMultiPositionSummary(sys);
         }
@@ -406,6 +472,13 @@ const DataLoader = (function () {
         var model = sys.indoorUnits[0].model || "";
 
         return ["Multi-Position", type, size, model].filter(Boolean).join(" — ");
+    }
+
+    function getGasPacksSummary(sys) {
+        var size = sys.filters.size ? sys.filters.size + " Ton" : "";
+        var model = sys.schedule.model || "";
+
+        return ["Gas Pack RTU", size, model].filter(Boolean).join(" — ");
     }
 
 

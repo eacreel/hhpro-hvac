@@ -1,14 +1,15 @@
 /* ==========================================================================
    schedule.css — Split indoor/outdoor schedule tables matching the
    PDF/Excel template layout, plus accessories notes section.
-   Supports both Mini Split and Multi Position Split column layouts.
+   Supports Mini Split, Multi Position Split, and Gas Pack column layouts.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    Schedule Section Wrapper  (contains both tables + accessories)
    -------------------------------------------------------------------------- */
 #schedule-section,
-#mps-schedule-section {
+#mps-schedule-section,
+#gp-schedule-section {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
@@ -21,7 +22,8 @@
    Schedule Toolbar  (title bar)
    -------------------------------------------------------------------------- */
 #schedule-toolbar,
-#mps-schedule-toolbar {
+#mps-schedule-toolbar,
+#gp-schedule-toolbar {
     display: flex;
     align-items: baseline;
     gap: var(--space-md);
@@ -111,6 +113,10 @@
 
 #mps-outdoor-schedule-table {
     min-width: 1050px;
+}
+
+#gp-schedule-table {
+    min-width: 1500px;
 }
 
 
@@ -203,6 +209,38 @@
 
 
 /* --------------------------------------------------------------------------
+   Gas Packs — Single Unit Column Widths
+   -------------------------------------------------------------------------- */
+.gp-col-make           { width: 3.8%; }
+.gp-col-model          { width: 5.6%; }
+.gp-col-tons           { width: 2.8%; }
+.gp-col-fan            { /* colspan 3 */ }
+.gp-col-cfm            { width: 3.2%; }
+.gp-col-esp            { width: 2.8%; }
+.gp-col-tesp           { width: 2.8%; }
+.gp-col-cooling        { /* colspan 7 */ }
+.gp-col-cool-total     { width: 5.2%; }
+.gp-col-cool-sensible  { width: 5.2%; }
+.gp-col-cool-eff       { width: 6.8%; }
+.gp-col-edb            { width: 2.6%; }
+.gp-col-ewb            { width: 2.6%; }
+.gp-col-ldb            { width: 2.6%; }
+.gp-col-lwb            { width: 2.6%; }
+.gp-col-heating        { /* colspan 4 */ }
+.gp-col-heat-input     { width: 3.2%; }
+.gp-col-heat-output    { width: 3.2%; }
+.gp-col-heat-eat       { width: 2.6%; }
+.gp-col-heat-lat       { width: 2.6%; }
+.gp-col-hgrh           { width: 3.0%; }
+.gp-col-stages         { width: 3.0%; }
+.gp-col-elec           { /* colspan 4 */ }
+.gp-col-voltage        { width: 3.4%; }
+.gp-col-motor-hp       { width: 3.4%; }
+.gp-col-mca            { width: 3.0%; }
+.gp-col-mocp           { width: 3.0%; }
+
+
+/* --------------------------------------------------------------------------
    Table Header  (thead)
    -------------------------------------------------------------------------- */
 .schedule-table thead th {
@@ -249,150 +287,103 @@
    -------------------------------------------------------------------------- */
 .schedule-table tbody td {
     padding: var(--space-sm) var(--space-xs);
-    border: 1px solid var(--color-cell-border);
+    border: 1px solid var(--color-border-light);
     text-align: center;
     vertical-align: middle;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-regular);
-    color: var(--color-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     transition: background-color var(--transition-fast);
 }
 
-/* Numeric data — monospace for alignment */
-.schedule-table tbody td.cell-numeric {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-}
 
-/* Left-aligned text cells — default */
-.schedule-table tbody td.cell-text {
-    text-align: center;
-}
-
-/* All schedule tables: center model and editable cells too */
-.schedule-table tbody td.cell-model,
-.schedule-table tbody td.cell-editable {
-    text-align: center;
-}
-
-/* Manufacturer model number cells */
-.schedule-table tbody td.cell-model {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
-    letter-spacing: 0.01em;
-}
-
-/* Merged "Indoor Powered From Outdoor Unit" cells */
-.schedule-table tbody td.cell-powered-from-outdoor {
-    font-size: var(--font-size-xs);
-    font-style: italic;
-    color: var(--color-text-muted);
-    text-align: center;
-}
-
-/* Editable cells (symbol tags, accessories) — yellow tint */
-.schedule-table tbody td.cell-editable {
-    background-color: var(--color-cell-editable-bg);
-    cursor: text;
-}
-
-.schedule-table tbody td.cell-editable:hover {
-    outline: 2px solid var(--color-brand);
-    outline-offset: -2px;
-}
-
-/* Empty / null cells */
-.schedule-table tbody td.cell-empty {
-    color: var(--color-text-muted);
-}
-
-/* Auto-filled ODU symbol reference — light gray bg */
-.schedule-table tbody td.cell-odu-ref {
-    color: var(--color-text-secondary);
-    font-style: italic;
+/* --------------------------------------------------------------------------
+   Row Striping  (alternating system backgrounds)
+   -------------------------------------------------------------------------- */
+.schedule-row {
+    background-color: var(--color-surface);
 }
 
 
 /* --------------------------------------------------------------------------
-   Row Striping & Hover
+   System Boundaries  (visual grouping of multi-row systems)
    -------------------------------------------------------------------------- */
-.schedule-table tbody tr.schedule-row:nth-child(even) td {
-    background-color: var(--color-row-even);
-}
-
-.schedule-table tbody tr.schedule-row:nth-child(odd) td {
-    background-color: var(--color-row-odd);
-}
-
-/* Preserve editable cell bg over striping */
-.schedule-table tbody tr.schedule-row td.cell-editable {
-    background-color: var(--color-cell-editable-bg);
-}
-
-/* System group hover — highlight all rows in a multi-zone system */
-.schedule-table tbody tr.schedule-row.system-hover td {
-    background-color: var(--color-row-hover);
-}
-
-.schedule-table tbody tr.schedule-row.system-hover td.cell-editable {
-    background-color: #E8EDAB;
-}
-
-
-/* --------------------------------------------------------------------------
-   Multi-Zone Indoor Grouping — left accent border
-   -------------------------------------------------------------------------- */
-.schedule-table tbody tr.system-first-row td {
+.schedule-row.system-first-row td {
     border-top: 2px solid var(--color-brand);
 }
 
-.schedule-table tbody tr.system-last-row td {
+.schedule-row.system-last-row td {
     border-bottom: 2px solid var(--color-brand);
-}
-
-/* Left accent stripe on first visible cell of each system group */
-.schedule-table tbody tr.system-first-row td:first-child,
-.schedule-table tbody tr.system-first-row td.cell-action {
-    box-shadow: inset 3px 0 0 0 var(--color-accent);
-}
-
-.schedule-table tbody tr:not(.system-first-row):not(.system-last-row).schedule-row td:first-child,
-.schedule-table tbody tr:not(.system-first-row):not(.system-last-row).schedule-row td.cell-action {
-    box-shadow: inset 3px 0 0 0 rgba(232, 106, 16, 0.3);
-}
-
-.schedule-table tbody tr.system-last-row td:first-child,
-.schedule-table tbody tr.system-last-row td.cell-action {
-    box-shadow: inset 3px 0 0 0 rgba(232, 106, 16, 0.3);
 }
 
 
 /* --------------------------------------------------------------------------
-   Action Column  (add-to-project button)
+   Cross-Table Hover  (highlight entire system on hover)
    -------------------------------------------------------------------------- */
-.schedule-table tbody td.cell-action {
-    padding: 0;
-    border-color: var(--color-cell-border);
-    vertical-align: middle;
+.schedule-row.system-hover td {
+    background-color: var(--color-brand-light);
+}
+
+
+/* --------------------------------------------------------------------------
+   Cell Types
+   -------------------------------------------------------------------------- */
+.cell-numeric {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
     text-align: center;
 }
 
+.cell-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+    text-align: center;
+}
+
+.cell-model {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-brand);
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.cell-empty {
+    color: var(--color-text-muted);
+    opacity: 0.35;
+}
+
+/* "Indoor Powered From Outdoor Unit" merged cell */
+.cell-powered-from-outdoor {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-align: center;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    background-color: var(--color-surface-alt);
+}
+
+
+/* --------------------------------------------------------------------------
+   Action Column  (+ button, PDF button)
+   -------------------------------------------------------------------------- */
+.schedule-table tbody td.cell-action {
+    padding: var(--space-xs);
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* The add-to-project button */
 .btn-add-system {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     color: var(--color-text-inverse);
     background-color: var(--color-brand);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    line-height: 1;
     cursor: pointer;
     transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     box-shadow: 0 1px 4px rgba(0, 84, 166, 0.3);
@@ -554,7 +545,8 @@
    Schedule Empty State
    -------------------------------------------------------------------------- */
 #schedule-empty,
-#mps-schedule-empty {
+#mps-schedule-empty,
+#gp-schedule-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -566,7 +558,8 @@
 
 /* Empty state icon — SVG illustration placeholder via CSS */
 #schedule-empty::before,
-#mps-schedule-empty::before {
+#mps-schedule-empty::before,
+#gp-schedule-empty::before {
     content: '';
     display: block;
     width: 56px;
@@ -591,7 +584,8 @@
    Schedule Loading State
    -------------------------------------------------------------------------- */
 #schedule-section.loading .schedule-table-wrapper,
-#mps-schedule-section.loading .schedule-table-wrapper {
+#mps-schedule-section.loading .schedule-table-wrapper,
+#gp-schedule-section.loading .schedule-table-wrapper {
     opacity: 0.4;
     pointer-events: none;
 }
@@ -610,7 +604,8 @@
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     #schedule-toolbar,
-    #mps-schedule-toolbar {
+    #mps-schedule-toolbar,
+    #gp-schedule-toolbar {
         padding: var(--space-sm) var(--space-lg);
     }
 
