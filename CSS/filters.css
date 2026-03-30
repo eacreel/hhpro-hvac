@@ -1,14 +1,13 @@
 /* ==========================================================================
    filters.css — Filter bar layout, dropdowns, labels, result count.
-   Supports Mini Split, Multi Position Split, and Gas Pack filter bars.
+   Supports both Mini Split and Multi Position Split filter bars.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    Filter Bar Container
    -------------------------------------------------------------------------- */
 #filter-bar,
-#mps-filter-bar,
-#gp-filter-bar {
+#mps-filter-bar {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
@@ -22,8 +21,7 @@
    Filter Bar Header  (title + clear button)
    -------------------------------------------------------------------------- */
 #filter-bar-header,
-#mps-filter-bar-header,
-#gp-filter-bar-header {
+#mps-filter-bar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -61,8 +59,7 @@
    Filter Controls Grid
    -------------------------------------------------------------------------- */
 #filter-controls,
-#mps-filter-controls,
-#gp-filter-controls {
+#mps-filter-controls {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: var(--space-lg) var(--space-xl);
@@ -146,8 +143,7 @@
    Filter Status Bar  (result count)
    -------------------------------------------------------------------------- */
 #filter-status,
-#mps-filter-status,
-#gp-filter-status {
+#mps-filter-status {
     display: flex;
     align-items: center;
     padding: var(--space-md) var(--space-xl);
@@ -156,8 +152,7 @@
 }
 
 #filter-result-count,
-#mps-filter-result-count,
-#gp-filter-result-count {
+#mps-filter-result-count {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
@@ -173,16 +168,14 @@
 }
 
 #filter-result-count.has-results,
-#mps-filter-result-count.has-results,
-#gp-filter-result-count.has-results {
+#mps-filter-result-count.has-results {
     color: var(--color-success);
     background-color: var(--color-success-bg);
     border-color: rgba(26, 138, 74, 0.2);
 }
 
 #filter-result-count.no-results,
-#mps-filter-result-count.no-results,
-#gp-filter-result-count.no-results {
+#mps-filter-result-count.no-results {
     color: var(--color-danger);
     background-color: var(--color-danger-bg);
     border-color: rgba(209, 41, 61, 0.2);
@@ -214,16 +207,14 @@
    -------------------------------------------------------------------------- */
 @media (max-width: 1400px) {
     #filter-controls,
-    #mps-filter-controls,
-    #gp-filter-controls {
+    #mps-filter-controls {
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     }
 }
 
 @media (max-width: 1024px) {
     #filter-controls,
-    #mps-filter-controls,
-    #gp-filter-controls {
+    #mps-filter-controls {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: var(--space-md);
         padding: var(--space-lg);
@@ -232,30 +223,26 @@
 
 @media (max-width: 768px) {
     #filter-controls,
-    #mps-filter-controls,
-    #gp-filter-controls {
+    #mps-filter-controls {
         grid-template-columns: 1fr 1fr;
         gap: var(--space-md);
         padding: var(--space-md);
     }
 
     #filter-bar-header,
-    #mps-filter-bar-header,
-    #gp-filter-bar-header {
+    #mps-filter-bar-header {
         padding: var(--space-md) var(--space-lg);
     }
 
     #filter-status,
-    #mps-filter-status,
-    #gp-filter-status {
+    #mps-filter-status {
         padding: var(--space-sm) var(--space-lg);
     }
 }
 
 @media (max-width: 480px) {
     #filter-controls,
-    #mps-filter-controls,
-    #gp-filter-controls {
+    #mps-filter-controls {
         grid-template-columns: 1fr;
     }
 }

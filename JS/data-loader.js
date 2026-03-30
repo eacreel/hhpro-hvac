@@ -5,7 +5,6 @@
    Supports:
      - mini-splits
      - multi-position (Multi Position Splits)
-     - gas-packs (Light Commercial RTUs - Gas)
    ========================================================================== */
 
 const DataLoader = (function () {
@@ -21,10 +20,6 @@ const DataLoader = (function () {
         "multi-position": {
             jsonPath: "DATA/JSON/multi-position-splits.json",
             assetBase: "ASSETS/MULTI POSITION SPLITS/",
-        },
-        "gas-packs": {
-            jsonPath: "DATA/JSON/gas-packs.json",
-            assetBase: "ASSETS/GAS PACKS/",
         },
     };
 
@@ -252,6 +247,7 @@ const DataLoader = (function () {
 
             if (filters.electricHeatKw) {
                 if (filters.electricHeatKw === "NONE") {
+                    // Show only systems with no aux heat
                     if (f.electricHeatKw !== null) return false;
                 } else {
                     if (f.electricHeatKw !== filters.electricHeatKw) return false;
@@ -268,36 +264,11 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
-    // Filtering — Gas Packs (all string comparisons — no parseFloat!)
-    // -----------------------------------------------------------------------
-    function filterGasPacks(filters) {
-        var p = _products["gas-packs"];
-        if (!p) return [];
-
-        return p.systems.filter(function (sys) {
-            var f = sys.filters;
-
-            if (filters.size && f.size !== filters.size) return false;
-            if (filters.electrical && f.electrical !== filters.electrical) return false;
-            if (filters.efficiency && f.efficiency !== filters.efficiency) return false;
-            if (filters.coolingStages && f.coolingStages !== filters.coolingStages) return false;
-            if (filters.gasHeat && f.gasHeat !== filters.gasHeat) return false;
-            if (filters.hgrh && f.hgrh !== filters.hgrh) return false;
-
-            return true;
-        });
-    }
-
-
-    // -----------------------------------------------------------------------
     // Unified Filter Dispatch
     // -----------------------------------------------------------------------
     function filterSystems(filters) {
         if (_activeProductKey === "multi-position") {
             return filterMultiPosition(filters);
-        }
-        if (_activeProductKey === "gas-packs") {
-            return filterGasPacks(filters);
         }
         return filterMiniSplits(filters);
     }
@@ -321,6 +292,7 @@ const DataLoader = (function () {
 
         var d = sys.docs;
 
+        // System-level docs
         add("Submittal (System)", d.submittalSystem, "pdf");
         add("Submittal (Outdoor Unit)", d.submittalOutdoor, "pdf");
         add("Engineering Manual", d.engineeringManual, "pdf");
@@ -329,6 +301,7 @@ const DataLoader = (function () {
         add("Revit (Outdoor)", d.revitOutdoor, "zip");
         add("CAD (Outdoor)", d.cadOutdoor, "zip");
 
+        // Per-indoor-unit docs
         if (d.indoorDocs) {
             for (var i = 0; i < d.indoorDocs.length; i++) {
                 var idu = d.indoorDocs[i];
@@ -366,6 +339,7 @@ const DataLoader = (function () {
 
         var d = sys.docs;
 
+        // System-level docs
         add("Submittal (System)", d.submittalSystem, "pdf");
         add("Submittal (Outdoor Unit)", d.submittalOutdoor, "pdf");
         add("Submittal (Indoor Unit)", d.submittalIndoor, "pdf");
@@ -385,34 +359,6 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
-    // Document Helpers — Gas Packs
-    // -----------------------------------------------------------------------
-    function getGasPackDocuments(systemId) {
-        var sys = getSystemById(systemId);
-        if (!sys || !sys.docs) return [];
-
-        var docs = [];
-        var seen = {};
-
-        function add(label, path, type) {
-            if (!path || seen[path]) return;
-            seen[path] = true;
-            docs.push({ label: label, path: path, type: type });
-        }
-
-        var d = sys.docs;
-
-        add("Submittal", d.submittal, "pdf");
-        add("Engineering Manual", d.engineeringManual, "pdf");
-        add("Installation Manual", d.installationManual, "pdf");
-        add("Revit", d.revit, "zip");
-        add("CAD", d.cad, "zip");
-
-        return docs;
-    }
-
-
-    // -----------------------------------------------------------------------
     // Unified Document Access
     // -----------------------------------------------------------------------
     function getSystemDocuments(systemId) {
@@ -421,9 +367,6 @@ const DataLoader = (function () {
 
         if (sys.productKey === "multi-position") {
             return getMultiPositionDocuments(systemId);
-        }
-        if (sys.productKey === "gas-packs") {
-            return getGasPackDocuments(systemId);
         }
         return getMiniSplitDocuments(systemId);
     }
@@ -442,9 +385,6 @@ const DataLoader = (function () {
 
         if (sys.productKey === "multi-position") {
             return getMultiPositionSummary(sys);
-        }
-        if (sys.productKey === "gas-packs") {
-            return getGasPackSummary(sys);
         }
         return getMiniSplitSummary(sys);
     }
@@ -466,15 +406,6 @@ const DataLoader = (function () {
         var model = sys.indoorUnits[0].model || "";
 
         return ["Multi-Position", type, size, model].filter(Boolean).join(" — ");
-    }
-
-    function getGasPackSummary(sys) {
-        var s = sys.schedule;
-        var size = s.nomTons ? s.nomTons + " Ton" : "";
-        var model = s.model || "";
-        var volt = s.voltPh || "";
-
-        return ["Gas RTU", size, model, volt].filter(Boolean).join(" — ");
     }
 
 
