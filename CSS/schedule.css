@@ -13,8 +13,9 @@
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
+    animation: content-fade-in 0.45s ease-out 0.1s both;
 }
 
 
@@ -309,6 +310,26 @@
 
 
 /* --------------------------------------------------------------------------
+   Unit Type Color Coding  (left border accent by indoor unit type)
+   -------------------------------------------------------------------------- */
+.schedule-row[data-unit-type="wall"] td:first-child {
+    border-left: 3px solid #2196F3;
+}
+
+.schedule-row[data-unit-type="ducted"] td:first-child {
+    border-left: 3px solid #4CAF50;
+}
+
+.schedule-row[data-unit-type="floor"] td:first-child {
+    border-left: 3px solid #FF9800;
+}
+
+.schedule-row[data-unit-type="ceiling"] td:first-child {
+    border-left: 3px solid #9C27B0;
+}
+
+
+/* --------------------------------------------------------------------------
    System Boundaries  (visual grouping of multi-row systems)
    -------------------------------------------------------------------------- */
 .schedule-row.system-first-row td {
@@ -345,11 +366,12 @@
     text-align: center;
 }
 
+/* Model number — same format as other data cells (no bold/color accent) */
 .cell-model {
     font-family: var(--font-mono);
     font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-brand);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
     text-align: center;
     letter-spacing: 0.02em;
 }
@@ -380,7 +402,7 @@
     vertical-align: middle;
 }
 
-/* The add-to-project button */
+/* The add-to-project button — prominent accent orange */
 .btn-add-system {
     display: inline-flex;
     align-items: center;
@@ -389,16 +411,16 @@
     height: 28px;
     border-radius: 50%;
     color: var(--color-text-inverse);
-    background: linear-gradient(135deg, var(--color-brand) 0%, #1A6AB8 100%);
+    background: linear-gradient(135deg, var(--color-accent) 0%, #F08030 100%);
     cursor: pointer;
-    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.3);
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 2px 6px rgba(232, 106, 16, 0.4);
 }
 
 .btn-add-system:hover {
-    background: linear-gradient(135deg, var(--color-accent) 0%, #F08030 100%);
+    background: linear-gradient(135deg, #D05E00 0%, var(--color-accent) 100%);
     transform: scale(1.15);
-    box-shadow: 0 3px 10px rgba(232, 106, 16, 0.4);
+    box-shadow: 0 3px 10px rgba(232, 106, 16, 0.5);
 }
 
 .btn-add-system:active {
@@ -418,7 +440,7 @@
     transform: scale(1.15);
 }
 
-/* View PDF button — sits left of the add button */
+/* View PDF button — solid red, clearly clickable */
 .btn-view-pdf {
     display: inline-flex;
     align-items: center;
@@ -426,19 +448,20 @@
     width: 34px;
     height: 24px;
     border-radius: var(--border-radius);
-    color: var(--color-danger);
-    background-color: var(--color-danger-bg);
+    color: var(--color-text-inverse);
+    background: linear-gradient(135deg, #C62828 0%, #E53935 100%);
     font-size: 9px;
     font-weight: var(--font-weight-bold);
     letter-spacing: 0.02em;
     line-height: 1;
-    transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 1px 4px rgba(198, 40, 40, 0.3);
 }
 
 .btn-view-pdf:hover {
-    color: var(--color-text-inverse);
-    background-color: var(--color-danger);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #B71C1C 0%, #C62828 100%);
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.45);
 }
 
 .btn-view-pdf:active {
@@ -446,10 +469,6 @@
 }
 
 /* Layout: PDF + Add button side by side in action cell */
-.schedule-table tbody td.cell-action {
-    white-space: nowrap;
-}
-
 .schedule-table tbody td.cell-action .btn-view-pdf {
     margin-right: 4px;
     vertical-align: middle;

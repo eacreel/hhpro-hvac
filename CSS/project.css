@@ -122,7 +122,11 @@
 /* --------------------------------------------------------------------------
    Projects Page
    -------------------------------------------------------------------------- */
-#projects-page { max-width: 960px; margin: 0 auto; }
+#projects-page {
+    max-width: 960px;
+    margin: 0 auto;
+    animation: content-fade-in 0.4s ease-out;
+}
 
 #projects-page-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -169,13 +173,25 @@
 }
 
 .projects-card {
-    background-color: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg); overflow: hidden;
-    transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base), border-left-color var(--transition-base);
+    box-shadow: var(--shadow-md);
 }
-.projects-card:hover { box-shadow: 0 4px 12px rgba(0, 84, 166, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06); border-color: var(--color-brand); transform: translateY(-2px); }
-.projects-card-active { border-color: var(--color-brand); border-left: 3px solid var(--color-brand); }
+.projects-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 84, 166, 0.12), 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-brand);
+    border-left-color: var(--color-brand);
+    transform: translateY(-3px);
+}
+.projects-card-active {
+    border-color: var(--color-brand);
+    border-left: 3px solid var(--color-brand);
+    box-shadow: 0 2px 8px rgba(0, 84, 166, 0.1), 0 0 0 1px rgba(0, 84, 166, 0.08);
+}
 
 .projects-card-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -201,13 +217,20 @@
     font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
     color: var(--color-brand); background-color: var(--color-brand-light);
     border: 1px solid var(--color-brand); border-radius: var(--border-radius);
-    transition: color var(--transition-fast), background-color var(--transition-fast);
+    transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
-.projects-card-open-btn:hover { color: var(--color-text-inverse); background-color: var(--color-brand); }
+.projects-card-open-btn:hover {
+    color: var(--color-text-inverse);
+    background-color: var(--color-brand);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 84, 166, 0.3);
+}
 
 #projects-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: var(--space-3xl); text-align: center; gap: var(--space-md);
+    padding: var(--space-3xl) var(--space-3xl) calc(var(--space-3xl) * 2); text-align: center; gap: var(--space-md);
+    background: radial-gradient(ellipse at center, var(--color-brand-lighter) 0%, transparent 70%);
+    border-radius: var(--border-radius-lg);
 }
 #projects-empty-icon { color: var(--color-brand); margin-bottom: var(--space-md); }
 #projects-empty-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text); }
@@ -360,6 +383,7 @@
     border-left: 3px solid var(--color-brand);
     transition: box-shadow var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
     box-shadow: var(--shadow-sm);
+    animation: content-fade-in 0.3s ease-out;
 }
 .project-system-card:hover {
     border-color: var(--color-brand);

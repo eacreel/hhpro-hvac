@@ -247,6 +247,18 @@ const Schedule = (function () {
             var idu = sys.indoorUnits[i];
             var isAnchorRow = (i === 0);
 
+            // Set unit type data attribute for CSS border color coding
+            var unitType = (idu.type || "").toLowerCase();
+            if (unitType.indexOf("wall") !== -1) {
+                tr.dataset.unitType = "wall";
+            } else if (unitType.indexOf("ducted") !== -1) {
+                tr.dataset.unitType = "ducted";
+            } else if (unitType.indexOf("floor") !== -1) {
+                tr.dataset.unitType = "floor";
+            } else if (unitType.indexOf("ceiling") !== -1) {
+                tr.dataset.unitType = "ceiling";
+            }
+
             // Action column
             if (isAnchorRow) {
                 var actionTd = createCell("", "cell-action");

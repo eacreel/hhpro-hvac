@@ -17,7 +17,7 @@
     --color-accent-light:       #FFF3E8;
 
     /* Neutrals — warmer tones */
-    --color-bg:                 #F0F2F7;
+    --color-bg:                 #ECEEF4;
     --color-surface:            #FFFFFF;
     --color-surface-alt:        #F6F7FB;
     --color-border:             #D0D5E0;
@@ -621,6 +621,24 @@ body.project-open #content {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* --------------------------------------------------------------------------
+   Content section fade-in animation
+   -------------------------------------------------------------------------- */
+@keyframes content-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-content:not(.hidden) {
+    animation: content-fade-in 0.4s ease-out;
 }
 
 
