@@ -400,9 +400,10 @@
     padding: var(--space-xs);
     text-align: center;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
-/* The add-to-project button — prominent accent orange */
+/* The add-to-project button — bright orange */
 .btn-add-system {
     display: inline-flex;
     align-items: center;
@@ -411,36 +412,36 @@
     height: 28px;
     border-radius: 50%;
     color: var(--color-text-inverse);
-    background: linear-gradient(135deg, var(--color-accent) 0%, #F08030 100%);
+    background: linear-gradient(135deg, #F57C00 0%, #FF9800 100%);
     cursor: pointer;
     transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 2px 6px rgba(232, 106, 16, 0.4);
+    box-shadow: 0 2px 6px rgba(245, 124, 0, 0.4);
 }
 
 .btn-add-system:hover {
-    background: linear-gradient(135deg, #D05E00 0%, var(--color-accent) 100%);
+    background: linear-gradient(135deg, #E65100 0%, #F57C00 100%);
     transform: scale(1.15);
-    box-shadow: 0 3px 10px rgba(232, 106, 16, 0.5);
+    box-shadow: 0 3px 10px rgba(245, 124, 0, 0.5);
 }
 
 .btn-add-system:active {
     transform: scale(0.95);
 }
 
-/* "Added" state — checkmark (still clickable for duplicates) */
+/* "Added" state — bright green checkmark (still clickable for duplicates) */
 .btn-add-system.added {
     color: var(--color-text-inverse);
-    background: linear-gradient(135deg, #1A8A4A 0%, #22A55B 100%);
+    background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(26, 138, 74, 0.3);
+    box-shadow: 0 2px 6px rgba(46, 125, 50, 0.4);
 }
 
 .btn-add-system.added:hover {
-    background: linear-gradient(135deg, var(--color-brand) 0%, #1A6AB8 100%);
+    background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
     transform: scale(1.15);
 }
 
-/* View PDF button — solid red, clearly clickable */
+/* View PDF button — bright red, clearly clickable */
 .btn-view-pdf {
     display: inline-flex;
     align-items: center;
@@ -449,19 +450,19 @@
     height: 24px;
     border-radius: var(--border-radius);
     color: var(--color-text-inverse);
-    background: linear-gradient(135deg, #C62828 0%, #E53935 100%);
+    background: linear-gradient(135deg, #E53935 0%, #EF5350 100%);
     font-size: 9px;
     font-weight: var(--font-weight-bold);
     letter-spacing: 0.02em;
     line-height: 1;
     transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 1px 4px rgba(198, 40, 40, 0.3);
+    box-shadow: 0 1px 4px rgba(229, 57, 53, 0.35);
 }
 
 .btn-view-pdf:hover {
-    background: linear-gradient(135deg, #B71C1C 0%, #C62828 100%);
+    background: linear-gradient(135deg, #C62828 0%, #E53935 100%);
     transform: scale(1.08);
-    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.45);
+    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.5);
 }
 
 .btn-view-pdf:active {
