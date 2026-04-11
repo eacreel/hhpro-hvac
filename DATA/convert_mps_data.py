@@ -185,7 +185,7 @@ def read_schedule_notes(wb):
 def convert():
     print(f"Reading: {INPUT_FILE}")
     wb = openpyxl.load_workbook(INPUT_FILE)
-    ws = wb.active
+    ws = wb.worksheets[0]  # Always use first sheet (not wb.active which may point to Schedule Notes)
 
     # Read schedule notes from the Schedule Notes tab
     schedule_notes = read_schedule_notes(wb)

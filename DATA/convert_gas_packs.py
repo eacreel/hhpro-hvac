@@ -167,7 +167,7 @@ def convert():
         return
 
     wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
-    ws = wb.active
+    ws = wb.worksheets[0]  # Always use first sheet (not wb.active which may point to Schedule Notes)
 
     # Read schedule notes from the Schedule Notes tab
     schedule_notes = read_schedule_notes(wb)
