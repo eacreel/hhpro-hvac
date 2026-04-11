@@ -203,7 +203,7 @@ const SchedulePreview = (function () {
         if (!groups || groups.length === 0) return "";
 
         var h = '<div class="sp-col-panel' + (_colPanelOpen ? "" : " hidden") + '" id="sp-col-panel">';
-        h += '<div class="sp-col-panel-header">Show / Hide Columns</div>';
+        h += '<div class="sp-col-panel-header">Show / Hide Columns &amp; Adjust Widths</div>';
         for (var s = 0; s < groups.length; s++) {
             var section = groups[s];
             h += '<div class="sp-col-panel-section">';
@@ -214,7 +214,12 @@ const SchedulePreview = (function () {
                 for (var k = 0; k < grp.keys.length; k++) {
                     if (!isColVisible(grp.keys[k])) { allVis = false; break; }
                 }
-                h += '<label class="sp-col-option"><input type="checkbox" class="sp-col-toggle" data-col-keys="' + grp.keys.join(",") + '"' + (allVis ? " checked" : "") + '> ' + grp.label + '</label>';
+                var repWidth = getColWidth(grp.keys[0]);
+                h += '<div class="sp-col-option">';
+                h += '<input type="checkbox" class="sp-col-toggle" data-col-keys="' + grp.keys.join(",") + '"' + (allVis ? " checked" : "") + '>';
+                h += '<span class="sp-col-option-label">' + grp.label + '</span>';
+                h += '<input type="number" class="sp-col-width-input" data-col-width-keys="' + grp.keys.join(",") + '" value="' + repWidth + '" min="30" max="300" title="Column width (px)">';
+                h += '</div>';
             }
             h += '</div>';
         }
@@ -910,14 +915,23 @@ const SchedulePreview = (function () {
             });
         }
 
+        // Column width inputs
+        var widthInputs = _overlay.querySelectorAll(".sp-col-width-input");
+        for (var wi2 = 0; wi2 < widthInputs.length; wi2++) {
+            widthInputs[wi2].addEventListener("change", function () {
+                var keys = (this.dataset.colWidthKeys || "").split(",");
+                var val = parseInt(this.value, 10) || 60;
+                for (var wk = 0; wk < keys.length; wk++) {
+                    setColWidth(keys[wk], val);
+                }
+            });
+        }
+
         // Files tab events
         wireFileEvents();
 
         // Drag and drop
         wireDragEvents();
-
-        // Column resize handles
-        wireResizeHandles();
     }
 
     function wireFileEvents() {
