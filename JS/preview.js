@@ -18,6 +18,7 @@ const SchedulePreview = (function () {
     // Working copies
     let _entries = [];
     let _notesByProduct = {};  // { "mini-splits": ["note1","note3"], ... } — ordered checked notes
+    let _customNotesByProduct = {};  // { "mini-splits": [{text:"...",checked:true}, ...], ... }
     const MAX_CUSTOM_NOTES = 5;
 
     // -----------------------------------------------------------------------
@@ -29,19 +30,20 @@ const SchedulePreview = (function () {
 
     function pushHistory() {
         _history = _history.slice(0, _historyIndex + 1);
-        _history.push({ entries: JSON.parse(JSON.stringify(_entries)), notesByProduct: JSON.parse(JSON.stringify(_notesByProduct)) });
+        _history.push({ entries: JSON.parse(JSON.stringify(_entries)), notesByProduct: JSON.parse(JSON.stringify(_notesByProduct)), customNotes: JSON.parse(JSON.stringify(_customNotesByProduct)) });
         if (_history.length > MAX_HISTORY) _history.shift();
         _historyIndex = _history.length - 1;
         updateUndoRedoButtons();
     }
 
-    function undo() { if (_historyIndex <= 0) return; collectEditsFromDom(); if (_historyIndex === _history.length - 1) { _history[_historyIndex] = { entries: JSON.parse(JSON.stringify(_entries)), notesByProduct: JSON.parse(JSON.stringify(_notesByProduct)) }; } _historyIndex--; restoreFromHistory(); }
+    function undo() { if (_historyIndex <= 0) return; collectEditsFromDom(); if (_historyIndex === _history.length - 1) { _history[_historyIndex] = { entries: JSON.parse(JSON.stringify(_entries)), notesByProduct: JSON.parse(JSON.stringify(_notesByProduct)), customNotes: JSON.parse(JSON.stringify(_customNotesByProduct)) }; } _historyIndex--; restoreFromHistory(); }
     function redo() { if (_historyIndex >= _history.length - 1) return; _historyIndex++; restoreFromHistory(); }
 
     function restoreFromHistory() {
         var snap = _history[_historyIndex];
         _entries = JSON.parse(JSON.stringify(snap.entries));
         _notesByProduct = JSON.parse(JSON.stringify(snap.notesByProduct));
+        _customNotesByProduct = JSON.parse(JSON.stringify(snap.customNotes || {}));
         _selectedEntries.clear();
         saveState();
         rebuildContent();
@@ -103,6 +105,7 @@ const SchedulePreview = (function () {
         // Load per-product notes (flat arrays of checked note strings)
         var existingNotes = Project.getProductNotes();
         _notesByProduct = {};
+        _customNotesByProduct = {};
         var pks = ["mini-splits", "multi-position", "gas-packs"];
         for (var p = 0; p < pks.length; p++) {
             var pk = pks[p];
@@ -110,13 +113,28 @@ const SchedulePreview = (function () {
             if (Array.isArray(existing)) {
                 _notesByProduct[pk] = existing.slice();
             } else if (existing && (existing.indoor || existing.outdoor)) {
-                // Migrate old indoor/outdoor format
                 var combined = [];
                 if (Array.isArray(existing.indoor)) combined = combined.concat(existing.indoor.filter(function (n) { return n && n.trim(); }));
                 if (Array.isArray(existing.outdoor)) combined = combined.concat(existing.outdoor.filter(function (n) { return n && n.trim(); }));
                 _notesByProduct[pk] = combined;
             } else {
                 _notesByProduct[pk] = [];
+            }
+            // Load custom notes state
+            _customNotesByProduct[pk] = [];
+            for (var cn = 0; cn < MAX_CUSTOM_NOTES; cn++) {
+                _customNotesByProduct[pk].push({ text: "", checked: false });
+            }
+        }
+        // Restore custom notes from saved state
+        var savedCustom = existingNotes["_customNotes"];
+        if (savedCustom) {
+            for (var ck in savedCustom) {
+                if (_customNotesByProduct[ck] && Array.isArray(savedCustom[ck])) {
+                    for (var ci2 = 0; ci2 < savedCustom[ck].length && ci2 < MAX_CUSTOM_NOTES; ci2++) {
+                        _customNotesByProduct[ck][ci2] = savedCustom[ck][ci2];
+                    }
+                }
             }
         }
 
@@ -531,12 +549,16 @@ const SchedulePreview = (function () {
             h += '</div>';
         }
 
-        // Custom notes (freeform)
+        // Custom notes (freeform with checkboxes — same behavior as pre-made)
+        var customNotes = _customNotesByProduct[productKey] || [];
         h += '<div class="sp-custom-notes">';
         h += '<div class="sp-custom-notes-heading">Custom Notes</div>';
         for (var ci = 0; ci < MAX_CUSTOM_NOTES; ci++) {
+            var cText = (ci < customNotes.length) ? (customNotes[ci].text || "") : "";
+            var cChecked = (ci < customNotes.length) ? customNotes[ci].checked : false;
             h += '<div class="sp-custom-note-line">';
-            h += '<input class="sp-input sp-input-custom-note" type="text" placeholder="Custom note..." data-custom-note-product="' + productKey + '" data-custom-note-index="' + ci + '">';
+            h += '<input type="checkbox" class="sp-note-cb sp-custom-note-cb" data-custom-note-product="' + productKey + '" data-custom-note-index="' + ci + '"' + (cChecked && cText ? ' checked' : '') + (cText ? '' : ' disabled') + '>';
+            h += '<input class="sp-input sp-input-custom-note" type="text" placeholder="Custom note..." value="' + esc(cText) + '" data-custom-note-product="' + productKey + '" data-custom-note-index="' + ci + '">';
             h += '</div>';
         }
         h += '</div>';
@@ -685,6 +707,12 @@ const SchedulePreview = (function () {
             inputs[inp].addEventListener("input", handleEdit);
         }
 
+        // Custom note text inputs — enable/disable checkbox and update state
+        var customInputs = _overlay.querySelectorAll(".sp-input-custom-note");
+        for (var cni = 0; cni < customInputs.length; cni++) {
+            customInputs[cni].addEventListener("input", handleCustomNoteInput);
+        }
+
         // Files tab events
         wireFileEvents();
 
@@ -737,31 +765,93 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Schedule Note Checkbox Handler
+    // Schedule Note Checkbox Handler (pre-made and custom)
     // -----------------------------------------------------------------------
     function handleNoteCheckbox(e) {
         var cb = e.target;
+
+        // Custom note checkbox
+        if (cb.classList.contains("sp-custom-note-cb")) {
+            var cpk = cb.dataset.customNoteProduct;
+            var cidx = parseInt(cb.dataset.customNoteIndex, 10);
+            if (!_customNotesByProduct[cpk]) return;
+            var customNote = _customNotesByProduct[cpk][cidx];
+            if (!customNote || !customNote.text || !customNote.text.trim()) return;
+
+            if (!_notesByProduct[cpk]) _notesByProduct[cpk] = [];
+            customNote.checked = cb.checked;
+
+            if (cb.checked) {
+                if (_notesByProduct[cpk].indexOf(customNote.text) === -1) {
+                    _notesByProduct[cpk].push(customNote.text);
+                }
+            } else {
+                var cIdx = _notesByProduct[cpk].indexOf(customNote.text);
+                if (cIdx !== -1) _notesByProduct[cpk].splice(cIdx, 1);
+            }
+
+            pushHistory(); saveState(); rebuildContent();
+            return;
+        }
+
+        // Pre-made note checkbox
         var pk = cb.dataset.noteProduct;
         var noteText = cb.dataset.noteText;
         if (!_notesByProduct[pk]) _notesByProduct[pk] = [];
 
         if (cb.checked) {
-            // Add to end of checked list (if not already there)
             if (_notesByProduct[pk].indexOf(noteText) === -1) {
                 _notesByProduct[pk].push(noteText);
             }
         } else {
-            // Remove from checked list
             var idx = _notesByProduct[pk].indexOf(noteText);
             if (idx !== -1) {
                 _notesByProduct[pk].splice(idx, 1);
             }
         }
 
-        pushHistory();
-        saveState();
-        // Rebuild just the notes section display
-        rebuildContent();
+        pushHistory(); saveState(); rebuildContent();
+    }
+
+    // -----------------------------------------------------------------------
+    // Custom Note Text Input Handler
+    // -----------------------------------------------------------------------
+    function handleCustomNoteInput(e) {
+        var inp = e.target;
+        var pk = inp.dataset.customNoteProduct;
+        var idx = parseInt(inp.dataset.customNoteIndex, 10);
+        if (!_customNotesByProduct[pk]) return;
+
+        var oldText = _customNotesByProduct[pk][idx].text;
+        var newText = inp.value.trim();
+        var wasChecked = _customNotesByProduct[pk][idx].checked;
+
+        // Update stored text
+        _customNotesByProduct[pk][idx].text = inp.value;
+
+        // Enable/disable the sibling checkbox
+        var line = inp.closest(".sp-custom-note-line");
+        if (line) {
+            var checkbox = line.querySelector(".sp-custom-note-cb");
+            if (checkbox) {
+                checkbox.disabled = !newText;
+                // If text was cleared while checked, uncheck and remove from active
+                if (!newText && wasChecked) {
+                    checkbox.checked = false;
+                    _customNotesByProduct[pk][idx].checked = false;
+                    var rmIdx = _notesByProduct[pk].indexOf(oldText);
+                    if (rmIdx !== -1) _notesByProduct[pk].splice(rmIdx, 1);
+                }
+                // If text changed while checked, update in active list
+                if (newText && wasChecked && oldText !== newText) {
+                    var updateIdx = _notesByProduct[pk].indexOf(oldText);
+                    if (updateIdx !== -1) _notesByProduct[pk][updateIdx] = newText;
+                }
+            }
+        }
+
+        clearTimeout(_saveTimeout);
+        _saveTimeout = setTimeout(function () { saveState(); }, 600);
     }
 
     // -----------------------------------------------------------------------
@@ -961,7 +1051,9 @@ const SchedulePreview = (function () {
 
     function saveState() {
         Project._saveEntriesDirect(JSON.parse(JSON.stringify(_entries)));
-        Project._saveProductNotesDirect(JSON.parse(JSON.stringify(_notesByProduct)));
+        var notesData = JSON.parse(JSON.stringify(_notesByProduct));
+        notesData["_customNotes"] = JSON.parse(JSON.stringify(_customNotesByProduct));
+        Project._saveProductNotesDirect(notesData);
     }
 
     // -----------------------------------------------------------------------

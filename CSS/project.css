@@ -2054,7 +2054,28 @@ body.preview-open {
 }
 
 .sp-custom-note-line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
     margin-bottom: var(--space-xs);
+}
+
+.sp-custom-note-line .sp-custom-note-cb {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-brand);
+    cursor: pointer;
+}
+
+.sp-custom-note-line .sp-custom-note-cb:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.sp-custom-note-line .sp-input-custom-note {
+    flex: 1;
+    max-width: 600px;
 }
 
 .sp-input-custom-note {
