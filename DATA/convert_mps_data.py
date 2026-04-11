@@ -162,12 +162,36 @@ def doc_path(ws, col, row):
 
 
 # -----------------------------------------------------------------------
+# Read Schedule Notes from "Schedule Notes" tab
+# -----------------------------------------------------------------------
+def read_schedule_notes(wb):
+    """Read pre-made schedule notes from the 'Schedule Notes' tab."""
+    notes = []
+    if "Schedule Notes" in wb.sheetnames:
+        ws = wb["Schedule Notes"]
+        for row in range(1, ws.max_row + 1):
+            val = ws.cell(row=row, column=1).value
+            if val is None:
+                break
+            s = str(val).strip()
+            if s:
+                notes.append(s)
+    return notes
+
+
+# -----------------------------------------------------------------------
 # Main Conversion
 # -----------------------------------------------------------------------
 def convert():
     print(f"Reading: {INPUT_FILE}")
     wb = openpyxl.load_workbook(INPUT_FILE)
     ws = wb.active
+
+    # Read schedule notes from the Schedule Notes tab
+    schedule_notes = read_schedule_notes(wb)
+    print(f"Schedule Notes: {len(schedule_notes)} note(s)")
+    for i, note in enumerate(schedule_notes):
+        print(f"  {i+1}: {note}")
 
     # Track unique filter values for filterOptions
     size_set = set()
@@ -332,6 +356,7 @@ def convert():
             "compressorStages":    comp_sorted,
             "fanTypes":            fan_sorted,
         },
+        "scheduleNotes": schedule_notes,
         "systems": systems,
     }
 

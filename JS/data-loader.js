@@ -28,7 +28,7 @@ const DataLoader = (function () {
         },
     };
 
-    // Per-product storage: { data, systems, filterOptions, systemMap }
+    // Per-product storage: { data, systems, filterOptions, systemMap, scheduleNotes }
     let _products = {};
 
     // Active product key
@@ -62,6 +62,7 @@ const DataLoader = (function () {
             var data = await response.json();
             var systems = data.systems || [];
             var filterOptions = data.filterOptions || {};
+            var scheduleNotes = data.scheduleNotes || [];
 
             // Normalize MPS systems: wrap indoorUnit in indoorUnits array
             if (productKey === "multi-position") {
@@ -89,11 +90,13 @@ const DataLoader = (function () {
                 systems: systems,
                 filterOptions: filterOptions,
                 systemMap: systemMap,
+                scheduleNotes: scheduleNotes,
             };
 
             console.log(
                 "[DataLoader] Loaded " + systems.length + " systems for " +
-                productKey + " (" + data.productType + " — " + data.manufacturer + ")"
+                productKey + " (" + data.productType + " — " + data.manufacturer + ")" +
+                " with " + scheduleNotes.length + " schedule notes"
             );
 
             return true;
@@ -187,6 +190,13 @@ const DataLoader = (function () {
         }
 
         return null;
+    }
+
+    /** Get pre-made schedule notes for a given product key */
+    function getScheduleNotes(productKey) {
+        var pk = productKey || _activeProductKey;
+        var p = _products[pk];
+        return p ? (p.scheduleNotes || []) : [];
     }
 
 
@@ -504,6 +514,7 @@ const DataLoader = (function () {
         getSystems:          getSystems,
         getFilterOptions:    getFilterOptions,
         getSystemById:       getSystemById,
+        getScheduleNotes:    getScheduleNotes,
         filterSystems:       filterSystems,
         getSystemDocuments:  getSystemDocuments,
         getSystemDocCount:   getSystemDocCount,

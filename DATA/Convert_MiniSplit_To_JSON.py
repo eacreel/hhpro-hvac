@@ -12,6 +12,7 @@ Output: HHpro/DATA/JSON/mini-splits.json
 import json
 import os
 import pandas as pd
+import openpyxl
 
 
 # ---------------------------------------------------------------------------
@@ -135,10 +136,33 @@ ELEC_DUAL_POINT     = "Dual Point Power"
 
 
 # ---------------------------------------------------------------------------
+# Read Schedule Notes from "Schedule Notes" tab
+# ---------------------------------------------------------------------------
+def read_schedule_notes():
+    """Read pre-made schedule notes from the 'Schedule Notes' tab."""
+    notes = []
+    try:
+        wb = openpyxl.load_workbook(EXCEL_PATH)
+        if "Schedule Notes" in wb.sheetnames:
+            ws = wb["Schedule Notes"]
+            for row in range(1, ws.max_row + 1):
+                val = ws.cell(row=row, column=1).value
+                if val is None:
+                    break
+                s = str(val).strip()
+                if s:
+                    notes.append(s)
+        wb.close()
+    except Exception as e:
+        print(f"Warning: Could not read Schedule Notes tab: {e}")
+    return notes
+
+
+# ---------------------------------------------------------------------------
 # Read Excel
 # ---------------------------------------------------------------------------
 print(f"Reading: {EXCEL_PATH}")
-df = pd.read_excel(EXCEL_PATH, header=None)
+df = pd.read_excel(EXCEL_PATH, header=None, sheet_name=0)
 
 # Find end of system data (row containing "ACCESSORIES:" in column A)
 last_data_row = len(df)
@@ -401,6 +425,15 @@ print(f"  Max indoor units:  {filter_options['maxIndoorUnits']}")
 
 
 # ---------------------------------------------------------------------------
+# Read Schedule Notes
+# ---------------------------------------------------------------------------
+schedule_notes = read_schedule_notes()
+print(f"\nSchedule Notes: {len(schedule_notes)} note(s)")
+for i, note in enumerate(schedule_notes):
+    print(f"  {i+1}: {note}")
+
+
+# ---------------------------------------------------------------------------
 # Write JSON
 # ---------------------------------------------------------------------------
 output = {
@@ -409,6 +442,7 @@ output = {
     "generated":        pd.Timestamp.now().isoformat(),
     "totalSystems":     len(systems),
     "filterOptions":    filter_options,
+    "scheduleNotes":    schedule_notes,
     "systems":          systems,
 }
 

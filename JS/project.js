@@ -1,7 +1,7 @@
 /* ==========================================================================
    project.js — Multi-project management, projects page, selection dialog,
-   cart, panel sidebar, accessories notes, localStorage persistence, CSV.
-   Updated with multi-product support (mini-splits + multi-position).
+   cart, panel sidebar, localStorage persistence, CSV.
+   Updated with multi-product support and single notes section.
    Emits project:changed via EventBus when entries change.
    ========================================================================== */
 
@@ -12,7 +12,6 @@ const Project = (function () {
     const STORAGE_PREFIX_NOTES    = "hhpro_project_notes_";
     const OLD_STORAGE_KEY_ENTRIES = "hhpro_project_entries";
     const OLD_STORAGE_KEY_NOTES   = "hhpro_project_notes";
-    const MAX_ACCESSORY_LINES    = 10;
 
     let _projects = [];
     let _activeTarget = null;
@@ -20,19 +19,10 @@ const Project = (function () {
 
     let _entries      = [];
     let _idSet        = new Set();
-    let _indoorNotes  = [];
-    let _outdoorNotes = [];
 
     let _cartEntries      = [];
     let _cartIdSet        = new Set();
-    let _cartIndoorNotes  = [];
-    let _cartOutdoorNotes = [];
     let _cartProductNotes = {};
-
-    function initCartNotes() {
-        while (_cartIndoorNotes.length < MAX_ACCESSORY_LINES)  _cartIndoorNotes.push("");
-        while (_cartOutdoorNotes.length < MAX_ACCESSORY_LINES) _cartOutdoorNotes.push("");
-    }
 
     let _saveTimeout      = null;
     let _currentView      = "schedule";
@@ -41,7 +31,6 @@ const Project = (function () {
     let _btnNew, _btnLoadCsv, _csvInput;
     let _btnExportCsv, _btnExportXlsx, _btnExportPdf, _btnDownloadDocs;
     let _btnPreview;
-    let _indoorNotesList, _outdoorNotesList;
     let _projectsPage, _projectsGrid, _projectsEmpty;
     let _scheduleView;
     let _panelTitle;
@@ -69,8 +58,6 @@ const Project = (function () {
         _btnExportPdf    = document.getElementById("btn-export-schedule-pdf");
         _btnDownloadDocs = document.getElementById("btn-download-docs");
         _btnPreview      = document.getElementById("btn-preview-schedule");
-        _indoorNotesList = document.getElementById("accessories-indoor-list");
-        _outdoorNotesList = document.getElementById("accessories-outdoor-list");
         _panelTitle      = document.getElementById("project-panel-title");
 
         _projectsPage  = document.getElementById("projects-page");
@@ -129,7 +116,6 @@ const Project = (function () {
             tabs[t].addEventListener("click", function () { if (_currentView === "projects") showScheduleView(); });
         }
 
-        initCartNotes();
         migrateOldData();
         loadProjectsList();
         updateBadge();
@@ -269,7 +255,6 @@ const Project = (function () {
         var hasTarget = !!_openTarget || !!_activeTarget;
         if (hasTarget && !isPanelOpen()) {
             _btnFloatingSidebar.classList.remove("hidden");
-            // Update count
             var count = 0;
             var target = _openTarget || _activeTarget;
             if (target) {
@@ -279,7 +264,6 @@ const Project = (function () {
             if (_floatingSidebarCount) {
                 _floatingSidebarCount.textContent = count;
             }
-            // Update label
             var labelEl = _btnFloatingSidebar.querySelector(".floating-sidebar-label");
             if (labelEl && target) {
                 if (target.type === "cart") {
@@ -413,7 +397,7 @@ const Project = (function () {
             showToast("System added to project", "toast-success");
         }
 
-        if (_openTarget && isSameTarget(_openTarget, target)) { loadOpenTarget(); renderList(); renderAccessoriesNotes(); }
+        if (_openTarget && isSameTarget(_openTarget, target)) { loadOpenTarget(); renderList(); }
         updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange();
 
         if (_currentView === "schedule") {
@@ -448,17 +432,13 @@ const Project = (function () {
         if (!_activeTarget || !isSameTarget(_activeTarget, target)) setActiveTarget(target);
         if (target.type === "cart") _panelTitle.textContent = "Cart (Unsaved)";
         else { var proj = getProjectById(target.projectId); _panelTitle.textContent = proj ? proj.name : "Project"; }
-        renderList(); renderAccessoriesNotes(); updateBadge(); updateExportButtons(); openPanel();
+        renderList(); updateBadge(); updateExportButtons(); openPanel();
     }
 
     function loadOpenTarget() {
-        if (!_openTarget) { _entries = []; _idSet = new Set(); _indoorNotes = []; _outdoorNotes = []; return; }
-        if (_openTarget.type === "cart") { _entries = _cartEntries; _idSet = _cartIdSet; _indoorNotes = _cartIndoorNotes; _outdoorNotes = _cartOutdoorNotes; }
-        else { _entries = loadProjectEntries(_openTarget.projectId); _idSet = new Set(_entries.map(function (e) { return e.systemId; })); var notes = loadProjectNotes(_openTarget.projectId); _indoorNotes = notes.indoor; _outdoorNotes = notes.outdoor; }
-        while (_indoorNotes.length < MAX_ACCESSORY_LINES) _indoorNotes.push("");
-        while (_outdoorNotes.length < MAX_ACCESSORY_LINES) _outdoorNotes.push("");
-        _indoorNotes = _indoorNotes.slice(0, MAX_ACCESSORY_LINES);
-        _outdoorNotes = _outdoorNotes.slice(0, MAX_ACCESSORY_LINES);
+        if (!_openTarget) { _entries = []; _idSet = new Set(); return; }
+        if (_openTarget.type === "cart") { _entries = _cartEntries; _idSet = _cartIdSet; }
+        else { _entries = loadProjectEntries(_openTarget.projectId); _idSet = new Set(_entries.map(function (e) { return e.systemId; })); }
     }
 
     // -----------------------------------------------------------------------
@@ -475,7 +455,6 @@ const Project = (function () {
         _panel.classList.remove("open"); _panel.classList.add("closed");
         _overlay.classList.remove("visible"); _overlay.classList.add("hidden");
         document.body.classList.remove("project-open");
-        // Show floating button after panel closes (slight delay for animation)
         setTimeout(updateFloatingButton, 100);
     }
     function isPanelOpen() { return _panel.classList.contains("open"); }
@@ -493,37 +472,6 @@ const Project = (function () {
     function getCount() { return _entries.length; }
 
     // -----------------------------------------------------------------------
-    // Accessories Notes
-    // -----------------------------------------------------------------------
-    function getIndoorNotes() { return _indoorNotes.slice(); }
-    function getOutdoorNotes() { return _outdoorNotes.slice(); }
-    function getActiveIndoorNotes() { return _indoorNotes.filter(function (n) { return n.trim() !== ""; }); }
-    function getActiveOutdoorNotes() { return _outdoorNotes.filter(function (n) { return n.trim() !== ""; }); }
-
-    function renderAccessoriesNotes() {
-        renderNotesList(_indoorNotesList, _indoorNotes, "indoor");
-        renderNotesList(_outdoorNotesList, _outdoorNotes, "outdoor");
-    }
-
-    function renderNotesList(container, notes, prefix) {
-        if (!container) return; container.innerHTML = "";
-        while (notes.length < MAX_ACCESSORY_LINES) notes.push("");
-        for (var i = 0; i < MAX_ACCESSORY_LINES; i++) {
-            var line = document.createElement("div"); line.className = "accessories-line";
-            var num = document.createElement("span"); num.className = "accessories-line-number"; num.textContent = (i + 1) + "-";
-            var input = document.createElement("input"); input.type = "text"; input.className = "accessories-line-input"; input.value = notes[i] || ""; input.placeholder = "";
-            input.dataset.prefix = prefix; input.dataset.lineIndex = i; input.addEventListener("input", handleNoteInput);
-            line.appendChild(num); line.appendChild(input); container.appendChild(line);
-        }
-    }
-
-    function handleNoteInput(e) {
-        var el = e.target; var prefix = el.dataset.prefix; var idx = parseInt(el.dataset.lineIndex, 10);
-        if (prefix === "indoor") _indoorNotes[idx] = el.value; else _outdoorNotes[idx] = el.value;
-        clearTimeout(_saveTimeout); _saveTimeout = setTimeout(function () { saveOpenTarget(); }, 500);
-    }
-
-    // -----------------------------------------------------------------------
     // Render Project List (sidebar)
     // -----------------------------------------------------------------------
     function renderList() {
@@ -533,10 +481,6 @@ const Project = (function () {
         for (var i = 0; i < _entries.length; i++) _listEl.appendChild(buildCard(_entries[i], i));
     }
 
-    /**
-     * Get the display model name for an indoor/outdoor unit,
-     * handling both mini-splits (.manufacturer) and MPS (.model) fields.
-     */
     function getUnitDisplayModel(unit) {
         return unit.manufacturer || unit.model || "";
     }
@@ -560,7 +504,6 @@ const Project = (function () {
         var body = document.createElement("div"); body.className = "project-card-body";
 
         if (sys.productKey === "gas-packs") {
-            // Gas packs: single unit — show tag + model
             var unitRow = document.createElement("div"); unitRow.className = "project-outdoor-row";
             var unitLabel = document.createElement("span"); unitLabel.className = "project-outdoor-label"; unitLabel.textContent = "Unit";
             var unitTagInput = document.createElement("input"); unitTagInput.type = "text"; unitTagInput.className = "project-tag-input"; unitTagInput.value = entry.oduTag || "RTU-";
@@ -600,116 +543,55 @@ const Project = (function () {
     // Documents Popup
     // -----------------------------------------------------------------------
     function showDocumentsPopup(systemId, anchorEl) {
-        // Close any existing popup
         closeDocumentsPopup();
-
         var docs = DataLoader.getSystemDocuments(systemId);
         if (!docs || docs.length === 0) return;
-
         var sys = DataLoader.getSystemById(systemId);
         var sysName = sys ? DataLoader.getSystemSummary(systemId) : "System";
 
-        // Create backdrop
         var backdrop = document.createElement("div");
         backdrop.className = "docs-popup-backdrop";
         backdrop.addEventListener("click", closeDocumentsPopup);
 
-        // Create popup
         var popup = document.createElement("div");
         popup.className = "docs-popup";
 
-        // Header
-        var header = document.createElement("div");
-        header.className = "docs-popup-header";
-        var headerTitle = document.createElement("h3");
-        headerTitle.className = "docs-popup-title";
-        headerTitle.textContent = "Documents";
-        var headerClose = document.createElement("button");
-        headerClose.type = "button";
-        headerClose.className = "docs-popup-close";
+        var header = document.createElement("div"); header.className = "docs-popup-header";
+        var headerTitle = document.createElement("h3"); headerTitle.className = "docs-popup-title"; headerTitle.textContent = "Documents";
+        var headerClose = document.createElement("button"); headerClose.type = "button"; headerClose.className = "docs-popup-close";
         headerClose.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
         headerClose.addEventListener("click", closeDocumentsPopup);
-        header.appendChild(headerTitle);
-        header.appendChild(headerClose);
-        popup.appendChild(header);
+        header.appendChild(headerTitle); header.appendChild(headerClose); popup.appendChild(header);
 
-        // Subtitle
-        var subtitle = document.createElement("div");
-        subtitle.className = "docs-popup-subtitle";
-        subtitle.textContent = sysName;
-        popup.appendChild(subtitle);
+        var subtitle = document.createElement("div"); subtitle.className = "docs-popup-subtitle"; subtitle.textContent = sysName; popup.appendChild(subtitle);
 
-        // Document list
-        var list = document.createElement("div");
-        list.className = "docs-popup-list";
-
+        var list = document.createElement("div"); list.className = "docs-popup-list";
         for (var i = 0; i < docs.length; i++) {
             (function (doc) {
-                var row = document.createElement("div");
-                row.className = "docs-popup-row";
-
-                var icon = document.createElement("span");
-                icon.className = "docs-popup-icon";
-                if (doc.type === "pdf") {
-                    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-                } else {
-                    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-                }
-
-                var label = document.createElement("span");
-                label.className = "docs-popup-label";
-                label.textContent = doc.label;
-
-                var typeBadge = document.createElement("span");
-                typeBadge.className = "docs-popup-type";
-                typeBadge.textContent = doc.type.toUpperCase();
-
-                var openBtn = document.createElement("a");
-                openBtn.className = "docs-popup-action docs-popup-open";
-                openBtn.href = doc.path;
-                openBtn.target = "_blank";
-                openBtn.rel = "noopener noreferrer";
-                openBtn.title = "Open in new tab";
+                var row = document.createElement("div"); row.className = "docs-popup-row";
+                var icon = document.createElement("span"); icon.className = "docs-popup-icon";
+                icon.innerHTML = doc.type === "pdf" ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+                var label = document.createElement("span"); label.className = "docs-popup-label"; label.textContent = doc.label;
+                var typeBadge = document.createElement("span"); typeBadge.className = "docs-popup-type"; typeBadge.textContent = doc.type.toUpperCase();
+                var openBtn = document.createElement("a"); openBtn.className = "docs-popup-action docs-popup-open"; openBtn.href = doc.path; openBtn.target = "_blank"; openBtn.rel = "noopener noreferrer"; openBtn.title = "Open in new tab";
                 openBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-
-                var dlBtn = document.createElement("a");
-                dlBtn.className = "docs-popup-action docs-popup-download";
-                dlBtn.href = doc.path;
-                dlBtn.download = "";
-                dlBtn.title = "Download";
+                var dlBtn = document.createElement("a"); dlBtn.className = "docs-popup-action docs-popup-download"; dlBtn.href = doc.path; dlBtn.download = ""; dlBtn.title = "Download";
                 dlBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-
-                row.appendChild(icon);
-                row.appendChild(label);
-                row.appendChild(typeBadge);
-                row.appendChild(openBtn);
-                row.appendChild(dlBtn);
-                list.appendChild(row);
+                row.appendChild(icon); row.appendChild(label); row.appendChild(typeBadge); row.appendChild(openBtn); row.appendChild(dlBtn); list.appendChild(row);
             })(docs[i]);
         }
-
-        popup.appendChild(list);
-        backdrop.appendChild(popup);
-        document.body.appendChild(backdrop);
-
-        // Position popup near the panel
-        requestAnimationFrame(function () {
-            backdrop.classList.add("docs-popup-visible");
-        });
+        popup.appendChild(list); backdrop.appendChild(popup); document.body.appendChild(backdrop);
+        requestAnimationFrame(function () { backdrop.classList.add("docs-popup-visible"); });
     }
 
     function closeDocumentsPopup() {
         var existing = document.querySelector(".docs-popup-backdrop");
-        if (existing) {
-            existing.classList.remove("docs-popup-visible");
-            setTimeout(function () { if (existing.parentNode) existing.remove(); }, 200);
-        }
+        if (existing) { existing.classList.remove("docs-popup-visible"); setTimeout(function () { if (existing.parentNode) existing.remove(); }, 200); }
     }
 
     // Remove entry by array index (supports duplicates)
     function removeEntryByIndex(index) {
         if (!_openTarget || index < 0 || index >= _entries.length) return;
-        var removedId = _entries[index].systemId;
         if (_openTarget.type === "cart") {
             _cartEntries.splice(index, 1);
             _cartIdSet = new Set(_cartEntries.map(function (e) { return e.systemId; }));
@@ -756,7 +638,6 @@ const Project = (function () {
         if (!_openTarget) return;
         if (_openTarget.type === "project") {
             saveProjectEntries(_openTarget.projectId, _entries);
-            saveProjectNotes(_openTarget.projectId, _indoorNotes, _outdoorNotes);
         }
     }
 
@@ -771,17 +652,13 @@ const Project = (function () {
     }
 
     function _saveNotesDirect(indoor, outdoor) {
-        _indoorNotes = indoor;
-        _outdoorNotes = outdoor;
-        saveOpenTarget();
-        renderAccessoriesNotes();
+        // Legacy compat — no-op now, notes are managed via productNotes
     }
 
     function refreshPanel() {
         if (!_openTarget) return;
         loadOpenTarget();
         renderList();
-        renderAccessoriesNotes();
         updateExportButtons();
     }
 
@@ -806,39 +683,59 @@ const Project = (function () {
         } catch (e) {} return [];
     }
 
-    function saveProjectNotes(pid, indoor, outdoor, productNotes) {
+    function saveProjectNotes(pid, productNotes) {
         try {
-            var data = { indoor: indoor || [], outdoor: outdoor || [] };
-            if (productNotes) data.productNotes = productNotes;
+            var data = { productNotes: productNotes || {} };
             localStorage.setItem(STORAGE_PREFIX_NOTES + pid, JSON.stringify(data));
         } catch (e) {}
     }
 
     function loadProjectNotes(pid) {
-        var indoor = [], outdoor = [], productNotes = {};
+        var productNotes = {};
         try {
             var j = localStorage.getItem(STORAGE_PREFIX_NOTES + pid);
             if (j) {
                 var p = JSON.parse(j);
-                indoor = Array.isArray(p.indoor) ? p.indoor : [];
-                outdoor = Array.isArray(p.outdoor) ? p.outdoor : [];
-                if (p.productNotes) productNotes = p.productNotes;
+                if (p.productNotes) {
+                    productNotes = p.productNotes;
+                } else {
+                    // Migrate old indoor/outdoor format to flat arrays
+                    var indoor = Array.isArray(p.indoor) ? p.indoor.filter(function (n) { return n && n.trim(); }) : [];
+                    var outdoor = Array.isArray(p.outdoor) ? p.outdoor.filter(function (n) { return n && n.trim(); }) : [];
+                    if (indoor.length > 0 || outdoor.length > 0) {
+                        productNotes["mini-splits"] = indoor.concat(outdoor);
+                    }
+                }
             }
         } catch (e) {}
-        while (indoor.length < MAX_ACCESSORY_LINES) indoor.push("");
-        while (outdoor.length < MAX_ACCESSORY_LINES) outdoor.push("");
-        return {
-            indoor: indoor.slice(0, MAX_ACCESSORY_LINES),
-            outdoor: outdoor.slice(0, MAX_ACCESSORY_LINES),
-            productNotes: productNotes
-        };
+        return productNotes;
     }
 
     function getProductNotes() {
         if (!_openTarget) return {};
         if (_openTarget.type === "cart") return _cartProductNotes || {};
-        var notes = loadProjectNotes(_openTarget.projectId);
-        return notes.productNotes || {};
+        return loadProjectNotes(_openTarget.projectId);
+    }
+
+    /**
+     * Get active (non-empty) schedule notes for a product.
+     * Returns a flat array of note strings.
+     */
+    function getProductActiveNotes(productKey) {
+        var pn = getProductNotes();
+        var notes = pn[productKey];
+        if (!notes) return [];
+        if (Array.isArray(notes)) {
+            return notes.filter(function (n) { return n && n.trim() !== ""; });
+        }
+        // Legacy format: { indoor: [], outdoor: [] }
+        if (notes.indoor || notes.outdoor) {
+            var combined = [];
+            if (Array.isArray(notes.indoor)) combined = combined.concat(notes.indoor.filter(function (n) { return n && n.trim(); }));
+            if (Array.isArray(notes.outdoor)) combined = combined.concat(notes.outdoor.filter(function (n) { return n && n.trim(); }));
+            return combined;
+        }
+        return [];
     }
 
     function _saveProductNotesDirect(productNotes) {
@@ -846,8 +743,7 @@ const Project = (function () {
             _cartProductNotes = productNotes;
         }
         if (_openTarget && _openTarget.type === "project") {
-            var notes = loadProjectNotes(_openTarget.projectId);
-            saveProjectNotes(_openTarget.projectId, notes.indoor, notes.outdoor, productNotes);
+            saveProjectNotes(_openTarget.projectId, productNotes);
         }
     }
 
@@ -872,7 +768,15 @@ const Project = (function () {
             }
             _projects = [project]; saveProjectsList(); saveProjectEntries(project.id, migrated);
             var oldNotes = localStorage.getItem(OLD_STORAGE_KEY_NOTES);
-            if (oldNotes) { var np = JSON.parse(oldNotes); saveProjectNotes(project.id, Array.isArray(np.indoor) ? np.indoor : [], Array.isArray(np.outdoor) ? np.outdoor : []); }
+            if (oldNotes) {
+                var np = JSON.parse(oldNotes);
+                var combined = [];
+                if (Array.isArray(np.indoor)) combined = combined.concat(np.indoor.filter(function (n) { return n && n.trim(); }));
+                if (Array.isArray(np.outdoor)) combined = combined.concat(np.outdoor.filter(function (n) { return n && n.trim(); }));
+                if (combined.length > 0) {
+                    saveProjectNotes(project.id, { "mini-splits": combined });
+                }
+            }
             localStorage.removeItem(OLD_STORAGE_KEY_ENTRIES); localStorage.removeItem(OLD_STORAGE_KEY_NOTES);
         } catch (e) { console.warn("[Project] Migration failed:", e); }
     }
@@ -881,15 +785,13 @@ const Project = (function () {
     // Clear All
     // -----------------------------------------------------------------------
     function handleNewProject() {
-        if (!_openTarget) return; if (_entries.length === 0 && !hasAnyNotes()) return;
+        if (!_openTarget) return; if (_entries.length === 0) return;
         showConfirmDialog("Clear Systems", "Remove all systems and notes from this view?", "Clear All", function () {
-            if (_openTarget.type === "cart") { _cartEntries = []; _cartIdSet = new Set(); _cartIndoorNotes = []; _cartOutdoorNotes = []; initCartNotes(); }
-            else { saveProjectEntries(_openTarget.projectId, []); saveProjectNotes(_openTarget.projectId, [], []); }
-            loadOpenTarget(); renderList(); renderAccessoriesNotes(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange(); showToast("Cleared", "toast-warning");
+            if (_openTarget.type === "cart") { _cartEntries = []; _cartIdSet = new Set(); _cartProductNotes = {}; }
+            else { saveProjectEntries(_openTarget.projectId, []); saveProjectNotes(_openTarget.projectId, {}); }
+            loadOpenTarget(); renderList(); updateBadge(); updateExportButtons(); updateFloatingButton(); notifyChange(); showToast("Cleared", "toast-warning");
         });
     }
-
-    function hasAnyNotes() { for (var i = 0; i < MAX_ACCESSORY_LINES; i++) { if (_indoorNotes[i] && _indoorNotes[i].trim()) return true; if (_outdoorNotes[i] && _outdoorNotes[i].trim()) return true; } return false; }
 
     // -----------------------------------------------------------------------
     // CSV
@@ -917,8 +819,20 @@ const Project = (function () {
             var numIndoor = (sys.indoorUnits) ? sys.indoorUnits.length : 0;
             lines.push([csvEscape(entry.systemId),csvEscape(entry.oduTag),csvEscape(oduModel),csvEscape(sysType),csvEscape(String(sysSize)),csvEscape(String(numIndoor)),csvEscape(entry.iduTags.join(";")),csvEscape(iduModels.join(";")),csvEscape(iduTypes.join(";")),csvEscape(iduSizes.join(";")),csvEscape((entry.iduAccessories || []).join(";")),csvEscape(entry.outdoorAccessories)].join(","));
         }
-        lines.push(""); lines.push("NOTES (INDOOR UNIT)"); var ai = getActiveIndoorNotes(); for (var j = 0; j < ai.length; j++) lines.push(csvEscape((j+1)+"- "+ai[j]));
-        lines.push(""); lines.push("NOTES (OUTDOOR UNIT)"); var ao = getActiveOutdoorNotes(); for (var k = 0; k < ao.length; k++) lines.push(csvEscape((k+1)+"- "+ao[k]));
+        // Notes section (single combined section per product)
+        var pn = getProductNotes();
+        var pkList = ["mini-splits", "multi-position", "gas-packs"];
+        var pkNames = { "mini-splits": "Mini Splits", "multi-position": "Multi Position Splits", "gas-packs": "Gas Pack RTUs" };
+        for (var pi = 0; pi < pkList.length; pi++) {
+            var pk = pkList[pi];
+            var activeNotes = getProductActiveNotes(pk);
+            if (activeNotes.length > 0) {
+                lines.push(""); lines.push("NOTES (" + pkNames[pk] + ")");
+                for (var ni = 0; ni < activeNotes.length; ni++) {
+                    lines.push(csvEscape((ni + 1) + "- " + activeNotes[ni]));
+                }
+            }
+        }
         var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
         var fn = "HHpro_Project.csv";
         if (_openTarget && _openTarget.type === "project") { var proj = getProjectById(_openTarget.projectId); if (proj) fn = "HHpro_" + proj.name.replace(/[^a-zA-Z0-9]/g, "_") + ".csv"; }
@@ -945,7 +859,7 @@ const Project = (function () {
         var lines = csvText.split("\n").filter(function (l) { return l.trim() !== ""; }); if (lines.length < 2) { showToast("CSV is empty", "toast-danger"); return; }
         var imported = 0;
         for (var i = 1; i < lines.length; i++) {
-            var line = lines[i].trim(); if (line === "NOTES (INDOOR UNIT)" || line === "NOTES (OUTDOOR UNIT)" || line === "ACCESSORIES (INDOOR UNIT)" || line === "ACCESSORIES (OUTDOOR UNIT)" || line === "") break;
+            var line = lines[i].trim(); if (line.startsWith("NOTES") || line === "") break;
             var cols = parseCsvLine(line); if (cols.length < 7) continue;
             var systemId = cols[0]; if (!DataLoader.getSystemById(systemId)) continue;
             _entries.push({ systemId: systemId, oduTag: cols[1] || "ODU-", iduTags: (cols[6] || "").split(";"), iduAccessories: (cols[10] || "").split(";"), outdoorAccessories: cols[11] || "" });
@@ -1009,16 +923,6 @@ const Project = (function () {
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
-    function getProductActiveNotes(productKey) {
-        var pn = getProductNotes();
-        var notes = pn[productKey];
-        if (!notes) return { indoor: [], outdoor: [] };
-        return {
-            indoor: (notes.indoor || []).filter(function (n) { return n && n.trim() !== ""; }),
-            outdoor: (notes.outdoor || []).filter(function (n) { return n && n.trim() !== ""; })
-        };
-    }
-
     // -----------------------------------------------------------------------
     // Public API
     // -----------------------------------------------------------------------
@@ -1030,10 +934,6 @@ const Project = (function () {
         getProjectIds: getProjectIds,
         getEntries: getEntries,
         getCount: getCount,
-        getIndoorNotes: getIndoorNotes,
-        getOutdoorNotes: getOutdoorNotes,
-        getActiveIndoorNotes: getActiveIndoorNotes,
-        getActiveOutdoorNotes: getActiveOutdoorNotes,
         exportCsv: exportCsv,
         getCsvData: getCsvData,
         openPanel: openPanel,

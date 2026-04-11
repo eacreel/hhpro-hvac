@@ -1,11 +1,10 @@
 /* ==========================================================================
-   schedule.css — Split indoor/outdoor schedule tables matching the
-   PDF/Excel template layout, plus accessories notes section.
+   schedule.css — Combined single-row schedule tables.
    Supports Mini Split, Multi Position Split, and Gas Pack column layouts.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Schedule Section Wrapper  (contains both tables + accessories)
+   Schedule Section Wrapper  (contains table + empty state)
    -------------------------------------------------------------------------- */
 #schedule-section,
 #mps-schedule-section,
@@ -56,38 +55,12 @@
 
 
 /* --------------------------------------------------------------------------
-   Table Wrappers  (scrollable containers for each table)
+   Table Wrappers  (scrollable containers)
    -------------------------------------------------------------------------- */
 .schedule-table-wrapper {
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
-}
-
-#indoor-schedule-wrapper,
-#mps-indoor-schedule-wrapper {
-    border-bottom: none;
-}
-
-#outdoor-schedule-wrapper,
-#mps-outdoor-schedule-wrapper {
-    border-top: none;
-}
-
-
-/* --------------------------------------------------------------------------
-   Section Labels  ("INDOOR UNIT" / "OUTDOOR UNIT" bars)
-   -------------------------------------------------------------------------- */
-.schedule-section-label {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
-    color: var(--color-text-inverse);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    text-align: center;
-    padding: var(--space-sm) var(--space-lg);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -101,113 +74,129 @@
     table-layout: fixed;
 }
 
-#indoor-schedule-table {
-    min-width: 1100px;
+/* Combined mini split table */
+#ms-schedule-table {
+    min-width: 1800px;
 }
 
-#outdoor-schedule-table {
-    min-width: 900px;
+/* Combined MPS table */
+#mps-schedule-table {
+    min-width: 2200px;
 }
 
-#mps-indoor-schedule-table {
-    min-width: 1300px;
-}
-
-#mps-outdoor-schedule-table {
-    min-width: 1050px;
-}
-
+/* Gas packs table */
 #gp-schedule-table {
     min-width: 1500px;
 }
 
 
 /* --------------------------------------------------------------------------
-   Mini Split — Indoor Unit Column Widths
+   Section Header Row  (INDOOR UNIT / OUTDOOR UNIT bar within table)
+   -------------------------------------------------------------------------- */
+.header-row-section th {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: var(--space-sm) var(--space-lg);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    color: var(--color-text-inverse);
+}
+
+.ms-section-indoor,
+.mps-section-indoor {
+    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+}
+
+.ms-section-outdoor,
+.mps-section-outdoor {
+    background: linear-gradient(160deg, #1B4332 0%, #2D6A4F 60%, #40916C 100%);
+}
+
+.mps-section-notes {
+    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+}
+
+/* Action column in section header row */
+.header-row-section .col-action {
+    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
+}
+
+
+/* --------------------------------------------------------------------------
+   Mini Split Column Widths (combined table)
    -------------------------------------------------------------------------- */
 .col-action             { width: 84px; }
 
-.idu-col-symbol         { width: 5.8%; }
-.idu-col-odu-symbol     { width: 7.2%; }
-.idu-col-cfm            { width: 3.4%; }
-.idu-col-cooling        { /* colspan 4 — no fixed width */ }
-.idu-col-edb            { width: 3.2%; }
-.idu-col-ewb            { width: 3.4%; }
-.idu-col-total-cool     { width: 6.8%; }
-.idu-col-sensible       { width: 6.8%; }
+.idu-col-cfm            { width: 3.0%; }
+.idu-col-cooling        { /* colspan 4 */ }
+.idu-col-edb            { width: 2.6%; }
+.idu-col-ewb            { width: 2.6%; }
+.idu-col-total-cool     { width: 5.0%; }
+.idu-col-sensible       { width: 5.0%; }
 .idu-col-heating        { /* colspan 2 */ }
-.idu-col-heat-edb       { width: 3.2%; }
-.idu-col-heat-total     { width: 6.8%; }
-.idu-col-weight         { width: 6.2%; }
-.idu-col-type           { width: 8.6%; }
+.idu-col-heat-edb       { width: 2.6%; }
+.idu-col-heat-total     { width: 5.0%; }
+.idu-col-weight         { width: 4.2%; }
+.idu-col-type           { width: 7.0%; }
 .idu-col-elec           { /* colspan 3 */ }
-.idu-col-voltage        { width: 5.0%; }
-.idu-col-mca            { width: 3.4%; }
-.idu-col-mop            { width: 3.4%; }
-.idu-col-mfg            { width: 11.0%; }
+.idu-col-voltage        { width: 4.0%; }
+.idu-col-mca            { width: 2.6%; }
+.idu-col-mop            { width: 2.6%; }
+.idu-col-mfg            { width: 8.0%; }
 
-
-/* --------------------------------------------------------------------------
-   Mini Split — Outdoor Unit Column Widths
-   -------------------------------------------------------------------------- */
-.odu-col-symbol         { width: 5.6%; }
-.odu-col-cool-amb       { width: 7.8%; }
-.odu-col-heat-amb       { width: 7.8%; }
-.odu-col-weight         { width: 7.2%; }
-.odu-col-seer           { width: 8.2%; }
+.odu-col-cool-amb       { width: 5.0%; }
+.odu-col-heat-amb       { width: 5.0%; }
+.odu-col-weight         { width: 4.2%; }
+.odu-col-seer           { width: 6.0%; }
 .odu-col-elec           { /* colspan 3 */ }
-.odu-col-voltage        { width: 5.6%; }
-.odu-col-mca            { width: 3.4%; }
-.odu-col-mop            { width: 3.4%; }
-.odu-col-mfg            { width: 10.8%; }
-.odu-col-refrig         { width: 8.6%; }
-.odu-col-lineset        { width: 13.0%; }
+.odu-col-voltage        { width: 4.0%; }
+.odu-col-mca            { width: 2.6%; }
+.odu-col-mop            { width: 2.6%; }
+.odu-col-mfg            { width: 8.0%; }
+.odu-col-refrig         { width: 5.0%; }
+.odu-col-lineset        { width: 8.0%; }
 
 
 /* --------------------------------------------------------------------------
-   Multi Position Split — Indoor AHU Column Widths
+   Multi Position Split Column Widths (combined table)
    -------------------------------------------------------------------------- */
-.mps-idu-col-tag         { width: 4.2%; }
-.mps-idu-col-model       { width: 8.0%; }
+.mps-idu-col-model       { width: 5.0%; }
 .mps-idu-col-fan         { /* colspan 3 */ }
-.mps-idu-col-cfm         { width: 4.2%; }
-.mps-idu-col-hp          { width: 3.6%; }
-.mps-idu-col-motor-type  { width: 6.0%; }
+.mps-idu-col-cfm         { width: 3.0%; }
+.mps-idu-col-hp          { width: 2.6%; }
+.mps-idu-col-motor-type  { width: 4.0%; }
 .mps-idu-col-cool        { /* colspan 5 */ }
-.mps-idu-col-eat-db      { width: 3.2%; }
-.mps-idu-col-eat-wb      { width: 3.2%; }
-.mps-idu-col-lat-db      { width: 3.2%; }
-.mps-idu-col-total-cap   { width: 5.2%; }
-.mps-idu-col-sensible    { width: 5.2%; }
-.mps-idu-col-hp-total    { width: 5.4%; }
+.mps-idu-col-eat-db      { width: 2.4%; }
+.mps-idu-col-eat-wb      { width: 2.4%; }
+.mps-idu-col-lat-db      { width: 2.4%; }
+.mps-idu-col-total-cap   { width: 3.6%; }
+.mps-idu-col-sensible    { width: 3.6%; }
+.mps-idu-col-hp-total    { width: 3.6%; }
 .mps-idu-col-aux         { /* colspan 2 */ }
-.mps-idu-col-aux-kw      { width: 3.2%; }
-.mps-idu-col-aux-rise    { width: 4.6%; }
+.mps-idu-col-aux-kw      { width: 2.4%; }
+.mps-idu-col-aux-rise    { width: 3.6%; }
 .mps-idu-col-elec        { /* colspan 3 */ }
-.mps-idu-col-voltage     { width: 5.0%; }
-.mps-idu-col-mca         { width: 3.2%; }
-.mps-idu-col-mop         { width: 3.2%; }
-.mps-idu-col-weight      { width: 3.8%; }
+.mps-idu-col-voltage     { width: 3.6%; }
+.mps-idu-col-mca         { width: 2.4%; }
+.mps-idu-col-mop         { width: 2.4%; }
+.mps-idu-col-weight      { width: 2.8%; }
 
-
-/* --------------------------------------------------------------------------
-   Multi Position Split — Outdoor Condensing Unit Column Widths
-   -------------------------------------------------------------------------- */
-.mps-odu-col-tag         { width: 4.2%; }
-.mps-odu-col-model       { width: 8.0%; }
+.mps-odu-col-model       { width: 5.0%; }
 .mps-odu-col-heat        { /* colspan 3 */ }
-.mps-odu-col-heat-amb    { width: 5.8%; }
-.mps-odu-col-heat-total  { width: 5.6%; }
-.mps-odu-col-heat-eff    { width: 6.0%; }
+.mps-odu-col-heat-amb    { width: 3.6%; }
+.mps-odu-col-heat-total  { width: 3.6%; }
+.mps-odu-col-heat-eff    { width: 4.0%; }
 .mps-odu-col-elec        { /* colspan 3 */ }
-.mps-odu-col-voltage     { width: 5.0%; }
-.mps-odu-col-mca         { width: 3.2%; }
-.mps-odu-col-mop         { width: 3.2%; }
-.mps-odu-col-cool-amb    { width: 5.8%; }
-.mps-odu-col-refrig      { width: 6.4%; }
-.mps-odu-col-efficiency  { width: 10.0%; }
-.mps-odu-col-weight      { width: 4.2%; }
-.mps-odu-col-compressor  { width: 6.2%; }
+.mps-odu-col-voltage     { width: 3.6%; }
+.mps-odu-col-mca         { width: 2.4%; }
+.mps-odu-col-mop         { width: 2.4%; }
+.mps-odu-col-cool-amb    { width: 3.6%; }
+.mps-odu-col-refrig      { width: 4.0%; }
+.mps-odu-col-efficiency  { width: 6.0%; }
+.mps-odu-col-compressor  { width: 4.0%; }
+.mps-odu-col-weight      { width: 2.8%; }
 
 
 /* --------------------------------------------------------------------------
@@ -366,7 +355,7 @@
     text-align: center;
 }
 
-/* Model number — same format as other data cells (no bold/color accent) */
+/* Model number */
 .cell-model {
     font-family: var(--font-mono);
     font-size: var(--font-size-xs);
@@ -494,80 +483,6 @@
 
 
 /* --------------------------------------------------------------------------
-   Accessories Notes Section  (below both tables)
-   -------------------------------------------------------------------------- */
-#accessories-notes,
-#mps-accessories-notes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2xl);
-    padding: var(--space-xl) var(--space-2xl);
-    border-top: 2px solid var(--color-border);
-    background-color: var(--color-surface);
-}
-
-.accessories-heading {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-md);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding-bottom: var(--space-sm);
-    border-bottom: 2px solid var(--color-brand-light);
-}
-
-.accessories-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.accessories-line {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
-
-.accessories-line-number {
-    flex-shrink: 0;
-    width: 28px;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-muted);
-    text-align: right;
-}
-
-.accessories-line-input {
-    flex: 1;
-    height: 32px;
-    padding: 0 var(--space-md);
-    font-family: var(--font-primary);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--border-radius);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
-}
-
-.accessories-line-input:hover {
-    border-color: var(--color-border);
-}
-
-.accessories-line-input:focus {
-    outline: none;
-    border-color: var(--color-brand);
-    box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.1);
-}
-
-.accessories-line-input:not(:placeholder-shown) {
-    border-color: var(--color-border);
-    background-color: var(--color-cell-editable-bg);
-}
-
-
-/* --------------------------------------------------------------------------
    Schedule Empty State
    -------------------------------------------------------------------------- */
 #schedule-empty,
@@ -582,7 +497,7 @@
     gap: var(--space-lg);
 }
 
-/* Empty state icon — SVG illustration placeholder via CSS */
+/* Empty state icon */
 #schedule-empty::before,
 #mps-schedule-empty::before,
 #gp-schedule-empty::before {
@@ -647,17 +562,5 @@
     .schedule-table tbody td {
         font-size: var(--font-size-xs);
         padding: var(--space-xxs) var(--space-xs);
-    }
-
-    .schedule-section-label {
-        font-size: var(--font-size-sm);
-        padding: var(--space-xs) var(--space-md);
-    }
-
-    #accessories-notes,
-    #mps-accessories-notes {
-        grid-template-columns: 1fr;
-        gap: var(--space-lg);
-        padding: var(--space-lg);
     }
 }

@@ -152,32 +152,47 @@
                         <h2 id="schedule-title">Split System Schedule</h2>
                         <span id="schedule-subtitle">DAIKIN</span>
                     </div>
-                    <div id="indoor-schedule-wrapper" class="schedule-table-wrapper">
-                        <div class="schedule-section-label">INDOOR UNIT</div>
-                        <table id="indoor-schedule-table" class="schedule-table">
+                    <div id="ms-schedule-wrapper" class="schedule-table-wrapper">
+                        <table id="ms-schedule-table" class="schedule-table ms-combined-table">
                             <thead>
+                                <tr class="schedule-header-row header-row-section">
+                                    <th class="col-action" rowspan="3"></th>
+                                    <th class="ms-section-indoor" colspan="13">INDOOR UNIT</th>
+                                    <th class="ms-section-outdoor" colspan="10">OUTDOOR UNIT</th>
+                                </tr>
                                 <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th><th class="idu-col-cfm" rowspan="2">CFM</th><th class="idu-col-cooling" colspan="4">COOLING CAPACITY</th><th class="idu-col-heating" colspan="2">HEAT PUMP HEATING CAPACITY</th><th class="idu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="idu-col-type" rowspan="2">INDOOR UNIT<br>TYPE</th><th class="idu-col-elec" colspan="3">ELECTRICAL</th><th class="idu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th>
+                                    <th class="idu-col-cfm" rowspan="2">CFM</th>
+                                    <th class="idu-col-cooling" colspan="4">COOLING CAPACITY</th>
+                                    <th class="idu-col-heating" colspan="2">HEAT PUMP HEATING CAPACITY</th>
+                                    <th class="idu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th>
+                                    <th class="idu-col-type" rowspan="2">INDOOR UNIT<br>TYPE</th>
+                                    <th class="idu-col-elec" colspan="3">ELECTRICAL</th>
+                                    <th class="idu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th>
+                                    <th class="odu-col-cool-amb" rowspan="2">OA AMBIENT<br>(COOLING)</th>
+                                    <th class="odu-col-heat-amb" rowspan="2">OA AMBIENT<br>(HEATING)</th>
+                                    <th class="odu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th>
+                                    <th class="odu-col-seer" rowspan="2">SEER2/EER2/<br>HSPF2</th>
+                                    <th class="odu-col-elec" colspan="3">ELECTRICAL</th>
+                                    <th class="odu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th>
+                                    <th class="odu-col-refrig" rowspan="2">REFRIGERANT</th>
+                                    <th class="odu-col-lineset" rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>
                                 </tr>
                                 <tr class="schedule-header-row header-row-2">
-                                    <th class="idu-col-edb">EDB</th><th class="idu-col-ewb">EWB</th><th class="idu-col-total-cool">TOTAL<br>CAPACITY</th><th class="idu-col-sensible">SENSIBLE<br>CAPACITY</th><th class="idu-col-heat-edb">EDB</th><th class="idu-col-heat-total">TOTAL<br>CAPACITY</th><th class="idu-col-voltage">Voltage</th><th class="idu-col-mca">MCA</th><th class="idu-col-mop">MOP</th>
+                                    <th class="idu-col-edb">EDB</th>
+                                    <th class="idu-col-ewb">EWB</th>
+                                    <th class="idu-col-total-cool">TOTAL<br>CAPACITY</th>
+                                    <th class="idu-col-sensible">SENSIBLE<br>CAPACITY</th>
+                                    <th class="idu-col-heat-edb">EDB</th>
+                                    <th class="idu-col-heat-total">TOTAL<br>CAPACITY</th>
+                                    <th class="idu-col-voltage">Voltage</th>
+                                    <th class="idu-col-mca">MCA</th>
+                                    <th class="idu-col-mop">MOP</th>
+                                    <th class="odu-col-voltage">Voltage</th>
+                                    <th class="odu-col-mca">MCA</th>
+                                    <th class="odu-col-mop">MOP</th>
                                 </tr>
                             </thead>
-                            <tbody id="indoor-schedule-tbody"></tbody>
-                        </table>
-                    </div>
-                    <div id="outdoor-schedule-wrapper" class="schedule-table-wrapper">
-                        <div class="schedule-section-label">OUTDOOR UNIT</div>
-                        <table id="outdoor-schedule-table" class="schedule-table">
-                            <thead>
-                                <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th><th class="odu-col-cool-amb" rowspan="2">OA AMBIENT<br>(COOLING)</th><th class="odu-col-heat-amb" rowspan="2">OA AMBIENT<br>(HEATING)</th><th class="odu-col-weight" rowspan="2">OPERATING<br>WEIGHT</th><th class="odu-col-seer" rowspan="2">SEER2/EER2/<br>HSPF2</th><th class="odu-col-elec" colspan="3">ELECTRICAL</th><th class="odu-col-mfg" rowspan="2">MANUFACTURER<br>DAIKIN</th><th class="odu-col-refrig" rowspan="2">REFRIGERANT</th><th class="odu-col-lineset" rowspan="2">MAX ALLOWABLE<br>LINE-SET LENGTHS</th>
-                                </tr>
-                                <tr class="schedule-header-row header-row-2">
-                                    <th class="odu-col-voltage">Voltage</th><th class="odu-col-mca">MCA</th><th class="odu-col-mop">MOP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="outdoor-schedule-tbody"></tbody>
+                            <tbody id="ms-schedule-tbody"></tbody>
                         </table>
                     </div>
                     <div id="schedule-empty" class="hidden"><p id="empty-message">Select filters above to view available systems.</p></div>
@@ -213,12 +228,16 @@
                         <h2 class="schedule-title-text">Multi Position Split System Schedule</h2>
                         <span class="schedule-subtitle-text">DAIKIN</span>
                     </div>
-                    <div id="mps-indoor-schedule-wrapper" class="schedule-table-wrapper">
-                        <div class="schedule-section-label">INDOOR AIR HANDLING UNIT</div>
-                        <table id="mps-indoor-schedule-table" class="schedule-table mps-table">
+                    <div id="mps-schedule-wrapper" class="schedule-table-wrapper">
+                        <table id="mps-schedule-table" class="schedule-table mps-combined-table">
                             <thead>
+                                <tr class="schedule-header-row header-row-section">
+                                    <th class="col-action" rowspan="3"></th>
+                                    <th class="mps-section-indoor" colspan="16">INDOOR AIR HANDLING UNIT</th>
+                                    <th class="mps-section-outdoor" colspan="14">OUTDOOR CONDENSING UNIT</th>
+                                    <th class="mps-section-notes" rowspan="3">NOTES</th>
+                                </tr>
                                 <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th>
                                     <th class="mps-idu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
                                     <th class="mps-idu-col-fan" colspan="3">SUPPLY FAN</th>
                                     <th class="mps-idu-col-cool" colspan="5">COOLING</th>
@@ -226,6 +245,14 @@
                                     <th class="mps-idu-col-aux" colspan="2">AUX. ELECTRIC HEAT</th>
                                     <th class="mps-idu-col-elec" colspan="3">ELECTRICAL DATA</th>
                                     <th class="mps-idu-col-weight" rowspan="2">WEIGHT</th>
+                                    <th class="mps-odu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
+                                    <th class="mps-odu-col-heat" colspan="3">HEAT PUMP HEATING DATA</th>
+                                    <th class="mps-odu-col-elec" colspan="3">ELECTRICAL DATA</th>
+                                    <th class="mps-odu-col-cool-amb" rowspan="2">OUTDOOR<br>AMBIENT<br>(COOLING)</th>
+                                    <th class="mps-odu-col-refrig" rowspan="2">REFRIGERANT</th>
+                                    <th class="mps-odu-col-efficiency" rowspan="2">EFFICIENCY</th>
+                                    <th class="mps-odu-col-compressor" rowspan="2">COMPRESSOR<br>STAGES</th>
+                                    <th class="mps-odu-col-weight" rowspan="2">WEIGHT</th>
                                 </tr>
                                 <tr class="schedule-header-row header-row-2">
                                     <th class="mps-idu-col-cfm">AIRFLOW<br>(CFM)</th>
@@ -241,27 +268,6 @@
                                     <th class="mps-idu-col-voltage">VOLTAGE<br>/ PHASE</th>
                                     <th class="mps-idu-col-mca">MCA</th>
                                     <th class="mps-idu-col-mop">MOP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mps-indoor-schedule-tbody"></tbody>
-                        </table>
-                    </div>
-                    <div id="mps-outdoor-schedule-wrapper" class="schedule-table-wrapper">
-                        <div class="schedule-section-label">OUTDOOR CONDENSING UNIT</div>
-                        <table id="mps-outdoor-schedule-table" class="schedule-table mps-table">
-                            <thead>
-                                <tr class="schedule-header-row header-row-1">
-                                    <th class="col-action" rowspan="2"></th>
-                                    <th class="mps-odu-col-model" rowspan="2">MODEL<br>(DAIKIN)</th>
-                                    <th class="mps-odu-col-heat" colspan="3">HEAT PUMP HEATING DATA</th>
-                                    <th class="mps-odu-col-elec" colspan="3">ELECTRICAL DATA</th>
-                                    <th class="mps-odu-col-cool-amb" rowspan="2">OUTDOOR<br>AMBIENT<br>(COOLING)</th>
-                                    <th class="mps-odu-col-refrig" rowspan="2">REFRIGERANT</th>
-                                    <th class="mps-odu-col-efficiency" rowspan="2">EFFICIENCY</th>
-                                    <th class="mps-odu-col-weight" rowspan="2">WEIGHT</th>
-                                    <th class="mps-odu-col-compressor" rowspan="2">COMPRESSOR<br>STAGES</th>
-                                </tr>
-                                <tr class="schedule-header-row header-row-2">
                                     <th class="mps-odu-col-heat-amb">OUTDOOR<br>AMBIENT (DB)</th>
                                     <th class="mps-odu-col-heat-total">TOTAL<br>CAPACITY</th>
                                     <th class="mps-odu-col-heat-eff">EFFICIENCY</th>
@@ -270,7 +276,7 @@
                                     <th class="mps-odu-col-mop">MOP</th>
                                 </tr>
                             </thead>
-                            <tbody id="mps-outdoor-schedule-tbody"></tbody>
+                            <tbody id="mps-schedule-tbody"></tbody>
                         </table>
                     </div>
                     <div id="mps-schedule-empty" class="hidden"><p class="empty-message-text">Select filters above to view available systems.</p></div>

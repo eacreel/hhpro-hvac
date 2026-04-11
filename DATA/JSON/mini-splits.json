@@ -1,7 +1,7 @@
 {
   "productType": "Mini Splits",
   "manufacturer": "DAIKIN",
-  "generated": "2026-03-30T17:04:53.755517",
+  "generated": "2026-04-11T15:00:03.955732",
   "totalSystems": 390,
   "filterOptions": {
     "systemTypes": [
@@ -44,6 +44,13 @@
     ],
     "maxIndoorUnits": 5
   },
+  "scheduleNotes": [
+    "Provide with 7-day programmable thermostat",
+    "Provide with 7-day programmable BACnet thermostat",
+    "Provide with low ambient wind baffle for cooling down to 0°F",
+    "Provide with field installed condensate pump",
+    "Provide with field installed disconnect. Disconnect shall be provided and installed by electrical contractor"
+  ],
   "systems": [
     {
       "id": "ms_0001",
