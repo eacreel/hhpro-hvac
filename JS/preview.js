@@ -58,11 +58,169 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Column Visibility (simplified — always show all for now)
+    // Column Visibility
     // -----------------------------------------------------------------------
     let _hiddenColumns = new Set();
     function isColVisible(key) { return !_hiddenColumns.has(key); }
     function getHiddenColumns() { return new Set(_hiddenColumns); }
+
+    // Column widths storage (pixels in preview, converted to pt for export)
+    let _columnWidths = {}; // { "ms-idu-sym": 80, ... }
+
+    // Default widths per column key (in pixels for preview)
+    var DEFAULT_WIDTHS = {
+        "ms-idu-sym":80,"ms-idu-cfm":55,"ms-idu-cool-edb":50,"ms-idu-cool-ewb":50,"ms-idu-cool-total":70,"ms-idu-cool-sens":70,"ms-idu-heat-edb":50,"ms-idu-heat-total":70,"ms-idu-weight":55,"ms-idu-type":90,"ms-idu-voltage":65,"ms-idu-mca":45,"ms-idu-mop":45,"ms-idu-mfg":95,
+        "ms-odu-sym":80,"ms-odu-cool-amb":65,"ms-odu-heat-amb":65,"ms-odu-weight":55,"ms-odu-seer":90,"ms-odu-voltage":65,"ms-odu-mca":45,"ms-odu-mop":45,"ms-odu-mfg":95,"ms-odu-refrig":55,"ms-odu-lineset":90,"ms-notes":80,
+        "mps-idu-tag":70,"mps-idu-model":100,"mps-idu-cfm":55,"mps-idu-hp":45,"mps-idu-fan-type":85,"mps-idu-eat-db":50,"mps-idu-eat-wb":50,"mps-idu-lat-db":50,"mps-idu-cool-total":65,"mps-idu-cool-sens":65,"mps-idu-hp-total":65,"mps-idu-aux-kw":45,"mps-idu-aux-rise":55,"mps-idu-voltage":60,"mps-idu-mca":45,"mps-idu-mop":45,"mps-idu-weight":55,
+        "mps-odu-tag":70,"mps-odu-model":100,"mps-odu-heat-amb":55,"mps-odu-heat-total":65,"mps-odu-heat-eff":60,"mps-odu-voltage":60,"mps-odu-mca":45,"mps-odu-mop":45,"mps-odu-cool-amb":60,"mps-odu-refrig":55,"mps-odu-eff":85,"mps-odu-comp":55,"mps-odu-weight":55,"mps-notes":80,
+        "gp-tag":75,"gp-model":100,"gp-tons":45,"gp-cfm":55,"gp-esp":45,"gp-tesp":45,"gp-cool-total":70,"gp-cool-sens":70,"gp-eff":75,"gp-edb":45,"gp-ewb":45,"gp-ldb":45,"gp-lwb":45,"gp-heat-input":55,"gp-heat-output":55,"gp-heat-eat":45,"gp-heat-lat":45,"gp-hgrh":50,"gp-cool-stages":50,"gp-voltage":55,"gp-hp":45,"gp-mca":45,"gp-mocp":50,"gp-notes":80,
+    };
+
+    function getColWidth(key) { return _columnWidths[key] || DEFAULT_WIDTHS[key] || 60; }
+    function setColWidth(key, w) { _columnWidths[key] = Math.max(30, Math.round(w)); }
+    function getColumnWidths() { return Object.assign({}, DEFAULT_WIDTHS, _columnWidths); }
+
+    // Column groups per product for the toggle panel
+    var COL_GROUPS = {
+        "mini-splits": [
+            { label: "INDOOR UNIT", children: [
+                { label: "Cooling Detail (EDB/EWB)", keys: ["ms-idu-cool-edb","ms-idu-cool-ewb"] },
+                { label: "Heating Data", keys: ["ms-idu-heat-edb","ms-idu-heat-total"] },
+                { label: "Indoor Weight", keys: ["ms-idu-weight"] },
+                { label: "Indoor Type", keys: ["ms-idu-type"] },
+                { label: "Indoor Electrical", keys: ["ms-idu-voltage","ms-idu-mca","ms-idu-mop"] },
+                { label: "Indoor MFG", keys: ["ms-idu-mfg"] },
+            ]},
+            { label: "OUTDOOR UNIT", children: [
+                { label: "OA Ambient", keys: ["ms-odu-cool-amb","ms-odu-heat-amb"] },
+                { label: "Outdoor Weight", keys: ["ms-odu-weight"] },
+                { label: "SEER2/EER2/HSPF2", keys: ["ms-odu-seer"] },
+                { label: "Outdoor Electrical", keys: ["ms-odu-voltage","ms-odu-mca","ms-odu-mop"] },
+                { label: "Outdoor MFG", keys: ["ms-odu-mfg"] },
+                { label: "Refrigerant", keys: ["ms-odu-refrig"] },
+                { label: "Line-Set", keys: ["ms-odu-lineset"] },
+            ]},
+        ],
+        "multi-position": [
+            { label: "INDOOR AHU", children: [
+                { label: "Supply Fan", keys: ["mps-idu-cfm","mps-idu-hp","mps-idu-fan-type"] },
+                { label: "Cooling Detail", keys: ["mps-idu-eat-db","mps-idu-eat-wb","mps-idu-lat-db"] },
+                { label: "Cooling Capacity", keys: ["mps-idu-cool-total","mps-idu-cool-sens"] },
+                { label: "HP Total Cap.", keys: ["mps-idu-hp-total"] },
+                { label: "Aux. Electric Heat", keys: ["mps-idu-aux-kw","mps-idu-aux-rise"] },
+                { label: "Indoor Electrical", keys: ["mps-idu-voltage","mps-idu-mca","mps-idu-mop"] },
+                { label: "Indoor Weight", keys: ["mps-idu-weight"] },
+            ]},
+            { label: "OUTDOOR CU", children: [
+                { label: "HP Heating Data", keys: ["mps-odu-heat-amb","mps-odu-heat-total","mps-odu-heat-eff"] },
+                { label: "Outdoor Electrical", keys: ["mps-odu-voltage","mps-odu-mca","mps-odu-mop"] },
+                { label: "OA Ambient (Cool)", keys: ["mps-odu-cool-amb"] },
+                { label: "Refrigerant", keys: ["mps-odu-refrig"] },
+                { label: "Efficiency", keys: ["mps-odu-eff"] },
+                { label: "Compressor Stages", keys: ["mps-odu-comp"] },
+                { label: "Outdoor Weight", keys: ["mps-odu-weight"] },
+            ]},
+        ],
+        "gas-packs": [
+            { label: "UNIT DATA", children: [
+                { label: "Fan Data", keys: ["gp-cfm","gp-esp","gp-tesp"] },
+                { label: "Cooling Capacity", keys: ["gp-cool-total","gp-cool-sens"] },
+                { label: "Cooling Conditions", keys: ["gp-eff","gp-edb","gp-ewb","gp-ldb","gp-lwb"] },
+                { label: "Heating Performance", keys: ["gp-heat-input","gp-heat-output","gp-heat-eat","gp-heat-lat"] },
+                { label: "HGRH / Cool Stages", keys: ["gp-hgrh","gp-cool-stages"] },
+                { label: "Electrical", keys: ["gp-voltage","gp-hp","gp-mca","gp-mocp"] },
+            ]},
+        ],
+    };
+
+    let _colPanelOpen = false;
+
+    function toggleColumnGroup(keys, visible) {
+        for (var i = 0; i < keys.length; i++) {
+            if (visible) _hiddenColumns.delete(keys[i]);
+            else _hiddenColumns.add(keys[i]);
+        }
+        // Rebuild the entire tab content with updated visibility
+        rebuildContent();
+    }
+
+    function applyColumnVisibility() {
+        if (!_overlay) return;
+        // Inject CSS rules to hide columns
+        var styleEl = document.getElementById("sp-col-hide-style");
+        if (!styleEl) {
+            styleEl = document.createElement("style");
+            styleEl.id = "sp-col-hide-style";
+            document.head.appendChild(styleEl);
+        }
+        var rules = "";
+        _hiddenColumns.forEach(function (key) {
+            rules += '[data-col="' + key + '"] { display: none !important; }\n';
+        });
+        styleEl.textContent = rules;
+
+        // Update colspans on group headers
+        var grpHdrs = _overlay.querySelectorAll("[data-col-group]");
+        for (var g = 0; g < grpHdrs.length; g++) {
+            var th = grpHdrs[g];
+            var members = (th.dataset.colMembers || "").split(",").filter(Boolean);
+            var visCount = 0;
+            for (var m = 0; m < members.length; m++) {
+                if (isColVisible(members[m])) visCount++;
+            }
+            if (visCount === 0) { th.style.display = "none"; }
+            else { th.style.display = ""; th.colSpan = visCount; }
+        }
+
+        // Update section header colspans
+        var secHdrs = _overlay.querySelectorAll("[data-col-section]");
+        for (var s = 0; s < secHdrs.length; s++) {
+            var sh = secHdrs[s];
+            var secMembers = (sh.dataset.colSectionMembers || "").split(",").filter(Boolean);
+            var secVis = 0;
+            for (var sm = 0; sm < secMembers.length; sm++) {
+                if (isColVisible(secMembers[sm])) secVis++;
+            }
+            if (secVis > 0) { sh.style.display = ""; sh.colSpan = secVis; }
+            else { sh.style.display = "none"; }
+        }
+
+        // Update panel checkboxes
+        var panelCbs = _overlay.querySelectorAll(".sp-col-toggle");
+        for (var pc = 0; pc < panelCbs.length; pc++) {
+            var cbKeys = (panelCbs[pc].dataset.colKeys || "").split(",");
+            var allVis = true;
+            for (var ck = 0; ck < cbKeys.length; ck++) {
+                if (!isColVisible(cbKeys[ck])) { allVis = false; break; }
+            }
+            panelCbs[pc].checked = allVis;
+        }
+    }
+
+    function buildColPanel() {
+        var pk = _activeTab;
+        var groups = COL_GROUPS[pk];
+        if (!groups || groups.length === 0) return "";
+
+        var h = '<div class="sp-col-panel' + (_colPanelOpen ? "" : " hidden") + '" id="sp-col-panel">';
+        h += '<div class="sp-col-panel-header">Show / Hide Columns</div>';
+        for (var s = 0; s < groups.length; s++) {
+            var section = groups[s];
+            h += '<div class="sp-col-panel-section">';
+            h += '<div class="sp-col-panel-label">' + section.label + '</div>';
+            for (var c = 0; c < section.children.length; c++) {
+                var grp = section.children[c];
+                var allVis = true;
+                for (var k = 0; k < grp.keys.length; k++) {
+                    if (!isColVisible(grp.keys[k])) { allVis = false; break; }
+                }
+                h += '<label class="sp-col-option"><input type="checkbox" class="sp-col-toggle" data-col-keys="' + grp.keys.join(",") + '"' + (allVis ? " checked" : "") + '> ' + grp.label + '</label>';
+            }
+            h += '</div>';
+        }
+        h += '</div>';
+        return h;
+    }
 
     // -----------------------------------------------------------------------
     // Multi-Select
@@ -228,6 +386,8 @@ const SchedulePreview = (function () {
         html += '    <span class="sp-toolbar-sep"></span>';
         html += '    <button class="sp-tool-btn" id="sp-btn-autonumber" type="button" title="Auto-number tags">Auto #</button>';
         html += '    <span class="sp-toolbar-sep"></span>';
+        html += '    <div class="sp-col-btn-wrap"><button class="sp-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button></div>';
+        html += '    <span class="sp-toolbar-sep"></span>';
         html += '    <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
         html += '    <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
         html += '  </div>';
@@ -258,6 +418,7 @@ const SchedulePreview = (function () {
 
         // Tab content
         html += '<div class="sp-content" id="sp-content">';
+        html += buildColPanel();
         html += buildTabContent();
         html += '</div>';
 
@@ -302,78 +463,77 @@ const SchedulePreview = (function () {
     // Combined Mini Splits Table
     // -----------------------------------------------------------------------
     function buildMsTable(indices) {
+        var v = isColVisible;
+        var coolSpan = 2 + (v("ms-idu-cool-edb") ? 2 : 0);
+        var heatSpan = v("ms-idu-heat-edb") ? 2 : 0;
+        var iElecSpan = v("ms-idu-voltage") ? 3 : 0;
+        var oElecSpan = v("ms-odu-voltage") ? 3 : 0;
+        var iduCols = 2 + coolSpan + heatSpan + (v("ms-idu-weight")?1:0) + (v("ms-idu-type")?1:0) + iElecSpan + (v("ms-idu-mfg")?1:0);
+        var oduCols = 1 + (v("ms-odu-cool-amb")?1:0) + (v("ms-odu-heat-amb")?1:0) + (v("ms-odu-weight")?1:0) + (v("ms-odu-seer")?1:0) + oElecSpan + (v("ms-odu-mfg")?1:0) + (v("ms-odu-refrig")?1:0) + (v("ms-odu-lineset")?1:0);
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
         h += '<tr class="sp-hdr-section"><th rowspan="3" class="sp-col-action"><input type="checkbox" id="sp-select-all" title="Select all"></th>';
-        h += '<th colspan="13" class="sp-section-indoor">INDOOR UNIT</th>';
-        h += '<th colspan="10" class="sp-section-outdoor">OUTDOOR UNIT</th></tr>';
+        h += '<th colspan="' + iduCols + '" class="sp-section-indoor">INDOOR UNIT</th>';
+        h += '<th colspan="' + oduCols + '" class="sp-section-outdoor">OUTDOOR UNIT</th>';
+        h += '<th rowspan="3" class="sp-col-acc">NOTES</th></tr>';
         h += '<tr class="sp-hdr1">';
-        h += '<th rowspan="2">CFM</th>';
-        h += '<th colspan="4" class="sp-col-group">COOLING CAPACITY</th>';
-        h += '<th colspan="2" class="sp-col-group">HEAT PUMP HEATING</th>';
-        h += '<th rowspan="2">OP.<br>WEIGHT</th><th rowspan="2">INDOOR<br>UNIT TYPE</th>';
-        h += '<th colspan="3" class="sp-col-group">ELECTRICAL</th>';
-        h += '<th rowspan="2">MFG<br>DAIKIN</th>';
-        h += '<th rowspan="2">OA AMB<br>(COOL)</th><th rowspan="2">OA AMB<br>(HEAT)</th>';
-        h += '<th rowspan="2">OP.<br>WEIGHT</th><th rowspan="2">SEER2/EER2/<br>HSPF2</th>';
-        h += '<th colspan="3" class="sp-col-group">ELECTRICAL</th>';
-        h += '<th rowspan="2">MFG<br>DAIKIN</th><th rowspan="2">REFRIG.</th><th rowspan="2">LINE-SET</th>';
+        h += '<th rowspan="2">SYMBOL</th><th rowspan="2">CFM</th>';
+        if (coolSpan > 0) h += '<th colspan="' + coolSpan + '" class="sp-col-group">COOLING CAPACITY</th>';
+        if (heatSpan > 0) h += '<th colspan="' + heatSpan + '" class="sp-col-group">HEAT PUMP HEATING</th>';
+        if (v("ms-idu-weight")) h += '<th rowspan="2">OP.<br>WEIGHT</th>';
+        if (v("ms-idu-type")) h += '<th rowspan="2">INDOOR<br>UNIT TYPE</th>';
+        if (iElecSpan > 0) h += '<th colspan="' + iElecSpan + '" class="sp-col-group">ELECTRICAL</th>';
+        if (v("ms-idu-mfg")) h += '<th rowspan="2">MFG<br>DAIKIN</th>';
+        h += '<th rowspan="2">SYMBOL</th>';
+        if (v("ms-odu-cool-amb")) h += '<th rowspan="2">OA AMB<br>(COOL)</th>';
+        if (v("ms-odu-heat-amb")) h += '<th rowspan="2">OA AMB<br>(HEAT)</th>';
+        if (v("ms-odu-weight")) h += '<th rowspan="2">OP.<br>WEIGHT</th>';
+        if (v("ms-odu-seer")) h += '<th rowspan="2">SEER2/EER2/<br>HSPF2</th>';
+        if (oElecSpan > 0) h += '<th colspan="' + oElecSpan + '" class="sp-col-group">ELECTRICAL</th>';
+        if (v("ms-odu-mfg")) h += '<th rowspan="2">MFG<br>DAIKIN</th>';
+        if (v("ms-odu-refrig")) h += '<th rowspan="2">REFRIG.</th>';
+        if (v("ms-odu-lineset")) h += '<th rowspan="2">LINE-SET</th>';
         h += '</tr><tr class="sp-hdr2">';
-        h += '<th>EDB</th><th>EWB</th><th>TOTAL<br>CAP.</th><th>SENS.<br>CAP.</th>';
-        h += '<th>EDB</th><th>TOTAL<br>CAP.</th>';
-        h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
-        h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
+        if (v("ms-idu-cool-edb")) h += '<th>EDB</th><th>EWB</th>';
+        h += '<th>TOTAL<br>CAP.</th><th>SENS.<br>CAP.</th>';
+        if (v("ms-idu-heat-edb")) h += '<th>EDB</th><th>TOTAL<br>CAP.</th>';
+        if (v("ms-idu-voltage")) h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
+        if (v("ms-odu-voltage")) h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
         h += '</tr></thead><tbody>';
-
         for (var ii = 0; ii < indices.length; ii++) {
-            var ei = indices[ii];
-            var entry = _entries[ei];
-            var sys = DataLoader.getSystemById(entry.systemId);
-            if (!sys) continue;
-            var numIdu = sys.indoorUnits.length;
-            var odu = sys.outdoorUnit;
-
+            var ei = indices[ii]; var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
+            var numIdu = sys.indoorUnits.length; var odu = sys.outdoorUnit;
             for (var j = 0; j < numIdu; j++) {
                 var idu = sys.indoorUnits[j];
                 var iduTag = (j < entry.iduTags.length) ? entry.iduTags[j] : "IDU-";
-
-                h += '<tr data-entry-idx="' + ei + '" data-idu-idx="' + j + '"' + (j === 0 ? ' draggable="true"' : '') + '>';
-
+                var iduAcc = (entry.iduAccessories && j < entry.iduAccessories.length) ? (entry.iduAccessories[j]||"") : "";
+                h += '<tr data-entry-idx="' + ei + '" data-idu-idx="' + j + '"' + (j===0?' draggable="true"':'') + '>';
                 if (j === 0) h += buildActionCell(ei, numIdu, entry);
-
-                // Indoor columns
+                h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="' + j + '"></td>';
                 h += '<td>' + fmt(idu.cfm) + '</td>';
-                h += '<td>' + fmt(idu.coolingEdb) + '</td>';
-                h += '<td>' + fmt(idu.coolingEwb) + '</td>';
-                h += '<td>' + fmt(idu.coolingTotal) + '</td>';
-                h += '<td>' + fmt(idu.coolingSensible) + '</td>';
-                h += '<td>' + fmt(idu.heatingEdb) + '</td>';
-                h += '<td>' + fmt(idu.heatingTotal) + '</td>';
-                h += '<td>' + fmt(idu.weight) + '</td>';
-                h += '<td class="sp-cell-text">' + esc(idu.type || "") + '</td>';
-                if (idu.poweredFromOutdoor) {
-                    h += '<td colspan="3" class="sp-cell-powered">Powered From ODU</td>';
-                } else {
-                    h += '<td>' + esc(idu.voltage || "") + '</td>';
-                    h += '<td>' + fmt(idu.mca) + '</td>';
-                    h += '<td>' + fmt(idu.mop) + '</td>';
+                if (v("ms-idu-cool-edb")) { h += '<td>' + fmt(idu.coolingEdb) + '</td><td>' + fmt(idu.coolingEwb) + '</td>'; }
+                h += '<td>' + fmt(idu.coolingTotal) + '</td><td>' + fmt(idu.coolingSensible) + '</td>';
+                if (v("ms-idu-heat-edb")) { h += '<td>' + fmt(idu.heatingEdb) + '</td><td>' + fmt(idu.heatingTotal) + '</td>'; }
+                if (v("ms-idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
+                if (v("ms-idu-type")) h += '<td class="sp-cell-text">' + esc(idu.type||"") + '</td>';
+                if (v("ms-idu-voltage")) {
+                    if (idu.poweredFromOutdoor) { h += '<td colspan="3" class="sp-cell-powered">Powered From ODU</td>'; }
+                    else { h += '<td>' + esc(idu.voltage||"") + '</td><td>' + fmt(idu.mca) + '</td><td>' + fmt(idu.mop) + '</td>'; }
                 }
-                h += '<td class="sp-cell-model">' + esc(idu.manufacturer || "") + '</td>';
-
-                // Outdoor columns (only on first indoor row, spans all)
+                if (v("ms-idu-mfg")) h += '<td class="sp-cell-model">' + esc(idu.manufacturer||"") + '</td>';
                 if (j === 0) {
                     var rs = numIdu > 1 ? ' rowspan="' + numIdu + '"' : '';
-                    h += '<td' + rs + '>' + fmt(odu.coolingAmbient) + '</td>';
-                    h += '<td' + rs + '>' + fmt(odu.heatingAmbient) + '</td>';
-                    h += '<td' + rs + '>' + fmt(odu.weight) + '</td>';
-                    h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.seer || "") + '</td>';
-                    h += '<td' + rs + '>' + esc(odu.voltage || "") + '</td>';
-                    h += '<td' + rs + '>' + fmt(odu.mca) + '</td>';
-                    h += '<td' + rs + '>' + fmt(odu.mop) + '</td>';
-                    h += '<td' + rs + ' class="sp-cell-model">' + esc(odu.manufacturer || "") + '</td>';
-                    h += '<td' + rs + '>' + esc(odu.refrigerant || "") + '</td>';
-                    h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.lineSet || "") + '</td>';
+                    h += '<td' + rs + ' class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"ODU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+                    if (v("ms-odu-cool-amb")) h += '<td' + rs + '>' + fmt(odu.coolingAmbient) + '</td>';
+                    if (v("ms-odu-heat-amb")) h += '<td' + rs + '>' + fmt(odu.heatingAmbient) + '</td>';
+                    if (v("ms-odu-weight")) h += '<td' + rs + '>' + fmt(odu.weight) + '</td>';
+                    if (v("ms-odu-seer")) h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.seer||"") + '</td>';
+                    if (v("ms-odu-voltage")) { h += '<td' + rs + '>' + esc(odu.voltage||"") + '</td><td' + rs + '>' + fmt(odu.mca) + '</td><td' + rs + '>' + fmt(odu.mop) + '</td>'; }
+                    if (v("ms-odu-mfg")) h += '<td' + rs + ' class="sp-cell-model">' + esc(odu.manufacturer||"") + '</td>';
+                    if (v("ms-odu-refrig")) h += '<td' + rs + '>' + esc(odu.refrigerant||"") + '</td>';
+                    if (v("ms-odu-lineset")) h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.lineSet||"") + '</td>';
+                    h += '<td' + rs + ' class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(iduAcc) + '" data-entry="' + ei + '" data-field="iduAccessories" data-idu="' + j + '"></td>';
                 }
-
                 h += '</tr>';
             }
         }
@@ -385,57 +545,73 @@ const SchedulePreview = (function () {
     // Combined MPS Table
     // -----------------------------------------------------------------------
     function buildMpsTable(indices) {
+        var v = isColVisible;
+        var fanSpan = v("mps-idu-cfm") ? 3 : 0;
+        var coolDSpan = v("mps-idu-eat-db") ? 3 : 0;
+        var coolCSpan = v("mps-idu-cool-total") ? 2 : 0;
+        var coolTotalSpan = coolDSpan + coolCSpan;
+        var auxSpan = v("mps-idu-aux-kw") ? 2 : 0;
+        var iElecSpan = v("mps-idu-voltage") ? 3 : 0;
+        var oHeatSpan = v("mps-odu-heat-amb") ? 3 : 0;
+        var oElecSpan = v("mps-odu-voltage") ? 3 : 0;
+        var iduCols = 2 + fanSpan + coolTotalSpan + (v("mps-idu-hp-total")?1:0) + auxSpan + iElecSpan + (v("mps-idu-weight")?1:0);
+        var oduCols = 2 + oHeatSpan + oElecSpan + (v("mps-odu-cool-amb")?1:0) + (v("mps-odu-refrig")?1:0) + (v("mps-odu-eff")?1:0) + (v("mps-odu-comp")?1:0) + (v("mps-odu-weight")?1:0);
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
         h += '<tr class="sp-hdr-section"><th rowspan="3" class="sp-col-action"><input type="checkbox" id="sp-select-all-mps" title="Select all"></th>';
-        h += '<th colspan="16" class="sp-section-indoor">INDOOR AIR HANDLING UNIT</th>';
-        h += '<th colspan="12" class="sp-section-outdoor">OUTDOOR CONDENSING UNIT</th>';
+        h += '<th colspan="' + iduCols + '" class="sp-section-indoor">INDOOR AIR HANDLING UNIT</th>';
+        h += '<th colspan="' + oduCols + '" class="sp-section-outdoor">OUTDOOR CONDENSING UNIT</th>';
         h += '<th rowspan="3" class="sp-col-acc">NOTES</th></tr>';
         h += '<tr class="sp-hdr1">';
-        h += '<th rowspan="2">MODEL<br>(DAIKIN)</th>';
-        h += '<th colspan="3" class="sp-col-group">SUPPLY FAN</th>';
-        h += '<th colspan="5" class="sp-col-group">COOLING</th>';
-        h += '<th rowspan="2">HP TOTAL<br>CAP.</th>';
-        h += '<th colspan="2" class="sp-col-group">AUX. HEAT</th>';
-        h += '<th colspan="3" class="sp-col-group">ELECTRICAL</th>';
-        h += '<th rowspan="2">WEIGHT</th>';
-        h += '<th rowspan="2">MODEL<br>(DAIKIN)</th>';
-        h += '<th colspan="3" class="sp-col-group">HP HEATING DATA</th>';
-        h += '<th colspan="3" class="sp-col-group">ELECTRICAL</th>';
-        h += '<th rowspan="2">OA AMB<br>(COOL)</th><th rowspan="2">REFRIG.</th><th rowspan="2">EFF.</th>';
-        h += '<th rowspan="2">COMP.<br>STAGES</th><th rowspan="2">WEIGHT</th>';
+        h += '<th rowspan="2">TAG</th><th rowspan="2">MODEL<br>(DAIKIN)</th>';
+        if (fanSpan > 0) h += '<th colspan="' + fanSpan + '" class="sp-col-group">SUPPLY FAN</th>';
+        if (coolTotalSpan > 0) h += '<th colspan="' + coolTotalSpan + '" class="sp-col-group">COOLING</th>';
+        if (v("mps-idu-hp-total")) h += '<th rowspan="2">HP TOTAL<br>CAP.</th>';
+        if (auxSpan > 0) h += '<th colspan="' + auxSpan + '" class="sp-col-group">AUX. HEAT</th>';
+        if (iElecSpan > 0) h += '<th colspan="' + iElecSpan + '" class="sp-col-group">ELECTRICAL</th>';
+        if (v("mps-idu-weight")) h += '<th rowspan="2">WEIGHT</th>';
+        h += '<th rowspan="2">TAG</th><th rowspan="2">MODEL<br>(DAIKIN)</th>';
+        if (oHeatSpan > 0) h += '<th colspan="' + oHeatSpan + '" class="sp-col-group">HP HEATING DATA</th>';
+        if (oElecSpan > 0) h += '<th colspan="' + oElecSpan + '" class="sp-col-group">ELECTRICAL</th>';
+        if (v("mps-odu-cool-amb")) h += '<th rowspan="2">OA AMB<br>(COOL)</th>';
+        if (v("mps-odu-refrig")) h += '<th rowspan="2">REFRIG.</th>';
+        if (v("mps-odu-eff")) h += '<th rowspan="2">EFF.</th>';
+        if (v("mps-odu-comp")) h += '<th rowspan="2">COMP.<br>STAGES</th>';
+        if (v("mps-odu-weight")) h += '<th rowspan="2">WEIGHT</th>';
         h += '</tr><tr class="sp-hdr2">';
-        h += '<th>CFM</th><th>HP</th><th>TYPE</th>';
-        h += '<th>EAT DB</th><th>EAT WB</th><th>LAT DB</th><th>TOTAL</th><th>SENS.</th>';
-        h += '<th>kW</th><th>RISE</th>';
-        h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
-        h += '<th>AMB DB</th><th>TOTAL</th><th>EFF.</th>';
-        h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
+        if (v("mps-idu-cfm")) h += '<th>CFM</th><th>HP</th><th>TYPE</th>';
+        if (v("mps-idu-eat-db")) h += '<th>EAT DB</th><th>EAT WB</th><th>LAT DB</th>';
+        if (v("mps-idu-cool-total")) h += '<th>TOTAL</th><th>SENS.</th>';
+        if (v("mps-idu-aux-kw")) h += '<th>kW</th><th>RISE</th>';
+        if (v("mps-idu-voltage")) h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
+        if (v("mps-odu-heat-amb")) h += '<th>AMB DB</th><th>TOTAL</th><th>EFF.</th>';
+        if (v("mps-odu-voltage")) h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
         h += '</tr></thead><tbody>';
-
         for (var ii = 0; ii < indices.length; ii++) {
-            var ei = indices[ii];
-            var entry = _entries[ei];
-            var sys = DataLoader.getSystemById(entry.systemId);
-            if (!sys) continue;
-            var idu = sys.indoorUnits[0];
-            var odu = sys.outdoorUnit;
-            var iduAcc = (entry.iduAccessories && entry.iduAccessories.length > 0) ? (entry.iduAccessories[0] || "") : "";
-
+            var ei = indices[ii]; var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
+            var idu = sys.indoorUnits[0]; var odu = sys.outdoorUnit;
+            var iduAcc = (entry.iduAccessories && entry.iduAccessories.length > 0) ? (entry.iduAccessories[0]||"") : "";
+            var iduTag = (entry.iduTags.length > 0) ? entry.iduTags[0] : "AHU-";
             h += '<tr data-entry-idx="' + ei + '" draggable="true">';
             h += buildActionCell(ei, 1, entry);
-            h += '<td class="sp-cell-model">' + esc(idu.model || "") + '</td>';
-            h += '<td>' + fmt(idu.airflow) + '</td><td>' + fmt(idu.motorHp) + '</td><td class="sp-cell-text">' + esc(idu.motorType || "") + '</td>';
-            h += '<td>' + fmt(idu.coolingEatDb) + '</td><td>' + fmt(idu.coolingEatWb) + '</td><td>' + fmt(idu.coolingLatDb) + '</td>';
-            h += '<td>' + fmt(idu.coolingTotal) + '</td><td>' + fmt(idu.coolingSensible) + '</td>';
-            h += '<td>' + fmt(idu.heatPumpTotalCapacity) + '</td>';
-            h += '<td>' + esc(idu.auxHeatKw || "") + '</td><td>' + esc(idu.auxHeatTempRise || "") + '</td>';
-            h += '<td>' + esc(idu.voltage || "") + '</td><td>' + fmt(idu.mca) + '</td><td>' + fmt(idu.mop) + '</td>';
-            h += '<td>' + fmt(idu.weight) + '</td>';
-            h += '<td class="sp-cell-model">' + esc(odu.model || "") + '</td>';
-            h += '<td>' + fmt(odu.heatingAmbient) + '</td><td>' + fmt(odu.heatingTotal) + '</td><td class="sp-cell-text">' + esc(odu.heatingEfficiency || "") + '</td>';
-            h += '<td>' + esc(odu.voltage || "") + '</td><td>' + fmt(odu.mca) + '</td><td>' + fmt(odu.mop) + '</td>';
-            h += '<td>' + fmt(odu.coolingAmbient) + '</td><td>' + esc(odu.refrigerant || "") + '</td><td class="sp-cell-text">' + esc(odu.efficiency || "") + '</td>';
-            h += '<td>' + esc(odu.compressorStages || "") + '</td><td>' + fmt(odu.weight) + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="0"></td>';
+            h += '<td class="sp-cell-model">' + esc(idu.model||"") + '</td>';
+            if (v("mps-idu-cfm")) { h += '<td>' + fmt(idu.airflow) + '</td><td>' + fmt(idu.motorHp) + '</td><td class="sp-cell-text">' + esc(idu.motorType||"") + '</td>'; }
+            if (v("mps-idu-eat-db")) { h += '<td>' + fmt(idu.coolingEatDb) + '</td><td>' + fmt(idu.coolingEatWb) + '</td><td>' + fmt(idu.coolingLatDb) + '</td>'; }
+            if (v("mps-idu-cool-total")) { h += '<td>' + fmt(idu.coolingTotal) + '</td><td>' + fmt(idu.coolingSensible) + '</td>'; }
+            if (v("mps-idu-hp-total")) h += '<td>' + fmt(idu.heatPumpTotalCapacity) + '</td>';
+            if (v("mps-idu-aux-kw")) { h += '<td>' + esc(idu.auxHeatKw||"") + '</td><td>' + esc(idu.auxHeatTempRise||"") + '</td>'; }
+            if (v("mps-idu-voltage")) { h += '<td>' + esc(idu.voltage||"") + '</td><td>' + fmt(idu.mca) + '</td><td>' + fmt(idu.mop) + '</td>'; }
+            if (v("mps-idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"CU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            h += '<td class="sp-cell-model">' + esc(odu.model||"") + '</td>';
+            if (v("mps-odu-heat-amb")) { h += '<td>' + fmt(odu.heatingAmbient) + '</td><td>' + fmt(odu.heatingTotal) + '</td><td class="sp-cell-text">' + esc(odu.heatingEfficiency||"") + '</td>'; }
+            if (v("mps-odu-voltage")) { h += '<td>' + esc(odu.voltage||"") + '</td><td>' + fmt(odu.mca) + '</td><td>' + fmt(odu.mop) + '</td>'; }
+            if (v("mps-odu-cool-amb")) h += '<td>' + fmt(odu.coolingAmbient) + '</td>';
+            if (v("mps-odu-refrig")) h += '<td>' + esc(odu.refrigerant||"") + '</td>';
+            if (v("mps-odu-eff")) h += '<td class="sp-cell-text">' + esc(odu.efficiency||"") + '</td>';
+            if (v("mps-odu-comp")) h += '<td>' + esc(odu.compressorStages||"") + '</td>';
+            if (v("mps-odu-weight")) h += '<td>' + fmt(odu.weight) + '</td>';
             h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(iduAcc) + '" data-entry="' + ei + '" data-field="iduAccessories" data-idu="0"></td>';
             h += '</tr>';
         }
@@ -447,45 +623,48 @@ const SchedulePreview = (function () {
     // Gas Packs Table
     // -----------------------------------------------------------------------
     function buildGpTable(indices) {
+        var v = isColVisible;
+        var fanSpan = v("gp-cfm") ? 3 : 0;
+        var coolCapSpan = v("gp-cool-total") ? 2 : 0;
+        var coolCondSpan = v("gp-eff") ? 5 : 0;
+        var coolTotalSpan = coolCapSpan + coolCondSpan;
+        var heatSpan = v("gp-heat-input") ? 4 : 0;
+        var elecSpan = v("gp-voltage") ? 4 : 0;
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
         h += '<tr class="sp-hdr1">';
         h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all-gp" title="Select all"></th>';
         h += '<th rowspan="2">TAG</th><th rowspan="2">MODEL</th><th rowspan="2">NOM<br>TONS</th>';
-        h += '<th colspan="3" class="sp-col-group">FAN DATA</th>';
-        h += '<th colspan="7" class="sp-col-group">COOLING PERFORMANCE</th>';
-        h += '<th colspan="4" class="sp-col-group">HEATING PERFORMANCE</th>';
-        h += '<th rowspan="2">HGRH</th><th rowspan="2">COOL<br>STAGES</th>';
-        h += '<th colspan="4" class="sp-col-group">ELECTRICAL</th>';
+        if (fanSpan > 0) h += '<th colspan="' + fanSpan + '" class="sp-col-group">FAN DATA</th>';
+        if (coolTotalSpan > 0) h += '<th colspan="' + coolTotalSpan + '" class="sp-col-group">COOLING PERFORMANCE</th>';
+        if (heatSpan > 0) h += '<th colspan="' + heatSpan + '" class="sp-col-group">HEATING PERFORMANCE</th>';
+        if (v("gp-hgrh")) h += '<th rowspan="2">HGRH</th>';
+        if (v("gp-cool-stages")) h += '<th rowspan="2">COOL<br>STAGES</th>';
+        if (elecSpan > 0) h += '<th colspan="' + elecSpan + '" class="sp-col-group">ELECTRICAL</th>';
         h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
         h += '</tr><tr class="sp-hdr2">';
-        h += '<th>CFM</th><th>ESP</th><th>TESP</th>';
-        h += '<th>TOTAL</th><th>SENS.</th><th>EFF.</th><th>EDB</th><th>EWB</th><th>LDB</th><th>LWB</th>';
-        h += '<th>INPUT</th><th>OUTPUT</th><th>EAT</th><th>LAT</th>';
-        h += '<th>V/PH</th><th>HP</th><th>MCA</th><th>MOCP</th>';
+        if (v("gp-cfm")) h += '<th>CFM</th><th>ESP</th><th>TESP</th>';
+        if (v("gp-cool-total")) h += '<th>TOTAL</th><th>SENS.</th>';
+        if (v("gp-eff")) h += '<th>EFF.</th><th>EDB</th><th>EWB</th><th>LDB</th><th>LWB</th>';
+        if (v("gp-heat-input")) h += '<th>INPUT</th><th>OUTPUT</th><th>EAT</th><th>LAT</th>';
+        if (v("gp-voltage")) h += '<th>V/PH</th><th>HP</th><th>MCA</th><th>MOCP</th>';
         h += '</tr></thead><tbody>';
-
         for (var ii = 0; ii < indices.length; ii++) {
-            var ei = indices[ii];
-            var entry = _entries[ei];
-            var sys = DataLoader.getSystemById(entry.systemId);
-            if (!sys) continue;
+            var ei = indices[ii]; var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
             var sc = sys.schedule;
-
             h += '<tr data-entry-idx="' + ei + '" draggable="true">';
             h += buildActionCell(ei, 1, entry);
-            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag || "RTU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
-            h += '<td class="sp-cell-model">' + esc(sc.model || "") + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"RTU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            h += '<td class="sp-cell-model">' + esc(sc.model||"") + '</td>';
             h += '<td>' + fmt(sc.nomTons) + '</td>';
-            h += '<td>' + fmt(sc.cfm) + '</td><td>' + fmt(sc.esp) + '</td><td>' + fmt(sc.tesp) + '</td>';
-            h += '<td>' + fmt(sc.coolingTotalCapacity) + '</td><td>' + fmt(sc.coolingSensibleCapacity) + '</td>';
-            h += '<td class="sp-cell-text">' + esc(sc.efficiency || "") + '</td>';
-            h += '<td>' + fmt(sc.edb) + '</td><td>' + fmt(sc.ewb) + '</td><td>' + fmt(sc.ldb) + '</td><td>' + fmt(sc.lwb) + '</td>';
-            h += '<td>' + fmt(sc.heatingInput) + '</td><td>' + fmt(sc.heatingOutput) + '</td>';
-            h += '<td>' + fmt(sc.heatingEat) + '</td><td>' + fmt(sc.heatingLat) + '</td>';
-            h += '<td>' + esc(sc.hgrh || "") + '</td><td>' + fmt(sc.coolingStages) + '</td>';
-            h += '<td>' + esc(sc.voltage || "") + '</td><td>' + fmt(sc.motorHp) + '</td>';
-            h += '<td>' + fmt(sc.mca) + '</td><td>' + fmt(sc.mocp) + '</td>';
-            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories || "") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
+            if (v("gp-cfm")) { h += '<td>' + fmt(sc.cfm) + '</td><td>' + fmt(sc.esp) + '</td><td>' + fmt(sc.tesp) + '</td>'; }
+            if (v("gp-cool-total")) { h += '<td>' + fmt(sc.coolingTotalCapacity) + '</td><td>' + fmt(sc.coolingSensibleCapacity) + '</td>'; }
+            if (v("gp-eff")) { h += '<td class="sp-cell-text">' + esc(sc.efficiency||"") + '</td><td>' + fmt(sc.edb) + '</td><td>' + fmt(sc.ewb) + '</td><td>' + fmt(sc.ldb) + '</td><td>' + fmt(sc.lwb) + '</td>'; }
+            if (v("gp-heat-input")) { h += '<td>' + fmt(sc.heatingInput) + '</td><td>' + fmt(sc.heatingOutput) + '</td><td>' + fmt(sc.heatingEat) + '</td><td>' + fmt(sc.heatingLat) + '</td>'; }
+            if (v("gp-hgrh")) h += '<td>' + esc(sc.hgrh||"") + '</td>';
+            if (v("gp-cool-stages")) h += '<td>' + fmt(sc.coolingStages) + '</td>';
+            if (v("gp-voltage")) { h += '<td>' + esc(sc.voltage||"") + '</td><td>' + fmt(sc.motorHp) + '</td><td>' + fmt(sc.mca) + '</td><td>' + fmt(sc.mocp) + '</td>'; }
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories||"") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
             h += '</tr>';
         }
         h += '</tbody></table></div>';
@@ -575,7 +754,8 @@ const SchedulePreview = (function () {
         h += '<div class="sp-docs-header"><span class="sp-docs-title">Project Files</span>';
         h += '<button class="sp-docs-download-btn" id="sp-btn-download-bundle" type="button">';
         h += '<svg class="sp-dl-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-        h += ' Download Selected</button></div>';
+        h += '<svg class="sp-dl-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10"/></svg>';
+        h += '<span class="sp-dl-label">Download Selected</span></button></div>';
 
         h += '<div class="sp-docs-options">';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-xlsx" checked> Include Excel Schedule</label>';
@@ -614,7 +794,7 @@ const SchedulePreview = (function () {
     // -----------------------------------------------------------------------
     function rebuildContent() {
         var el = document.getElementById("sp-content");
-        if (el) { el.innerHTML = buildTabContent(); wireContentEvents(); updateSelectionUI(); }
+        if (el) { el.innerHTML = buildColPanel() + buildTabContent(); wireContentEvents(); updateSelectionUI(); }
     }
 
     // -----------------------------------------------------------------------
@@ -634,6 +814,14 @@ const SchedulePreview = (function () {
         // Auto number
         var autoBtn = document.getElementById("sp-btn-autonumber");
         if (autoBtn) autoBtn.addEventListener("click", showAutoNumberDialog);
+
+        // Columns toggle
+        var colBtn = document.getElementById("sp-btn-columns");
+        if (colBtn) colBtn.addEventListener("click", function () {
+            _colPanelOpen = !_colPanelOpen;
+            var panel = document.getElementById("sp-col-panel");
+            if (panel) panel.classList.toggle("hidden", !_colPanelOpen);
+        });
 
         // Download
         var xlsxBtn = document.getElementById("sp-btn-xlsx");
@@ -713,11 +901,23 @@ const SchedulePreview = (function () {
             customInputs[cni].addEventListener("input", handleCustomNoteInput);
         }
 
+        // Column visibility toggles
+        var colToggles = _overlay.querySelectorAll(".sp-col-toggle");
+        for (var ct = 0; ct < colToggles.length; ct++) {
+            colToggles[ct].addEventListener("change", function () {
+                var keys = (this.dataset.colKeys || "").split(",");
+                toggleColumnGroup(keys, this.checked);
+            });
+        }
+
         // Files tab events
         wireFileEvents();
 
         // Drag and drop
         wireDragEvents();
+
+        // Column resize handles
+        wireResizeHandles();
     }
 
     function wireFileEvents() {
@@ -762,6 +962,95 @@ const SchedulePreview = (function () {
                 }
             });
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Column Resize Handles
+    // -----------------------------------------------------------------------
+    function wireResizeHandles() {
+        if (!_overlay) return;
+        var tables = _overlay.querySelectorAll(".sp-table");
+        for (var t = 0; t < tables.length; t++) {
+            var table = tables[t];
+            table.style.tableLayout = "fixed";
+            // Build colgroup from visible columns
+            var firstDataRow = table.querySelector("tbody tr");
+            if (!firstDataRow) continue;
+            var cells = firstDataRow.querySelectorAll("td");
+            var existingCg = table.querySelector("colgroup");
+            if (existingCg) existingCg.remove();
+            var cg = document.createElement("colgroup");
+            for (var c = 0; c < cells.length; c++) {
+                var col = document.createElement("col");
+                var cw = cells[c].offsetWidth;
+                col.style.width = cw + "px";
+                col.dataset.colIdx = c;
+                cg.appendChild(col);
+            }
+            table.insertBefore(cg, table.firstChild);
+
+            // Add resize handles to bottom header row cells
+            var headerRows = table.querySelectorAll("thead tr");
+            if (headerRows.length === 0) continue;
+            var lastHdrRow = headerRows[headerRows.length - 1];
+            var hdrCells = lastHdrRow.querySelectorAll("th");
+            for (var hc = 0; hc < hdrCells.length; hc++) {
+                var th = hdrCells[hc];
+                th.style.position = "relative";
+                var handle = document.createElement("div");
+                handle.className = "sp-resize-handle";
+                handle.dataset.colIdx = hc;
+                th.appendChild(handle);
+                handle.addEventListener("mousedown", startResize.bind(null, table, cg));
+            }
+        }
+    }
+
+    var _resizeState = null;
+
+    function startResize(table, colgroup, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var colIdx = parseInt(e.target.dataset.colIdx, 10);
+        var col = colgroup.children[colIdx];
+        if (!col) return;
+        var startX = e.clientX;
+        var startW = parseInt(col.style.width, 10) || col.offsetWidth;
+
+        _resizeState = { table: table, colgroup: colgroup, col: col, colIdx: colIdx, startX: startX, startW: startW };
+
+        document.addEventListener("mousemove", doResize);
+        document.addEventListener("mouseup", endResize);
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+    }
+
+    function doResize(e) {
+        if (!_resizeState) return;
+        var delta = e.clientX - _resizeState.startX;
+        var newW = Math.max(30, _resizeState.startW + delta);
+        _resizeState.col.style.width = newW + "px";
+    }
+
+    function endResize(e) {
+        if (!_resizeState) return;
+        document.removeEventListener("mousemove", doResize);
+        document.removeEventListener("mouseup", endResize);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+
+        // Store the final width - map column index to column key if possible
+        var finalW = parseInt(_resizeState.col.style.width, 10);
+        // Find the data-col attribute on cells in this column to get the key
+        var dataRows = _resizeState.table.querySelectorAll("tbody tr");
+        if (dataRows.length > 0) {
+            var tds = dataRows[0].querySelectorAll("td");
+            if (tds[_resizeState.colIdx] && tds[_resizeState.colIdx].dataset && tds[_resizeState.colIdx].dataset.col) {
+                setColWidth(tds[_resizeState.colIdx].dataset.col, finalW);
+            }
+        }
+
+        _resizeState = null;
     }
 
     // -----------------------------------------------------------------------
@@ -979,51 +1268,62 @@ const SchedulePreview = (function () {
     // -----------------------------------------------------------------------
     async function downloadBundle() {
         if (typeof JSZip === "undefined") { Project.showToast("JSZip not loaded", "toast-danger"); return; }
-        collectEditsFromDom(); saveState();
 
-        var zip = new JSZip();
-        var fetched = 0;
-
-        // Schedule exports
-        var inclXlsx = document.getElementById("sp-doc-include-xlsx");
-        var inclPdf = document.getElementById("sp-doc-include-pdf");
-
-        if (inclXlsx && inclXlsx.checked) {
-            try {
-                var xlsxBlobs = await Export.exportScheduleXlsx({ returnBlobs: true });
-                if (xlsxBlobs) { for (var x = 0; x < xlsxBlobs.length; x++) { zip.file(xlsxBlobs[x].name, xlsxBlobs[x].blob); fetched++; } }
-            } catch (e) { console.warn("[Preview] XLSX export failed:", e); }
-        }
-
-        if (inclPdf && inclPdf.checked) {
-            try {
-                var pdfBlobs = await Export.exportSchedulePdf({ returnBlobs: true });
-                if (pdfBlobs) { for (var p2 = 0; p2 < pdfBlobs.length; p2++) { zip.file(pdfBlobs[p2].name, pdfBlobs[p2].blob); fetched++; } }
-            } catch (e) { console.warn("[Preview] PDF export failed:", e); }
-        }
-
-        // Document files
-        var fileCbs = _overlay.querySelectorAll(".sp-doc-file-cb:checked");
-        for (var fc = 0; fc < fileCbs.length; fc++) {
-            var path = fileCbs[fc].dataset.docPath;
-            try {
-                var resp = await fetch(path);
-                if (resp.ok) {
-                    var blob = await resp.blob();
-                    var zipPath = path.replace(/^ASSETS\/[^/]+\//, "");
-                    zip.file(zipPath, blob);
-                    fetched++;
-                }
-            } catch (e) { console.warn("[Preview] Fetch failed:", path); }
-        }
-
-        if (fetched === 0) { Project.showToast("No files to download", "toast-warning"); return; }
+        var dlBtn = document.getElementById("sp-btn-download-bundle");
+        var dlLabel = dlBtn ? dlBtn.querySelector(".sp-dl-label") : null;
+        if (dlBtn) { dlBtn.classList.add("sp-downloading"); dlBtn.disabled = true; }
+        if (dlLabel) dlLabel.textContent = "Preparing files…";
 
         try {
-            var zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
-            Project.downloadBlob(zipBlob, "HHpro_Project_Files.zip");
-            Project.showToast(fetched + " file(s) downloaded", "toast-success");
-        } catch (e) { Project.showToast("ZIP failed", "toast-danger"); }
+            collectEditsFromDom(); saveState();
+
+            var zip = new JSZip();
+            var fetched = 0;
+
+            // Schedule exports
+            var inclXlsx = document.getElementById("sp-doc-include-xlsx");
+            var inclPdf = document.getElementById("sp-doc-include-pdf");
+
+            if (inclXlsx && inclXlsx.checked) {
+                try {
+                    var xlsxBlobs = await Export.exportScheduleXlsx({ returnBlobs: true });
+                    if (xlsxBlobs) { for (var x = 0; x < xlsxBlobs.length; x++) { zip.file(xlsxBlobs[x].name, xlsxBlobs[x].blob); fetched++; } }
+                } catch (e) { console.warn("[Preview] XLSX export failed:", e); }
+            }
+
+            if (inclPdf && inclPdf.checked) {
+                try {
+                    var pdfBlobs = await Export.exportSchedulePdf({ returnBlobs: true });
+                    if (pdfBlobs) { for (var p2 = 0; p2 < pdfBlobs.length; p2++) { zip.file(pdfBlobs[p2].name, pdfBlobs[p2].blob); fetched++; } }
+                } catch (e) { console.warn("[Preview] PDF export failed:", e); }
+            }
+
+            // Document files
+            var fileCbs = _overlay.querySelectorAll(".sp-doc-file-cb:checked");
+            for (var fc = 0; fc < fileCbs.length; fc++) {
+                var path = fileCbs[fc].dataset.docPath;
+                try {
+                    var resp = await fetch(path);
+                    if (resp.ok) {
+                        var blob = await resp.blob();
+                        var zipPath = path.replace(/^ASSETS\/[^/]+\//, "");
+                        zip.file(zipPath, blob);
+                        fetched++;
+                    }
+                } catch (e) { console.warn("[Preview] Fetch failed:", path); }
+            }
+
+            if (fetched === 0) { Project.showToast("No files to download", "toast-warning"); return; }
+
+            try {
+                var zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+                Project.downloadBlob(zipBlob, "HHpro_Project_Files.zip");
+                Project.showToast(fetched + " file(s) downloaded", "toast-success");
+            } catch (e) { Project.showToast("ZIP failed", "toast-danger"); }
+        } finally {
+            if (dlBtn) { dlBtn.classList.remove("sp-downloading"); dlBtn.disabled = false; }
+            if (dlLabel) dlLabel.textContent = "Download Selected";
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -1078,6 +1378,7 @@ const SchedulePreview = (function () {
         open: open,
         close: close,
         getHiddenColumns: getHiddenColumns,
+        getColumnWidths: getColumnWidths,
     };
 
 })();

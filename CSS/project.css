@@ -1541,7 +1541,40 @@ body.preview-open {
     cursor: pointer;
 }
 
-.sp-col-toggle input[type="checkbox"] {
+.sp-col-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.sp-col-option:hover {
+    color: var(--color-brand);
+}
+
+/* --------------------------------------------------------------------------
+   Column Resize Handles
+   -------------------------------------------------------------------------- */
+.sp-resize-handle {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    background: transparent;
+}
+
+.sp-resize-handle:hover {
+    background: rgba(0, 84, 166, 0.3);
+}
+
+.sp-col-toggle input[type="checkbox"],
+.sp-col-option .sp-col-toggle {
     width: 15px;
     height: 15px;
     accent-color: var(--color-brand);
@@ -2147,6 +2180,23 @@ body.preview-open {
 .sp-docs-download-btn:hover {
     background-color: var(--color-brand-light);
     transform: translateY(-1px);
+}
+
+.sp-docs-download-btn .sp-dl-spinner {
+    display: none;
+    animation: sp-spin 0.8s linear infinite;
+}
+
+.sp-docs-download-btn.sp-downloading .sp-dl-icon { display: none; }
+.sp-docs-download-btn.sp-downloading .sp-dl-spinner { display: inline-block; }
+.sp-docs-download-btn.sp-downloading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+@keyframes sp-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .sp-docs-options {
