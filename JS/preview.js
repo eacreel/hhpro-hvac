@@ -932,6 +932,9 @@ const SchedulePreview = (function () {
 
         // Drag and drop
         wireDragEvents();
+
+        // Column resize handles
+        wireResizeHandles();
     }
 
     function wireFileEvents() {
@@ -979,44 +982,70 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Column Resize Handles
+    // Column Resize Handles (with proper rowspan/colspan mapping)
     // -----------------------------------------------------------------------
     function wireResizeHandles() {
         if (!_overlay) return;
         var tables = _overlay.querySelectorAll(".sp-table");
         for (var t = 0; t < tables.length; t++) {
-            var table = tables[t];
-            table.style.tableLayout = "fixed";
-            // Build colgroup from visible columns
-            var firstDataRow = table.querySelector("tbody tr");
-            if (!firstDataRow) continue;
-            var cells = firstDataRow.querySelectorAll("td");
-            var existingCg = table.querySelector("colgroup");
-            if (existingCg) existingCg.remove();
-            var cg = document.createElement("colgroup");
-            for (var c = 0; c < cells.length; c++) {
-                var col = document.createElement("col");
-                var cw = cells[c].offsetWidth;
-                col.style.width = cw + "px";
-                col.dataset.colIdx = c;
-                cg.appendChild(col);
-            }
-            table.insertBefore(cg, table.firstChild);
+            setupTableResize(tables[t]);
+        }
+    }
 
-            // Add resize handles to bottom header row cells
-            var headerRows = table.querySelectorAll("thead tr");
-            if (headerRows.length === 0) continue;
-            var lastHdrRow = headerRows[headerRows.length - 1];
-            var hdrCells = lastHdrRow.querySelectorAll("th");
-            for (var hc = 0; hc < hdrCells.length; hc++) {
-                var th = hdrCells[hc];
-                th.style.position = "relative";
-                var handle = document.createElement("div");
-                handle.className = "sp-resize-handle";
-                handle.dataset.colIdx = hc;
-                th.appendChild(handle);
-                handle.addEventListener("mousedown", startResize.bind(null, table, cg));
+    function setupTableResize(table) {
+        var thead = table.querySelector("thead");
+        if (!thead) return;
+
+        // Build grid to map header cells to actual column positions
+        var rows = thead.querySelectorAll("tr");
+        var grid = [];
+        var cellMap = [];
+        for (var r = 0; r < rows.length; r++) {
+            if (!grid[r]) grid[r] = [];
+            var cells = rows[r].querySelectorAll("th");
+            var colIdx = 0;
+            for (var c = 0; c < cells.length; c++) {
+                while (grid[r][colIdx]) colIdx++;
+                var cell = cells[c];
+                var cs = cell.colSpan || 1;
+                var rs = cell.rowSpan || 1;
+                cellMap.push({ cell: cell, startCol: colIdx, colSpan: cs });
+                for (var dr = 0; dr < rs; dr++) {
+                    if (!grid[r + dr]) grid[r + dr] = [];
+                    for (var dc = 0; dc < cs; dc++) {
+                        grid[r + dr][colIdx + dc] = true;
+                    }
+                }
+                colIdx += cs;
             }
+        }
+
+        var totalCols = 0;
+        for (var gr = 0; gr < grid.length; gr++) {
+            if (grid[gr]) totalCols = Math.max(totalCols, grid[gr].length);
+        }
+        if (totalCols === 0) return;
+
+        // Create colgroup
+        var existingCg = table.querySelector("colgroup");
+        if (existingCg) existingCg.remove();
+        var cg = document.createElement("colgroup");
+        for (var ci = 0; ci < totalCols; ci++) {
+            cg.appendChild(document.createElement("col"));
+        }
+        table.insertBefore(cg, table.firstChild);
+        table.style.tableLayout = "fixed";
+
+        // Add resize handles to single-column header cells only
+        for (var mi = 0; mi < cellMap.length; mi++) {
+            var cm = cellMap[mi];
+            if (cm.colSpan !== 1) continue;
+            cm.cell.style.position = "relative";
+            var handle = document.createElement("div");
+            handle.className = "sp-resize-handle";
+            handle.dataset.actualCol = cm.startCol;
+            cm.cell.appendChild(handle);
+            handle.addEventListener("mousedown", startResize.bind(null, table, cg));
         }
     }
 
@@ -1025,14 +1054,10 @@ const SchedulePreview = (function () {
     function startResize(table, colgroup, e) {
         e.preventDefault();
         e.stopPropagation();
-        var colIdx = parseInt(e.target.dataset.colIdx, 10);
-        var col = colgroup.children[colIdx];
+        var actualCol = parseInt(e.target.dataset.actualCol, 10);
+        var col = colgroup.children[actualCol];
         if (!col) return;
-        var startX = e.clientX;
-        var startW = parseInt(col.style.width, 10) || col.offsetWidth;
-
-        _resizeState = { table: table, colgroup: colgroup, col: col, colIdx: colIdx, startX: startX, startW: startW };
-
+        _resizeState = { col: col, startX: e.clientX, startW: col.offsetWidth || 60 };
         document.addEventListener("mousemove", doResize);
         document.addEventListener("mouseup", endResize);
         document.body.style.cursor = "col-resize";
@@ -1041,29 +1066,16 @@ const SchedulePreview = (function () {
 
     function doResize(e) {
         if (!_resizeState) return;
-        var delta = e.clientX - _resizeState.startX;
-        var newW = Math.max(30, _resizeState.startW + delta);
+        var newW = Math.max(30, _resizeState.startW + (e.clientX - _resizeState.startX));
         _resizeState.col.style.width = newW + "px";
     }
 
-    function endResize(e) {
+    function endResize() {
         if (!_resizeState) return;
         document.removeEventListener("mousemove", doResize);
         document.removeEventListener("mouseup", endResize);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
-
-        // Store the final width - map column index to column key if possible
-        var finalW = parseInt(_resizeState.col.style.width, 10);
-        // Find the data-col attribute on cells in this column to get the key
-        var dataRows = _resizeState.table.querySelectorAll("tbody tr");
-        if (dataRows.length > 0) {
-            var tds = dataRows[0].querySelectorAll("td");
-            if (tds[_resizeState.colIdx] && tds[_resizeState.colIdx].dataset && tds[_resizeState.colIdx].dataset.col) {
-                setColWidth(tds[_resizeState.colIdx].dataset.col, finalW);
-            }
-        }
-
         _resizeState = null;
     }
 

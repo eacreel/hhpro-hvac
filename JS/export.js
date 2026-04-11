@@ -953,14 +953,16 @@ const Export = (function () {
         var notes = Project.getProductActiveNotes(productKey);
         if (notes.length === 0) return;
 
-        var nY = doc.lastAutoTable.finalY + 10;
+        var nY = doc.lastAutoTable.finalY;
         var noteLineH = 9;
         var boxH = 14 + (notes.length * noteLineH) + 4;
         var boxW = tableWidth || 400;
 
-        // Draw border around notes section
+        // Draw only left, right, bottom borders (top is the table's bottom border)
         doc.setDrawColor(0); doc.setLineWidth(1.0);
-        doc.rect(leftMargin, nY, boxW, boxH, "S");
+        doc.line(leftMargin, nY, leftMargin, nY + boxH);               // left
+        doc.line(leftMargin + boxW, nY, leftMargin + boxW, nY + boxH); // right
+        doc.line(leftMargin, nY + boxH, leftMargin + boxW, nY + boxH); // bottom
 
         doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
         doc.text("NOTES:", leftMargin + 4, nY + 10);
@@ -1062,11 +1064,13 @@ const Export = (function () {
             y -= ROW_H;
         }
 
-        // Notes section
+        // Notes section (attached to bottom of table, no top border)
         if (notes && notes.length > 0) {
-            y -= 2;
             var noteBoxH = 4 + notes.length * NOTE_H + 2;
-            entities.push(rc(X0,y,tableW,noteBoxH,"BORDERS"));
+            // Left, right, bottom only (top is last data row's bottom)
+            entities.push(ln(X0, y, X0, y - noteBoxH, "BORDERS"));
+            entities.push(ln(X0 + tableW, y, X0 + tableW, y - noteBoxH, "BORDERS"));
+            entities.push(ln(X0, y - noteBoxH, X0 + tableW, y - noteBoxH, "BORDERS"));
             entities.push(mt(X0+2, y-3, TXT_HDR, "NOTES:", "HEADERS", 1));
             for (var ni=0; ni<notes.length; ni++) {
                 entities.push(mt(X0+6, y-5-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
