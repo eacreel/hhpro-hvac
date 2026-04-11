@@ -214,12 +214,10 @@ const SchedulePreview = (function () {
                 for (var k = 0; k < grp.keys.length; k++) {
                     if (!isColVisible(grp.keys[k])) { allVis = false; break; }
                 }
-                var repWidth = getColWidth(grp.keys[0]);
-                h += '<div class="sp-col-option">';
+                h += '<label class="sp-col-option">';
                 h += '<input type="checkbox" class="sp-col-toggle" data-col-keys="' + grp.keys.join(",") + '"' + (allVis ? " checked" : "") + '>';
                 h += '<span class="sp-col-option-label">' + grp.label + '</span>';
-                h += '<input type="number" class="sp-col-width-input" data-col-width-keys="' + grp.keys.join(",") + '" value="' + repWidth + '" min="30" max="300" title="Column width (px)">';
-                h += '</div>';
+                h += '</label>';
             }
             h += '</div>';
         }
@@ -912,18 +910,6 @@ const SchedulePreview = (function () {
             colToggles[ct].addEventListener("change", function () {
                 var keys = (this.dataset.colKeys || "").split(",");
                 toggleColumnGroup(keys, this.checked);
-            });
-        }
-
-        // Column width inputs
-        var widthInputs = _overlay.querySelectorAll(".sp-col-width-input");
-        for (var wi2 = 0; wi2 < widthInputs.length; wi2++) {
-            widthInputs[wi2].addEventListener("change", function () {
-                var keys = (this.dataset.colWidthKeys || "").split(",");
-                var val = parseInt(this.value, 10) || 60;
-                for (var wk = 0; wk < keys.length; wk++) {
-                    setColWidth(keys[wk], val);
-                }
             });
         }
 

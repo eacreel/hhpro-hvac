@@ -750,18 +750,11 @@ const Export = (function () {
             rows.push(row);
         }
 
-        // Column widths
-        var colStyles = {};
-        for (var wi = 0; wi < visCols.length; wi++) {
-            colStyles[wi] = { cellWidth: pxToPt(W[visCols[wi].key] || 60) };
-        }
-
         doc.autoTable({
             startY: startY, head: [headRow1, headRow2], body: rows, theme: "grid",
             styles: { font: "helvetica", fontSize: 5.5, cellPadding: 1.5, halign: "center", valign: "middle", lineWidth: T, lineColor: [0,0,0], textColor: [0,0,0] },
             headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: "bold", lineWidth: M, lineColor: [0,0,0] },
             alternateRowStyles: { fillColor: [255,255,255] },
-            columnStyles: colStyles,
             tableLineWidth: M, tableLineColor: [0,0,0],
             margin: { left: lm, right: lm },
         });
@@ -953,22 +946,25 @@ const Export = (function () {
         var notes = Project.getProductActiveNotes(productKey);
         if (notes.length === 0) return;
 
-        var nY = doc.lastAutoTable.finalY;
+        // Use actual table dimensions for perfect alignment
+        var at = doc.lastAutoTable;
+        var nY = at.finalY;
+        var tblX = at.settings.margin.left || leftMargin;
+        var tblW = at.table ? at.table.width : (tableWidth || 400);
         var noteLineH = 9;
         var boxH = 14 + (notes.length * noteLineH) + 4;
-        var boxW = tableWidth || 400;
 
-        // Draw only left, right, bottom borders (top is the table's bottom border)
+        // Draw only left, right, bottom borders (table's bottom border is the top)
         doc.setDrawColor(0); doc.setLineWidth(1.0);
-        doc.line(leftMargin, nY, leftMargin, nY + boxH);               // left
-        doc.line(leftMargin + boxW, nY, leftMargin + boxW, nY + boxH); // right
-        doc.line(leftMargin, nY + boxH, leftMargin + boxW, nY + boxH); // bottom
+        doc.line(tblX, nY, tblX, nY + boxH);                   // left
+        doc.line(tblX + tblW, nY, tblX + tblW, nY + boxH);     // right
+        doc.line(tblX, nY + boxH, tblX + tblW, nY + boxH);     // bottom
 
         doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
-        doc.text("NOTES:", leftMargin + 4, nY + 10);
+        doc.text("NOTES:", tblX + 4, nY + 10);
         doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         for (var ni = 0; ni < notes.length; ni++) {
-            doc.text((ni + 1) + "- " + notes[ni], leftMargin + 20, nY + 14 + 4 + (ni * noteLineH));
+            doc.text((ni + 1) + "- " + notes[ni], tblX + 20, nY + 14 + 4 + (ni * noteLineH));
         }
     }
 
