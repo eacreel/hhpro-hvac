@@ -692,9 +692,7 @@ const Export = (function () {
     function renderPdfTable(doc, title, sectionLabels, colDefs, groupDefs, dataRowBuilder, entries, productKey) {
         var pw = doc.internal.pageSize.getWidth();
         var M = 1.0; var T = 0.25; var lm = 15;
-        var v = getExportVisibility(); var W = getExportWidths();
-
-        // Filter visible columns
+        var v = getExportVisibility();
         var visCols = colDefs.filter(function(c) { return c.always || v(c.key); });
 
         // Title bar
@@ -705,38 +703,47 @@ const Export = (function () {
         doc.text(title, pw / 2, 28, { align: "center" });
         var startY = 33;
 
-        // Section labels
+        // Build header rows
+        var headRows = [];
+
+        // Section label row — as part of autoTable so it aligns with columns
         if (sectionLabels && sectionLabels.length === 2) {
-            doc.setLineWidth(M);
-            var halfW = titleW / 2;
-            doc.rect(lm, startY, halfW, 14, "S");
-            doc.rect(lm + halfW, startY, halfW, 14, "S");
-            doc.setFontSize(9); doc.setFont("helvetica", "bold");
-            doc.text(sectionLabels[0], lm + halfW / 2, startY + 9, { align: "center" });
-            doc.text(sectionLabels[1], lm + halfW + halfW / 2, startY + 9, { align: "center" });
-            startY += 14;
+            var indoorCount = 0, outdoorCount = 0, notesCount = 0;
+            for (var si = 0; si < visCols.length; si++) {
+                var k = visCols[si].key;
+                if (k.indexOf("-notes") !== -1) notesCount++;
+                else if (k.indexOf("-odu-") !== -1) outdoorCount++;
+                else indoorCount++;
+            }
+            var secRow = [];
+            if (indoorCount > 0) secRow.push({ content: sectionLabels[0], colSpan: indoorCount });
+            if (outdoorCount > 0) secRow.push({ content: sectionLabels[1], colSpan: outdoorCount });
+            if (notesCount > 0) secRow.push({ content: "", colSpan: notesCount });
+            headRows.push(secRow);
         }
 
-        // Build header rows from group definitions
+        // Group header row + sub-header row
         var headRow1 = [], headRow2 = [];
         for (var gi = 0; gi < groupDefs.length; gi++) {
             var grp = groupDefs[gi];
-            var grpVisCols = grp.cols.filter(function(k) {
-                for (var ci = 0; ci < visCols.length; ci++) { if (visCols[ci].key === k) return true; }
+            var grpVisCols = grp.cols.filter(function(gk) {
+                for (var ci = 0; ci < visCols.length; ci++) { if (visCols[ci].key === gk) return true; }
                 return false;
             });
             if (grpVisCols.length === 0) continue;
             if (grp.sub) {
                 headRow1.push({ content: grp.label, colSpan: grpVisCols.length });
-                for (var si = 0; si < grpVisCols.length; si++) {
-                    var colDef = null;
-                    for (var cj = 0; cj < visCols.length; cj++) { if (visCols[cj].key === grpVisCols[si]) { colDef = visCols[cj]; break; } }
-                    headRow2.push(colDef ? colDef.subHeader : "");
+                for (var sj = 0; sj < grpVisCols.length; sj++) {
+                    var colDef2 = null;
+                    for (var cj = 0; cj < visCols.length; cj++) { if (visCols[cj].key === grpVisCols[sj]) { colDef2 = visCols[cj]; break; } }
+                    headRow2.push(colDef2 ? colDef2.subHeader : "");
                 }
             } else {
                 headRow1.push({ content: grp.label, rowSpan: 2 });
             }
         }
+        headRows.push(headRow1);
+        headRows.push(headRow2);
 
         // Build data rows
         var rows = [];
@@ -751,7 +758,7 @@ const Export = (function () {
         }
 
         doc.autoTable({
-            startY: startY, head: [headRow1, headRow2], body: rows, theme: "grid",
+            startY: startY, head: headRows, body: rows, theme: "grid",
             styles: { font: "helvetica", fontSize: 5.5, cellPadding: 1.5, halign: "center", valign: "middle", lineWidth: T, lineColor: [0,0,0], textColor: [0,0,0] },
             headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: "bold", lineWidth: M, lineColor: [0,0,0] },
             alternateRowStyles: { fillColor: [255,255,255] },

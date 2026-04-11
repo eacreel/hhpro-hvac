@@ -1012,15 +1012,37 @@ const SchedulePreview = (function () {
         }
         if (totalCols === 0) return;
 
-        // Create colgroup
+        // Capture current rendered column widths before switching layout
+        // Use the first header row that has cells spanning all columns
+        var capturedWidths = [];
+        for (var cw = 0; cw < totalCols; cw++) capturedWidths.push(0);
+        // Find cells in last header row and map to column positions using cellMap
+        for (var cm2 = 0; cm2 < cellMap.length; cm2++) {
+            var item = cellMap[cm2];
+            if (item.colSpan === 1) {
+                capturedWidths[item.startCol] = item.cell.offsetWidth || 60;
+            } else {
+                // Distribute group width evenly
+                var grpW = item.cell.offsetWidth || (item.colSpan * 60);
+                var perCol = Math.round(grpW / item.colSpan);
+                for (var cw2 = 0; cw2 < item.colSpan; cw2++) {
+                    if (!capturedWidths[item.startCol + cw2]) capturedWidths[item.startCol + cw2] = perCol;
+                }
+            }
+        }
+
+        // Create colgroup with captured widths
         var existingCg = table.querySelector("colgroup");
         if (existingCg) existingCg.remove();
         var cg = document.createElement("colgroup");
         for (var ci = 0; ci < totalCols; ci++) {
-            cg.appendChild(document.createElement("col"));
+            var colEl = document.createElement("col");
+            colEl.style.width = (capturedWidths[ci] || 60) + "px";
+            cg.appendChild(colEl);
         }
         table.insertBefore(cg, table.firstChild);
         table.style.tableLayout = "fixed";
+        table.style.width = "auto"; // Let table grow/shrink with columns
 
         // Add resize handles to single-column header cells only
         for (var mi = 0; mi < cellMap.length; mi++) {
