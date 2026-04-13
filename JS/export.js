@@ -752,7 +752,19 @@ const Export = (function () {
             if (!vals) continue;
             var row = [];
             for (var vi2 = 0; vi2 < visCols.length; vi2++) {
-                row.push(vals[visCols[vi2].key] || "");
+                var cellVal = vals[visCols[vi2].key];
+                if (cellVal === "__SKIP__") continue;
+                if (cellVal && typeof cellVal === "object" && cellVal.colSpan) {
+                    // Count how many of the spanned columns are actually visible
+                    var visSpan = 1;
+                    for (var sk = vi2 + 1; sk < visCols.length && visSpan < cellVal.colSpan; sk++) {
+                        if (vals[visCols[sk].key] === "__SKIP__") visSpan++;
+                        else break;
+                    }
+                    row.push({ content: cellVal.content, colSpan: visSpan, styles: { fontStyle: "italic", halign: "center" } });
+                } else {
+                    row.push(cellVal || "");
+                }
             }
             rows.push(row);
         }
@@ -826,7 +838,11 @@ const Export = (function () {
                     vals["ms-idu-cool-edb"]=fp(u.coolingEdb);vals["ms-idu-cool-ewb"]=fp(u.coolingEwb);vals["ms-idu-cool-total"]=fp(u.coolingTotal);vals["ms-idu-cool-sens"]=fp(u.coolingSensible);
                     vals["ms-idu-heat-edb"]=fp(u.heatingEdb);vals["ms-idu-heat-total"]=fp(u.heatingTotal);
                     vals["ms-idu-weight"]=fp(u.weight);vals["ms-idu-type"]=u.type||"";
-                    vals["ms-idu-voltage"]=u.poweredFromOutdoor?"Powered From ODU":(u.voltage||"");vals["ms-idu-mca"]=u.poweredFromOutdoor?"":fp(u.mca);vals["ms-idu-mop"]=u.poweredFromOutdoor?"":fp(u.mop);
+                    if (u.poweredFromOutdoor) {
+                        vals["ms-idu-voltage"]={content:"Powered From ODU",colSpan:3};vals["ms-idu-mca"]="__SKIP__";vals["ms-idu-mop"]="__SKIP__";
+                    } else {
+                        vals["ms-idu-voltage"]=u.voltage||"";vals["ms-idu-mca"]=fp(u.mca);vals["ms-idu-mop"]=fp(u.mop);
+                    }
                     vals["ms-idu-mfg"]=u.manufacturer||"";
                     vals["ms-odu-sym"]=entry.oduTag||"ODU-";vals["ms-odu-cool-amb"]=fp(odu.coolingAmbient);vals["ms-odu-heat-amb"]=fp(odu.heatingAmbient);
                     vals["ms-odu-weight"]=fp(odu.weight);vals["ms-odu-seer"]=odu.seer||"";
@@ -1013,6 +1029,35 @@ const Export = (function () {
         function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
 
         var X0=10, Y0=800, y=Y0;
+
+        // Auto-expand column widths to fit data content (single line, no wrap)
+        var CHAR_W = TXT_DATA * 0.65;  // approximate character width
+        var CELL_PAD = 4;              // padding on each side
+        for (var ai = 0; ai < colWidths.length; ai++) {
+            var maxTextLen = 0;
+            for (var ar = 0; ar < dataRows.length; ar++) {
+                // Map row cells to columns accounting for colSpan
+                var colIdx = 0;
+                for (var ac = 0; ac < dataRows[ar].length; ac++) {
+                    var cv2 = dataRows[ar][ac];
+                    var cs2 = 1;
+                    var txt = "";
+                    if (cv2 && typeof cv2 === "object" && cv2.content) {
+                        txt = String(cv2.content);
+                        cs2 = cv2.colSpan || 1;
+                    } else {
+                        txt = String(cv2 || "");
+                    }
+                    if (cs2 === 1 && colIdx === ai) {
+                        if (txt.length > maxTextLen) maxTextLen = txt.length;
+                    }
+                    colIdx += cs2;
+                }
+            }
+            var needed = maxTextLen * CHAR_W + CELL_PAD * 2;
+            if (needed > colWidths[ai]) colWidths[ai] = needed;
+        }
+
         var tableW = tw(colWidths);
 
         // Title bar
@@ -1125,14 +1170,17 @@ const Export = (function () {
                     "ms-idu-cool-edb":fp(u.coolingEdb),"ms-idu-cool-ewb":fp(u.coolingEwb),"ms-idu-cool-total":fp(u.coolingTotal),"ms-idu-cool-sens":fp(u.coolingSensible),
                     "ms-idu-heat-edb":fp(u.heatingEdb),"ms-idu-heat-total":fp(u.heatingTotal),
                     "ms-idu-weight":fp(u.weight),"ms-idu-type":u.type||"",
-                    "ms-idu-voltage":u.voltage||"","ms-idu-mca":fp(u.mca),"ms-idu-mop":fp(u.mop),"ms-idu-mfg":u.manufacturer||"",
+                    "ms-idu-voltage":u.poweredFromOutdoor?{content:"Powered From ODU",colSpan:3}:(u.voltage||""),
+                    "ms-idu-mca":u.poweredFromOutdoor?"__SKIP__":fp(u.mca),
+                    "ms-idu-mop":u.poweredFromOutdoor?"__SKIP__":fp(u.mop),
+                    "ms-idu-mfg":u.manufacturer||"",
                     "ms-odu-sym":e.oduTag||"ODU-","ms-odu-cool-amb":fp(odu.coolingAmbient),"ms-odu-heat-amb":fp(odu.heatingAmbient),
                     "ms-odu-weight":fp(odu.weight),"ms-odu-seer":odu.seer||"",
                     "ms-odu-voltage":odu.voltage||"","ms-odu-mca":fp(odu.mca),"ms-odu-mop":fp(odu.mop),
                     "ms-odu-mfg":odu.manufacturer||"","ms-odu-refrig":odu.refrigerant||"","ms-odu-lineset":odu.lineSet||"",
                     "ms-notes":iduAcc,
                 };
-                rows.push(vc.map(function(c){ return allVals[c.k]||""; }));
+                rows.push(vc.map(function(c){ var v2=allVals[c.k]; return v2==="__SKIP__"?v2:v2||""; }).filter(function(v2){ return v2!=="__SKIP__"; }));
             }
         }
         var notes = Project.getProductActiveNotes("mini-splits");
