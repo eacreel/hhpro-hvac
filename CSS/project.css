@@ -994,6 +994,13 @@
     flex-shrink: 0;
 }
 
+.sp-docs-type-count {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
 /* --------------------------------------------------------------------------
    Overlay
    -------------------------------------------------------------------------- */
@@ -1659,12 +1666,12 @@ body.preview-open {
 
 
 /* --------------------------------------------------------------------------
-   Preview Action Column (checkboxes, drag handle, reorder, duplicate, delete)
+   Preview Action Column (checkboxes, drag handle, reorder, duplicate, delete, PDF)
    -------------------------------------------------------------------------- */
 .sp-col-action {
-    width: 140px;
-    min-width: 140px;
-    max-width: 140px;
+    width: 160px;
+    min-width: 160px;
+    max-width: 160px;
 }
 
 .sp-cell-action {
@@ -1798,6 +1805,20 @@ body.preview-open {
     background-color: var(--color-danger);
     border-color: var(--color-danger);
     box-shadow: 0 2px 4px rgba(209, 41, 61, 0.2);
+}
+
+/* PDF submittal button */
+.sp-act-pdf {
+    color: #FFFFFF;
+    border-color: #E53935;
+    background-color: #E53935;
+}
+
+.sp-act-pdf:hover {
+    color: #FFFFFF;
+    background-color: #C62828;
+    border-color: #C62828;
+    box-shadow: 0 2px 4px rgba(229, 57, 53, 0.3);
 }
 
 
@@ -1945,6 +1966,38 @@ body.preview-open {
     padding: 0 var(--space-xl);
     flex-shrink: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Download Bar (below tabs, above schedule content)
+   -------------------------------------------------------------------------- */
+.sp-download-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-xl);
+    background-color: var(--color-surface-alt);
+    border-bottom: 1px solid var(--color-border-light);
+    flex-shrink: 0;
+}
+
+.sp-download-bar .sp-dl-btn {
+    height: 32px;
+    padding: 0 var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-inverse);
+    background: linear-gradient(135deg, #004A8F 0%, #1873C4 100%);
+    border: none;
+    border-radius: var(--border-radius);
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 1px 4px rgba(0, 84, 166, 0.2);
+}
+
+.sp-download-bar .sp-dl-btn:hover {
+    background: linear-gradient(135deg, #002B5C 0%, #004A8F 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 84, 166, 0.3);
 }
 
 .sp-tab {
@@ -2164,7 +2217,7 @@ body.preview-open {
    Preview Files Tab
    -------------------------------------------------------------------------- */
 .sp-files-tab {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -2342,10 +2395,12 @@ body.preview-open {
     .sp-notes { grid-template-columns: 1fr; gap: var(--space-lg); padding: var(--space-lg); }
     .sp-toolbar-right { gap: var(--space-xs); }
     .sp-dl-btn { font-size: var(--font-size-xs); padding: 0 var(--space-sm); }
+    .sp-download-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-xs); }
+    .sp-download-bar .sp-dl-btn { height: 28px; font-size: var(--font-size-xs); padding: 0 var(--space-sm); }
     .sp-tool-btn { font-size: var(--font-size-xs); padding: 0 var(--space-xs); height: 28px; }
     .sp-col-panel { right: var(--space-md); width: 220px; }
     .sp-bulk-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-sm); }
-    .sp-col-action { width: 110px; min-width: 110px; max-width: 110px; }
+    .sp-col-action { width: 130px; min-width: 130px; max-width: 130px; }
     .sp-tabs { padding: 0 var(--space-md); overflow-x: auto; }
     .sp-tab { padding: var(--space-xs) var(--space-md); font-size: var(--font-size-xs); }
     .sp-sched-notes-section { padding: var(--space-lg); }
@@ -2378,8 +2433,8 @@ body.preview-open {
     }
 
     .sp-col-action {
-        width: 120px;
-        min-width: 120px;
-        max-width: 120px;
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
     }
 }

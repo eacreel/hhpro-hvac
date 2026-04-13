@@ -1223,6 +1223,40 @@ const Export = (function () {
     }
 
 
+    // =====================================================================
+    //  SINGLE-PRODUCT EXPORT FUNCTIONS (for per-tab download buttons)
+    // =====================================================================
+    async function exportSingleProductXlsx(productKey) {
+        var groups = groupEntriesByProduct();
+        var entries = groups[productKey];
+        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
+        if (productKey === "mini-splits") await exportMsScheduleXlsx({ entries: entries });
+        else if (productKey === "multi-position") await exportMpsScheduleXlsx({ entries: entries });
+        else if (productKey === "gas-packs") await exportGpScheduleXlsx({ entries: entries });
+    }
+
+    function exportSingleProductPdf(productKey) {
+        var groups = groupEntriesByProduct();
+        var entries = groups[productKey];
+        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
+        if (productKey === "mini-splits") exportMsSchedulePdf({ entries: entries });
+        else if (productKey === "multi-position") exportMpsSchedulePdf({ entries: entries });
+        else if (productKey === "gas-packs") exportGpSchedulePdf({ entries: entries });
+    }
+
+    function exportSingleProductDxf(productKey) {
+        var groups = groupEntriesByProduct();
+        var entries = groups[productKey];
+        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
+        var blob = null;
+        var filename = "";
+        if (productKey === "mini-splits") { blob = buildMsDxf(entries); filename = "Mini Split Schedule.dxf"; }
+        else if (productKey === "multi-position") { blob = buildMpsDxf(entries); filename = "Multi Position Split Schedule.dxf"; }
+        else if (productKey === "gas-packs") { blob = buildGpDxf(entries); filename = "Gas Pack RTU Schedule.dxf"; }
+        if (blob) { Project.downloadBlob(blob, filename); Project.showToast("DXF schedule exported", "toast-success"); }
+    }
+
+
     // -----------------------------------------------------------------------
     return {
         init: init,
@@ -1230,5 +1264,8 @@ const Export = (function () {
         exportScheduleXlsx: exportScheduleXlsx,
         exportSchedulePdf: exportSchedulePdf,
         exportScheduleDxf: exportScheduleDxf,
+        exportSingleProductXlsx: exportSingleProductXlsx,
+        exportSingleProductPdf: exportSingleProductPdf,
+        exportSingleProductDxf: exportSingleProductDxf,
     };
 })();

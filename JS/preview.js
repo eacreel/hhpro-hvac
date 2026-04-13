@@ -377,7 +377,7 @@ const SchedulePreview = (function () {
         html += '      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>';
         html += '      Back';
         html += '    </button>';
-        html += '    <h2 class="sp-title">Schedule Preview</h2>';
+        html += '    <h2 class="sp-title">Product Schedule(s) &amp; Files</h2>';
         html += '  </div>';
         html += '  <div class="sp-toolbar-right">';
         html += '    <button class="sp-tool-btn" id="sp-btn-undo" type="button" title="Undo (Ctrl+Z)" disabled>';
@@ -390,9 +390,6 @@ const SchedulePreview = (function () {
         html += '    <button class="sp-tool-btn" id="sp-btn-autonumber" type="button" title="Auto-number tags">Auto #</button>';
         html += '    <span class="sp-toolbar-sep"></span>';
         html += '    <div class="sp-col-btn-wrap"><button class="sp-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button></div>';
-        html += '    <span class="sp-toolbar-sep"></span>';
-        html += '    <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
-        html += '    <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
         html += '  </div>';
         html += '</div>';
 
@@ -409,6 +406,14 @@ const SchedulePreview = (function () {
         }
         var filesActive = (_activeTab === "files") ? " sp-tab-active" : "";
         html += '<button class="sp-tab' + filesActive + '" data-sp-tab="files">' + TAB_LABELS["files"] + '</button>';
+        html += '</div>';
+
+        // Schedule download buttons (visible only on schedule tabs, not Project Files)
+        var showDlBar = (_activeTab !== "files");
+        html += '<div class="sp-download-bar' + (showDlBar ? '' : ' hidden') + '" id="sp-download-bar">';
+        html += '  <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
+        html += '  <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
+        html += '  <button class="sp-dl-btn" id="sp-btn-dxf" type="button">Download DXF</button>';
         html += '</div>';
 
         // Bulk bar
@@ -686,6 +691,7 @@ const SchedulePreview = (function () {
         h += '<span class="sp-drag-handle" title="Drag to reorder">&#9776;</span>';
         h += '</div>';
         h += '<div class="sp-action-ops">';
+        h += '<button class="sp-act-btn sp-act-pdf" data-action="viewpdf" data-entry="' + ei + '" title="View Submittal PDF">PDF</button>';
         h += '<button class="sp-act-btn sp-act-dup" data-action="duplicate" data-entry="' + ei + '" title="Duplicate">Dup</button>';
         h += '<button class="sp-act-btn sp-act-del" data-action="delete" data-entry="' + ei + '" title="Delete">Del</button>';
         h += '</div>';
@@ -763,33 +769,77 @@ const SchedulePreview = (function () {
         h += '<div class="sp-docs-options">';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-xlsx" checked> Include Excel Schedule</label>';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-pdf" checked> Include PDF Schedule</label>';
+        h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-include-dxf" checked> Include DXF Schedule</label>';
         h += '<label class="sp-docs-option"><input type="checkbox" id="sp-doc-select-all" checked> Select / Deselect All</label>';
         h += '</div>';
 
+        // Build document type categories from actual documents
+        var docCategories = {};
+        for (var ei = 0; ei < _entries.length; ei++) {
+            var docs = DataLoader.getSystemDocuments(_entries[ei].systemId);
+            for (var di = 0; di < docs.length; di++) {
+                var label = docs[di].label || "";
+                var cat = getDocCategory(label);
+                if (!docCategories[cat]) docCategories[cat] = 0;
+                docCategories[cat]++;
+            }
+        }
+
+        // Body container: side panel + doc list
+        h += '<div class="sp-docs-body">';
+
+        // Side panel for document type filtering
+        h += '<div class="sp-docs-type-filter" id="sp-docs-type-filter">';
+        h += '<div class="sp-docs-type-filter-header">Filter by Type</div>';
+        h += '<div class="sp-docs-type-filter-list">';
+        var catOrder = ["Submittal", "Engineering Manual", "Installation Manual", "Operation Manual", "Revit", "CAD", "Other"];
+        for (var ci2 = 0; ci2 < catOrder.length; ci2++) {
+            var catName = catOrder[ci2];
+            if (!docCategories[catName]) continue;
+            h += '<label class="sp-docs-type-option">';
+            h += '<input type="checkbox" class="sp-doc-type-cb" data-doc-type="' + esc(catName) + '" checked>';
+            h += '<span>' + esc(catName) + '</span>';
+            h += '<span class="sp-docs-type-count">(' + docCategories[catName] + ')</span>';
+            h += '</label>';
+        }
+        h += '</div></div>';
+
         // Document list per entry
         h += '<div class="sp-docs-list">';
-        for (var ei = 0; ei < _entries.length; ei++) {
-            var entry = _entries[ei];
-            var docs = DataLoader.getSystemDocuments(entry.systemId);
-            if (docs.length === 0) continue;
+        for (var ei2 = 0; ei2 < _entries.length; ei2++) {
+            var entry = _entries[ei2];
+            var docs2 = DataLoader.getSystemDocuments(entry.systemId);
+            if (docs2.length === 0) continue;
 
             h += '<div class="sp-doc-card">';
-            h += '<div class="sp-doc-card-header"><input type="checkbox" class="sp-doc-card-checkbox" data-doc-system="' + ei + '" checked>';
+            h += '<div class="sp-doc-card-header"><input type="checkbox" class="sp-doc-card-checkbox" data-doc-system="' + ei2 + '" checked>';
             h += '<span class="sp-doc-card-title">' + esc(entry.oduTag) + ' — ' + esc(DataLoader.getSystemSummary(entry.systemId)) + '</span>';
-            h += '<span class="sp-doc-card-count">' + docs.length + ' files</span></div>';
+            h += '<span class="sp-doc-card-count">' + docs2.length + ' files</span></div>';
 
             h += '<div class="sp-doc-card-body">';
-            for (var di = 0; di < docs.length; di++) {
-                var doc = docs[di];
+            for (var di2 = 0; di2 < docs2.length; di2++) {
+                var doc = docs2[di2];
                 var ext = doc.path.split('.').pop().toUpperCase();
-                h += '<div class="sp-doc-row"><input type="checkbox" class="sp-doc-file-cb" data-doc-path="' + esc(doc.path) + '" data-doc-entry="' + ei + '" checked>';
+                var docCat = getDocCategory(doc.label || "");
+                h += '<div class="sp-doc-row" data-doc-category="' + esc(docCat) + '"><input type="checkbox" class="sp-doc-file-cb" data-doc-path="' + esc(doc.path) + '" data-doc-entry="' + ei2 + '" data-doc-category="' + esc(docCat) + '" checked>';
                 h += '<span class="sp-doc-row-label">' + esc(doc.label) + '</span>';
                 h += '<span class="sp-doc-row-type">' + ext + '</span></div>';
             }
             h += '</div></div>';
         }
-        h += '</div></div>';
+        h += '</div></div></div>';
         return h;
+    }
+
+    function getDocCategory(label) {
+        var lbl = (label || "").toLowerCase();
+        if (lbl.indexOf("submittal") !== -1) return "Submittal";
+        if (lbl.indexOf("engineering") !== -1) return "Engineering Manual";
+        if (lbl.indexOf("installation") !== -1) return "Installation Manual";
+        if (lbl.indexOf("operation") !== -1) return "Operation Manual";
+        if (lbl.indexOf("revit") !== -1) return "Revit";
+        if (lbl.indexOf("cad") !== -1) return "CAD";
+        return "Other";
     }
 
     // -----------------------------------------------------------------------
@@ -826,11 +876,13 @@ const SchedulePreview = (function () {
             if (panel) panel.classList.toggle("hidden", !_colPanelOpen);
         });
 
-        // Download
+        // Download (per-tab — only the active schedule)
         var xlsxBtn = document.getElementById("sp-btn-xlsx");
         var pdfBtn = document.getElementById("sp-btn-pdf");
-        if (xlsxBtn) xlsxBtn.addEventListener("click", function () { collectEditsFromDom(); saveState(); Export.exportScheduleXlsx(); });
-        if (pdfBtn) pdfBtn.addEventListener("click", function () { collectEditsFromDom(); saveState(); Export.exportSchedulePdf(); });
+        var dxfBtn = document.getElementById("sp-btn-dxf");
+        if (xlsxBtn) xlsxBtn.addEventListener("click", function () { collectEditsFromDom(); saveState(); Export.exportSingleProductXlsx(_activeTab); });
+        if (pdfBtn) pdfBtn.addEventListener("click", function () { collectEditsFromDom(); saveState(); Export.exportSingleProductPdf(_activeTab); });
+        if (dxfBtn) dxfBtn.addEventListener("click", function () { collectEditsFromDom(); saveState(); Export.exportSingleProductDxf(_activeTab); });
 
         // Bulk actions
         var bulkDup = document.getElementById("sp-bulk-duplicate");
@@ -850,6 +902,9 @@ const SchedulePreview = (function () {
                 var allTabs = _overlay.querySelectorAll(".sp-tab");
                 for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove("sp-tab-active");
                 this.classList.add("sp-tab-active");
+                // Show/hide download bar
+                var dlBar = document.getElementById("sp-download-bar");
+                if (dlBar) dlBar.classList.toggle("hidden", _activeTab === "files");
                 rebuildContent();
             });
         }
@@ -932,6 +987,9 @@ const SchedulePreview = (function () {
             var checked = this.checked;
             var cbs = _overlay.querySelectorAll(".sp-doc-file-cb, .sp-doc-card-checkbox");
             for (var i = 0; i < cbs.length; i++) cbs[i].checked = checked;
+            // Also sync type filter checkboxes
+            var typeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+            for (var tc = 0; tc < typeCbs.length; tc++) typeCbs[tc].checked = checked;
         });
 
         var sysCbs = _overlay.querySelectorAll(".sp-doc-card-checkbox");
@@ -939,6 +997,17 @@ const SchedulePreview = (function () {
             sysCbs[s].addEventListener("change", function () {
                 var card = this.closest(".sp-doc-card");
                 if (card) { var cbs = card.querySelectorAll(".sp-doc-file-cb"); for (var i = 0; i < cbs.length; i++) cbs[i].checked = this.checked; }
+            });
+        }
+
+        // Document type filter checkboxes
+        var typeCbs = _overlay.querySelectorAll(".sp-doc-type-cb");
+        for (var dt = 0; dt < typeCbs.length; dt++) {
+            typeCbs[dt].addEventListener("change", function () {
+                var docType = this.dataset.docType;
+                var checked = this.checked;
+                var fileCbs = _overlay.querySelectorAll('.sp-doc-file-cb[data-doc-category="' + docType + '"]');
+                for (var fc = 0; fc < fileCbs.length; fc++) fileCbs[fc].checked = checked;
             });
         }
     }
@@ -1185,6 +1254,46 @@ const SchedulePreview = (function () {
         var action = btn.dataset.action;
         var idx = parseInt(btn.dataset.entry, 10);
 
+        if (action === "viewpdf") {
+            var entry = _entries[idx];
+            if (!entry) return;
+            var systemId = entry.systemId;
+            var sys = DataLoader.getSystemById(systemId);
+            if (!sys || !sys.docs) return;
+            var d = sys.docs;
+            var pdfs = [];
+            var seen = {};
+            function addPdf(path) {
+                if (!path || seen[path]) return;
+                if (!path.toLowerCase().endsWith(".pdf")) return;
+                seen[path] = true;
+                pdfs.push(path);
+            }
+            if (sys.productKey === "gas-packs") {
+                addPdf(d.submittal);
+            } else if (sys.productKey === "multi-position") {
+                addPdf(d.submittalSystem);
+                addPdf(d.submittalOutdoor);
+                addPdf(d.submittalIndoor);
+            } else {
+                addPdf(d.submittalSystem);
+                addPdf(d.submittalOutdoor);
+                if (d.indoorDocs) {
+                    for (var pd = 0; pd < d.indoorDocs.length; pd++) {
+                        addPdf(d.indoorDocs[pd].submittalIndoor);
+                    }
+                }
+            }
+            if (pdfs.length === 0) {
+                Project.showToast("No submittal PDFs available", "toast-warning");
+                return;
+            }
+            for (var pp = 0; pp < pdfs.length; pp++) {
+                window.open(pdfs[pp], "_blank");
+            }
+            return;
+        }
+
         collectEditsFromDom();
 
         if (action === "duplicate") {
@@ -1227,7 +1336,7 @@ const SchedulePreview = (function () {
         collectEditsFromDom();
         var groups = groupEntriesByProduct();
 
-        var ov = document.createElement("div"); ov.className = "confirm-overlay";
+        var ov = document.createElement("div"); ov.className = "confirm-overlay sp-dialog-overlay";
         var d = document.createElement("div"); d.className = "confirm-dialog";
         var hd = document.createElement("div"); hd.className = "confirm-dialog-header"; var h3 = document.createElement("h3"); h3.textContent = "Auto-Number Tags"; hd.appendChild(h3);
         var bd = document.createElement("div"); bd.className = "confirm-dialog-body";
@@ -1317,6 +1426,7 @@ const SchedulePreview = (function () {
             // Schedule exports
             var inclXlsx = document.getElementById("sp-doc-include-xlsx");
             var inclPdf = document.getElementById("sp-doc-include-pdf");
+            var inclDxf = document.getElementById("sp-doc-include-dxf");
 
             if (inclXlsx && inclXlsx.checked) {
                 try {
@@ -1330,6 +1440,13 @@ const SchedulePreview = (function () {
                     var pdfBlobs = await Export.exportSchedulePdf({ returnBlobs: true });
                     if (pdfBlobs) { for (var p2 = 0; p2 < pdfBlobs.length; p2++) { zip.file(pdfBlobs[p2].name, pdfBlobs[p2].blob); fetched++; } }
                 } catch (e) { console.warn("[Preview] PDF export failed:", e); }
+            }
+
+            if (inclDxf && inclDxf.checked) {
+                try {
+                    var dxfBlobs = Export.exportScheduleDxf({ returnBlobs: true });
+                    if (dxfBlobs) { for (var dx = 0; dx < dxfBlobs.length; dx++) { zip.file(dxfBlobs[dx].name, dxfBlobs[dx].blob); fetched++; } }
+                } catch (e) { console.warn("[Preview] DXF export failed:", e); }
             }
 
             // Document files
