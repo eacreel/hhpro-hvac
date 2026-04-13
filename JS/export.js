@@ -1020,34 +1020,54 @@ const Export = (function () {
     // =====================================================================
     function renderDxf(title, sectionLabels, groupHeaders, subHeaders, colWidths, dataRows, notes) {
         var ROW_H = 20, HDR_H = 24, GRP_H = 22, TITLE_H = 30, LABEL_H = 24, NOTE_H = 14;
-        var TXT_DATA = 5.0, TXT_HDR = 5.0, TXT_GRP = 6.5, TXT_TITLE = 10.0, TXT_LABEL = 7.0, TXT_NOTE = 4.5;
-        var entities = [], handle = 100;
+        var TXT_DATA = 5.0, TXT_HDR = 4.0, TXT_GRP = 6.5, TXT_TITLE = 10.0, TXT_LABEL = 7.0, TXT_NOTE = 4.5;
+        var entities = [], handle = 256;
         function nh() { handle++; return handle.toString(16).toUpperCase(); }
-        function ln(x1,y1,x2,y2,layer) { return "0\nLINE\n5\n"+nh()+"\n8\n"+(layer||"BORDERS")+"\n10\n"+x1.toFixed(4)+"\n20\n"+y1.toFixed(4)+"\n30\n0.0\n11\n"+x2.toFixed(4)+"\n21\n"+y2.toFixed(4)+"\n31\n0.0\n"; }
-        function mt(x,y,h,text,layer,align) { var a=align||2; var ap=a===1?4:a===3?6:5; var ct=String(text).replace(/\n/g,"\\P"); return "0\nMTEXT\n5\n"+nh()+"\n8\n"+(layer||"DATA")+"\n10\n"+x.toFixed(4)+"\n20\n"+y.toFixed(4)+"\n30\n0.0\n40\n"+h.toFixed(2)+"\n71\n"+ap+"\n1\n"+ct+"\n"; }
+
+        // LINE entity with AcDb subclass markers
+        function ln(x1,y1,x2,y2,layer) {
+            return "0\nLINE\n5\n"+nh()+"\n100\nAcDbEntity\n8\n"+(layer||"0")+"\n100\nAcDbLine\n10\n"+x1.toFixed(4)+"\n20\n"+y1.toFixed(4)+"\n30\n0.0\n11\n"+x2.toFixed(4)+"\n21\n"+y2.toFixed(4)+"\n31\n0.0\n";
+        }
+
+        // TEXT entity — center-middle aligned via alignment point (groups 11/21)
+        function tx(x,y,h,text,layer,halign) {
+            var ha = (halign === undefined) ? 1 : halign; // 0=left, 1=center, 2=right
+            var t = String(text);
+            return "0\nTEXT\n5\n"+nh()+"\n100\nAcDbEntity\n8\n"+(layer||"0")+"\n100\nAcDbText\n10\n"+x.toFixed(4)+"\n20\n"+y.toFixed(4)+"\n30\n0.0\n40\n"+h.toFixed(2)+"\n1\n"+t+"\n72\n"+ha+"\n100\nAcDbText\n73\n2\n11\n"+x.toFixed(4)+"\n21\n"+y.toFixed(4)+"\n31\n0.0\n";
+        }
+
+        // Multi-line text helper: splits on \\n and stacks TEXT entities vertically
+        function txMulti(cx, cy, h, text, layer, halign) {
+            var lines = String(text).split("\n");
+            var lineSpacing = h * 1.4;
+            var totalH = lines.length * lineSpacing;
+            var startY = cy + (totalH / 2) - (lineSpacing / 2);
+            var out = "";
+            for (var tl = 0; tl < lines.length; tl++) {
+                out += tx(cx, startY - (tl * lineSpacing), h, lines[tl], layer, halign);
+            }
+            return out;
+        }
+
         function rc(x,y,w,h,layer) { return ln(x,y,x+w,y,layer)+ln(x+w,y,x+w,y-h,layer)+ln(x+w,y-h,x,y-h,layer)+ln(x,y-h,x,y,layer); }
         function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
 
         var X0=10, Y0=800, y=Y0;
 
         // Auto-expand column widths to fit data content (single line, no wrap)
-        var CHAR_W = TXT_DATA * 0.65;  // approximate character width
-        var CELL_PAD = 4;              // padding on each side
+        var CHAR_W = TXT_DATA * 0.65;
+        var CELL_PAD = 4;
         for (var ai = 0; ai < colWidths.length; ai++) {
             var maxTextLen = 0;
             for (var ar = 0; ar < dataRows.length; ar++) {
-                // Map row cells to columns accounting for colSpan
                 var colIdx = 0;
                 for (var ac = 0; ac < dataRows[ar].length; ac++) {
                     var cv2 = dataRows[ar][ac];
                     var cs2 = 1;
                     var txt = "";
                     if (cv2 && typeof cv2 === "object" && cv2.content) {
-                        txt = String(cv2.content);
-                        cs2 = cv2.colSpan || 1;
-                    } else {
-                        txt = String(cv2 || "");
-                    }
+                        txt = String(cv2.content); cs2 = cv2.colSpan || 1;
+                    } else { txt = String(cv2 || ""); }
                     if (cs2 === 1 && colIdx === ai) {
                         if (txt.length > maxTextLen) maxTextLen = txt.length;
                     }
@@ -1062,16 +1082,16 @@ const Export = (function () {
 
         // Title bar
         entities.push(rc(X0,y,tableW,TITLE_H,"TITLE"));
-        entities.push(mt(X0+tableW/2, y-TITLE_H/2, TXT_TITLE, title, "TITLE", 2));
+        entities.push(tx(X0+tableW/2, y-TITLE_H/2, TXT_TITLE, title, "TITLE", 1));
         y -= TITLE_H;
 
         // Section labels
         if (sectionLabels && sectionLabels.length === 2) {
             var halfW = tableW / 2;
             entities.push(rc(X0,y,halfW,LABEL_H,"HEADERS"));
-            entities.push(mt(X0+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[0], "HEADERS", 2));
+            entities.push(tx(X0+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[0], "HEADERS", 1));
             entities.push(rc(X0+halfW,y,halfW,LABEL_H,"HEADERS"));
-            entities.push(mt(X0+halfW+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[1], "HEADERS", 2));
+            entities.push(tx(X0+halfW+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[1], "HEADERS", 1));
             y -= LABEL_H;
         }
 
@@ -1082,7 +1102,7 @@ const Export = (function () {
             for (var gi=0; gi<gh.start; gi++) gx+=colWidths[gi];
             var gw=0; for (var gj=0; gj<gh.span; gj++) gw+=colWidths[gh.start+gj];
             if (gh.start > 0) entities.push(ln(gx,y,gx,y-GRP_H,"HEADERS"));
-            entities.push(mt(gx+gw/2, y-GRP_H/2, TXT_GRP, gh.text, "HEADERS", 2));
+            entities.push(tx(gx+gw/2, y-GRP_H/2, TXT_GRP, gh.text.replace(/\n/g," "), "HEADERS", 1));
         }
         y -= GRP_H;
 
@@ -1091,7 +1111,11 @@ const Export = (function () {
         var hx=X0;
         for (var hi=0; hi<subHeaders.length; hi++) {
             if (hi > 0) entities.push(ln(hx,y,hx,y-HDR_H,"HEADERS"));
-            entities.push(mt(hx+colWidths[hi]/2, y-HDR_H/2, TXT_HDR, subHeaders[hi], "HEADERS", 2));
+            if (subHeaders[hi].indexOf("\n") !== -1) {
+                entities.push(txMulti(hx+colWidths[hi]/2, y-HDR_H/2, TXT_HDR, subHeaders[hi], "HEADERS", 1));
+            } else {
+                entities.push(tx(hx+colWidths[hi]/2, y-HDR_H/2, TXT_HDR, subHeaders[hi], "HEADERS", 1));
+            }
             hx += colWidths[hi];
         }
         y -= HDR_H;
@@ -1106,32 +1130,94 @@ const Export = (function () {
                 if (cv && typeof cv==="object" && cv.content) { ct2=cv.content; cs=cv.colSpan||1; } else { ct2=String(cv||""); }
                 var cw=0; for(var s=0;s<cs;s++) cw+=colWidths[ci+s];
                 if (ci > 0) entities.push(ln(rx,y,rx,y-ROW_H,"BORDERS"));
-                if (ct2) entities.push(mt(rx+cw/2, y-ROW_H/2, TXT_DATA, ct2, "DATA", 2));
+                if (ct2) entities.push(tx(rx+cw/2, y-ROW_H/2, TXT_DATA, ct2, "DATA", 1));
                 rx+=cw; ci+=cs;
             }
             y -= ROW_H;
         }
 
-        // Notes section (attached to bottom of table, no top border)
+        // Notes section
         if (notes && notes.length > 0) {
             var noteBoxH = 12 + notes.length * NOTE_H + 8;
-            // Left, right, bottom only (top is last data row's bottom)
             entities.push(ln(X0, y, X0, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0 + tableW, y, X0 + tableW, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0, y - noteBoxH, X0 + tableW, y - noteBoxH, "BORDERS"));
-            entities.push(mt(X0+5, y-8, TXT_HDR, "NOTES:", "HEADERS", 1));
+            entities.push(tx(X0+5, y-8, TXT_HDR, "NOTES:", "HEADERS", 0));
             for (var ni=0; ni<notes.length; ni++) {
-                entities.push(mt(X0+14, y-14-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
+                entities.push(tx(X0+14, y-14-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 0));
             }
         }
 
-        // Assemble DXF file
-        var dxf = "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1027\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n";
-        dxf += "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n4\n";
+        // ---- Assemble full DXF with Revit/AutoCAD-compatible structure ----
+        var dxf = "";
+
+        // HEADER
+        dxf += "0\nSECTION\n2\nHEADER\n";
+        dxf += "9\n$ACADVER\n1\nAC1015\n";
+        dxf += "9\n$INSUNITS\n70\n4\n";
+        dxf += "9\n$EXTMIN\n10\n0.0\n20\n0.0\n30\n0.0\n";
+        dxf += "9\n$EXTMAX\n10\n"+(X0+tableW+10).toFixed(1)+"\n20\n"+Y0.toFixed(1)+"\n30\n0.0\n";
+        dxf += "0\nENDSEC\n";
+
+        // CLASSES (required by Revit, can be empty)
+        dxf += "0\nSECTION\n2\nCLASSES\n0\nENDSEC\n";
+
+        // TABLES
+        dxf += "0\nSECTION\n2\nTABLES\n";
+
+        // VPORT table
+        dxf += "0\nTABLE\n2\nVPORT\n5\n8\n70\n1\n";
+        dxf += "0\nVPORT\n5\n"+nh()+"\n2\n*ACTIVE\n70\n0\n";
+        dxf += "10\n0.0\n20\n0.0\n11\n1.0\n21\n1.0\n";
+        dxf += "12\n"+(X0+tableW/2).toFixed(1)+"\n22\n"+(Y0/2).toFixed(1)+"\n";
+        dxf += "13\n0.0\n23\n0.0\n14\n10.0\n24\n10.0\n15\n10.0\n25\n10.0\n16\n0.0\n26\n0.0\n36\n1.0\n";
+        dxf += "17\n0.0\n27\n0.0\n37\n0.0\n40\n"+Y0.toFixed(1)+"\n41\n2.0\n42\n50.0\n43\n0.0\n44\n0.0\n50\n0.0\n51\n0.0\n";
+        dxf += "71\n0\n72\n100\n73\n1\n74\n3\n75\n0\n76\n0\n77\n0\n78\n0\n";
+        dxf += "0\nENDTAB\n";
+
+        // LTYPE table
+        dxf += "0\nTABLE\n2\nLTYPE\n5\n5\n70\n1\n";
+        dxf += "0\nLTYPE\n5\n"+nh()+"\n2\nContinuous\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0.0\n";
+        dxf += "0\nENDTAB\n";
+
+        // LAYER table
+        dxf += "0\nTABLE\n2\nLAYER\n5\n2\n70\n4\n";
         var layers = [{name:"BORDERS",color:7},{name:"HEADERS",color:7},{name:"DATA",color:7},{name:"TITLE",color:7}];
-        for (var li=0;li<layers.length;li++) dxf += "0\nLAYER\n5\n"+nh()+"\n2\n"+layers[li].name+"\n70\n0\n62\n"+layers[li].color+"\n6\nContinuous\n";
-        dxf += "0\nENDTAB\n0\nTABLE\n2\nSTYLE\n70\n1\n0\nSTYLE\n5\n"+nh()+"\n2\nSTANDARD\n70\n0\n40\n0.0\n41\n1.0\n50\n0.0\n71\n0\n42\n2.5\n3\ntxt\n4\n\n0\nENDTAB\n0\nENDSEC\n";
-        dxf += "0\nSECTION\n2\nENTITIES\n" + entities.join("") + "0\nENDSEC\n0\nEOF\n";
+        for (var li=0;li<layers.length;li++) {
+            dxf += "0\nLAYER\n5\n"+nh()+"\n100\nAcDbLayerTableRecord\n2\n"+layers[li].name+"\n70\n0\n62\n"+layers[li].color+"\n6\nContinuous\n";
+        }
+        dxf += "0\nENDTAB\n";
+
+        // STYLE table
+        dxf += "0\nTABLE\n2\nSTYLE\n5\n3\n70\n1\n";
+        dxf += "0\nSTYLE\n5\n"+nh()+"\n100\nAcDbTextStyleTableRecord\n2\nSTANDARD\n70\n0\n40\n0.0\n41\n1.0\n50\n0.0\n71\n0\n42\n2.5\n3\ntxt\n4\n\n";
+        dxf += "0\nENDTAB\n";
+
+        // BLOCK_RECORD table
+        dxf += "0\nTABLE\n2\nBLOCK_RECORD\n5\n1\n70\n2\n";
+        dxf += "0\nBLOCK_RECORD\n5\n1F\n100\nAcDbBlockTableRecord\n2\n*MODEL_SPACE\n";
+        dxf += "0\nBLOCK_RECORD\n5\n1B\n100\nAcDbBlockTableRecord\n2\n*PAPER_SPACE\n";
+        dxf += "0\nENDTAB\n";
+
+        dxf += "0\nENDSEC\n";
+
+        // BLOCKS
+        dxf += "0\nSECTION\n2\nBLOCKS\n";
+        dxf += "0\nBLOCK\n5\n20\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockBegin\n2\n*MODEL_SPACE\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*MODEL_SPACE\n1\n\n";
+        dxf += "0\nENDBLK\n5\n21\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n";
+        dxf += "0\nBLOCK\n5\n1C\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockBegin\n2\n*PAPER_SPACE\n70\n0\n10\n0.0\n20\n0.0\n30\n0.0\n3\n*PAPER_SPACE\n1\n\n";
+        dxf += "0\nENDBLK\n5\n1D\n100\nAcDbEntity\n8\n0\n100\nAcDbBlockEnd\n";
+        dxf += "0\nENDSEC\n";
+
+        // ENTITIES
+        dxf += "0\nSECTION\n2\nENTITIES\n" + entities.join("") + "0\nENDSEC\n";
+
+        // OBJECTS (required by Revit)
+        dxf += "0\nSECTION\n2\nOBJECTS\n";
+        dxf += "0\nDICTIONARY\n5\nC\n100\nAcDbDictionary\n281\n1\n";
+        dxf += "0\nENDSEC\n";
+
+        dxf += "0\nEOF\n";
         return new Blob([dxf], { type: "application/dxf" });
     }
 
