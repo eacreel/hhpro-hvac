@@ -1019,44 +1019,15 @@ const Export = (function () {
     //  DXF Rendering Engine
     // =====================================================================
     function renderDxf(title, sectionLabels, groupHeaders, subHeaders, colWidths, dataRows, notes) {
+        if (typeof DxfDrawing === "undefined") { Project.showToast("DXF library not loaded", "toast-danger"); return null; }
+
         var ROW_H = 20, HDR_H = 24, GRP_H = 22, TITLE_H = 30, LABEL_H = 24, NOTE_H = 14;
         var TXT_DATA = 5.0, TXT_HDR = 4.0, TXT_GRP = 6.5, TXT_TITLE = 10.0, TXT_LABEL = 7.0, TXT_NOTE = 4.5;
-        var entities = [];
 
-        // R12 LINE entity (no handles, no AcDb markers)
-        function ln(x1,y1,x2,y2,layer) {
-            return "0\nLINE\n8\n"+(layer||"0")+"\n10\n"+x1.toFixed(4)+"\n20\n"+y1.toFixed(4)+"\n30\n0.0\n11\n"+x2.toFixed(4)+"\n21\n"+y2.toFixed(4)+"\n31\n0.0\n";
-        }
+        var d = new DxfDrawing();
+        d.setUnits("Millimeters");
 
-        // R12 TEXT entity with alignment via groups 72, 73, 11, 21
-        function tx(x,y,h,text,layer,halign) {
-            var ha = (halign === undefined) ? 1 : halign; // 0=left, 1=center, 2=right
-            var t = String(text);
-            if (ha === 0) {
-                // Left-aligned: use insertion point only, no alignment point needed
-                return "0\nTEXT\n8\n"+(layer||"0")+"\n10\n"+x.toFixed(4)+"\n20\n"+y.toFixed(4)+"\n30\n0.0\n40\n"+h.toFixed(2)+"\n1\n"+t+"\n";
-            }
-            // Center or right: use alignment point (groups 11/21) with 72=halign, 73=2 (middle)
-            return "0\nTEXT\n8\n"+(layer||"0")+"\n10\n0.0\n20\n0.0\n30\n0.0\n40\n"+h.toFixed(2)+"\n1\n"+t+"\n72\n"+ha+"\n11\n"+x.toFixed(4)+"\n21\n"+y.toFixed(4)+"\n31\n0.0\n73\n2\n";
-        }
-
-        // Multi-line text helper: stacks TEXT entities vertically
-        function txMulti(cx, cy, h, text, layer, halign) {
-            var lines = String(text).split("\n");
-            var lineSpacing = h * 1.4;
-            var totalH = lines.length * lineSpacing;
-            var startY = cy + (totalH / 2) - (lineSpacing / 2);
-            var out = "";
-            for (var tl = 0; tl < lines.length; tl++) {
-                out += tx(cx, startY - (tl * lineSpacing), h, lines[tl], layer, halign);
-            }
-            return out;
-        }
-
-        function rc(x,y,w,h,layer) { return ln(x,y,x+w,y,layer)+ln(x+w,y,x+w,y-h,layer)+ln(x+w,y-h,x,y-h,layer)+ln(x,y-h,x,y,layer); }
         function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
-
-        var X0=10, Y0=800, y=Y0;
 
         // Auto-expand column widths to fit data content
         var CHAR_W = TXT_DATA * 0.65;
@@ -1082,60 +1053,80 @@ const Export = (function () {
             if (needed > colWidths[ai]) colWidths[ai] = needed;
         }
 
+        var X0 = 10, Y0 = 800, y = Y0;
         var tableW = tw(colWidths);
 
+        // Helper: draw a rectangle using 4 lines
+        function rect(x, yTop, w, h) {
+            d.drawLine(x, yTop, x + w, yTop);
+            d.drawLine(x + w, yTop, x + w, yTop - h);
+            d.drawLine(x + w, yTop - h, x, yTop - h);
+            d.drawLine(x, yTop - h, x, yTop);
+        }
+
+        // Helper: draw centered text (multi-line splits into stacked single lines)
+        function drawCenterText(cx, cy, h, text) {
+            var lines = String(text).split("\n");
+            if (lines.length === 1) {
+                d.drawText(cx, cy, h, 0, text, "center", "middle");
+            } else {
+                var lineSpacing = h * 1.4;
+                var totalH = lines.length * lineSpacing;
+                var startY = cy + (totalH / 2) - (lineSpacing / 2);
+                for (var li = 0; li < lines.length; li++) {
+                    d.drawText(cx, startY - (li * lineSpacing), h, 0, lines[li], "center", "middle");
+                }
+            }
+        }
+
         // Title bar
-        entities.push(rc(X0,y,tableW,TITLE_H,"0"));
-        entities.push(tx(X0+tableW/2, y-TITLE_H/2, TXT_TITLE, title, "0", 1));
+        rect(X0, y, tableW, TITLE_H);
+        d.drawText(X0 + tableW / 2, y - TITLE_H / 2, TXT_TITLE, 0, title, "center", "middle");
         y -= TITLE_H;
 
-        // Section labels
+        // Section labels (INDOOR UNIT / OUTDOOR UNIT)
         if (sectionLabels && sectionLabels.length === 2) {
             var halfW = tableW / 2;
-            entities.push(rc(X0,y,halfW,LABEL_H,"0"));
-            entities.push(tx(X0+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[0], "0", 1));
-            entities.push(rc(X0+halfW,y,halfW,LABEL_H,"0"));
-            entities.push(tx(X0+halfW+halfW/2, y-LABEL_H/2, TXT_LABEL, sectionLabels[1], "0", 1));
+            rect(X0, y, halfW, LABEL_H);
+            d.drawText(X0 + halfW / 2, y - LABEL_H / 2, TXT_LABEL, 0, sectionLabels[0], "center", "middle");
+            rect(X0 + halfW, y, halfW, LABEL_H);
+            d.drawText(X0 + halfW + halfW / 2, y - LABEL_H / 2, TXT_LABEL, 0, sectionLabels[1], "center", "middle");
             y -= LABEL_H;
         }
 
         // Group header row
-        entities.push(rc(X0,y,tableW,GRP_H,"0"));
-        for (var g=0; g<groupHeaders.length; g++) {
-            var gh=groupHeaders[g], gx=X0;
-            for (var gi=0; gi<gh.start; gi++) gx+=colWidths[gi];
-            var gw=0; for (var gj=0; gj<gh.span; gj++) gw+=colWidths[gh.start+gj];
-            if (gh.start > 0) entities.push(ln(gx,y,gx,y-GRP_H,"0"));
-            entities.push(tx(gx+gw/2, y-GRP_H/2, TXT_GRP, gh.text.replace(/\n/g," "), "0", 1));
+        rect(X0, y, tableW, GRP_H);
+        for (var g = 0; g < groupHeaders.length; g++) {
+            var gh = groupHeaders[g], gx = X0;
+            for (var gi = 0; gi < gh.start; gi++) gx += colWidths[gi];
+            var gw = 0; for (var gj = 0; gj < gh.span; gj++) gw += colWidths[gh.start + gj];
+            if (gh.start > 0) d.drawLine(gx, y, gx, y - GRP_H);
+            d.drawText(gx + gw / 2, y - GRP_H / 2, TXT_GRP, 0, gh.text.replace(/\n/g, " "), "center", "middle");
         }
         y -= GRP_H;
 
         // Sub-header row
-        entities.push(rc(X0,y,tableW,HDR_H,"0"));
-        var hx=X0;
-        for (var hi=0; hi<subHeaders.length; hi++) {
-            if (hi > 0) entities.push(ln(hx,y,hx,y-HDR_H,"0"));
-            if (subHeaders[hi].indexOf("\n") !== -1) {
-                entities.push(txMulti(hx+colWidths[hi]/2, y-HDR_H/2, TXT_HDR, subHeaders[hi], "0", 1));
-            } else {
-                entities.push(tx(hx+colWidths[hi]/2, y-HDR_H/2, TXT_HDR, subHeaders[hi], "0", 1));
-            }
+        rect(X0, y, tableW, HDR_H);
+        var hx = X0;
+        for (var hi = 0; hi < subHeaders.length; hi++) {
+            if (hi > 0) d.drawLine(hx, y, hx, y - HDR_H);
+            drawCenterText(hx + colWidths[hi] / 2, y - HDR_H / 2, TXT_HDR, subHeaders[hi]);
             hx += colWidths[hi];
         }
         y -= HDR_H;
 
         // Data rows
-        for (var ri=0; ri<dataRows.length; ri++) {
-            var row=dataRows[ri];
-            entities.push(rc(X0,y,tableW,ROW_H,"0"));
-            var rx=X0, ci=0;
-            for (var c=0; c<row.length; c++) {
-                var cv=row[c], ct2="", cs=1;
-                if (cv && typeof cv==="object" && cv.content) { ct2=cv.content; cs=cv.colSpan||1; } else { ct2=String(cv||""); }
-                var cw=0; for(var s=0;s<cs;s++) cw+=colWidths[ci+s];
-                if (ci > 0) entities.push(ln(rx,y,rx,y-ROW_H,"0"));
-                if (ct2) entities.push(tx(rx+cw/2, y-ROW_H/2, TXT_DATA, ct2, "0", 1));
-                rx+=cw; ci+=cs;
+        for (var ri = 0; ri < dataRows.length; ri++) {
+            var row = dataRows[ri];
+            rect(X0, y, tableW, ROW_H);
+            var rx = X0, ci = 0;
+            for (var c = 0; c < row.length; c++) {
+                var cv = row[c], ct2 = "", cs = 1;
+                if (cv && typeof cv === "object" && cv.content) { ct2 = cv.content; cs = cv.colSpan || 1; } else { ct2 = String(cv || ""); }
+                var cw = 0; for (var s = 0; s < cs; s++) cw += colWidths[ci + s];
+                if (ci > 0) d.drawLine(rx, y, rx, y - ROW_H);
+                if (ct2) d.drawText(rx + cw / 2, y - ROW_H / 2, TXT_DATA, 0, ct2, "center", "middle");
+                rx += cw; ci += cs;
             }
             y -= ROW_H;
         }
@@ -1143,37 +1134,17 @@ const Export = (function () {
         // Notes section
         if (notes && notes.length > 0) {
             var noteBoxH = 12 + notes.length * NOTE_H + 8;
-            entities.push(ln(X0, y, X0, y - noteBoxH, "0"));
-            entities.push(ln(X0 + tableW, y, X0 + tableW, y - noteBoxH, "0"));
-            entities.push(ln(X0, y - noteBoxH, X0 + tableW, y - noteBoxH, "0"));
-            entities.push(tx(X0+5, y-8, TXT_HDR, "NOTES:", "0", 0));
-            for (var ni=0; ni<notes.length; ni++) {
-                entities.push(tx(X0+14, y-14-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "0", 0));
+            d.drawLine(X0, y, X0, y - noteBoxH);
+            d.drawLine(X0 + tableW, y, X0 + tableW, y - noteBoxH);
+            d.drawLine(X0, y - noteBoxH, X0 + tableW, y - noteBoxH);
+            d.drawText(X0 + 5, y - 8, TXT_HDR, 0, "NOTES:", "left", "middle");
+            for (var ni = 0; ni < notes.length; ni++) {
+                d.drawText(X0 + 14, y - 14 - (ni * NOTE_H) - NOTE_H / 2, TXT_NOTE, 0, (ni + 1) + "- " + notes[ni], "left", "middle");
             }
         }
 
-        // Assemble minimal R12 DXF (AC1009) — broadest compatibility
-        var dxf = "";
-        dxf += "0\nSECTION\n2\nHEADER\n";
-        dxf += "9\n$ACADVER\n1\nAC1009\n";
-        dxf += "9\n$INSUNITS\n70\n4\n";
-        dxf += "9\n$EXTMIN\n10\n0.0\n20\n0.0\n30\n0.0\n";
-        dxf += "9\n$EXTMAX\n10\n"+(X0+tableW+10).toFixed(1)+"\n20\n"+Y0.toFixed(1)+"\n30\n0.0\n";
-        dxf += "0\nENDSEC\n";
-        dxf += "0\nSECTION\n2\nTABLES\n";
-        dxf += "0\nTABLE\n2\nLTYPE\n70\n1\n";
-        dxf += "0\nLTYPE\n2\nCONTINUOUS\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0.0\n";
-        dxf += "0\nENDTAB\n";
-        dxf += "0\nTABLE\n2\nLAYER\n70\n1\n";
-        dxf += "0\nLAYER\n2\n0\n70\n0\n62\n7\n6\nCONTINUOUS\n";
-        dxf += "0\nENDTAB\n";
-        dxf += "0\nTABLE\n2\nSTYLE\n70\n1\n";
-        dxf += "0\nSTYLE\n2\nSTANDARD\n70\n0\n40\n0.0\n41\n1.0\n50\n0.0\n71\n0\n42\n2.5\n3\ntxt\n4\n\n";
-        dxf += "0\nENDTAB\n";
-        dxf += "0\nENDSEC\n";
-        dxf += "0\nSECTION\n2\nENTITIES\n" + entities.join("") + "0\nENDSEC\n";
-        dxf += "0\nEOF\n";
-        return new Blob([dxf], { type: "application/dxf" });
+        var dxfString = d.toDxfString();
+        return new Blob([dxfString], { type: "application/dxf" });
     }
 
     // =====================================================================
