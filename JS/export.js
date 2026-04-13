@@ -1003,8 +1003,8 @@ const Export = (function () {
     //  DXF Rendering Engine
     // =====================================================================
     function renderDxf(title, sectionLabels, groupHeaders, subHeaders, colWidths, dataRows, notes) {
-        var ROW_H = 15, HDR_H = 18, GRP_H = 16, TITLE_H = 22, LABEL_H = 18, NOTE_H = 10;
-        var TXT_DATA = 3.5, TXT_HDR = 3.5, TXT_GRP = 4.5, TXT_TITLE = 7.0, TXT_LABEL = 5.0, TXT_NOTE = 3.0;
+        var ROW_H = 20, HDR_H = 24, GRP_H = 22, TITLE_H = 30, LABEL_H = 24, NOTE_H = 14;
+        var TXT_DATA = 5.0, TXT_HDR = 5.0, TXT_GRP = 6.5, TXT_TITLE = 10.0, TXT_LABEL = 7.0, TXT_NOTE = 4.5;
         var entities = [], handle = 100;
         function nh() { handle++; return handle.toString(16).toUpperCase(); }
         function ln(x1,y1,x2,y2,layer) { return "0\nLINE\n5\n"+nh()+"\n8\n"+(layer||"BORDERS")+"\n10\n"+x1.toFixed(4)+"\n20\n"+y1.toFixed(4)+"\n30\n0.0\n11\n"+x2.toFixed(4)+"\n21\n"+y2.toFixed(4)+"\n31\n0.0\n"; }
@@ -1012,7 +1012,7 @@ const Export = (function () {
         function rc(x,y,w,h,layer) { return ln(x,y,x+w,y,layer)+ln(x+w,y,x+w,y-h,layer)+ln(x+w,y-h,x,y-h,layer)+ln(x,y-h,x,y,layer); }
         function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
 
-        var X0=10, Y0=580, y=Y0;
+        var X0=10, Y0=800, y=Y0;
         var tableW = tw(colWidths);
 
         // Title bar
@@ -1069,14 +1069,14 @@ const Export = (function () {
 
         // Notes section (attached to bottom of table, no top border)
         if (notes && notes.length > 0) {
-            var noteBoxH = 8 + notes.length * NOTE_H + 6;
+            var noteBoxH = 12 + notes.length * NOTE_H + 8;
             // Left, right, bottom only (top is last data row's bottom)
             entities.push(ln(X0, y, X0, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0 + tableW, y, X0 + tableW, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0, y - noteBoxH, X0 + tableW, y - noteBoxH, "BORDERS"));
-            entities.push(mt(X0+4, y-6, TXT_HDR, "NOTES:", "HEADERS", 1));
+            entities.push(mt(X0+5, y-8, TXT_HDR, "NOTES:", "HEADERS", 1));
             for (var ni=0; ni<notes.length; ni++) {
-                entities.push(mt(X0+10, y-10-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
+                entities.push(mt(X0+14, y-14-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
             }
         }
 
