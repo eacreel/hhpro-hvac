@@ -1003,8 +1003,8 @@ const Export = (function () {
     //  DXF Rendering Engine
     // =====================================================================
     function renderDxf(title, sectionLabels, groupHeaders, subHeaders, colWidths, dataRows, notes) {
-        var ROW_H = 8, HDR_H = 10, GRP_H = 8, TITLE_H = 12, LABEL_H = 10, NOTE_H = 5;
-        var TXT_DATA = 2.0, TXT_HDR = 2.0, TXT_GRP = 2.5, TXT_TITLE = 4.0, TXT_LABEL = 3.0, TXT_NOTE = 2.0;
+        var ROW_H = 15, HDR_H = 18, GRP_H = 16, TITLE_H = 22, LABEL_H = 18, NOTE_H = 10;
+        var TXT_DATA = 3.5, TXT_HDR = 3.5, TXT_GRP = 4.5, TXT_TITLE = 7.0, TXT_LABEL = 5.0, TXT_NOTE = 3.0;
         var entities = [], handle = 100;
         function nh() { handle++; return handle.toString(16).toUpperCase(); }
         function ln(x1,y1,x2,y2,layer) { return "0\nLINE\n5\n"+nh()+"\n8\n"+(layer||"BORDERS")+"\n10\n"+x1.toFixed(4)+"\n20\n"+y1.toFixed(4)+"\n30\n0.0\n11\n"+x2.toFixed(4)+"\n21\n"+y2.toFixed(4)+"\n31\n0.0\n"; }
@@ -1012,7 +1012,7 @@ const Export = (function () {
         function rc(x,y,w,h,layer) { return ln(x,y,x+w,y,layer)+ln(x+w,y,x+w,y-h,layer)+ln(x+w,y-h,x,y-h,layer)+ln(x,y-h,x,y,layer); }
         function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
 
-        var X0=10, Y0=290, y=Y0;
+        var X0=10, Y0=580, y=Y0;
         var tableW = tw(colWidths);
 
         // Title bar
@@ -1069,14 +1069,14 @@ const Export = (function () {
 
         // Notes section (attached to bottom of table, no top border)
         if (notes && notes.length > 0) {
-            var noteBoxH = 4 + notes.length * NOTE_H + 2;
+            var noteBoxH = 8 + notes.length * NOTE_H + 6;
             // Left, right, bottom only (top is last data row's bottom)
             entities.push(ln(X0, y, X0, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0 + tableW, y, X0 + tableW, y - noteBoxH, "BORDERS"));
             entities.push(ln(X0, y - noteBoxH, X0 + tableW, y - noteBoxH, "BORDERS"));
-            entities.push(mt(X0+2, y-3, TXT_HDR, "NOTES:", "HEADERS", 1));
+            entities.push(mt(X0+4, y-6, TXT_HDR, "NOTES:", "HEADERS", 1));
             for (var ni=0; ni<notes.length; ni++) {
-                entities.push(mt(X0+6, y-5-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
+                entities.push(mt(X0+10, y-10-(ni*NOTE_H)-NOTE_H/2, TXT_NOTE, (ni+1)+"- "+notes[ni], "DATA", 1));
             }
         }
 
@@ -1112,7 +1112,7 @@ const Export = (function () {
         ];
         var vc = cols.filter(function(c){ return c.a || v(c.k); });
         var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/4; });
+        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
         var groupHeaders = [{text:"SPLIT SYSTEM SCHEDULE",start:0,span:vc.length}];
         var rows = [];
         for (var i=0;i<entries.length;i++) {
@@ -1161,7 +1161,7 @@ const Export = (function () {
         ];
         var vc = cols.filter(function(c){ return c.a || v(c.k); });
         var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/4; });
+        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
         var groupHeaders = [{text:"MULTI POSITION SPLIT SYSTEM SCHEDULE",start:0,span:vc.length}];
         var rows = [];
         for (var i=0;i<entries.length;i++) {
@@ -1201,7 +1201,7 @@ const Export = (function () {
         ];
         var vc = cols.filter(function(c){ return c.a || v(c.k); });
         var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/4; });
+        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
         var groupHeaders = [{text:"PACKAGED ROOFTOP UNITS",start:0,span:vc.length}];
         var rows = [];
         for (var i=0;i<entries.length;i++) {
