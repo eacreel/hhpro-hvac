@@ -1228,7 +1228,7 @@ body.preview-open {
 }
 
 .sp-table thead th {
-    background-color: var(--color-header-bg);
+    background-color: #17528F;
     color: var(--color-header-text);
     font-size: 10px;
     font-weight: var(--font-weight-semibold);
@@ -1236,7 +1236,7 @@ body.preview-open {
     text-transform: uppercase;
     letter-spacing: 0.03em;
     padding: var(--space-sm) var(--space-sm);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     white-space: normal;
     vertical-align: middle;
     line-height: 1.35;
@@ -1245,14 +1245,14 @@ body.preview-open {
 .sp-hdr1 th {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
-    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
+    background-color: #17528F;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .sp-hdr2 th {
     font-size: 10px;
     font-weight: var(--font-weight-medium);
-    background: linear-gradient(180deg, #2A7BC5 0%, var(--color-header-bg-sub) 100%);
+    background-color: #17528F;
     padding: var(--space-xs) var(--space-xs);
 }
 
@@ -2000,6 +2000,40 @@ body.preview-open {
     box-shadow: 0 3px 10px rgba(0, 84, 166, 0.3);
 }
 
+/* Separator between download buttons and tool buttons */
+.sp-download-bar-sep {
+    display: inline-block;
+    width: 1px;
+    height: 22px;
+    background-color: var(--color-border);
+    margin: 0 var(--space-xs);
+}
+
+/* Tool buttons (Auto #, Columns) in the download bar */
+.sp-dl-bar-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    height: 32px;
+    padding: 0 var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-brand);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    white-space: nowrap;
+}
+
+.sp-dl-bar-tool-btn:hover {
+    color: var(--color-brand-dark);
+    background-color: var(--color-brand-light);
+    border-color: var(--color-brand);
+    transform: translateY(-1px);
+}
+
 .sp-tab {
     padding: var(--space-sm) var(--space-lg);
     font-size: var(--font-size-sm);
@@ -2050,14 +2084,15 @@ body.preview-open {
     padding: var(--space-sm) var(--space-lg);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     color: #FFFFFF;
+    background-color: #17528F;
 }
 
 .sp-section-indoor {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+    background-color: #17528F;
 }
 
 .sp-section-outdoor {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+    background-color: #17528F;
 }
 
 .sp-table-scroll {
@@ -2397,6 +2432,7 @@ body.preview-open {
     .sp-dl-btn { font-size: var(--font-size-xs); padding: 0 var(--space-sm); }
     .sp-download-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-xs); }
     .sp-download-bar .sp-dl-btn { height: 28px; font-size: var(--font-size-xs); padding: 0 var(--space-sm); }
+    .sp-dl-bar-tool-btn { font-size: var(--font-size-xs); padding: 0 var(--space-sm); height: 28px; }
     .sp-tool-btn { font-size: var(--font-size-xs); padding: 0 var(--space-xs); height: 28px; }
     .sp-col-panel { right: var(--space-md); width: 220px; }
     .sp-bulk-bar { padding: var(--space-xs) var(--space-md); gap: var(--space-sm); }

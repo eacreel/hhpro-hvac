@@ -5,7 +5,7 @@
      - Combined single-row schedule tables (indoor + outdoor)
      - Schedule notes from JSON with checkboxes (check order preserved)
      - Drag-to-reorder, duplicate/delete, auto-number, undo/redo
-     - Column visibility toggles
+     - Column visibility toggles (individual per-column)
    ========================================================================== */
 
 const SchedulePreview = (function () {
@@ -80,22 +80,32 @@ const SchedulePreview = (function () {
     function setColWidth(key, w) { _columnWidths[key] = Math.max(30, Math.round(w)); }
     function getColumnWidths() { return Object.assign({}, DEFAULT_WIDTHS, _columnWidths); }
 
-    // Column groups per product for the toggle panel
+    // Column groups per product — individual columns for the toggle panel
     var COL_GROUPS = {
         "mini-splits": [
             { label: "INDOOR UNIT", children: [
-                { label: "Cooling Detail (EDB/EWB)", keys: ["ms-idu-cool-edb","ms-idu-cool-ewb"] },
-                { label: "Heating Data", keys: ["ms-idu-heat-edb","ms-idu-heat-total"] },
+                { label: "CFM", keys: ["ms-idu-cfm"] },
+                { label: "Cooling EDB", keys: ["ms-idu-cool-edb"] },
+                { label: "Cooling EWB", keys: ["ms-idu-cool-ewb"] },
+                { label: "Cooling Total Cap.", keys: ["ms-idu-cool-total"] },
+                { label: "Cooling Sensible Cap.", keys: ["ms-idu-cool-sens"] },
+                { label: "Heating EDB", keys: ["ms-idu-heat-edb"] },
+                { label: "Heating Total Cap.", keys: ["ms-idu-heat-total"] },
                 { label: "Indoor Weight", keys: ["ms-idu-weight"] },
                 { label: "Indoor Type", keys: ["ms-idu-type"] },
-                { label: "Indoor Electrical", keys: ["ms-idu-voltage","ms-idu-mca","ms-idu-mop"] },
+                { label: "Indoor Voltage", keys: ["ms-idu-voltage"] },
+                { label: "Indoor MCA", keys: ["ms-idu-mca"] },
+                { label: "Indoor MOP", keys: ["ms-idu-mop"] },
                 { label: "Indoor MFG", keys: ["ms-idu-mfg"] },
             ]},
             { label: "OUTDOOR UNIT", children: [
-                { label: "OA Ambient", keys: ["ms-odu-cool-amb","ms-odu-heat-amb"] },
+                { label: "OA Ambient (Cooling)", keys: ["ms-odu-cool-amb"] },
+                { label: "OA Ambient (Heating)", keys: ["ms-odu-heat-amb"] },
                 { label: "Outdoor Weight", keys: ["ms-odu-weight"] },
                 { label: "SEER2/EER2/HSPF2", keys: ["ms-odu-seer"] },
-                { label: "Outdoor Electrical", keys: ["ms-odu-voltage","ms-odu-mca","ms-odu-mop"] },
+                { label: "Outdoor Voltage", keys: ["ms-odu-voltage"] },
+                { label: "Outdoor MCA", keys: ["ms-odu-mca"] },
+                { label: "Outdoor MOP", keys: ["ms-odu-mop"] },
                 { label: "Outdoor MFG", keys: ["ms-odu-mfg"] },
                 { label: "Refrigerant", keys: ["ms-odu-refrig"] },
                 { label: "Line-Set", keys: ["ms-odu-lineset"] },
@@ -103,18 +113,30 @@ const SchedulePreview = (function () {
         ],
         "multi-position": [
             { label: "INDOOR AHU", children: [
-                { label: "Supply Fan", keys: ["mps-idu-cfm","mps-idu-hp","mps-idu-fan-type"] },
-                { label: "Cooling Detail", keys: ["mps-idu-eat-db","mps-idu-eat-wb","mps-idu-lat-db"] },
-                { label: "Cooling Capacity", keys: ["mps-idu-cool-total","mps-idu-cool-sens"] },
+                { label: "CFM", keys: ["mps-idu-cfm"] },
+                { label: "Motor HP", keys: ["mps-idu-hp"] },
+                { label: "Motor Type", keys: ["mps-idu-fan-type"] },
+                { label: "EAT (DB)", keys: ["mps-idu-eat-db"] },
+                { label: "EAT (WB)", keys: ["mps-idu-eat-wb"] },
+                { label: "LAT (DB)", keys: ["mps-idu-lat-db"] },
+                { label: "Cooling Total Cap.", keys: ["mps-idu-cool-total"] },
+                { label: "Cooling Sensible Cap.", keys: ["mps-idu-cool-sens"] },
                 { label: "HP Total Cap.", keys: ["mps-idu-hp-total"] },
-                { label: "Aux. Electric Heat", keys: ["mps-idu-aux-kw","mps-idu-aux-rise"] },
-                { label: "Indoor Electrical", keys: ["mps-idu-voltage","mps-idu-mca","mps-idu-mop"] },
+                { label: "Aux. Heat kW", keys: ["mps-idu-aux-kw"] },
+                { label: "Aux. Heat Temp Rise", keys: ["mps-idu-aux-rise"] },
+                { label: "Indoor Voltage", keys: ["mps-idu-voltage"] },
+                { label: "Indoor MCA", keys: ["mps-idu-mca"] },
+                { label: "Indoor MOP", keys: ["mps-idu-mop"] },
                 { label: "Indoor Weight", keys: ["mps-idu-weight"] },
             ]},
             { label: "OUTDOOR CU", children: [
-                { label: "HP Heating Data", keys: ["mps-odu-heat-amb","mps-odu-heat-total","mps-odu-heat-eff"] },
-                { label: "Outdoor Electrical", keys: ["mps-odu-voltage","mps-odu-mca","mps-odu-mop"] },
-                { label: "OA Ambient (Cool)", keys: ["mps-odu-cool-amb"] },
+                { label: "HP Heating Ambient", keys: ["mps-odu-heat-amb"] },
+                { label: "HP Heating Total Cap.", keys: ["mps-odu-heat-total"] },
+                { label: "HP Heating Efficiency", keys: ["mps-odu-heat-eff"] },
+                { label: "Outdoor Voltage", keys: ["mps-odu-voltage"] },
+                { label: "Outdoor MCA", keys: ["mps-odu-mca"] },
+                { label: "Outdoor MOP", keys: ["mps-odu-mop"] },
+                { label: "OA Ambient (Cooling)", keys: ["mps-odu-cool-amb"] },
                 { label: "Refrigerant", keys: ["mps-odu-refrig"] },
                 { label: "Efficiency", keys: ["mps-odu-eff"] },
                 { label: "Compressor Stages", keys: ["mps-odu-comp"] },
@@ -123,12 +145,26 @@ const SchedulePreview = (function () {
         ],
         "gas-packs": [
             { label: "UNIT DATA", children: [
-                { label: "Fan Data", keys: ["gp-cfm","gp-esp","gp-tesp"] },
-                { label: "Cooling Capacity", keys: ["gp-cool-total","gp-cool-sens"] },
-                { label: "Cooling Conditions", keys: ["gp-eff","gp-edb","gp-ewb","gp-ldb","gp-lwb"] },
-                { label: "Heating Performance", keys: ["gp-heat-input","gp-heat-output","gp-heat-eat","gp-heat-lat"] },
-                { label: "HGRH / Cool Stages", keys: ["gp-hgrh","gp-cool-stages"] },
-                { label: "Electrical", keys: ["gp-voltage","gp-hp","gp-mca","gp-mocp"] },
+                { label: "CFM", keys: ["gp-cfm"] },
+                { label: "ESP", keys: ["gp-esp"] },
+                { label: "TESP", keys: ["gp-tesp"] },
+                { label: "Cooling Total Cap.", keys: ["gp-cool-total"] },
+                { label: "Cooling Sensible Cap.", keys: ["gp-cool-sens"] },
+                { label: "Efficiency", keys: ["gp-eff"] },
+                { label: "Cooling EDB", keys: ["gp-edb"] },
+                { label: "Cooling EWB", keys: ["gp-ewb"] },
+                { label: "Cooling LDB", keys: ["gp-ldb"] },
+                { label: "Cooling LWB", keys: ["gp-lwb"] },
+                { label: "Heating Input", keys: ["gp-heat-input"] },
+                { label: "Heating Output", keys: ["gp-heat-output"] },
+                { label: "Heating EAT", keys: ["gp-heat-eat"] },
+                { label: "Heating LAT", keys: ["gp-heat-lat"] },
+                { label: "HGRH", keys: ["gp-hgrh"] },
+                { label: "Cooling Stages", keys: ["gp-cool-stages"] },
+                { label: "Volt/Ph", keys: ["gp-voltage"] },
+                { label: "Indoor Motor HP", keys: ["gp-hp"] },
+                { label: "Unit MCA", keys: ["gp-mca"] },
+                { label: "Unit MOCP", keys: ["gp-mocp"] },
             ]},
         ],
     };
@@ -203,7 +239,7 @@ const SchedulePreview = (function () {
         if (!groups || groups.length === 0) return "";
 
         var h = '<div class="sp-col-panel' + (_colPanelOpen ? "" : " hidden") + '" id="sp-col-panel">';
-        h += '<div class="sp-col-panel-header">Show / Hide Columns &amp; Adjust Widths</div>';
+        h += '<div class="sp-col-panel-header">Show / Hide Columns</div>';
         for (var s = 0; s < groups.length; s++) {
             var section = groups[s];
             h += '<div class="sp-col-panel-section">';
@@ -370,7 +406,7 @@ const SchedulePreview = (function () {
     function buildPreview() {
         var html = "";
 
-        // Toolbar
+        // Toolbar (top bar — Back, title, undo/redo only)
         html += '<div class="sp-toolbar">';
         html += '  <div class="sp-toolbar-left">';
         html += '    <button class="sp-close-btn" id="sp-btn-close" type="button" title="Close preview">';
@@ -386,10 +422,6 @@ const SchedulePreview = (function () {
         html += '    <button class="sp-tool-btn" id="sp-btn-redo" type="button" title="Redo (Ctrl+Y)" disabled>';
         html += '      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>';
         html += '    </button>';
-        html += '    <span class="sp-toolbar-sep"></span>';
-        html += '    <button class="sp-tool-btn" id="sp-btn-autonumber" type="button" title="Auto-number tags">Auto #</button>';
-        html += '    <span class="sp-toolbar-sep"></span>';
-        html += '    <div class="sp-col-btn-wrap"><button class="sp-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button></div>';
         html += '  </div>';
         html += '</div>';
 
@@ -408,12 +440,15 @@ const SchedulePreview = (function () {
         html += '<button class="sp-tab' + filesActive + '" data-sp-tab="files">' + TAB_LABELS["files"] + '</button>';
         html += '</div>';
 
-        // Schedule download buttons (visible only on schedule tabs, not Project Files)
+        // Schedule download bar + Auto # and Columns (visible only on schedule tabs, not Project Files)
         var showDlBar = (_activeTab !== "files");
         html += '<div class="sp-download-bar' + (showDlBar ? '' : ' hidden') + '" id="sp-download-bar">';
         html += '  <button class="sp-dl-btn" id="sp-btn-xlsx" type="button">Download Excel</button>';
         html += '  <button class="sp-dl-btn" id="sp-btn-pdf" type="button">Download PDF</button>';
         html += '  <button class="sp-dl-btn" id="sp-btn-dxf" type="button">Download DXF</button>';
+        html += '  <span class="sp-download-bar-sep"></span>';
+        html += '  <button class="sp-dl-bar-tool-btn" id="sp-btn-autonumber" type="button" title="Auto-number tags for this schedule">Auto #</button>';
+        html += '  <div class="sp-col-btn-wrap"><button class="sp-dl-bar-tool-btn" id="sp-btn-columns" type="button" title="Show/hide columns">Columns</button></div>';
         html += '</div>';
 
         // Bulk bar
@@ -468,23 +503,33 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Combined Mini Splits Table
+    // Combined Mini Splits Table (individual column visibility)
     // -----------------------------------------------------------------------
     function buildMsTable(indices) {
         var v = isColVisible;
-        var coolSpan = 2 + (v("ms-idu-cool-edb") ? 2 : 0);
-        var heatSpan = v("ms-idu-heat-edb") ? 2 : 0;
-        var iElecSpan = v("ms-idu-voltage") ? 3 : 0;
-        var oElecSpan = v("ms-odu-voltage") ? 3 : 0;
-        var iduCols = 2 + coolSpan + heatSpan + (v("ms-idu-weight")?1:0) + (v("ms-idu-type")?1:0) + iElecSpan + (v("ms-idu-mfg")?1:0);
+
+        // Count visible columns per group header
+        var coolSpan = (v("ms-idu-cool-edb")?1:0) + (v("ms-idu-cool-ewb")?1:0) + (v("ms-idu-cool-total")?1:0) + (v("ms-idu-cool-sens")?1:0);
+        var heatSpan = (v("ms-idu-heat-edb")?1:0) + (v("ms-idu-heat-total")?1:0);
+        var iElecSpan = (v("ms-idu-voltage")?1:0) + (v("ms-idu-mca")?1:0) + (v("ms-idu-mop")?1:0);
+        var oElecSpan = (v("ms-odu-voltage")?1:0) + (v("ms-odu-mca")?1:0) + (v("ms-odu-mop")?1:0);
+
+        // Total indoor / outdoor column counts (for section header colspan)
+        var iduCols = 1 + (v("ms-idu-cfm")?1:0) + coolSpan + heatSpan + (v("ms-idu-weight")?1:0) + (v("ms-idu-type")?1:0) + iElecSpan + (v("ms-idu-mfg")?1:0);
         var oduCols = 1 + (v("ms-odu-cool-amb")?1:0) + (v("ms-odu-heat-amb")?1:0) + (v("ms-odu-weight")?1:0) + (v("ms-odu-seer")?1:0) + oElecSpan + (v("ms-odu-mfg")?1:0) + (v("ms-odu-refrig")?1:0) + (v("ms-odu-lineset")?1:0);
+
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
+
+        // Section row
         h += '<tr class="sp-hdr-section"><th rowspan="3" class="sp-col-action"><input type="checkbox" id="sp-select-all" title="Select all"></th>';
         h += '<th colspan="' + iduCols + '" class="sp-section-indoor">INDOOR UNIT</th>';
         h += '<th colspan="' + oduCols + '" class="sp-section-outdoor">OUTDOOR UNIT</th>';
         h += '<th rowspan="3" class="sp-col-acc">NOTES</th></tr>';
+
+        // Group row
         h += '<tr class="sp-hdr1">';
-        h += '<th rowspan="2">SYMBOL</th><th rowspan="2">CFM</th>';
+        h += '<th rowspan="2">SYMBOL</th>';
+        if (v("ms-idu-cfm")) h += '<th rowspan="2">CFM</th>';
         if (coolSpan > 0) h += '<th colspan="' + coolSpan + '" class="sp-col-group">COOLING CAPACITY</th>';
         if (heatSpan > 0) h += '<th colspan="' + heatSpan + '" class="sp-col-group">HEAT PUMP HEATING</th>';
         if (v("ms-idu-weight")) h += '<th rowspan="2">OP.<br>WEIGHT</th>';
@@ -500,13 +545,25 @@ const SchedulePreview = (function () {
         if (v("ms-odu-mfg")) h += '<th rowspan="2">MFG<br>DAIKIN</th>';
         if (v("ms-odu-refrig")) h += '<th rowspan="2">REFRIG.</th>';
         if (v("ms-odu-lineset")) h += '<th rowspan="2">LINE-SET</th>';
-        h += '</tr><tr class="sp-hdr2">';
-        if (v("ms-idu-cool-edb")) h += '<th>EDB</th><th>EWB</th>';
-        h += '<th>TOTAL<br>CAP.</th><th>SENS.<br>CAP.</th>';
-        if (v("ms-idu-heat-edb")) h += '<th>EDB</th><th>TOTAL<br>CAP.</th>';
-        if (v("ms-idu-voltage")) h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
-        if (v("ms-odu-voltage")) h += '<th>Voltage</th><th>MCA</th><th>MOP</th>';
+        h += '</tr>';
+
+        // Detail row
+        h += '<tr class="sp-hdr2">';
+        if (v("ms-idu-cool-edb")) h += '<th>EDB</th>';
+        if (v("ms-idu-cool-ewb")) h += '<th>EWB</th>';
+        if (v("ms-idu-cool-total")) h += '<th>TOTAL<br>CAP.</th>';
+        if (v("ms-idu-cool-sens")) h += '<th>SENS.<br>CAP.</th>';
+        if (v("ms-idu-heat-edb")) h += '<th>EDB</th>';
+        if (v("ms-idu-heat-total")) h += '<th>TOTAL<br>CAP.</th>';
+        if (v("ms-idu-voltage")) h += '<th>Voltage</th>';
+        if (v("ms-idu-mca")) h += '<th>MCA</th>';
+        if (v("ms-idu-mop")) h += '<th>MOP</th>';
+        if (v("ms-odu-voltage")) h += '<th>Voltage</th>';
+        if (v("ms-odu-mca")) h += '<th>MCA</th>';
+        if (v("ms-odu-mop")) h += '<th>MOP</th>';
         h += '</tr></thead><tbody>';
+
+        // Data rows
         for (var ii = 0; ii < indices.length; ii++) {
             var ei = indices[ii]; var entry = _entries[ei];
             var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
@@ -517,18 +574,30 @@ const SchedulePreview = (function () {
                 var iduAcc = (entry.iduAccessories && j < entry.iduAccessories.length) ? (entry.iduAccessories[j]||"") : "";
                 h += '<tr data-entry-idx="' + ei + '" data-idu-idx="' + j + '"' + (j===0?' draggable="true"':'') + '>';
                 if (j === 0) h += buildActionCell(ei, numIdu, entry);
+                // SYMBOL (always shown)
                 h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="' + j + '"></td>';
-                h += '<td>' + fmt(idu.cfm) + '</td>';
-                if (v("ms-idu-cool-edb")) { h += '<td>' + fmt(idu.coolingEdb) + '</td><td>' + fmt(idu.coolingEwb) + '</td>'; }
-                h += '<td>' + fmt(idu.coolingTotal) + '</td><td>' + fmt(idu.coolingSensible) + '</td>';
-                if (v("ms-idu-heat-edb")) { h += '<td>' + fmt(idu.heatingEdb) + '</td><td>' + fmt(idu.heatingTotal) + '</td>'; }
+                if (v("ms-idu-cfm")) h += '<td>' + fmt(idu.cfm) + '</td>';
+                if (v("ms-idu-cool-edb")) h += '<td>' + fmt(idu.coolingEdb) + '</td>';
+                if (v("ms-idu-cool-ewb")) h += '<td>' + fmt(idu.coolingEwb) + '</td>';
+                if (v("ms-idu-cool-total")) h += '<td>' + fmt(idu.coolingTotal) + '</td>';
+                if (v("ms-idu-cool-sens")) h += '<td>' + fmt(idu.coolingSensible) + '</td>';
+                if (v("ms-idu-heat-edb")) h += '<td>' + fmt(idu.heatingEdb) + '</td>';
+                if (v("ms-idu-heat-total")) h += '<td>' + fmt(idu.heatingTotal) + '</td>';
                 if (v("ms-idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
                 if (v("ms-idu-type")) h += '<td class="sp-cell-text">' + esc(idu.type||"") + '</td>';
-                if (v("ms-idu-voltage")) {
-                    if (idu.poweredFromOutdoor) { h += '<td colspan="3" class="sp-cell-powered">Powered From ODU</td>'; }
-                    else { h += '<td>' + esc(idu.voltage||"") + '</td><td>' + fmt(idu.mca) + '</td><td>' + fmt(idu.mop) + '</td>'; }
+                // Indoor electrical — handle "powered from outdoor"
+                if (v("ms-idu-voltage") || v("ms-idu-mca") || v("ms-idu-mop")) {
+                    if (idu.poweredFromOutdoor) {
+                        var pwdSpan = (v("ms-idu-voltage")?1:0) + (v("ms-idu-mca")?1:0) + (v("ms-idu-mop")?1:0);
+                        h += '<td colspan="' + pwdSpan + '" class="sp-cell-powered">Powered From ODU</td>';
+                    } else {
+                        if (v("ms-idu-voltage")) h += '<td>' + esc(idu.voltage||"") + '</td>';
+                        if (v("ms-idu-mca")) h += '<td>' + fmt(idu.mca) + '</td>';
+                        if (v("ms-idu-mop")) h += '<td>' + fmt(idu.mop) + '</td>';
+                    }
                 }
                 if (v("ms-idu-mfg")) h += '<td class="sp-cell-model">' + esc(idu.manufacturer||"") + '</td>';
+                // Outdoor unit cells (first indoor row only, rowspan to cover all indoor rows)
                 if (j === 0) {
                     var rs = numIdu > 1 ? ' rowspan="' + numIdu + '"' : '';
                     h += '<td' + rs + ' class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"ODU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
@@ -536,7 +605,9 @@ const SchedulePreview = (function () {
                     if (v("ms-odu-heat-amb")) h += '<td' + rs + '>' + fmt(odu.heatingAmbient) + '</td>';
                     if (v("ms-odu-weight")) h += '<td' + rs + '>' + fmt(odu.weight) + '</td>';
                     if (v("ms-odu-seer")) h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.seer||"") + '</td>';
-                    if (v("ms-odu-voltage")) { h += '<td' + rs + '>' + esc(odu.voltage||"") + '</td><td' + rs + '>' + fmt(odu.mca) + '</td><td' + rs + '>' + fmt(odu.mop) + '</td>'; }
+                    if (v("ms-odu-voltage")) h += '<td' + rs + '>' + esc(odu.voltage||"") + '</td>';
+                    if (v("ms-odu-mca")) h += '<td' + rs + '>' + fmt(odu.mca) + '</td>';
+                    if (v("ms-odu-mop")) h += '<td' + rs + '>' + fmt(odu.mop) + '</td>';
                     if (v("ms-odu-mfg")) h += '<td' + rs + ' class="sp-cell-model">' + esc(odu.manufacturer||"") + '</td>';
                     if (v("ms-odu-refrig")) h += '<td' + rs + '>' + esc(odu.refrigerant||"") + '</td>';
                     if (v("ms-odu-lineset")) h += '<td' + rs + ' class="sp-cell-text">' + esc(odu.lineSet||"") + '</td>';
@@ -550,25 +621,32 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Combined MPS Table
+    // Combined MPS Table (individual column visibility)
     // -----------------------------------------------------------------------
     function buildMpsTable(indices) {
         var v = isColVisible;
-        var fanSpan = v("mps-idu-cfm") ? 3 : 0;
-        var coolDSpan = v("mps-idu-eat-db") ? 3 : 0;
-        var coolCSpan = v("mps-idu-cool-total") ? 2 : 0;
+
+        var fanSpan = (v("mps-idu-cfm")?1:0) + (v("mps-idu-hp")?1:0) + (v("mps-idu-fan-type")?1:0);
+        var coolDSpan = (v("mps-idu-eat-db")?1:0) + (v("mps-idu-eat-wb")?1:0) + (v("mps-idu-lat-db")?1:0);
+        var coolCSpan = (v("mps-idu-cool-total")?1:0) + (v("mps-idu-cool-sens")?1:0);
         var coolTotalSpan = coolDSpan + coolCSpan;
-        var auxSpan = v("mps-idu-aux-kw") ? 2 : 0;
-        var iElecSpan = v("mps-idu-voltage") ? 3 : 0;
-        var oHeatSpan = v("mps-odu-heat-amb") ? 3 : 0;
-        var oElecSpan = v("mps-odu-voltage") ? 3 : 0;
+        var auxSpan = (v("mps-idu-aux-kw")?1:0) + (v("mps-idu-aux-rise")?1:0);
+        var iElecSpan = (v("mps-idu-voltage")?1:0) + (v("mps-idu-mca")?1:0) + (v("mps-idu-mop")?1:0);
+        var oHeatSpan = (v("mps-odu-heat-amb")?1:0) + (v("mps-odu-heat-total")?1:0) + (v("mps-odu-heat-eff")?1:0);
+        var oElecSpan = (v("mps-odu-voltage")?1:0) + (v("mps-odu-mca")?1:0) + (v("mps-odu-mop")?1:0);
+
         var iduCols = 2 + fanSpan + coolTotalSpan + (v("mps-idu-hp-total")?1:0) + auxSpan + iElecSpan + (v("mps-idu-weight")?1:0);
         var oduCols = 2 + oHeatSpan + oElecSpan + (v("mps-odu-cool-amb")?1:0) + (v("mps-odu-refrig")?1:0) + (v("mps-odu-eff")?1:0) + (v("mps-odu-comp")?1:0) + (v("mps-odu-weight")?1:0);
+
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
+
+        // Section row
         h += '<tr class="sp-hdr-section"><th rowspan="3" class="sp-col-action"><input type="checkbox" id="sp-select-all-mps" title="Select all"></th>';
         h += '<th colspan="' + iduCols + '" class="sp-section-indoor">INDOOR AIR HANDLING UNIT</th>';
         h += '<th colspan="' + oduCols + '" class="sp-section-outdoor">OUTDOOR CONDENSING UNIT</th>';
         h += '<th rowspan="3" class="sp-col-acc">NOTES</th></tr>';
+
+        // Group row
         h += '<tr class="sp-hdr1">';
         h += '<th rowspan="2">TAG</th><th rowspan="2">MODEL<br>(DAIKIN)</th>';
         if (fanSpan > 0) h += '<th colspan="' + fanSpan + '" class="sp-col-group">SUPPLY FAN</th>';
@@ -585,15 +663,32 @@ const SchedulePreview = (function () {
         if (v("mps-odu-eff")) h += '<th rowspan="2">EFF.</th>';
         if (v("mps-odu-comp")) h += '<th rowspan="2">COMP.<br>STAGES</th>';
         if (v("mps-odu-weight")) h += '<th rowspan="2">WEIGHT</th>';
-        h += '</tr><tr class="sp-hdr2">';
-        if (v("mps-idu-cfm")) h += '<th>CFM</th><th>HP</th><th>TYPE</th>';
-        if (v("mps-idu-eat-db")) h += '<th>EAT DB</th><th>EAT WB</th><th>LAT DB</th>';
-        if (v("mps-idu-cool-total")) h += '<th>TOTAL</th><th>SENS.</th>';
-        if (v("mps-idu-aux-kw")) h += '<th>kW</th><th>RISE</th>';
-        if (v("mps-idu-voltage")) h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
-        if (v("mps-odu-heat-amb")) h += '<th>AMB DB</th><th>TOTAL</th><th>EFF.</th>';
-        if (v("mps-odu-voltage")) h += '<th>V/PH</th><th>MCA</th><th>MOP</th>';
+        h += '</tr>';
+
+        // Detail row
+        h += '<tr class="sp-hdr2">';
+        if (v("mps-idu-cfm")) h += '<th>CFM</th>';
+        if (v("mps-idu-hp")) h += '<th>HP</th>';
+        if (v("mps-idu-fan-type")) h += '<th>TYPE</th>';
+        if (v("mps-idu-eat-db")) h += '<th>EAT DB</th>';
+        if (v("mps-idu-eat-wb")) h += '<th>EAT WB</th>';
+        if (v("mps-idu-lat-db")) h += '<th>LAT DB</th>';
+        if (v("mps-idu-cool-total")) h += '<th>TOTAL</th>';
+        if (v("mps-idu-cool-sens")) h += '<th>SENS.</th>';
+        if (v("mps-idu-aux-kw")) h += '<th>kW</th>';
+        if (v("mps-idu-aux-rise")) h += '<th>RISE</th>';
+        if (v("mps-idu-voltage")) h += '<th>V/PH</th>';
+        if (v("mps-idu-mca")) h += '<th>MCA</th>';
+        if (v("mps-idu-mop")) h += '<th>MOP</th>';
+        if (v("mps-odu-heat-amb")) h += '<th>AMB DB</th>';
+        if (v("mps-odu-heat-total")) h += '<th>TOTAL</th>';
+        if (v("mps-odu-heat-eff")) h += '<th>EFF.</th>';
+        if (v("mps-odu-voltage")) h += '<th>V/PH</th>';
+        if (v("mps-odu-mca")) h += '<th>MCA</th>';
+        if (v("mps-odu-mop")) h += '<th>MOP</th>';
         h += '</tr></thead><tbody>';
+
+        // Data rows
         for (var ii = 0; ii < indices.length; ii++) {
             var ei = indices[ii]; var entry = _entries[ei];
             var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
@@ -604,17 +699,29 @@ const SchedulePreview = (function () {
             h += buildActionCell(ei, 1, entry);
             h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(iduTag) + '" data-entry="' + ei + '" data-field="iduTag" data-idu="0"></td>';
             h += '<td class="sp-cell-model">' + esc(idu.model||"") + '</td>';
-            if (v("mps-idu-cfm")) { h += '<td>' + fmt(idu.airflow) + '</td><td>' + fmt(idu.motorHp) + '</td><td class="sp-cell-text">' + esc(idu.motorType||"") + '</td>'; }
-            if (v("mps-idu-eat-db")) { h += '<td>' + fmt(idu.coolingEatDb) + '</td><td>' + fmt(idu.coolingEatWb) + '</td><td>' + fmt(idu.coolingLatDb) + '</td>'; }
-            if (v("mps-idu-cool-total")) { h += '<td>' + fmt(idu.coolingTotal) + '</td><td>' + fmt(idu.coolingSensible) + '</td>'; }
+            if (v("mps-idu-cfm")) h += '<td>' + fmt(idu.airflow) + '</td>';
+            if (v("mps-idu-hp")) h += '<td>' + fmt(idu.motorHp) + '</td>';
+            if (v("mps-idu-fan-type")) h += '<td class="sp-cell-text">' + esc(idu.motorType||"") + '</td>';
+            if (v("mps-idu-eat-db")) h += '<td>' + fmt(idu.coolingEatDb) + '</td>';
+            if (v("mps-idu-eat-wb")) h += '<td>' + fmt(idu.coolingEatWb) + '</td>';
+            if (v("mps-idu-lat-db")) h += '<td>' + fmt(idu.coolingLatDb) + '</td>';
+            if (v("mps-idu-cool-total")) h += '<td>' + fmt(idu.coolingTotal) + '</td>';
+            if (v("mps-idu-cool-sens")) h += '<td>' + fmt(idu.coolingSensible) + '</td>';
             if (v("mps-idu-hp-total")) h += '<td>' + fmt(idu.heatPumpTotalCapacity) + '</td>';
-            if (v("mps-idu-aux-kw")) { h += '<td>' + esc(idu.auxHeatKw||"") + '</td><td>' + esc(idu.auxHeatTempRise||"") + '</td>'; }
-            if (v("mps-idu-voltage")) { h += '<td>' + esc(idu.voltage||"") + '</td><td>' + fmt(idu.mca) + '</td><td>' + fmt(idu.mop) + '</td>'; }
+            if (v("mps-idu-aux-kw")) h += '<td>' + esc(idu.auxHeatKw||"") + '</td>';
+            if (v("mps-idu-aux-rise")) h += '<td>' + esc(idu.auxHeatTempRise||"") + '</td>';
+            if (v("mps-idu-voltage")) h += '<td>' + esc(idu.voltage||"") + '</td>';
+            if (v("mps-idu-mca")) h += '<td>' + fmt(idu.mca) + '</td>';
+            if (v("mps-idu-mop")) h += '<td>' + fmt(idu.mop) + '</td>';
             if (v("mps-idu-weight")) h += '<td>' + fmt(idu.weight) + '</td>';
             h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"CU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
             h += '<td class="sp-cell-model">' + esc(odu.model||"") + '</td>';
-            if (v("mps-odu-heat-amb")) { h += '<td>' + fmt(odu.heatingAmbient) + '</td><td>' + fmt(odu.heatingTotal) + '</td><td class="sp-cell-text">' + esc(odu.heatingEfficiency||"") + '</td>'; }
-            if (v("mps-odu-voltage")) { h += '<td>' + esc(odu.voltage||"") + '</td><td>' + fmt(odu.mca) + '</td><td>' + fmt(odu.mop) + '</td>'; }
+            if (v("mps-odu-heat-amb")) h += '<td>' + fmt(odu.heatingAmbient) + '</td>';
+            if (v("mps-odu-heat-total")) h += '<td>' + fmt(odu.heatingTotal) + '</td>';
+            if (v("mps-odu-heat-eff")) h += '<td class="sp-cell-text">' + esc(odu.heatingEfficiency||"") + '</td>';
+            if (v("mps-odu-voltage")) h += '<td>' + esc(odu.voltage||"") + '</td>';
+            if (v("mps-odu-mca")) h += '<td>' + fmt(odu.mca) + '</td>';
+            if (v("mps-odu-mop")) h += '<td>' + fmt(odu.mop) + '</td>';
             if (v("mps-odu-cool-amb")) h += '<td>' + fmt(odu.coolingAmbient) + '</td>';
             if (v("mps-odu-refrig")) h += '<td>' + esc(odu.refrigerant||"") + '</td>';
             if (v("mps-odu-eff")) h += '<td class="sp-cell-text">' + esc(odu.efficiency||"") + '</td>';
@@ -628,17 +735,21 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Gas Packs Table
+    // Gas Packs Table (individual column visibility)
     // -----------------------------------------------------------------------
     function buildGpTable(indices) {
         var v = isColVisible;
-        var fanSpan = v("gp-cfm") ? 3 : 0;
-        var coolCapSpan = v("gp-cool-total") ? 2 : 0;
-        var coolCondSpan = v("gp-eff") ? 5 : 0;
+
+        var fanSpan = (v("gp-cfm")?1:0) + (v("gp-esp")?1:0) + (v("gp-tesp")?1:0);
+        var coolCapSpan = (v("gp-cool-total")?1:0) + (v("gp-cool-sens")?1:0);
+        var coolCondSpan = (v("gp-eff")?1:0) + (v("gp-edb")?1:0) + (v("gp-ewb")?1:0) + (v("gp-ldb")?1:0) + (v("gp-lwb")?1:0);
         var coolTotalSpan = coolCapSpan + coolCondSpan;
-        var heatSpan = v("gp-heat-input") ? 4 : 0;
-        var elecSpan = v("gp-voltage") ? 4 : 0;
+        var heatSpan = (v("gp-heat-input")?1:0) + (v("gp-heat-output")?1:0) + (v("gp-heat-eat")?1:0) + (v("gp-heat-lat")?1:0);
+        var elecSpan = (v("gp-voltage")?1:0) + (v("gp-hp")?1:0) + (v("gp-mca")?1:0) + (v("gp-mocp")?1:0);
+
         var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
+
+        // Group row
         h += '<tr class="sp-hdr1">';
         h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all-gp" title="Select all"></th>';
         h += '<th rowspan="2">TAG</th><th rowspan="2">MODEL</th><th rowspan="2">NOM<br>TONS</th>';
@@ -649,13 +760,31 @@ const SchedulePreview = (function () {
         if (v("gp-cool-stages")) h += '<th rowspan="2">COOL<br>STAGES</th>';
         if (elecSpan > 0) h += '<th colspan="' + elecSpan + '" class="sp-col-group">ELECTRICAL</th>';
         h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
-        h += '</tr><tr class="sp-hdr2">';
-        if (v("gp-cfm")) h += '<th>CFM</th><th>ESP</th><th>TESP</th>';
-        if (v("gp-cool-total")) h += '<th>TOTAL</th><th>SENS.</th>';
-        if (v("gp-eff")) h += '<th>EFF.</th><th>EDB</th><th>EWB</th><th>LDB</th><th>LWB</th>';
-        if (v("gp-heat-input")) h += '<th>INPUT</th><th>OUTPUT</th><th>EAT</th><th>LAT</th>';
-        if (v("gp-voltage")) h += '<th>V/PH</th><th>HP</th><th>MCA</th><th>MOCP</th>';
+        h += '</tr>';
+
+        // Detail row
+        h += '<tr class="sp-hdr2">';
+        if (v("gp-cfm")) h += '<th>CFM</th>';
+        if (v("gp-esp")) h += '<th>ESP</th>';
+        if (v("gp-tesp")) h += '<th>TESP</th>';
+        if (v("gp-cool-total")) h += '<th>TOTAL</th>';
+        if (v("gp-cool-sens")) h += '<th>SENS.</th>';
+        if (v("gp-eff")) h += '<th>EFF.</th>';
+        if (v("gp-edb")) h += '<th>EDB</th>';
+        if (v("gp-ewb")) h += '<th>EWB</th>';
+        if (v("gp-ldb")) h += '<th>LDB</th>';
+        if (v("gp-lwb")) h += '<th>LWB</th>';
+        if (v("gp-heat-input")) h += '<th>INPUT</th>';
+        if (v("gp-heat-output")) h += '<th>OUTPUT</th>';
+        if (v("gp-heat-eat")) h += '<th>EAT</th>';
+        if (v("gp-heat-lat")) h += '<th>LAT</th>';
+        if (v("gp-voltage")) h += '<th>V/PH</th>';
+        if (v("gp-hp")) h += '<th>HP</th>';
+        if (v("gp-mca")) h += '<th>MCA</th>';
+        if (v("gp-mocp")) h += '<th>MOCP</th>';
         h += '</tr></thead><tbody>';
+
+        // Data rows
         for (var ii = 0; ii < indices.length; ii++) {
             var ei = indices[ii]; var entry = _entries[ei];
             var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
@@ -665,13 +794,26 @@ const SchedulePreview = (function () {
             h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"RTU-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
             h += '<td class="sp-cell-model">' + esc(sc.model||"") + '</td>';
             h += '<td>' + fmt(sc.nomTons) + '</td>';
-            if (v("gp-cfm")) { h += '<td>' + fmt(sc.cfm) + '</td><td>' + fmt(sc.esp) + '</td><td>' + fmt(sc.tesp) + '</td>'; }
-            if (v("gp-cool-total")) { h += '<td>' + fmt(sc.coolingTotalCapacity) + '</td><td>' + fmt(sc.coolingSensibleCapacity) + '</td>'; }
-            if (v("gp-eff")) { h += '<td class="sp-cell-text">' + esc(sc.efficiency||"") + '</td><td>' + fmt(sc.edb) + '</td><td>' + fmt(sc.ewb) + '</td><td>' + fmt(sc.ldb) + '</td><td>' + fmt(sc.lwb) + '</td>'; }
-            if (v("gp-heat-input")) { h += '<td>' + fmt(sc.heatingInput) + '</td><td>' + fmt(sc.heatingOutput) + '</td><td>' + fmt(sc.heatingEat) + '</td><td>' + fmt(sc.heatingLat) + '</td>'; }
+            if (v("gp-cfm")) h += '<td>' + fmt(sc.cfm) + '</td>';
+            if (v("gp-esp")) h += '<td>' + fmt(sc.esp) + '</td>';
+            if (v("gp-tesp")) h += '<td>' + fmt(sc.tesp) + '</td>';
+            if (v("gp-cool-total")) h += '<td>' + fmt(sc.coolingTotalCapacity) + '</td>';
+            if (v("gp-cool-sens")) h += '<td>' + fmt(sc.coolingSensibleCapacity) + '</td>';
+            if (v("gp-eff")) h += '<td class="sp-cell-text">' + esc(sc.efficiency||"") + '</td>';
+            if (v("gp-edb")) h += '<td>' + fmt(sc.edb) + '</td>';
+            if (v("gp-ewb")) h += '<td>' + fmt(sc.ewb) + '</td>';
+            if (v("gp-ldb")) h += '<td>' + fmt(sc.ldb) + '</td>';
+            if (v("gp-lwb")) h += '<td>' + fmt(sc.lwb) + '</td>';
+            if (v("gp-heat-input")) h += '<td>' + fmt(sc.heatingInput) + '</td>';
+            if (v("gp-heat-output")) h += '<td>' + fmt(sc.heatingOutput) + '</td>';
+            if (v("gp-heat-eat")) h += '<td>' + fmt(sc.heatingEat) + '</td>';
+            if (v("gp-heat-lat")) h += '<td>' + fmt(sc.heatingLat) + '</td>';
             if (v("gp-hgrh")) h += '<td>' + esc(sc.hgrh||"") + '</td>';
             if (v("gp-cool-stages")) h += '<td>' + fmt(sc.coolingStages) + '</td>';
-            if (v("gp-voltage")) { h += '<td>' + esc(sc.voltage||"") + '</td><td>' + fmt(sc.motorHp) + '</td><td>' + fmt(sc.mca) + '</td><td>' + fmt(sc.mocp) + '</td>'; }
+            if (v("gp-voltage")) h += '<td>' + esc(sc.voltage||"") + '</td>';
+            if (v("gp-hp")) h += '<td>' + fmt(sc.motorHp) + '</td>';
+            if (v("gp-mca")) h += '<td>' + fmt(sc.mca) + '</td>';
+            if (v("gp-mocp")) h += '<td>' + fmt(sc.mocp) + '</td>';
             h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories||"") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
             h += '</tr>';
         }
@@ -864,11 +1006,11 @@ const SchedulePreview = (function () {
         if (undoBtn) undoBtn.addEventListener("click", undo);
         if (redoBtn) redoBtn.addEventListener("click", redo);
 
-        // Auto number
+        // Auto number (now in download bar)
         var autoBtn = document.getElementById("sp-btn-autonumber");
         if (autoBtn) autoBtn.addEventListener("click", showAutoNumberDialog);
 
-        // Columns toggle
+        // Columns toggle (now in download bar)
         var colBtn = document.getElementById("sp-btn-columns");
         if (colBtn) colBtn.addEventListener("click", function () {
             _colPanelOpen = !_colPanelOpen;
@@ -902,9 +1044,11 @@ const SchedulePreview = (function () {
                 var allTabs = _overlay.querySelectorAll(".sp-tab");
                 for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove("sp-tab-active");
                 this.classList.add("sp-tab-active");
-                // Show/hide download bar
+                // Show/hide download bar (includes Auto # and Columns)
                 var dlBar = document.getElementById("sp-download-bar");
                 if (dlBar) dlBar.classList.toggle("hidden", _activeTab === "files");
+                // Close column panel when switching tabs
+                _colPanelOpen = false;
                 rebuildContent();
             });
         }
@@ -1082,16 +1226,13 @@ const SchedulePreview = (function () {
         if (totalCols === 0) return;
 
         // Capture current rendered column widths before switching layout
-        // Use the first header row that has cells spanning all columns
         var capturedWidths = [];
         for (var cw = 0; cw < totalCols; cw++) capturedWidths.push(0);
-        // Find cells in last header row and map to column positions using cellMap
         for (var cm2 = 0; cm2 < cellMap.length; cm2++) {
             var item = cellMap[cm2];
             if (item.colSpan === 1) {
                 capturedWidths[item.startCol] = item.cell.offsetWidth || 60;
             } else {
-                // Distribute group width evenly
                 var grpW = item.cell.offsetWidth || (item.colSpan * 60);
                 var perCol = Math.round(grpW / item.colSpan);
                 for (var cw2 = 0; cw2 < item.colSpan; cw2++) {
@@ -1111,7 +1252,7 @@ const SchedulePreview = (function () {
         }
         table.insertBefore(cg, table.firstChild);
         table.style.tableLayout = "fixed";
-        table.style.width = "auto"; // Let table grow/shrink with columns
+        table.style.width = "auto";
 
         // Add resize handles to single-column header cells only
         for (var mi = 0; mi < cellMap.length; mi++) {
@@ -1330,35 +1471,41 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Auto Number Dialog
+    // Auto Number Dialog — only for the ACTIVE tab
     // -----------------------------------------------------------------------
     function showAutoNumberDialog() {
         collectEditsFromDom();
         var groups = groupEntriesByProduct();
 
+        // Only build for the current active tab
+        var pk = _activeTab;
+        if (!pk || pk === "files" || !groups[pk] || groups[pk].length === 0) return;
+
         var ov = document.createElement("div"); ov.className = "confirm-overlay sp-dialog-overlay";
         var d = document.createElement("div"); d.className = "confirm-dialog";
-        var hd = document.createElement("div"); hd.className = "confirm-dialog-header"; var h3 = document.createElement("h3"); h3.textContent = "Auto-Number Tags"; hd.appendChild(h3);
+        var hd = document.createElement("div"); hd.className = "confirm-dialog-header"; var h3 = document.createElement("h3"); h3.textContent = "Auto-Number Tags — " + TAB_LABELS[pk]; hd.appendChild(h3);
         var bd = document.createElement("div"); bd.className = "confirm-dialog-body";
 
         var fields = {};
 
-        function addSection(label, productKey, iduDefault, oduDefault) {
+        function addSection(label, productKey, iduDefault, oduDefault, showIndoor) {
             if (!groups[productKey] || groups[productKey].length === 0) return;
-            var title = document.createElement("div"); title.className = "sp-autonumber-section-title"; title.textContent = label; bd.appendChild(title);
-            var iduLbl = document.createElement("label"); iduLbl.className = "input-dialog-label"; iduLbl.textContent = "Indoor Prefix";
-            var iduInp = document.createElement("input"); iduInp.type = "text"; iduInp.className = "input-dialog-input"; iduInp.value = iduDefault;
-            var oduLbl = document.createElement("label"); oduLbl.className = "input-dialog-label"; oduLbl.textContent = "Outdoor/Unit Prefix";
+            if (showIndoor) {
+                var iduLbl = document.createElement("label"); iduLbl.className = "input-dialog-label"; iduLbl.textContent = "Indoor Prefix";
+                var iduInp = document.createElement("input"); iduInp.type = "text"; iduInp.className = "input-dialog-input"; iduInp.value = iduDefault;
+                bd.appendChild(iduLbl); bd.appendChild(iduInp);
+            }
+            var oduLbl = document.createElement("label"); oduLbl.className = "input-dialog-label"; oduLbl.textContent = showIndoor ? "Outdoor Prefix" : "Unit Prefix";
             var oduInp = document.createElement("input"); oduInp.type = "text"; oduInp.className = "input-dialog-input"; oduInp.value = oduDefault;
             var startLbl = document.createElement("label"); startLbl.className = "input-dialog-label"; startLbl.textContent = "Start Number";
             var startInp = document.createElement("input"); startInp.type = "number"; startInp.className = "input-dialog-input"; startInp.value = "1"; startInp.min = "0";
-            bd.appendChild(iduLbl); bd.appendChild(iduInp); bd.appendChild(oduLbl); bd.appendChild(oduInp); bd.appendChild(startLbl); bd.appendChild(startInp);
-            fields[productKey] = { idu: iduInp, odu: oduInp, start: startInp };
+            bd.appendChild(oduLbl); bd.appendChild(oduInp); bd.appendChild(startLbl); bd.appendChild(startInp);
+            fields[productKey] = { idu: showIndoor ? iduInp : null, odu: oduInp, start: startInp };
         }
 
-        addSection("Mini Splits", "mini-splits", "IDU-", "ODU-");
-        addSection("Multi Position Splits", "multi-position", "AHU-", "CU-");
-        addSection("Light Commercial RTUs", "gas-packs", "", "RTU-");
+        if (pk === "mini-splits") addSection("Mini Splits", pk, "IDU-", "ODU-", true);
+        else if (pk === "multi-position") addSection("Multi Position Splits", pk, "AHU-", "CU-", true);
+        else if (pk === "gas-packs") addSection("Light Commercial RTUs", pk, "", "RTU-", false);
 
         var ft = document.createElement("div"); ft.className = "confirm-dialog-footer";
         var cb = document.createElement("button"); cb.type = "button"; cb.className = "confirm-btn confirm-btn-cancel"; cb.textContent = "Cancel";
@@ -1366,13 +1513,13 @@ const SchedulePreview = (function () {
         var cfb = document.createElement("button"); cfb.type = "button"; cfb.className = "confirm-btn confirm-btn-primary"; cfb.textContent = "Apply";
         cfb.addEventListener("click", function () {
             document.body.removeChild(ov);
-            for (var pk in fields) {
-                var f = fields[pk];
+            for (var fpk in fields) {
+                var f = fields[fpk];
                 var start = parseInt(f.start.value, 10) || 1;
-                if (pk === "gas-packs") {
-                    applyAutoNumberGp(groups[pk], f.odu.value, start);
+                if (fpk === "gas-packs") {
+                    applyAutoNumberGp(groups[fpk], f.odu.value, start);
                 } else {
-                    applyAutoNumber(groups[pk], f.idu.value, f.odu.value, start);
+                    applyAutoNumber(groups[fpk], f.idu ? f.idu.value : "", f.odu.value, start);
                 }
             }
             pushHistory(); saveState(); rebuildContent();

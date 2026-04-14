@@ -102,25 +102,26 @@
     padding: var(--space-sm) var(--space-lg);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     color: var(--color-text-inverse);
+    background-color: #17528F;
 }
 
 .ms-section-indoor,
 .mps-section-indoor {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+    background-color: #17528F;
 }
 
 .ms-section-outdoor,
 .mps-section-outdoor {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+    background-color: #17528F;
 }
 
 .mps-section-notes {
-    background: linear-gradient(160deg, #002B5C 0%, #17528F 60%, #1A6AB8 100%);
+    background-color: #17528F;
 }
 
 /* Action column in section header row */
 .header-row-section .col-action {
-    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
+    background-color: #17528F;
 }
 
 
@@ -235,7 +236,7 @@
    Table Header  (thead)
    -------------------------------------------------------------------------- */
 .schedule-table thead th {
-    background-color: var(--color-header-bg);
+    background-color: #17528F;
     color: var(--color-header-text);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
@@ -243,7 +244,7 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: var(--space-sm) var(--space-xs);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -255,21 +256,21 @@
 .header-row-1 th {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
-    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
+    background-color: #17528F;
     padding: var(--space-sm) var(--space-sm);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
 }
 
 /* Row 1 action column: blank dark cell */
 .header-row-1 .col-action {
-    background: linear-gradient(180deg, #1E72B8 0%, #17528F 100%);
+    background-color: #17528F;
 }
 
 /* Row 2: detail sub-headers */
 .header-row-2 th {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    background: linear-gradient(180deg, #2A7BC5 0%, var(--color-header-bg-sub) 100%);
+    background-color: #17528F;
     padding: var(--space-xs) var(--space-xs);
 }
 
