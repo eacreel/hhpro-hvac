@@ -103,6 +103,7 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     color: var(--color-text-inverse);
     background-color: #17528F;
+    border: 1px solid #3A7AB8;
 }
 
 .ms-section-indoor,
@@ -244,7 +245,7 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: var(--space-sm) var(--space-xs);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid #3A7AB8;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -257,6 +258,7 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     background-color: #17528F;
+    border: 1px solid #3A7AB8;
     padding: var(--space-sm) var(--space-sm);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
 }
@@ -271,6 +273,7 @@
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     background-color: #17528F;
+    border: 1px solid #3A7AB8;
     padding: var(--space-xs) var(--space-xs);
 }
 
