@@ -1,0 +1,1314 @@
+{
+  "productType": "Vertical Wall Mount Air Conditioner",
+  "manufacturer": "Marvair",
+  "productKey": "marvair-vertical",
+  "preserveNoteNumbering": true,
+  "scheduleNotesDefaultChecked": true,
+  "systems": [
+    {
+      "id": "marvair_MGH3090AA_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AA",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/1",
+        "mca": 54.5,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/1",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AA_5kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AA",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 5,
+        "voltage": "208/60/1",
+        "mca": 57.6,
+        "mocp": 70,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/1",
+        "electricHeat": "5"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AA_10kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AA",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 10,
+        "voltage": "208/60/1",
+        "mca": 83.7,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/1",
+        "electricHeat": "10"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AA_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AA",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/1",
+        "mca": 109.7,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/1",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AC_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AC",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/3",
+        "mca": 38.5,
+        "mocp": 40,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AC_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AC",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "208/60/3",
+        "mca": 50.6,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AC_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AC",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/3",
+        "mca": 68.7,
+        "mocp": 70,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AC_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AC",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "208/60/3",
+        "mca": 77.7,
+        "mocp": 80,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "208/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AD_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AD",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "460/60/3",
+        "mca": 21.4,
+        "mocp": 25,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "460/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AD_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AD",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "460/60/3",
+        "mca": 26.4,
+        "mocp": 30,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "460/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AD_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AD",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "460/60/3",
+        "mca": 35.4,
+        "mocp": 40,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "460/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3090AD_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3090AD",
+        "nomTons": "7.5",
+        "cfm": 3500,
+        "totalCapacity": 89000,
+        "sensibleCapacity": 69092,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "460/60/3",
+        "mca": 39.9,
+        "mocp": 40,
+        "refrigerant": "R-454B",
+        "eer": 11.2,
+        "ieer": 11.8,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "7.5",
+        "electrical": "460/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AA_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AA",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/1",
+        "mca": 82.3,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/1",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AA_5kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AA",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 5,
+        "voltage": "208/60/1",
+        "mca": 82.3,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/1",
+        "electricHeat": "5"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AA_10kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AA",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 10,
+        "voltage": "208/60/1",
+        "mca": 102.9,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/1",
+        "electricHeat": "10"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AA_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AA",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/1",
+        "mca": 128.9,
+        "mocp": 150,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/1",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AC_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AC",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/3",
+        "mca": 57.5,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AC_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AC",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "208/60/3",
+        "mca": 67.3,
+        "mocp": 70,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AC_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AC",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/3",
+        "mca": 85.4,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AC_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AC",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "208/60/3",
+        "mca": 94.4,
+        "mocp": 100,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "208/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AD_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AD",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "460/60/3",
+        "mca": 28.5,
+        "mocp": 30,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "460/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AD_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AD",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "460/60/3",
+        "mca": 33.4,
+        "mocp": 35,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "460/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AD_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AD",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "460/60/3",
+        "mca": 42.4,
+        "mocp": 45,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "460/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3120AD_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3120AD",
+        "nomTons": "10",
+        "cfm": 4000,
+        "totalCapacity": 118000,
+        "sensibleCapacity": 91706,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "460/60/3",
+        "mca": 46.9,
+        "mocp": 50,
+        "refrigerant": "R-454B",
+        "eer": 11.6,
+        "ieer": 11.5,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "10",
+        "electrical": "460/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AC_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AC",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/3",
+        "mca": 81,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "208/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AC_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AC",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "208/60/3",
+        "mca": 81,
+        "mocp": 90,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "208/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AC_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AC",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/3",
+        "mca": 97.1,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "208/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AC_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AC",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "208/60/3",
+        "mca": 106.1,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "208/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AD_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AD",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "460/60/3",
+        "mca": 35,
+        "mocp": 35,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "460/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AD_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AD",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "460/60/3",
+        "mca": 36.6,
+        "mocp": 40,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "460/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AD_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AD",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "460/60/3",
+        "mca": 45.6,
+        "mocp": 50,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "460/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3150AD_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3150AD",
+        "nomTons": "12.5",
+        "cfm": 4500,
+        "totalCapacity": 146000,
+        "sensibleCapacity": 106434,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "460/60/3",
+        "mca": 50.1,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 10.2,
+        "ieer": 10.9,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "12.5",
+        "electrical": "460/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AC_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AC",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "208/60/3",
+        "mca": 100.4,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "208/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AC_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AC",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "208/60/3",
+        "mca": 100.4,
+        "mocp": 110,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "208/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AC_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AC",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "208/60/3",
+        "mca": 112,
+        "mocp": 125,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "208/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AC_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AC",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "208/60/3",
+        "mca": 121,
+        "mocp": 125,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "208/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AD_0kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AD",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 0,
+        "voltage": "460/60/3",
+        "mca": 47.7,
+        "mocp": 50,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "460/60/3",
+        "electricHeat": "0"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AD_9kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AD",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 9,
+        "voltage": "460/60/3",
+        "mca": 47.7,
+        "mocp": 50,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "460/60/3",
+        "electricHeat": "9"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AD_15kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AD",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 15,
+        "voltage": "460/60/3",
+        "mca": 54.6,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "460/60/3",
+        "electricHeat": "15"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    },
+    {
+      "id": "marvair_MGH3180AD_18kw",
+      "schedule": {
+        "manufacturer": "Marvair",
+        "model": "MGH3180AD",
+        "nomTons": "15",
+        "cfm": 6000,
+        "totalCapacity": 182000,
+        "sensibleCapacity": 136830,
+        "outsideAir": 95,
+        "enteringAir": "80/67",
+        "electricHeat": 18,
+        "voltage": "460/60/3",
+        "mca": 59.1,
+        "mocp": 60,
+        "refrigerant": "R-454B",
+        "eer": 9.8,
+        "ieer": 11.1,
+        "configuration": "",
+        "ventilation": ""
+      },
+      "filters": {
+        "size": "15",
+        "electrical": "460/60/3",
+        "electricHeat": "18"
+      },
+      "docs": {
+        "dataSheet": "ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATA SHEET.pdf",
+        "iom": "ASSETS/MARVAIR/INSTALLATION MANUALS/MARVAIR MGH IOM.pdf"
+      }
+    }
+  ],
+  "filterOptions": {
+    "size": [
+      "7.5",
+      "10",
+      "12.5",
+      "15"
+    ],
+    "electrical": [
+      "208/60/1",
+      "208/60/3",
+      "460/60/3"
+    ],
+    "electricHeat": [
+      "0",
+      "5",
+      "9",
+      "10",
+      "15",
+      "18"
+    ]
+  },
+  "scheduleNotes": [
+    "COMMON TO ALL UNITS:",
+    "1- Baked on finish over galvanneal steel outer panel",
+    "2- Copper tube, aluminum fin evaporator & condenser coil",
+    "3- High & low pressure switch",
+    "4- Liquid line temperature monitoring & control",
+    "5- Adjustable short cycle protection",
+    "6- Phase monitor (3-phase units only)",
+    "7- High compressor temperature switch",
+    "8- Internal motor overload protection",
+    "9- Dual high-efficiency scroll compressor",
+    "10- Thermal expansion valve",
+    "11- Low ambient control",
+    "12- Factory installed disconnect",
+    "13- 2\" MERV-8 filter",
+    "14- Electric heat, if scheduled, shall be single point power",
+    "OPTIONS FOR OUTSIDE AIR VENTILATION:",
+    "1- Factory installed economizer",
+    "2- 2-Position motorized fresh air damper w/ pressure relief ventilation",
+    "3- 2-Position motorized fresh air damper w/ pressure relief ventilation & independent control",
+    "4- No free cooling, 100% damper opening, emergency ventilation only w/ pressure relief & independent control",
+    "CONFIGURATION:",
+    "1- Top supply",
+    "2- Center Supply/Top Return",
+    "OPTIONAL ACCESSORIES:",
+    "1- Coastal environmental package:",
+    "    • Corrosion resistant fasteners",
+    "    • Sealed or partially sealed condenser fan motor",
+    "    • Insitu coating applied to all exposed internal copper and metal in the condenser section",
+    "    • Protective coating on condenser coil",
+    "2- All coat package:",
+    "    • Corrosion resistant fasteners",
+    "    • Sealed or partially sealed condenser fan motor",
+    "    • Insitu coating applied to all exposed internal copper and metal in the condenser section",
+    "    • Protective coating on condenser coil",
+    "    • Impregnated polyurethane on evaporator coil and Insitu coating on all exterior and interior components and sheet metal",
+    "3- Stainless steel exterior (replaces all standard exterior painted surfaces with stainless steel)",
+    "4- Stainless steel unit (replaces all interior and exterior steel sheet metal parts with stainless steel)",
+    "5- Dirty filter indicator",
+    "6- Fresh air damper (field installed on either the left or right hand side of the unit)",
+    "7- Filter access from the return air opening",
+    "8- Freeze sensor",
+    "9- Hot gas bypass"
+  ]
+}

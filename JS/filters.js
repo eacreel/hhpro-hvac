@@ -2,7 +2,8 @@
    filters.js — Populate dropdowns, cascading dependent filters,
    dynamic indoor visibility, emit changes via EventBus.
    Supports: mini-splits (complex cascading), multi-position (flat),
-             and gas-packs (flat, all string comparisons).
+             gas-packs (flat, all string comparisons),
+             marvair-vertical (flat, all string comparisons).
    ========================================================================== */
 
 const Filters = (function () {
@@ -61,6 +62,18 @@ const Filters = (function () {
         hgrh:          null,
         clearBtn:      null,
         resultCount:   null,
+    };
+
+
+    // -----------------------------------------------------------------------
+    // DOM References — Marvair Vertical
+    // -----------------------------------------------------------------------
+    const mv = {
+        size:         null,
+        electrical:   null,
+        electricHeat: null,
+        clearBtn:     null,
+        resultCount:  null,
     };
 
 
@@ -137,6 +150,19 @@ const Filters = (function () {
         if (gp.hgrh) gp.hgrh.addEventListener("change", handleFilterChange);
         if (gp.clearBtn) gp.clearBtn.addEventListener("click", clearAll);
 
+        // ---- Marvair Vertical DOM ----
+        mv.size         = document.getElementById("mv-filter-size");
+        mv.electrical   = document.getElementById("mv-filter-electrical");
+        mv.electricHeat = document.getElementById("mv-filter-electric-heat");
+        mv.clearBtn     = document.getElementById("mv-btn-clear-filters");
+        mv.resultCount  = document.getElementById("mv-filter-result-count");
+
+        // Marvair events
+        if (mv.size) mv.size.addEventListener("change", handleFilterChange);
+        if (mv.electrical) mv.electrical.addEventListener("change", handleFilterChange);
+        if (mv.electricHeat) mv.electricHeat.addEventListener("change", handleFilterChange);
+        if (mv.clearBtn) mv.clearBtn.addEventListener("click", clearAll);
+
         // Initial population (mini-splits is active at boot)
         populateAllDropdowns();
         updateIndoorVisibility();
@@ -155,6 +181,8 @@ const Filters = (function () {
             populateMpsDropdowns();
         } else if (productKey === "gas-packs") {
             populateGpDropdowns();
+        } else if (productKey === "marvair-vertical") {
+            populateMvDropdowns();
         } else {
             populateAllDropdowns();
             updateIndoorVisibility();
@@ -222,6 +250,19 @@ const Filters = (function () {
         populateSelect(gp.coolingStages, opts.coolingStages || [], formatIdentity);
         populateSelect(gp.gasHeat, opts.gasHeat || [], formatIdentity);
         populateSelect(gp.hgrh, opts.hgrh || [], formatIdentity);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Populate Dropdowns — Marvair Vertical
+    // -----------------------------------------------------------------------
+    function populateMvDropdowns() {
+        var opts = DataLoader.getFilterOptions();
+        if (!opts) return;
+
+        populateSelect(mv.size, opts.size || [], formatTon);
+        populateSelect(mv.electrical, opts.electrical || [], formatIdentity);
+        populateSelect(mv.electricHeat, opts.electricHeat || [], formatKw);
     }
 
 
@@ -479,6 +520,61 @@ const Filters = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Cascading Filter Update — Marvair Vertical
+    // All values are strings — no parseFloat (protects "208/60/1").
+    // -----------------------------------------------------------------------
+    function updateMvAvailableOptions() {
+        if (_activeProduct !== "marvair-vertical") return;
+
+        var allSystems = DataLoader.getSystems();
+        var state = getStateMv();
+
+        var fields = [
+            { key: "size",         el: mv.size,         extract: function (s) { return s.filters.size; },         fmt: formatTon },
+            { key: "electrical",   el: mv.electrical,   extract: function (s) { return s.filters.electrical; },   fmt: formatIdentity },
+            { key: "electricHeat", el: mv.electricHeat, extract: function (s) { return s.filters.electricHeat; }, fmt: formatKw },
+        ];
+
+        for (var f = 0; f < fields.length; f++) {
+            var field = fields[f];
+            var validValues = getMvValidValues(allSystems, state, field.key, field.extract);
+            repopulateSelect(field.el, validValues, field.fmt, state[field.key]);
+            state = getStateMv();
+        }
+    }
+
+    function getMvValidValues(allSystems, state, excludeKey, extractor) {
+        var modified = {
+            size:         state.size,
+            electrical:   state.electrical,
+            electricHeat: state.electricHeat,
+        };
+        modified[excludeKey] = "";
+
+        var compatible = DataLoader.filterSystems(modified);
+
+        var valueSet = {};
+        for (var i = 0; i < compatible.length; i++) {
+            var val = extractor(compatible[i]);
+            if (val !== null && val !== undefined) {
+                valueSet[val] = true;
+            }
+        }
+
+        // Keep values as strings — do NOT parseFloat (protects "208/60/1")
+        var values = Object.keys(valueSet);
+
+        values.sort(function (a, b) {
+            var na = parseFloat(a), nb = parseFloat(b);
+            if (!isNaN(na) && !isNaN(nb)) return na - nb;
+            return a.localeCompare(b);
+        });
+
+        return values;
+    }
+
+
+    // -----------------------------------------------------------------------
     // getValidValues — Mini Splits cascading helper
     // -----------------------------------------------------------------------
     function getValidValues(allSystems, state, excludeKey, extractor) {
@@ -571,6 +667,11 @@ const Filters = (function () {
     function formatIdentity(val) { return String(val); }
     function formatTon(val) { return val + " Ton"; }
     function formatString(val) { return String(val); }
+    function formatKw(val) {
+        var s = String(val);
+        if (s === "0") return "None (0 kW)";
+        return s + " kW";
+    }
 
 
     // -----------------------------------------------------------------------
@@ -665,6 +766,8 @@ const Filters = (function () {
             updateMpsAvailableOptions();
         } else if (_activeProduct === "gas-packs") {
             updateGpAvailableOptions();
+        } else if (_activeProduct === "marvair-vertical") {
+            updateMvAvailableOptions();
         }
 
         updateAllHighlights();
@@ -717,6 +820,10 @@ const Filters = (function () {
             updateSelectHighlight(gp.coolingStages);
             updateSelectHighlight(gp.gasHeat);
             updateSelectHighlight(gp.hgrh);
+        } else if (_activeProduct === "marvair-vertical") {
+            updateSelectHighlight(mv.size);
+            updateSelectHighlight(mv.electrical);
+            updateSelectHighlight(mv.electricHeat);
         }
     }
 
@@ -739,6 +846,9 @@ const Filters = (function () {
         }
         if (_activeProduct === "gas-packs") {
             return getStateGp();
+        }
+        if (_activeProduct === "marvair-vertical") {
+            return getStateMv();
         }
         return getStateMiniSplits();
     }
@@ -785,6 +895,14 @@ const Filters = (function () {
         };
     }
 
+    function getStateMv() {
+        return {
+            size:         mv.size ? mv.size.value : "",
+            electrical:   mv.electrical ? mv.electrical.value : "",
+            electricHeat: mv.electricHeat ? mv.electricHeat.value : "",
+        };
+    }
+
     function hasActiveFilters() {
         if (_activeProduct === "multi-position") {
             var s = getStateMps();
@@ -794,6 +912,11 @@ const Filters = (function () {
         if (_activeProduct === "gas-packs") {
             var g = getStateGp();
             return !!(g.size || g.electrical || g.efficiency || g.coolingStages || g.gasHeat || g.hgrh);
+        }
+
+        if (_activeProduct === "marvair-vertical") {
+            var m = getStateMv();
+            return !!(m.size || m.electrical || m.electricHeat);
         }
 
         var state = getStateMiniSplits();
@@ -813,6 +936,8 @@ const Filters = (function () {
             clearMps();
         } else if (_activeProduct === "gas-packs") {
             clearGp();
+        } else if (_activeProduct === "marvair-vertical") {
+            clearMv();
         } else {
             clearMiniSplits();
         }
@@ -862,6 +987,16 @@ const Filters = (function () {
         emitChange();
     }
 
+    function clearMv() {
+        if (mv.size) mv.size.value = "";
+        if (mv.electrical) mv.electrical.value = "";
+        if (mv.electricHeat) mv.electricHeat.value = "";
+
+        populateMvDropdowns();
+        updateAllHighlights();
+        emitChange();
+    }
+
 
     // -----------------------------------------------------------------------
     // Update Result Count Display
@@ -870,6 +1005,7 @@ const Filters = (function () {
         var el;
         if (_activeProduct === "multi-position") el = mps.resultCount;
         else if (_activeProduct === "gas-packs") el = gp.resultCount;
+        else if (_activeProduct === "marvair-vertical") el = mv.resultCount;
         else el = ms.resultCount;
         if (!el) return;
 

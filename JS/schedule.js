@@ -1,7 +1,7 @@
 /* ==========================================================================
    schedule.js — Render filtered systems into schedule tables.
-   Supports: mini-splits, multi-position, and gas-packs product types.
-   All products use a single combined table (no indoor/outdoor split).
+   Supports: mini-splits, multi-position, gas-packs, and marvair-vertical
+   product types. All non-split products use a single combined table.
    Emits system:add via EventBus when user clicks "+".
    ========================================================================== */
 
@@ -36,6 +36,14 @@ const Schedule = (function () {
     let _gpSection = null;
     let _gpEmptyState = null;
 
+    // -----------------------------------------------------------------------
+    // DOM References — Marvair Vertical
+    // -----------------------------------------------------------------------
+    let _mvTbody = null;
+    let _mvWrapper = null;
+    let _mvSection = null;
+    let _mvEmptyState = null;
+
     // Track current hover for cross-table sync
     let _currentHoverSystemId = null;
 
@@ -63,8 +71,14 @@ const Schedule = (function () {
         _gpSection    = document.getElementById("gp-schedule-section");
         _gpEmptyState = document.getElementById("gp-schedule-empty");
 
+        // Marvair Vertical DOM
+        _mvTbody      = document.getElementById("mv-schedule-tbody");
+        _mvWrapper    = document.getElementById("mv-schedule-wrapper");
+        _mvSection    = document.getElementById("mv-schedule-section");
+        _mvEmptyState = document.getElementById("mv-schedule-empty");
+
         // Bind hover events
-        var allTbodies = [_msTbody, _mpsTbody, _gpTbody];
+        var allTbodies = [_msTbody, _mpsTbody, _gpTbody, _mvTbody];
         for (var t = 0; t < allTbodies.length; t++) {
             if (allTbodies[t]) {
                 allTbodies[t].addEventListener("mouseover", handleRowHover);
@@ -92,6 +106,8 @@ const Schedule = (function () {
             renderMps(systems, projectIds);
         } else if (_activeProduct === "gas-packs") {
             renderGasPacks(systems, projectIds);
+        } else if (_activeProduct === "marvair-vertical") {
+            renderMarvair(systems, projectIds);
         } else {
             renderMiniSplits(systems, projectIds);
         }
@@ -185,6 +201,35 @@ const Schedule = (function () {
         }
 
         _gpTbody.appendChild(fragment);
+    }
+
+
+    // -----------------------------------------------------------------------
+    // Render — Marvair Vertical (single table, no indoor/outdoor split)
+    // -----------------------------------------------------------------------
+    function renderMarvair(systems, projectIds) {
+        if (!_mvTbody) return;
+
+        _mvTbody.innerHTML = "";
+
+        if (!systems || systems.length === 0) {
+            if (_mvWrapper) _mvWrapper.classList.add("hidden");
+            if (_mvEmptyState) _mvEmptyState.classList.remove("hidden");
+            return;
+        }
+
+        if (_mvWrapper) _mvWrapper.classList.remove("hidden");
+        if (_mvEmptyState) _mvEmptyState.classList.add("hidden");
+
+        var fragment = document.createDocumentFragment();
+
+        for (var s = 0; s < systems.length; s++) {
+            var sys = systems[s];
+            var isInProject = projectIds && projectIds.has(sys.id);
+            fragment.appendChild(buildMvRow(sys, isInProject));
+        }
+
+        _mvTbody.appendChild(fragment);
     }
 
 
@@ -451,6 +496,63 @@ const Schedule = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Build Row — Marvair Vertical (single row per unit, flat schedule object)
+    // -----------------------------------------------------------------------
+    function buildMvRow(sys, isInProject) {
+        var tr = document.createElement("tr");
+        tr.className = "schedule-row system-first-row system-last-row";
+        tr.dataset.systemId = sys.id;
+
+        var sc = sys.schedule;
+
+        // Action column
+        var actionTd = createCell("", "cell-action");
+        var pdfBtn = document.createElement("button");
+        pdfBtn.type = "button";
+        pdfBtn.className = "btn-view-pdf";
+        pdfBtn.dataset.systemId = sys.id;
+        pdfBtn.textContent = "PDF";
+        pdfBtn.title = "View submittal PDF";
+        pdfBtn.addEventListener("click", handleViewPdf);
+        actionTd.appendChild(pdfBtn);
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn-add-system";
+        btn.dataset.systemId = sys.id;
+        btn.title = "Add to project";
+        if (isInProject) {
+            btn.classList.add("added");
+            btn.innerHTML = checkIconSvg();
+            btn.title = "In project — click to add again";
+        } else {
+            btn.innerHTML = plusIconSvg();
+        }
+        btn.addEventListener("click", handleAddClick);
+        actionTd.appendChild(btn);
+        tr.appendChild(actionTd);
+
+        // Schedule data columns (matches table header order)
+        tr.appendChild(createCell(sc.model || "", "cell-model"));
+        tr.appendChild(createCell(sc.nomTons || "", "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.cfm), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.totalCapacity), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.sensibleCapacity), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.outsideAir), "cell-numeric"));
+        tr.appendChild(createCell(sc.enteringAir || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.electricHeat), "cell-numeric"));
+        tr.appendChild(createCell(sc.voltage || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.mca), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.mocp), "cell-numeric"));
+        tr.appendChild(createCell(sc.refrigerant || "", "cell-text"));
+        tr.appendChild(createCell(formatNum(sc.eer), "cell-numeric"));
+        tr.appendChild(createCell(formatNum(sc.ieer), "cell-numeric"));
+
+        return tr;
+    }
+
+
+    // -----------------------------------------------------------------------
     // Cell Helpers
     // -----------------------------------------------------------------------
     function createCell(content, className) {
@@ -508,7 +610,7 @@ const Schedule = (function () {
         var related = e.relatedTarget;
 
         if (related) {
-            var tbodies = [_msTbody, _mpsTbody, _gpTbody];
+            var tbodies = [_msTbody, _mpsTbody, _gpTbody, _mvTbody];
             for (var i = 0; i < tbodies.length; i++) {
                 if (tbodies[i] && tbodies[i].contains(related)) return;
             }
@@ -525,6 +627,8 @@ const Schedule = (function () {
             tbodies = [_mpsTbody];
         } else if (_activeProduct === "gas-packs") {
             tbodies = [_gpTbody];
+        } else if (_activeProduct === "marvair-vertical") {
+            tbodies = [_mvTbody];
         } else {
             tbodies = [_msTbody];
         }
@@ -574,6 +678,8 @@ const Schedule = (function () {
 
         if (sys.productKey === "gas-packs") {
             addPdf(d.submittal);
+        } else if (sys.productKey === "marvair-vertical") {
+            addPdf(d.dataSheet);
         } else if (sys.productKey === "multi-position") {
             addPdf(d.submittalSystem);
             addPdf(d.submittalOutdoor);
@@ -627,6 +733,7 @@ const Schedule = (function () {
         updateAddButtonsForTbody(_msTbody, projectIds);
         updateAddButtonsForTbody(_mpsTbody, projectIds);
         updateAddButtonsForTbody(_gpTbody, projectIds);
+        updateAddButtonsForTbody(_mvTbody, projectIds);
     }
 
     function updateAddButtonsForTbody(tbody, projectIds) {
@@ -659,6 +766,7 @@ const Schedule = (function () {
         var target;
         if (_activeProduct === "multi-position") target = _mpsSection;
         else if (_activeProduct === "gas-packs") target = _gpSection;
+        else if (_activeProduct === "marvair-vertical") target = _mvSection;
         else target = _section;
         if (target) {
             target.scrollIntoView({ behavior: "smooth", block: "start" });

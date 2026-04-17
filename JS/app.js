@@ -1,7 +1,8 @@
 /* ==========================================================================
    app.js — Application entry point. Initializes all modules and wires
    the data flow via EventBus: DataLoader → Filters → Schedule → Project → Export.
-   Handles product tab switching between Mini Splits, Multi Position, and Gas Packs.
+   Handles product tab switching between Mini Splits, Multi Position, Gas Packs,
+   and Marvair Vertical Wall Mount.
    Manages loading states for data load and product switching.
    ========================================================================== */
 
@@ -48,6 +49,7 @@
         // Pre-load other products (non-blocking — failures are OK)
         await DataLoader.loadProduct("multi-position");
         await DataLoader.loadProduct("gas-packs");
+        await DataLoader.loadProduct("marvair-vertical");
 
         // ---- 2. Subscribe to EventBus events ----
         wireEventBus();

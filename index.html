@@ -79,6 +79,7 @@
         <button class="product-tab active" data-product="mini-splits">Mini Splits</button>
         <button class="product-tab" data-product="multi-position">Multi Position Splits</button>
         <button class="product-tab" data-product="gas-packs">Light Commercial RTUs - Gas Heat</button>
+        <button class="product-tab" data-product="marvair-vertical">Marvair Vertical Wall Mount</button>
     </nav>
 
     <!-- MAIN CONTENT -->
@@ -355,6 +356,60 @@
                 </section>
 
             </div><!-- /product-gas-packs -->
+
+
+            <!-- ============================================================
+                 MARVAIR VERTICAL WALL MOUNT PRODUCT CONTENT
+                 Single packaged unit — no indoor/outdoor split.
+                 ============================================================ -->
+            <div id="product-marvair-vertical" class="product-content hidden">
+
+                <section id="mv-filter-bar" class="filter-bar-section">
+                    <div id="mv-filter-bar-header" class="filter-bar-header-common">
+                        <h2 class="filter-title-common">System Filters</h2>
+                        <button id="mv-btn-clear-filters" type="button" class="btn-clear-filters-common">Clear All</button>
+                    </div>
+                    <div id="mv-filter-controls" class="filter-controls-common">
+                        <div class="filter-group" id="mv-fg-size"><label class="filter-label" for="mv-filter-size">Nominal Size (Tons)</label><select id="mv-filter-size" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mv-fg-electrical"><label class="filter-label" for="mv-filter-electrical">Electrical</label><select id="mv-filter-electrical" class="filter-select"><option value="">All</option></select></div>
+                        <div class="filter-group" id="mv-fg-electric-heat"><label class="filter-label" for="mv-filter-electric-heat">Electric Heat (kW)</label><select id="mv-filter-electric-heat" class="filter-select"><option value="">All</option></select></div>
+                    </div>
+                    <div id="mv-filter-status" class="filter-status-common"><span id="mv-filter-result-count">0 systems found</span></div>
+                </section>
+
+                <section id="mv-schedule-section" class="schedule-section-common">
+                    <div id="mv-schedule-toolbar" class="schedule-toolbar-common">
+                        <h2 class="schedule-title-text">Vertical Wall Mounted Air Conditioner Schedule</h2>
+                        <span class="schedule-subtitle-text">MARVAIR</span>
+                    </div>
+                    <div id="mv-schedule-wrapper" class="schedule-table-wrapper">
+                        <table id="mv-schedule-table" class="schedule-table mv-table">
+                            <thead>
+                                <tr class="schedule-header-row header-row-1">
+                                    <th class="col-action"></th>
+                                    <th class="mv-col-model">MODEL<br>(MARVAIR)</th>
+                                    <th class="mv-col-tons">NOMINAL<br>SIZE (TONS)</th>
+                                    <th class="mv-col-cfm">CFM</th>
+                                    <th class="mv-col-total">TOTAL<br>CAPACITY</th>
+                                    <th class="mv-col-sensible">SENSIBLE<br>CAPACITY</th>
+                                    <th class="mv-col-oa">OUTSIDE<br>AIR (°F)</th>
+                                    <th class="mv-col-eat">ENTERING AIR<br>DB/WB (°F)</th>
+                                    <th class="mv-col-heat">ELECTRIC<br>HEAT (KW)</th>
+                                    <th class="mv-col-voltage">VOLTS-HZ-PH</th>
+                                    <th class="mv-col-mca">MCA</th>
+                                    <th class="mv-col-mocp">MOCP</th>
+                                    <th class="mv-col-refrig">REFRIGERANT</th>
+                                    <th class="mv-col-eer">EER</th>
+                                    <th class="mv-col-ieer">IEER</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mv-schedule-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="mv-schedule-empty" class="hidden"><p class="empty-message-text">Select filters above to view available systems.</p></div>
+                </section>
+
+            </div><!-- /product-marvair-vertical -->
 
         </div>
     </main>

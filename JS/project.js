@@ -1,7 +1,8 @@
 /* ==========================================================================
    project.js — Multi-project management, projects page, selection dialog,
    cart, panel sidebar, localStorage persistence, CSV.
-   Updated with multi-product support and single notes section.
+   Updated with multi-product support (mini-splits, multi-position,
+   gas-packs, marvair-vertical) and single notes section.
    Emits project:changed via EventBus when entries change.
    ========================================================================== */
 
@@ -263,15 +264,8 @@ const Project = (function () {
             }
             if (_floatingSidebarCount) {
                 _floatingSidebarCount.textContent = count;
-            }
-            var labelEl = _btnFloatingSidebar.querySelector(".floating-sidebar-label");
-            if (labelEl && target) {
-                if (target.type === "cart") {
-                    labelEl.textContent = "Cart";
-                } else {
-                    var proj = getProjectById(target.projectId);
-                    labelEl.textContent = proj ? proj.name : "Project";
-                }
+                if (count > 0) _floatingSidebarCount.classList.remove("hidden");
+                else _floatingSidebarCount.classList.add("hidden");
             }
         } else {
             _btnFloatingSidebar.classList.add("hidden");
@@ -279,53 +273,23 @@ const Project = (function () {
     }
 
     // -----------------------------------------------------------------------
-    // Selection Dialog
+    // Add System Request
     // -----------------------------------------------------------------------
     function requestAddSystem(systemId) {
-        if (_activeTarget) {
-            addSystemToTarget(systemId, _activeTarget); return;
-        }
-        if (_projects.length === 0) showNoProjectsDialog(systemId);
-        else showSelectTargetDialog(systemId);
+        if (_activeTarget) { addSystemToTarget(systemId, _activeTarget); return; }
+        if (_openTarget) { setActiveTarget(_openTarget); addSystemToTarget(systemId, _openTarget); return; }
+        showTargetSelectionDialog(systemId);
     }
 
-    function showNoProjectsDialog(systemId) {
+    function showTargetSelectionDialog(systemId) {
         var overlay = document.createElement("div"); overlay.className = "confirm-overlay";
         var dialog = document.createElement("div"); dialog.className = "confirm-dialog selection-dialog";
         var headerDiv = document.createElement("div"); headerDiv.className = "confirm-dialog-header";
-        var h3 = document.createElement("h3"); h3.textContent = "Where should this go?"; headerDiv.appendChild(h3);
+        var h3 = document.createElement("h3"); h3.textContent = "Add to…"; headerDiv.appendChild(h3);
+
         var bodyDiv = document.createElement("div"); bodyDiv.className = "confirm-dialog-body";
-        var p = document.createElement("p"); p.textContent = "No projects yet. Create one, or use an unsaved cart?"; bodyDiv.appendChild(p);
-        var footerDiv = document.createElement("div"); footerDiv.className = "confirm-dialog-footer selection-dialog-footer";
+        var description = document.createElement("p"); description.className = "selection-dialog-description"; description.textContent = "Select a destination:"; bodyDiv.appendChild(description);
 
-        var cancelBtn = document.createElement("button"); cancelBtn.type = "button"; cancelBtn.className = "confirm-btn confirm-btn-cancel"; cancelBtn.textContent = "Cancel";
-        cancelBtn.addEventListener("click", function () { document.body.removeChild(overlay); });
-
-        var cartBtn = document.createElement("button"); cartBtn.type = "button"; cartBtn.className = "confirm-btn selection-btn-cart"; cartBtn.textContent = "Use Cart";
-        cartBtn.addEventListener("click", function () { document.body.removeChild(overlay); setActiveTarget({ type: "cart" }); addSystemToTarget(systemId, _activeTarget); });
-
-        var createBtn = document.createElement("button"); createBtn.type = "button"; createBtn.className = "confirm-btn confirm-btn-primary"; createBtn.textContent = "Create Project";
-        createBtn.addEventListener("click", function () {
-            document.body.removeChild(overlay);
-            showInputDialog("Create Project", "Project Name", "", "Create & Add", function (name) {
-                if (!name || !name.trim()) { showToast("Please enter a project name", "toast-warning"); return false; }
-                var project = createProject(name.trim()); setActiveTarget({ type: "project", projectId: project.id });
-                addSystemToTarget(systemId, _activeTarget); updateBadge(); updateFloatingButton(); showToast('Project "' + project.name + '" created', "toast-success"); return true;
-            });
-        });
-
-        footerDiv.appendChild(cancelBtn); footerDiv.appendChild(cartBtn); footerDiv.appendChild(createBtn);
-        dialog.appendChild(headerDiv); dialog.appendChild(bodyDiv); dialog.appendChild(footerDiv);
-        overlay.appendChild(dialog); document.body.appendChild(overlay);
-    }
-
-    function showSelectTargetDialog(systemId) {
-        var overlay = document.createElement("div"); overlay.className = "confirm-overlay";
-        var dialog = document.createElement("div"); dialog.className = "confirm-dialog selection-dialog";
-        var headerDiv = document.createElement("div"); headerDiv.className = "confirm-dialog-header";
-        var h3 = document.createElement("h3"); h3.textContent = "Add to which project?"; headerDiv.appendChild(h3);
-        var bodyDiv = document.createElement("div"); bodyDiv.className = "confirm-dialog-body selection-dialog-body";
-        var p = document.createElement("p"); p.textContent = "Select a project for this and future selections, or use the unsaved cart."; bodyDiv.appendChild(p);
         var optionsList = document.createElement("div"); optionsList.className = "selection-options";
         var selectedValue = null;
 
@@ -371,7 +335,7 @@ const Project = (function () {
         if (!target) return;
         var sys = DataLoader.getSystemById(systemId); if (!sys) return;
 
-        // Build entry — works for mini-splits, multi-position, and gas-packs
+        // Build entry — works for mini-splits, multi-position, gas-packs, marvair-vertical
         var iduTags = [], iduAccessories = [];
         if (sys.indoorUnits) {
             for (var i = 0; i < sys.indoorUnits.length; i++) {
@@ -379,9 +343,14 @@ const Project = (function () {
                 iduAccessories.push("");
             }
         }
+        // Default tag prefix varies by product type
+        var defaultOduTag = "ODU-";
+        if (sys.productKey === "gas-packs") defaultOduTag = "RTU-";
+        else if (sys.productKey === "marvair-vertical") defaultOduTag = "AC-";
+
         var entry = {
             systemId: systemId,
-            oduTag: (sys.outdoorUnit ? (sys.outdoorUnit.symbol || "ODU-") : "RTU-"),
+            oduTag: (sys.outdoorUnit ? (sys.outdoorUnit.symbol || "ODU-") : defaultOduTag),
             iduTags: iduTags,
             iduAccessories: iduAccessories,
             outdoorAccessories: ""
@@ -503,12 +472,14 @@ const Project = (function () {
 
         var body = document.createElement("div"); body.className = "project-card-body";
 
-        if (sys.productKey === "gas-packs") {
+        // Flat single-unit products (gas-packs, marvair-vertical) — no indoor/outdoor split
+        if (sys.productKey === "gas-packs" || sys.productKey === "marvair-vertical") {
             var unitRow = document.createElement("div"); unitRow.className = "project-outdoor-row";
             var unitLabel = document.createElement("span"); unitLabel.className = "project-outdoor-label"; unitLabel.textContent = "Unit";
-            var unitTagInput = document.createElement("input"); unitTagInput.type = "text"; unitTagInput.className = "project-tag-input"; unitTagInput.value = entry.oduTag || "RTU-";
+            var defaultTag = (sys.productKey === "marvair-vertical") ? "AC-" : "RTU-";
+            var unitTagInput = document.createElement("input"); unitTagInput.type = "text"; unitTagInput.className = "project-tag-input"; unitTagInput.value = entry.oduTag || defaultTag;
             unitTagInput.dataset.entryIndex = entryIndex; unitTagInput.dataset.field = "oduTag"; unitTagInput.addEventListener("input", handleTagInput);
-            var unitModel = document.createElement("span"); unitModel.className = "project-outdoor-model"; unitModel.textContent = sys.schedule.model || "";
+            var unitModel = document.createElement("span"); unitModel.className = "project-outdoor-model"; unitModel.textContent = (sys.schedule && sys.schedule.model) || "";
             unitRow.appendChild(unitLabel); unitRow.appendChild(unitTagInput); unitRow.appendChild(unitModel); body.appendChild(unitRow);
         } else {
             var oduRow = document.createElement("div"); oduRow.className = "project-outdoor-row";
@@ -808,6 +779,11 @@ const Project = (function () {
                 oduModel = sys.schedule.model || "";
                 sysType = "Gas Pack RTU";
                 sysSize = sys.filters.size || "";
+            } else if (sys.productKey === "marvair-vertical") {
+                iduModels = []; iduTypes = []; iduSizes = [];
+                oduModel = sys.schedule.model || "";
+                sysType = "Marvair Vertical Wall Mount";
+                sysSize = sys.filters.size || "";
             } else {
                 iduModels = sys.indoorUnits.map(function (u) { return u.manufacturer || u.model || ""; });
                 iduTypes = sys.indoorUnits.map(function (u) { return u.type || ""; });
@@ -821,15 +797,28 @@ const Project = (function () {
         }
         // Notes section (single combined section per product)
         var pn = getProductNotes();
-        var pkList = ["mini-splits", "multi-position", "gas-packs"];
-        var pkNames = { "mini-splits": "Mini Splits", "multi-position": "Multi Position Splits", "gas-packs": "Gas Pack RTUs" };
+        var pkList = ["mini-splits", "multi-position", "gas-packs", "marvair-vertical"];
+        var pkNames = {
+            "mini-splits": "Mini Splits",
+            "multi-position": "Multi Position Splits",
+            "gas-packs": "Gas Pack RTUs",
+            "marvair-vertical": "Marvair Vertical Wall Mount"
+        };
         for (var pi = 0; pi < pkList.length; pi++) {
             var pk = pkList[pi];
             var activeNotes = getProductActiveNotes(pk);
             if (activeNotes.length > 0) {
+                // Check if this product preserves note numbering (notes already contain their own prefix)
+                var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(pk)) || {};
+                var preserveNumbering = !!settings.preserveNoteNumbering;
+
                 lines.push(""); lines.push("NOTES (" + pkNames[pk] + ")");
                 for (var ni = 0; ni < activeNotes.length; ni++) {
-                    lines.push(csvEscape((ni + 1) + "- " + activeNotes[ni]));
+                    if (preserveNumbering) {
+                        lines.push(csvEscape(activeNotes[ni]));
+                    } else {
+                        lines.push(csvEscape((ni + 1) + "- " + activeNotes[ni]));
+                    }
                 }
             }
         }

@@ -6,6 +6,7 @@
      - mini-splits
      - multi-position (Multi Position Splits)
      - gas-packs (Light Commercial RTUs - Gas Heat)
+     - marvair-vertical (Marvair Vertical Wall Mount)
    ========================================================================== */
 
 const DataLoader = (function () {
@@ -26,9 +27,13 @@ const DataLoader = (function () {
             jsonPath: "DATA/JSON/gas-packs.json",
             assetBase: "ASSETS/GAS PACKS/",
         },
+        "marvair-vertical": {
+            jsonPath: "DATA/JSON/marvair-vertical.json",
+            assetBase: "ASSETS/MARVAIR/",
+        },
     };
 
-    // Per-product storage: { data, systems, filterOptions, systemMap, scheduleNotes }
+    // Per-product storage: { data, systems, filterOptions, systemMap, scheduleNotes, productSettings }
     let _products = {};
 
     // Active product key
@@ -63,6 +68,10 @@ const DataLoader = (function () {
             var systems = data.systems || [];
             var filterOptions = data.filterOptions || {};
             var scheduleNotes = data.scheduleNotes || [];
+            var productSettings = {
+                preserveNoteNumbering: !!data.preserveNoteNumbering,
+                scheduleNotesDefaultChecked: !!data.scheduleNotesDefaultChecked,
+            };
 
             // Normalize MPS systems: wrap indoorUnit in indoorUnits array
             if (productKey === "multi-position") {
@@ -91,6 +100,7 @@ const DataLoader = (function () {
                 filterOptions: filterOptions,
                 systemMap: systemMap,
                 scheduleNotes: scheduleNotes,
+                productSettings: productSettings,
             };
 
             console.log(
@@ -199,6 +209,13 @@ const DataLoader = (function () {
         return p ? (p.scheduleNotes || []) : [];
     }
 
+    /** Get product settings (note numbering, default checked, etc.) */
+    function getProductSettings(productKey) {
+        var pk = productKey || _activeProductKey;
+        var p = _products[pk];
+        return p ? (p.productSettings || {}) : {};
+    }
+
 
     // -----------------------------------------------------------------------
     // Filtering — Mini Splits
@@ -303,6 +320,26 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Filtering — Marvair Vertical Wall Mount
+    // All filter values as strings (no parseFloat) — protects "208/60/1".
+    // -----------------------------------------------------------------------
+    function filterMarvairVertical(filters) {
+        var p = _products["marvair-vertical"];
+        if (!p) return [];
+
+        return p.systems.filter(function (sys) {
+            var f = sys.filters;
+
+            if (filters.size && f.size !== filters.size) return false;
+            if (filters.electrical && f.electrical !== filters.electrical) return false;
+            if (filters.electricHeat && f.electricHeat !== filters.electricHeat) return false;
+
+            return true;
+        });
+    }
+
+
+    // -----------------------------------------------------------------------
     // Unified Filter Dispatch
     // -----------------------------------------------------------------------
     function filterSystems(filters) {
@@ -311,6 +348,9 @@ const DataLoader = (function () {
         }
         if (_activeProductKey === "gas-packs") {
             return filterGasPacks(filters);
+        }
+        if (_activeProductKey === "marvair-vertical") {
+            return filterMarvairVertical(filters);
         }
         return filterMiniSplits(filters);
     }
@@ -429,6 +469,31 @@ const DataLoader = (function () {
 
 
     // -----------------------------------------------------------------------
+    // Document Helpers — Marvair Vertical (single unit — no indoor/outdoor split)
+    // -----------------------------------------------------------------------
+    function getMarvairVerticalDocuments(systemId) {
+        var sys = getSystemById(systemId);
+        if (!sys || !sys.docs) return [];
+
+        var docs = [];
+        var seen = {};
+
+        function add(label, path, type) {
+            if (!path || seen[path]) return;
+            seen[path] = true;
+            docs.push({ label: label, path: path, type: type });
+        }
+
+        var d = sys.docs;
+
+        add("Submittal", d.dataSheet, "pdf");
+        add("Installation Manual", d.iom, "pdf");
+
+        return docs;
+    }
+
+
+    // -----------------------------------------------------------------------
     // Unified Document Access
     // -----------------------------------------------------------------------
     function getSystemDocuments(systemId) {
@@ -440,6 +505,9 @@ const DataLoader = (function () {
         }
         if (sys.productKey === "multi-position") {
             return getMultiPositionDocuments(systemId);
+        }
+        if (sys.productKey === "marvair-vertical") {
+            return getMarvairVerticalDocuments(systemId);
         }
         return getMiniSplitDocuments(systemId);
     }
@@ -461,6 +529,9 @@ const DataLoader = (function () {
         }
         if (sys.productKey === "multi-position") {
             return getMultiPositionSummary(sys);
+        }
+        if (sys.productKey === "marvair-vertical") {
+            return getMarvairVerticalSummary(sys);
         }
         return getMiniSplitSummary(sys);
     }
@@ -491,6 +562,16 @@ const DataLoader = (function () {
         return ["Gas Pack RTU", size, model].filter(Boolean).join(" — ");
     }
 
+    function getMarvairVerticalSummary(sys) {
+        var size = sys.filters.size ? sys.filters.size + " Ton" : "";
+        var model = sys.schedule.model || "";
+        var heat = (sys.schedule.electricHeat !== undefined && sys.schedule.electricHeat !== null)
+            ? (sys.schedule.electricHeat + " kW Heat")
+            : "";
+
+        return ["Marvair VWM", size, model, heat].filter(Boolean).join(" — ");
+    }
+
 
     // -----------------------------------------------------------------------
     // Asset Base Path (for document download)
@@ -515,6 +596,7 @@ const DataLoader = (function () {
         getFilterOptions:    getFilterOptions,
         getSystemById:       getSystemById,
         getScheduleNotes:    getScheduleNotes,
+        getProductSettings:  getProductSettings,
         filterSystems:       filterSystems,
         getSystemDocuments:  getSystemDocuments,
         getSystemDocCount:   getSystemDocCount,

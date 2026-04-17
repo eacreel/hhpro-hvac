@@ -2147,6 +2147,21 @@ body.preview-open {
     margin-bottom: var(--space-xs);
 }
 
+/* Preserve-numbering variant — used when notes already contain their own
+   numbering prefixes and section headers (e.g., Marvair Vertical Wall Mount).
+   Renders each note line-by-line without auto-numbering. */
+.sp-active-notes-preserve {
+    padding-left: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+.sp-active-note-line {
+    margin-bottom: var(--space-xxs);
+    white-space: pre-wrap;
+}
+
 .sp-avail-notes {
     margin-bottom: var(--space-lg);
 }

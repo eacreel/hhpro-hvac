@@ -1,8 +1,11 @@
 /* ==========================================================================
    export.js — Document downloads, schedule export (Excel & PDF)
 
+   Supports mini-splits, multi-position, gas-packs, and marvair-vertical.
    All product types use combined single-row format (indoor + outdoor).
    Notes section is a single unified section per product.
+   Products with preserveNoteNumbering flag (e.g. marvair-vertical) skip
+   the auto-numbering prefix since notes already contain their own prefixes.
 
    Local libraries (in JS/ folder):
      - ExcelJS, jsPDF, jsPDF-AutoTable, JSZip
@@ -11,9 +14,10 @@
 const Export = (function () {
 
     const TEMPLATE_PATHS = {
-        "mini-splits":     "DATA/MINI SPLIT SCHEDULE.xlsx",
-        "multi-position":  "DATA/MULTI POSITION SPLIT SCHEDULE.xlsx",
-        "gas-packs":       "DATA/GAS PACKS SCHEDULE.xlsx",
+        "mini-splits":       "DATA/MINI SPLIT SCHEDULE.xlsx",
+        "multi-position":    "DATA/MULTI POSITION SPLIT SCHEDULE.xlsx",
+        "gas-packs":         "DATA/GAS PACKS SCHEDULE.xlsx",
+        "marvair-vertical":  "DATA/MARVIAR SCHEDULE.xlsx",
     };
 
     // -----------------------------------------------------------------------
@@ -39,6 +43,7 @@ const Export = (function () {
             var pk = "mini-splits";
             if (sys && sys.productKey === "multi-position") pk = "multi-position";
             else if (sys && sys.productKey === "gas-packs") pk = "gas-packs";
+            else if (sys && sys.productKey === "marvair-vertical") pk = "marvair-vertical";
             if (!groups[pk]) groups[pk] = [];
             groups[pk].push(entries[i]);
         }
@@ -109,16 +114,19 @@ const Export = (function () {
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
         var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
+        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
 
         if (options && options.returnBlobs) {
             var blobs = [];
             if (hasMs) { var b = await exportMsScheduleXlsx({ returnBlob: true, entries: groups["mini-splits"] }); if (b) blobs.push({ name: "Mini Split Schedule.xlsx", blob: b }); }
             if (hasMps) { var b2 = await exportMpsScheduleXlsx({ returnBlob: true, entries: groups["multi-position"] }); if (b2) blobs.push({ name: "Multi Position Split Schedule.xlsx", blob: b2 }); }
             if (hasGp) { var b3 = await exportGpScheduleXlsx({ returnBlob: true, entries: groups["gas-packs"] }); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.xlsx", blob: b3 }); }
+            if (hasMv) { var b4 = await exportMvScheduleXlsx({ returnBlob: true, entries: groups["marvair-vertical"] }); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.xlsx", blob: b4 }); }
             return blobs;
         }
 
         if (options && options.returnBlob) {
+            if (hasMv && !hasMs && !hasMps && !hasGp) return exportMvScheduleXlsx(options);
             if (hasGp && !hasMs && !hasMps) return exportGpScheduleXlsx(options);
             if (hasMps && !hasMs) return exportMpsScheduleXlsx(options);
             return exportMsScheduleXlsx(options);
@@ -127,6 +135,7 @@ const Export = (function () {
         if (hasMs) await exportMsScheduleXlsx({ entries: groups["mini-splits"] });
         if (hasMps) await exportMpsScheduleXlsx({ entries: groups["multi-position"] });
         if (hasGp) await exportGpScheduleXlsx({ entries: groups["gas-packs"] });
+        if (hasMv) await exportMvScheduleXlsx({ entries: groups["marvair-vertical"] });
     }
 
 
@@ -564,11 +573,125 @@ const Export = (function () {
 
 
     // =====================================================================
+    //  MARVAIR VERTICAL WALL MOUNT — EXCEL EXPORT (template-based)
+    //  Template: DATA/MARVIAR SCHEDULE.xlsx
+    //  Columns A-R (18 cols): A blank, B-R are data columns
+    //  Row 1 blank, Row 2 title (merged B:R), Row 3 header row
+    // =====================================================================
+    async function exportMvScheduleXlsx(options) {
+        var entries = (options && options.entries) ? options.entries : Project.getEntries();
+        if (entries.length === 0) return;
+        if (typeof ExcelJS === "undefined") { Project.showToast("ExcelJS library not loaded", "toast-danger"); return; }
+        Project.showToast("Generating Excel schedule…", "toast-success");
+
+        try {
+            var resp = await fetch(TEMPLATE_PATHS["marvair-vertical"]);
+            if (!resp.ok) throw new Error("Marvair Template not found");
+            var buf = await resp.arrayBuffer();
+            var wb = new ExcelJS.Workbook();
+            await wb.xlsx.load(buf);
+            var tws = wb.getWorksheet(1);
+            var styles = extractStyles(tws);
+            var numCols = 18; // A through R
+            var colWidths = [];
+            for (var ci = 1; ci <= numCols; ci++) colWidths.push(tws.getColumn(ci).width || 8.43);
+            wb.removeWorksheet(tws.id);
+
+            var ws = wb.addWorksheet("Marvair VWM Schedule", {
+                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
+            });
+            for (var wi = 0; wi < colWidths.length; wi++) ws.getColumn(wi + 1).width = colWidths[wi];
+
+            var row = 1;
+
+            // Row 1: blank (leave empty for template spacing)
+            ws.getRow(row).height = 8;
+            row++;
+
+            // Row 2: Title (merged B:R)
+            ws.mergeCells(row, 2, row, numCols);
+            applyStyle(ws.getCell(row, 2), "VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", styles.title);
+            ws.getRow(row).height = 22;
+            row++;
+
+            // Row 3: Header row (single row — no merged groups in this template)
+            var hr = row;
+            applyStyle(ws.getCell(hr, 2),  "TAG",                       styles.headerOuter);
+            applyStyle(ws.getCell(hr, 3),  "MODEL\n(MARVAIR)",          styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 4),  "NOMINAL\nSIZE (TONS)",      styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 5),  "CFM",                       styles.headerInner);
+            applyStyle(ws.getCell(hr, 6),  "TOTAL\nCAPACITY",           styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 7),  "SENSIBLE\nCAPACITY",        styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 8),  "OUTSIDE\nAIR (°F)",         styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 9),  "ENTERING AIR\nDB/WB (°F)",  styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 10), "ELECTRIC\nHEAT (KW)",       styles.headerInnerWrap);
+            applyStyle(ws.getCell(hr, 11), "VOLTS-HZ-PH",               styles.headerInner);
+            applyStyle(ws.getCell(hr, 12), "MCA",                       styles.headerInner);
+            applyStyle(ws.getCell(hr, 13), "MOCP",                      styles.headerInner);
+            applyStyle(ws.getCell(hr, 14), "REFRIGERANT",               styles.headerInner);
+            applyStyle(ws.getCell(hr, 15), "EER",                       styles.headerInner);
+            applyStyle(ws.getCell(hr, 16), "IEER",                      styles.headerInner);
+            applyStyle(ws.getCell(hr, 17), "CONFIGURATION",             styles.headerInner);
+            applyStyle(ws.getCell(hr, 18), "OPTIONS FOR\nOUTSIDE AIR\nVENTILATION", styles.headerInnerWrap);
+            ws.getRow(hr).height = 42;
+            row++;
+
+            // Data rows
+            for (var ei = 0; ei < entries.length; ei++) {
+                var entry = entries[ei];
+                var sys = DataLoader.getSystemById(entry.systemId);
+                if (!sys) continue;
+                var sc = sys.schedule;
+                var r = row;
+                var isFirst = (ei === 0);
+                var isLast = (ei === entries.length - 1);
+
+                applyDataCell(ws.getCell(r, 2),  entry.oduTag || "AC-",     styles, isFirst, isLast, true,  false);
+                applyDataCell(ws.getCell(r, 3),  sc.model || "",            styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 4),  sc.nomTons || "",          styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 5),  sc.cfm,                    styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 6),  sc.totalCapacity,          styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 7),  sc.sensibleCapacity,       styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 8),  sc.outsideAir,             styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 9),  sc.enteringAir || "",      styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 10), sc.electricHeat,           styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 11), sc.voltage || "",          styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 12), sc.mca,                    styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 13), sc.mocp,                   styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 14), sc.refrigerant || "",      styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 15), sc.eer,                    styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 16), sc.ieer,                   styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 17), sc.configuration || "",    styles, isFirst, isLast, false, false);
+                applyDataCell(ws.getCell(r, 18), sc.ventilation || "",      styles, isFirst, isLast, false, true);
+                ws.getRow(r).height = 15.75;
+                row++;
+            }
+
+            writeNotesSection(ws, row, styles, numCols, "marvair-vertical");
+
+            var buffer = await wb.xlsx.writeBuffer();
+            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            if (options && options.returnBlob) return blob;
+            Project.downloadBlob(blob, "Marvair Vertical Wall Mount Schedule.xlsx");
+            Project.showToast("Schedule exported as Excel", "toast-success");
+        } catch (err) {
+            console.error("[Export] Marvair Excel generation failed:", err);
+            Project.showToast("Excel export failed — see console", "toast-danger");
+        }
+    }
+
+
+    // =====================================================================
     //  NOTES SECTION WRITER (unified single section)
+    //  Honors preserveNoteNumbering flag — when true, skips the auto "n-" prefix
+    //  since notes already contain their own numbering/section headers.
     // =====================================================================
     function writeNotesSection(ws, row, styles, numCols, productKey) {
         var activeNotes = Project.getProductActiveNotes(productKey);
         if (activeNotes.length === 0) return;
+
+        var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(productKey)) || {};
+        var preserveNumbering = !!settings.preserveNoteNumbering;
 
         row++;
         ws.getCell(row, 1).value = "NOTES:";
@@ -577,13 +700,21 @@ const Export = (function () {
         row++;
 
         for (var ni = 0; ni < activeNotes.length; ni++) {
-            ws.getCell(row, 1).value = (ni + 1) + "-";
-            ws.getCell(row, 1).font = styles.notesNum ? styles.notesNum.font : { size: 8 };
-            ws.getCell(row, 1).alignment = styles.notesNum ? styles.notesNum.alignment : { horizontal: "right" };
-            ws.mergeCells(row, 2, row, Math.min(numCols, 15));
-            ws.getCell(row, 2).value = activeNotes[ni];
-            ws.getCell(row, 2).font = styles.notesText ? styles.notesText.font : { size: 8 };
-            ws.getCell(row, 2).alignment = styles.notesText ? styles.notesText.alignment : { horizontal: "left", wrapText: true };
+            if (preserveNumbering) {
+                // Write note text directly in column 1 (merged across the width)
+                ws.mergeCells(row, 1, row, Math.min(numCols, 15));
+                ws.getCell(row, 1).value = activeNotes[ni];
+                ws.getCell(row, 1).font = styles.notesText ? styles.notesText.font : { size: 8 };
+                ws.getCell(row, 1).alignment = styles.notesText ? styles.notesText.alignment : { horizontal: "left", wrapText: true };
+            } else {
+                ws.getCell(row, 1).value = (ni + 1) + "-";
+                ws.getCell(row, 1).font = styles.notesNum ? styles.notesNum.font : { size: 8 };
+                ws.getCell(row, 1).alignment = styles.notesNum ? styles.notesNum.alignment : { horizontal: "right" };
+                ws.mergeCells(row, 2, row, Math.min(numCols, 15));
+                ws.getCell(row, 2).value = activeNotes[ni];
+                ws.getCell(row, 2).font = styles.notesText ? styles.notesText.font : { size: 8 };
+                ws.getCell(row, 2).alignment = styles.notesText ? styles.notesText.alignment : { horizontal: "left", wrapText: true };
+            }
             row++;
         }
     }
@@ -662,16 +793,19 @@ const Export = (function () {
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
         var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
+        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
 
         if (options && options.returnBlobs) {
             var blobs = [];
             if (hasMs) { var b = exportMsSchedulePdf({ returnBlob: true, entries: groups["mini-splits"] }); if (b) blobs.push({ name: "Mini Split Schedule.pdf", blob: b }); }
             if (hasMps) { var b2 = exportMpsSchedulePdf({ returnBlob: true, entries: groups["multi-position"] }); if (b2) blobs.push({ name: "Multi Position Split Schedule.pdf", blob: b2 }); }
             if (hasGp) { var b3 = exportGpSchedulePdf({ returnBlob: true, entries: groups["gas-packs"] }); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.pdf", blob: b3 }); }
+            if (hasMv) { var b4 = exportMvSchedulePdf({ returnBlob: true, entries: groups["marvair-vertical"] }); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.pdf", blob: b4 }); }
             return blobs;
         }
 
         if (options && options.returnBlob) {
+            if (hasMv && !hasMs && !hasMps && !hasGp) return exportMvSchedulePdf(options);
             if (hasGp && !hasMs && !hasMps) return exportGpSchedulePdf(options);
             if (hasMps && !hasMs) return exportMpsSchedulePdf(options);
             return exportMsSchedulePdf(options);
@@ -680,6 +814,7 @@ const Export = (function () {
         if (hasMs) exportMsSchedulePdf({ entries: groups["mini-splits"] });
         if (hasMps) exportMpsSchedulePdf({ entries: groups["multi-position"] });
         if (hasGp) exportGpSchedulePdf({ entries: groups["gas-packs"] });
+        if (hasMv) exportMvSchedulePdf({ entries: groups["marvair-vertical"] });
     }
 
     function fp(val) { if (val === null || val === undefined) return ""; if (typeof val === "number" && Number.isInteger(val) && val >= 1000) return val.toLocaleString("en-US"); return String(val); }
@@ -963,11 +1098,78 @@ const Export = (function () {
 
 
     // =====================================================================
+    //  MARVAIR VERTICAL WALL MOUNT — PDF
+    // =====================================================================
+    function exportMvSchedulePdf(options) {
+        var entries = (options && options.entries) ? options.entries : Project.getEntries();
+        if (entries.length === 0) return;
+        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
+        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
+        var colDefs = [
+            {key:"mv-tag",subHeader:"TAG",always:true},
+            {key:"mv-model",subHeader:"MODEL\n(MARVAIR)",always:true},
+            {key:"mv-tons",subHeader:"NOMINAL\nSIZE (TONS)",always:true},
+            {key:"mv-cfm",subHeader:"CFM"},
+            {key:"mv-total",subHeader:"TOTAL"},{key:"mv-sens",subHeader:"SENS."},
+            {key:"mv-oa",subHeader:"OA (°F)"},{key:"mv-eat",subHeader:"EAT\nDB/WB"},
+            {key:"mv-heat",subHeader:"ELECTRIC\nHEAT (KW)"},
+            {key:"mv-voltage",subHeader:"V-HZ-PH"},{key:"mv-mca",subHeader:"MCA"},{key:"mv-mocp",subHeader:"MOCP"},
+            {key:"mv-refrig",subHeader:"REFRIGERANT"},
+            {key:"mv-eer",subHeader:"EER"},{key:"mv-ieer",subHeader:"IEER"},
+            {key:"mv-notes",subHeader:"NOTES",always:true},
+        ];
+        var groupDefs = [
+            {label:"TAG",cols:["mv-tag"]},
+            {label:"MODEL\n(MARVAIR)",cols:["mv-model"]},
+            {label:"NOMINAL\nSIZE (TONS)",cols:["mv-tons"]},
+            {label:"CFM",cols:["mv-cfm"]},
+            {label:"COOLING CAPACITY",cols:["mv-total","mv-sens"],sub:true},
+            {label:"COOLING CONDITIONS",cols:["mv-oa","mv-eat"],sub:true},
+            {label:"ELECTRIC\nHEAT (KW)",cols:["mv-heat"]},
+            {label:"ELECTRICAL",cols:["mv-voltage","mv-mca","mv-mocp"],sub:true},
+            {label:"REFRIGERANT",cols:["mv-refrig"]},
+            {label:"EFFICIENCY",cols:["mv-eer","mv-ieer"],sub:true},
+            {label:"NOTES",cols:["mv-notes"]},
+        ];
+        renderPdfTable(doc, "VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", null, colDefs, groupDefs,
+            function(entry) {
+                var s=DataLoader.getSystemById(entry.systemId); if (!s) return null; var sc=s.schedule;
+                return {
+                    "mv-tag":entry.oduTag||"AC-",
+                    "mv-model":sc.model||"",
+                    "mv-tons":sc.nomTons||"",
+                    "mv-cfm":fp(sc.cfm),
+                    "mv-total":fp(sc.totalCapacity),
+                    "mv-sens":fp(sc.sensibleCapacity),
+                    "mv-oa":fp(sc.outsideAir),
+                    "mv-eat":sc.enteringAir||"",
+                    "mv-heat":fp(sc.electricHeat),
+                    "mv-voltage":sc.voltage||"",
+                    "mv-mca":fp(sc.mca),
+                    "mv-mocp":fp(sc.mocp),
+                    "mv-refrig":sc.refrigerant||"",
+                    "mv-eer":fp(sc.eer),
+                    "mv-ieer":fp(sc.ieer),
+                    "mv-notes":entry.outdoorAccessories||""
+                };
+            }, entries, "marvair-vertical");
+        if (options && options.returnBlob) return doc.output("blob");
+        doc.save("Marvair Vertical Wall Mount Schedule.pdf");
+        Project.showToast("Schedule exported as PDF", "toast-success");
+    }
+
+
+    // =====================================================================
     //  PDF Notes Writer (unified single section)
+    //  Honors preserveNoteNumbering flag — skips the auto "n- " prefix
+    //  when notes already have their own embedded numbering / section headers.
     // =====================================================================
     function writePdfNotes(doc, productKey, leftMargin, tableWidth) {
         var notes = Project.getProductActiveNotes(productKey);
         if (notes.length === 0) return;
+
+        var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(productKey)) || {};
+        var preserveNumbering = !!settings.preserveNoteNumbering;
 
         // Use actual table dimensions for perfect alignment
         var at = doc.lastAutoTable;
@@ -987,7 +1189,12 @@ const Export = (function () {
         doc.text("NOTES:", tblX + 4, nY + 10);
         doc.setFont("helvetica", "normal"); doc.setFontSize(7);
         for (var ni = 0; ni < notes.length; ni++) {
-            doc.text((ni + 1) + "- " + notes[ni], tblX + 20, nY + 14 + 4 + (ni * noteLineH));
+            if (preserveNumbering) {
+                // Notes already have their own numbering/section headers — render as-is
+                doc.text(notes[ni], tblX + 4, nY + 14 + 4 + (ni * noteLineH));
+            } else {
+                doc.text((ni + 1) + "- " + notes[ni], tblX + 20, nY + 14 + 4 + (ni * noteLineH));
+            }
         }
     }
 
@@ -1000,18 +1207,21 @@ const Export = (function () {
         var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
         var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
         var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
+        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
 
         if (options && options.returnBlobs) {
             var blobs = [];
             if (hasMs) { var b = buildMsDxf(groups["mini-splits"]); if (b) blobs.push({ name: "Mini Split Schedule.dxf", blob: b }); }
             if (hasMps) { var b2 = buildMpsDxf(groups["multi-position"]); if (b2) blobs.push({ name: "Multi Position Split Schedule.dxf", blob: b2 }); }
             if (hasGp) { var b3 = buildGpDxf(groups["gas-packs"]); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.dxf", blob: b3 }); }
+            if (hasMv) { var b4 = buildMvDxf(groups["marvair-vertical"]); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.dxf", blob: b4 }); }
             return blobs;
         }
 
         if (hasMs) { var msB = buildMsDxf(groups["mini-splits"]); if (msB) Project.downloadBlob(msB, "Mini Split Schedule.dxf"); }
         if (hasMps) { var mpsB = buildMpsDxf(groups["multi-position"]); if (mpsB) Project.downloadBlob(mpsB, "Multi Position Split Schedule.dxf"); }
         if (hasGp) { var gpB = buildGpDxf(groups["gas-packs"]); if (gpB) Project.downloadBlob(gpB, "Gas Pack RTU Schedule.dxf"); }
+        if (hasMv) { var mvB = buildMvDxf(groups["marvair-vertical"]); if (mvB) Project.downloadBlob(mvB, "Marvair Vertical Wall Mount Schedule.dxf"); }
         Project.showToast("DXF schedule exported", "toast-success");
     }
 
@@ -1284,6 +1494,47 @@ const Export = (function () {
 
 
     // =====================================================================
+    //  MARVAIR VERTICAL WALL MOUNT — DXF
+    // =====================================================================
+    function buildMvDxf(entries) {
+        var v = getExportVisibility(); var W = getExportWidths();
+        var cols = [
+            {k:"mv-tag",h:"TAG",a:true},{k:"mv-model",h:"MODEL",a:true},{k:"mv-tons",h:"NOM\nTONS",a:true},
+            {k:"mv-cfm",h:"CFM"},
+            {k:"mv-total",h:"TOTAL\nCAP."},{k:"mv-sens",h:"SENS.\nCAP."},
+            {k:"mv-oa",h:"OA (°F)"},{k:"mv-eat",h:"EAT\nDB/WB"},
+            {k:"mv-heat",h:"ELEC.\nHEAT (KW)"},
+            {k:"mv-voltage",h:"V-HZ-PH"},{k:"mv-mca",h:"MCA"},{k:"mv-mocp",h:"MOCP"},
+            {k:"mv-refrig",h:"REFRIG."},
+            {k:"mv-eer",h:"EER"},{k:"mv-ieer",h:"IEER"},
+            {k:"mv-notes",h:"NOTES",a:true},
+        ];
+        var vc = cols.filter(function(c){ return c.a || v(c.k); });
+        var headers = vc.map(function(c){ return c.h; });
+        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
+        var groupHeaders = [{text:"VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE",start:0,span:vc.length}];
+        var rows = [];
+        for (var i=0;i<entries.length;i++) {
+            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue; var sc=s.schedule;
+            var allVals={
+                "mv-tag":e.oduTag||"AC-","mv-model":sc.model||"","mv-tons":sc.nomTons||"",
+                "mv-cfm":fp(sc.cfm),
+                "mv-total":fp(sc.totalCapacity),"mv-sens":fp(sc.sensibleCapacity),
+                "mv-oa":fp(sc.outsideAir),"mv-eat":sc.enteringAir||"",
+                "mv-heat":fp(sc.electricHeat),
+                "mv-voltage":sc.voltage||"","mv-mca":fp(sc.mca),"mv-mocp":fp(sc.mocp),
+                "mv-refrig":sc.refrigerant||"",
+                "mv-eer":fp(sc.eer),"mv-ieer":fp(sc.ieer),
+                "mv-notes":e.outdoorAccessories||"",
+            };
+            rows.push(vc.map(function(c){ return allVals[c.k]||""; }));
+        }
+        var notes = Project.getProductActiveNotes("marvair-vertical");
+        return renderDxf("VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", null, groupHeaders, headers, colWidths, rows, notes);
+    }
+
+
+    // =====================================================================
     //  SINGLE-PRODUCT EXPORT FUNCTIONS (for per-tab download buttons)
     // =====================================================================
     async function exportSingleProductXlsx(productKey) {
@@ -1293,6 +1544,7 @@ const Export = (function () {
         if (productKey === "mini-splits") await exportMsScheduleXlsx({ entries: entries });
         else if (productKey === "multi-position") await exportMpsScheduleXlsx({ entries: entries });
         else if (productKey === "gas-packs") await exportGpScheduleXlsx({ entries: entries });
+        else if (productKey === "marvair-vertical") await exportMvScheduleXlsx({ entries: entries });
     }
 
     function exportSingleProductPdf(productKey) {
@@ -1302,6 +1554,7 @@ const Export = (function () {
         if (productKey === "mini-splits") exportMsSchedulePdf({ entries: entries });
         else if (productKey === "multi-position") exportMpsSchedulePdf({ entries: entries });
         else if (productKey === "gas-packs") exportGpSchedulePdf({ entries: entries });
+        else if (productKey === "marvair-vertical") exportMvSchedulePdf({ entries: entries });
     }
 
     function exportSingleProductDxf(productKey) {
@@ -1313,6 +1566,7 @@ const Export = (function () {
         if (productKey === "mini-splits") { blob = buildMsDxf(entries); filename = "Mini Split Schedule.dxf"; }
         else if (productKey === "multi-position") { blob = buildMpsDxf(entries); filename = "Multi Position Split Schedule.dxf"; }
         else if (productKey === "gas-packs") { blob = buildGpDxf(entries); filename = "Gas Pack RTU Schedule.dxf"; }
+        else if (productKey === "marvair-vertical") { blob = buildMvDxf(entries); filename = "Marvair Vertical Wall Mount Schedule.dxf"; }
         if (blob) { Project.downloadBlob(blob, filename); Project.showToast("DXF schedule exported", "toast-success"); }
     }
 

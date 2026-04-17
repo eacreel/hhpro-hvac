@@ -1,6 +1,7 @@
 /* ==========================================================================
    filters.css — Filter bar layout, dropdowns, labels, result count.
-   Supports Mini Split, Multi Position Split, and Gas Pack filter bars.
+   Supports Mini Split, Multi Position Split, Gas Pack, and
+   Marvair Vertical Wall Mount filter bars.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -8,7 +9,8 @@
    -------------------------------------------------------------------------- */
 #filter-bar,
 #mps-filter-bar,
-#gp-filter-bar {
+#gp-filter-bar,
+#mv-filter-bar {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
@@ -24,7 +26,8 @@
    -------------------------------------------------------------------------- */
 #filter-bar-header,
 #mps-filter-bar-header,
-#gp-filter-bar-header {
+#gp-filter-bar-header,
+#mv-filter-bar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -62,7 +65,8 @@
    -------------------------------------------------------------------------- */
 #filter-controls,
 #mps-filter-controls,
-#gp-filter-controls {
+#gp-filter-controls,
+#mv-filter-controls {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--space-md);
@@ -146,7 +150,8 @@
    -------------------------------------------------------------------------- */
 #filter-status,
 #mps-filter-status,
-#gp-filter-status {
+#gp-filter-status,
+#mv-filter-status {
     display: flex;
     align-items: center;
     padding: var(--space-md) var(--space-xl);
@@ -156,7 +161,8 @@
 
 #filter-result-count,
 #mps-filter-result-count,
-#gp-filter-result-count {
+#gp-filter-result-count,
+#mv-filter-result-count {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-muted);
@@ -188,7 +194,8 @@
 @media (max-width: 768px) {
     #filter-controls,
     #mps-filter-controls,
-    #gp-filter-controls {
+    #gp-filter-controls,
+    #mv-filter-controls {
         grid-template-columns: 1fr 1fr;
         gap: var(--space-sm);
         padding: var(--space-md) var(--space-lg);
@@ -196,7 +203,8 @@
 
     #filter-bar-header,
     #mps-filter-bar-header,
-    #gp-filter-bar-header {
+    #gp-filter-bar-header,
+    #mv-filter-bar-header {
         padding: var(--space-sm) var(--space-lg);
     }
 
@@ -213,7 +221,8 @@
 @media (max-width: 480px) {
     #filter-controls,
     #mps-filter-controls,
-    #gp-filter-controls {
+    #gp-filter-controls,
+    #mv-filter-controls {
         grid-template-columns: 1fr;
     }
 }

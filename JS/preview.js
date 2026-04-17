@@ -6,6 +6,7 @@
      - Schedule notes from JSON with checkboxes (check order preserved)
      - Drag-to-reorder, duplicate/delete, auto-number, undo/redo
      - Column visibility toggles (individual per-column)
+     - Per-product note flags: preserveNoteNumbering, scheduleNotesDefaultChecked
    ========================================================================== */
 
 const SchedulePreview = (function () {
@@ -74,6 +75,7 @@ const SchedulePreview = (function () {
         "mps-idu-tag":70,"mps-idu-model":100,"mps-idu-cfm":55,"mps-idu-hp":45,"mps-idu-fan-type":85,"mps-idu-eat-db":50,"mps-idu-eat-wb":50,"mps-idu-lat-db":50,"mps-idu-cool-total":65,"mps-idu-cool-sens":65,"mps-idu-hp-total":65,"mps-idu-aux-kw":45,"mps-idu-aux-rise":55,"mps-idu-voltage":60,"mps-idu-mca":45,"mps-idu-mop":45,"mps-idu-weight":55,
         "mps-odu-tag":70,"mps-odu-model":100,"mps-odu-heat-amb":55,"mps-odu-heat-total":65,"mps-odu-heat-eff":60,"mps-odu-voltage":60,"mps-odu-mca":45,"mps-odu-mop":45,"mps-odu-cool-amb":60,"mps-odu-refrig":55,"mps-odu-eff":85,"mps-odu-comp":55,"mps-odu-weight":55,"mps-notes":80,
         "gp-tag":75,"gp-model":100,"gp-tons":45,"gp-cfm":55,"gp-esp":45,"gp-tesp":45,"gp-cool-total":70,"gp-cool-sens":70,"gp-eff":75,"gp-edb":45,"gp-ewb":45,"gp-ldb":45,"gp-lwb":45,"gp-heat-input":55,"gp-heat-output":55,"gp-heat-eat":45,"gp-heat-lat":45,"gp-hgrh":50,"gp-cool-stages":50,"gp-voltage":55,"gp-hp":45,"gp-mca":45,"gp-mocp":50,"gp-notes":80,
+        "mv-tag":75,"mv-model":100,"mv-tons":55,"mv-cfm":55,"mv-total":70,"mv-sens":70,"mv-oa":55,"mv-eat":65,"mv-heat":55,"mv-voltage":65,"mv-mca":45,"mv-mocp":50,"mv-refrig":70,"mv-eer":45,"mv-ieer":45,"mv-notes":80,
     };
 
     function getColWidth(key) { return _columnWidths[key] || DEFAULT_WIDTHS[key] || 60; }
@@ -165,6 +167,22 @@ const SchedulePreview = (function () {
                 { label: "Indoor Motor HP", keys: ["gp-hp"] },
                 { label: "Unit MCA", keys: ["gp-mca"] },
                 { label: "Unit MOCP", keys: ["gp-mocp"] },
+            ]},
+        ],
+        "marvair-vertical": [
+            { label: "UNIT DATA", children: [
+                { label: "CFM", keys: ["mv-cfm"] },
+                { label: "Total Capacity", keys: ["mv-total"] },
+                { label: "Sensible Capacity", keys: ["mv-sens"] },
+                { label: "Outside Air", keys: ["mv-oa"] },
+                { label: "Entering Air DB/WB", keys: ["mv-eat"] },
+                { label: "Electric Heat (kW)", keys: ["mv-heat"] },
+                { label: "Volts-Hz-Ph", keys: ["mv-voltage"] },
+                { label: "MCA", keys: ["mv-mca"] },
+                { label: "MOCP", keys: ["mv-mocp"] },
+                { label: "Refrigerant", keys: ["mv-refrig"] },
+                { label: "EER", keys: ["mv-eer"] },
+                { label: "IEER", keys: ["mv-ieer"] },
             ]},
         ],
     };
@@ -303,7 +321,7 @@ const SchedulePreview = (function () {
         var existingNotes = Project.getProductNotes();
         _notesByProduct = {};
         _customNotesByProduct = {};
-        var pks = ["mini-splits", "multi-position", "gas-packs"];
+        var pks = ["mini-splits", "multi-position", "gas-packs", "marvair-vertical"];
         for (var p = 0; p < pks.length; p++) {
             var pk = pks[p];
             var existing = existingNotes[pk];
@@ -315,7 +333,14 @@ const SchedulePreview = (function () {
                 if (Array.isArray(existing.outdoor)) combined = combined.concat(existing.outdoor.filter(function (n) { return n && n.trim(); }));
                 _notesByProduct[pk] = combined;
             } else {
-                _notesByProduct[pk] = [];
+                // No saved notes yet — check if this product has default-checked notes
+                var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(pk)) || {};
+                if (settings.scheduleNotesDefaultChecked) {
+                    var avail = DataLoader.getScheduleNotes(pk);
+                    _notesByProduct[pk] = (avail && avail.length > 0) ? avail.slice() : [];
+                } else {
+                    _notesByProduct[pk] = [];
+                }
             }
             // Load custom notes state
             _customNotesByProduct[pk] = [];
@@ -345,6 +370,7 @@ const SchedulePreview = (function () {
         if (groups["mini-splits"] && groups["mini-splits"].length > 0) _activeTab = "mini-splits";
         else if (groups["multi-position"] && groups["multi-position"].length > 0) _activeTab = "multi-position";
         else if (groups["gas-packs"] && groups["gas-packs"].length > 0) _activeTab = "gas-packs";
+        else if (groups["marvair-vertical"] && groups["marvair-vertical"].length > 0) _activeTab = "marvair-vertical";
         else _activeTab = "files";
 
         buildPreview();
@@ -384,6 +410,7 @@ const SchedulePreview = (function () {
             var pk = "mini-splits";
             if (sys && sys.productKey === "multi-position") pk = "multi-position";
             else if (sys && sys.productKey === "gas-packs") pk = "gas-packs";
+            else if (sys && sys.productKey === "marvair-vertical") pk = "marvair-vertical";
             if (!groups[pk]) groups[pk] = [];
             groups[pk].push(i);
         }
@@ -397,6 +424,7 @@ const SchedulePreview = (function () {
         "mini-splits": "Mini Splits",
         "multi-position": "Multi Position Splits",
         "gas-packs": "Light Commercial RTUs",
+        "marvair-vertical": "Marvair Vertical Wall Mount",
         "files": "Project Files"
     };
 
@@ -428,7 +456,7 @@ const SchedulePreview = (function () {
         // Tabs
         var groups = groupEntriesByProduct();
         html += '<div class="sp-tabs" id="sp-tabs">';
-        var tabOrder = ["mini-splits", "multi-position", "gas-packs"];
+        var tabOrder = ["mini-splits", "multi-position", "gas-packs", "marvair-vertical"];
         for (var ti = 0; ti < tabOrder.length; ti++) {
             var tk = tabOrder[ti];
             if (groups[tk] && groups[tk].length > 0) {
@@ -493,6 +521,9 @@ const SchedulePreview = (function () {
         } else if (productKey === "gas-packs") {
             html += '<div class="sp-schedule-title">PACKAGED ROOFTOP UNIT SCHEDULE</div>';
             html += buildGpTable(indices);
+        } else if (productKey === "marvair-vertical") {
+            html += '<div class="sp-schedule-title">VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE</div>';
+            html += buildMvTable(indices);
         }
 
         // Schedule notes section
@@ -822,6 +853,77 @@ const SchedulePreview = (function () {
     }
 
     // -----------------------------------------------------------------------
+    // Marvair Vertical Wall Mount Table (individual column visibility)
+    // -----------------------------------------------------------------------
+    function buildMvTable(indices) {
+        var v = isColVisible;
+
+        var capSpan = (v("mv-total")?1:0) + (v("mv-sens")?1:0);
+        var condSpan = (v("mv-oa")?1:0) + (v("mv-eat")?1:0);
+        var elecSpan = (v("mv-voltage")?1:0) + (v("mv-mca")?1:0) + (v("mv-mocp")?1:0);
+        var effSpan = (v("mv-eer")?1:0) + (v("mv-ieer")?1:0);
+
+        var h = '<div class="sp-table-scroll"><table class="sp-table"><thead>';
+
+        // Group row
+        h += '<tr class="sp-hdr1">';
+        h += '<th rowspan="2" class="sp-col-action"><input type="checkbox" id="sp-select-all-mv" title="Select all"></th>';
+        h += '<th rowspan="2">TAG</th>';
+        h += '<th rowspan="2">MODEL<br>(MARVAIR)</th>';
+        h += '<th rowspan="2">NOMINAL<br>SIZE (TONS)</th>';
+        if (v("mv-cfm")) h += '<th rowspan="2">CFM</th>';
+        if (capSpan > 0) h += '<th colspan="' + capSpan + '" class="sp-col-group">COOLING CAPACITY</th>';
+        if (condSpan > 0) h += '<th colspan="' + condSpan + '" class="sp-col-group">COOLING CONDITIONS</th>';
+        if (v("mv-heat")) h += '<th rowspan="2">ELECTRIC<br>HEAT (KW)</th>';
+        if (elecSpan > 0) h += '<th colspan="' + elecSpan + '" class="sp-col-group">ELECTRICAL</th>';
+        if (v("mv-refrig")) h += '<th rowspan="2">REFRIGERANT</th>';
+        if (effSpan > 0) h += '<th colspan="' + effSpan + '" class="sp-col-group">EFFICIENCY</th>';
+        h += '<th rowspan="2" class="sp-col-acc">NOTES</th>';
+        h += '</tr>';
+
+        // Detail row
+        h += '<tr class="sp-hdr2">';
+        if (v("mv-total")) h += '<th>TOTAL</th>';
+        if (v("mv-sens")) h += '<th>SENS.</th>';
+        if (v("mv-oa")) h += '<th>OA (°F)</th>';
+        if (v("mv-eat")) h += '<th>EAT<br>DB/WB</th>';
+        if (v("mv-voltage")) h += '<th>V-HZ-PH</th>';
+        if (v("mv-mca")) h += '<th>MCA</th>';
+        if (v("mv-mocp")) h += '<th>MOCP</th>';
+        if (v("mv-eer")) h += '<th>EER</th>';
+        if (v("mv-ieer")) h += '<th>IEER</th>';
+        h += '</tr></thead><tbody>';
+
+        // Data rows
+        for (var ii = 0; ii < indices.length; ii++) {
+            var ei = indices[ii]; var entry = _entries[ei];
+            var sys = DataLoader.getSystemById(entry.systemId); if (!sys) continue;
+            var sc = sys.schedule;
+            h += '<tr data-entry-idx="' + ei + '" draggable="true">';
+            h += buildActionCell(ei, 1, entry);
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-tag" type="text" value="' + esc(entry.oduTag||"AC-") + '" data-entry="' + ei + '" data-field="oduTag"></td>';
+            h += '<td class="sp-cell-model">' + esc(sc.model||"") + '</td>';
+            h += '<td>' + esc(sc.nomTons||"") + '</td>';
+            if (v("mv-cfm")) h += '<td>' + fmt(sc.cfm) + '</td>';
+            if (v("mv-total")) h += '<td>' + fmt(sc.totalCapacity) + '</td>';
+            if (v("mv-sens")) h += '<td>' + fmt(sc.sensibleCapacity) + '</td>';
+            if (v("mv-oa")) h += '<td>' + fmt(sc.outsideAir) + '</td>';
+            if (v("mv-eat")) h += '<td class="sp-cell-text">' + esc(sc.enteringAir||"") + '</td>';
+            if (v("mv-heat")) h += '<td>' + fmt(sc.electricHeat) + '</td>';
+            if (v("mv-voltage")) h += '<td class="sp-cell-text">' + esc(sc.voltage||"") + '</td>';
+            if (v("mv-mca")) h += '<td>' + fmt(sc.mca) + '</td>';
+            if (v("mv-mocp")) h += '<td>' + fmt(sc.mocp) + '</td>';
+            if (v("mv-refrig")) h += '<td class="sp-cell-text">' + esc(sc.refrigerant||"") + '</td>';
+            if (v("mv-eer")) h += '<td>' + fmt(sc.eer) + '</td>';
+            if (v("mv-ieer")) h += '<td>' + fmt(sc.ieer) + '</td>';
+            h += '<td class="sp-cell-edit"><input class="sp-input sp-input-acc" type="text" value="' + esc(entry.outdoorAccessories||"") + '" data-entry="' + ei + '" data-field="outdoorAccessories"></td>';
+            h += '</tr>';
+        }
+        h += '</tbody></table></div>';
+        return h;
+    }
+
+    // -----------------------------------------------------------------------
     // Action Cell Builder
     // -----------------------------------------------------------------------
     function buildActionCell(ei, numIdu, entry) {
@@ -848,6 +950,11 @@ const SchedulePreview = (function () {
         var availableNotes = DataLoader.getScheduleNotes(productKey);
         var checkedNotes = _notesByProduct[productKey] || [];
 
+        // If product preserves note numbering, render notes without auto-numbering
+        // (they already contain their own numbering prefix / section headers)
+        var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(productKey)) || {};
+        var preserveNumbering = !!settings.preserveNoteNumbering;
+
         var h = '<div class="sp-sched-notes-section">';
 
         // Active notes display (ordered list of checked notes)
@@ -855,10 +962,17 @@ const SchedulePreview = (function () {
         h += '<div class="sp-active-notes-heading">SCHEDULE NOTES:</div>';
         if (checkedNotes.length === 0) {
             h += '<div class="sp-active-notes-empty">No notes selected. Check notes below to add them.</div>';
+        } else if (preserveNumbering) {
+            // Render without auto-numbering — notes already have their own prefix/structure
+            h += '<div class="sp-active-notes-preserve">';
+            for (var ai = 0; ai < checkedNotes.length; ai++) {
+                h += '<div class="sp-active-note-line">' + esc(checkedNotes[ai]) + '</div>';
+            }
+            h += '</div>';
         } else {
             h += '<ol class="sp-active-notes-list">';
-            for (var ai = 0; ai < checkedNotes.length; ai++) {
-                h += '<li>' + esc(checkedNotes[ai]) + '</li>';
+            for (var ai2 = 0; ai2 < checkedNotes.length; ai2++) {
+                h += '<li>' + esc(checkedNotes[ai2]) + '</li>';
             }
             h += '</ol>';
         }
@@ -1066,7 +1180,7 @@ const SchedulePreview = (function () {
         }
 
         // Select all checkboxes
-        var selAlls = _overlay.querySelectorAll("#sp-select-all, #sp-select-all-mps, #sp-select-all-gp");
+        var selAlls = _overlay.querySelectorAll("#sp-select-all, #sp-select-all-mps, #sp-select-all-gp, #sp-select-all-mv");
         for (var sa = 0; sa < selAlls.length; sa++) {
             selAlls[sa].addEventListener("change", function () {
                 var checked = this.checked;
@@ -1412,6 +1526,8 @@ const SchedulePreview = (function () {
             }
             if (sys.productKey === "gas-packs") {
                 addPdf(d.submittal);
+            } else if (sys.productKey === "marvair-vertical") {
+                addPdf(d.dataSheet);
             } else if (sys.productKey === "multi-position") {
                 addPdf(d.submittalSystem);
                 addPdf(d.submittalOutdoor);
