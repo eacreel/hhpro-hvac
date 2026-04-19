@@ -1,0 +1,85 @@
+/* ============================================================
+   Login View
+   ============================================================ */
+
+.login-view {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    background: linear-gradient(135deg, #1e2a3a 0%, #0f4c75 100%);
+}
+
+.login-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xxl);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+}
+
+.login-title {
+    font-size: var(--font-size-xxl);
+    color: var(--color-primary);
+    margin-bottom: var(--space-xs);
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.login-subtitle {
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-bottom: var(--space-xl);
+    font-size: var(--font-size-sm);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.login-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.login-input {
+    padding: 12px 14px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    transition: border-color var(--transition-fast);
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+}
+
+.login-error {
+    color: var(--color-error);
+    font-size: var(--font-size-sm);
+    min-height: 20px;
+}
+
+.login-submit {
+    width: 100%;
+    padding: 12px;
+    font-size: var(--font-size-base);
+    margin-top: var(--space-sm);
+}
+
+/* Shake animation when password is wrong */
+.login-card.shake {
+    animation: login-shake 0.4s;
+}
+
+@keyframes login-shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}

@@ -1,0 +1,1008 @@
+/* ============================================================
+   HHpro - Cart / Project state + panel UI
+   ------------------------------------------------------------
+   Manages the active selection of items the user is building up.
+
+   Two modes, managed by the same data shape:
+     - 'cart'    : a temporary list, lost on tab close
+     - 'project' : backed by an entry in localStorage under
+                   'hhpro_projects'
+
+   Persistence:
+     sessionStorage 'hhpro_active_cart'    -> the active cart/project
+     localStorage   'hhpro_projects'       -> map of projectId -> project data
+
+   Data shapes:
+     project = {
+       id, name, createdAt, updatedAt,
+       items: [{
+         instanceId, productKey, selectionId, label, addedAt,
+         tag        // optional - set by Auto Tag on the View Project page
+       }],
+       extra: {     // per-product settings persisted with the project
+         <productKey>: {
+           hiddenColumns: [...],        // schedule column letters to hide
+           lastAutoTag: { prefix, start } // remembered for convenience
+         }
+       }
+     }
+
+   Public API:
+     -- Cart / panel --
+     HHpro.Cart.init()
+     HHpro.Cart.addItem(productKey, selectionId, label)
+     HHpro.Cart.duplicateItem(instanceId)
+     HHpro.Cart.removeItem(instanceId)
+     HHpro.Cart.updateItem(instanceId, patch)
+     HHpro.Cart.computeLabel(product, selection, data)
+     HHpro.Cart.openPanel() / closePanel() / togglePanel()
+
+     -- Active-state reads --
+     HHpro.Cart.getActiveState()         -> snapshot of { mode, projectId, name, items, extra }
+     HHpro.Cart.hasUnsavedCartItems()    -> true iff mode=cart with items
+
+     -- Per-project extra data (column visibility etc.) --
+     HHpro.Cart.getProjectExtra(productKey)        -> object
+     HHpro.Cart.setProjectExtra(productKey, patch) -> merges patch into extra[productKey]
+
+     -- Project management --
+     HHpro.Cart.listProjects()
+     HHpro.Cart.getCurrentProjectId()
+     HHpro.Cart.activateProject(id)
+     HHpro.Cart.deleteProject(id)
+     HHpro.Cart.createAndActivateProject(name)
+     HHpro.Cart.promptProjectName(onDone)
+     HHpro.Cart.mergeImportedProjects(list, options)
+   ============================================================ */
+
+(function () {
+    'use strict';
+    window.HHpro = window.HHpro || {};
+
+    // --- storage keys ------------------------------------------------
+    var SESSION_KEY = 'hhpro_active_cart';
+    var PROJECTS_KEY = 'hhpro_projects';
+
+    // --- in-memory state (mirror of sessionStorage) ------------------
+    var state = {
+        mode: null,      // null | 'cart' | 'project'
+        projectId: null,
+        name: null,
+        items: [],       // [{ instanceId, productKey, selectionId, label, addedAt, tag? }]
+        extra: {},       // { <productKey>: { hiddenColumns, lastAutoTag } }
+        nextInstanceNum: 1
+    };
+
+    // --- DOM refs (set during init) ----------------------------------
+    var toggleBtn = null;
+    var toggleLabel = null;
+    var toggleCount = null;
+    var panel = null;
+    var panelTitle = null;
+    var panelItemsList = null;
+    var panelEmpty = null;
+
+    // =================================================================
+    // Public API
+    // =================================================================
+
+    HHpro.Cart = {
+        init: init,
+        addItem: addItem,
+        duplicateItem: duplicateItem,
+        removeItem: removeItem,
+        updateItem: updateItem,
+        computeLabel: computeLabel,
+        openPanel: openPanel,
+        closePanel: closePanel,
+        togglePanel: togglePanel,
+
+        getActiveState: getActiveState,
+        hasUnsavedCartItems: hasUnsavedCartItems,
+
+        getProjectExtra: getProjectExtra,
+        setProjectExtra: setProjectExtra,
+
+        listProjects: listProjects,
+        getCurrentProjectId: getCurrentProjectId,
+        activateProject: activateProject,
+        deleteProject: deleteProject,
+        createAndActivateProject: createAndActivateProject,
+        exitProject: clearActiveState,
+        promptProjectName: promptProjectName,
+        mergeImportedProjects: mergeImportedProjects
+    };
+
+    // =================================================================
+    // Initialization
+    // =================================================================
+
+    // Set to true once the first init() has run in this page's
+    // lifetime. Used so subsequent init() calls (each view's render
+    // does one) don't clobber the in-memory state.
+    var initialized = false;
+
+    function init() {
+        if (!initialized) {
+            // Fresh page load: start in a neutral state, regardless of
+            // whether there's a project in sessionStorage from a
+            // previous session. The user has to explicitly reopen a
+            // project (or add something to the cart) to get going.
+            try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
+            state = {
+                mode: null, projectId: null, name: null,
+                items: [], extra: {}, nextInstanceNum: 1
+            };
+            initialized = true;
+        }
+        buildUI();
+        renderPanel();
+        renderToggle();
+    }
+
+    // Kept available in case other code ever wants to manually
+    // restore - not called from init() any more.
+    function loadStateFromSession() {
+        try {
+            var raw = sessionStorage.getItem(SESSION_KEY);
+            if (!raw) return;
+            var parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+                state.mode = parsed.mode || null;
+                state.projectId = parsed.projectId || null;
+                state.name = parsed.name || null;
+                state.items = Array.isArray(parsed.items) ? parsed.items : [];
+                state.extra = (parsed.extra && typeof parsed.extra === 'object') ? parsed.extra : {};
+                state.nextInstanceNum = parsed.nextInstanceNum || (state.items.length + 1);
+            }
+        } catch (e) {
+            state = {
+                mode: null, projectId: null, name: null,
+                items: [], extra: {}, nextInstanceNum: 1
+            };
+        }
+    }
+
+    function saveStateToSession() {
+        try {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
+        } catch (e) { /* non-fatal */ }
+        if (state.mode === 'project' && state.projectId) {
+            syncProjectRecord();
+        }
+    }
+
+    // =================================================================
+    // Project persistence (localStorage)
+    // =================================================================
+
+    function loadProjects() {
+        try {
+            var raw = localStorage.getItem(PROJECTS_KEY);
+            if (!raw) return {};
+            var parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveProjects(projects) {
+        try {
+            localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+        } catch (e) {
+            alert('Could not save project - browser storage is unavailable or full.');
+        }
+    }
+
+    function newProjectId() {
+        return 'proj_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    }
+
+    function createProject(name) {
+        var id = newProjectId();
+        var projects = loadProjects();
+        var now = new Date().toISOString();
+        projects[id] = {
+            id: id,
+            name: name,
+            items: [],
+            extra: {},
+            createdAt: now,
+            updatedAt: now
+        };
+        saveProjects(projects);
+        return projects[id];
+    }
+
+    /**
+     * Push the full active state (items + extra) back to the project record
+     * in localStorage. Called after any mutation so the project is always
+     * up to date on disk.
+     */
+    function syncProjectRecord() {
+        var projects = loadProjects();
+        var existing = projects[state.projectId];
+        if (!existing) return;
+        existing.items = state.items.slice();
+        existing.extra = deepClone(state.extra);
+        existing.updatedAt = new Date().toISOString();
+        saveProjects(projects);
+    }
+
+    function deepClone(obj) {
+        try {
+            return JSON.parse(JSON.stringify(obj));
+        } catch (e) {
+            return {};
+        }
+    }
+
+    // =================================================================
+    // Project management - public
+    // =================================================================
+
+    function listProjects() {
+        var projects = loadProjects();
+        var list = Object.keys(projects).map(function (id) { return projects[id]; });
+        list.sort(function (a, b) {
+            return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+        });
+        return list;
+    }
+
+    function getCurrentProjectId() {
+        return state.mode === 'project' ? state.projectId : null;
+    }
+
+    function activateProject(id) {
+        var projects = loadProjects();
+        if (!projects[id]) return false;
+        startProjectMode(projects[id]);
+        renderPanel();
+        renderToggle();
+        return true;
+    }
+
+    function deleteProject(id) {
+        var projects = loadProjects();
+        if (!projects[id]) return false;
+        delete projects[id];
+        saveProjects(projects);
+        if (state.mode === 'project' && state.projectId === id) {
+            clearActiveState();
+        }
+        return true;
+    }
+
+    function createAndActivateProject(name) {
+        var proj = createProject(name);
+        startProjectMode(proj);
+        renderPanel();
+        renderToggle();
+        return proj;
+    }
+
+    function hasUnsavedCartItems() {
+        return state.mode === 'cart' && state.items.length > 0;
+    }
+
+    function clearActiveState() {
+        state.mode = null;
+        state.projectId = null;
+        state.name = null;
+        state.items = [];
+        state.extra = {};
+        state.nextInstanceNum = 1;
+        try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
+        renderPanel();
+        renderToggle();
+    }
+
+    function mergeImportedProjects(projectsArray, options) {
+        var opts = options || {};
+        var onConflict = opts.onConflict || 'rename';
+        var projects = loadProjects();
+
+        var existingByName = {};
+        Object.keys(projects).forEach(function (id) {
+            existingByName[(projects[id].name || '').toLowerCase()] = id;
+        });
+
+        var counts = { imported: 0, renamed: 0, replaced: 0, skipped: 0 };
+        var nowIso = new Date().toISOString();
+
+        projectsArray.forEach(function (incoming) {
+            if (!incoming || !incoming.name) {
+                counts.skipped++;
+                return;
+            }
+            var existingId = existingByName[(incoming.name || '').toLowerCase()];
+            var finalName = incoming.name;
+            var finalId = newProjectId();
+
+            if (existingId !== undefined) {
+                if (onConflict === 'skip') {
+                    counts.skipped++;
+                    return;
+                } else if (onConflict === 'replace') {
+                    finalId = existingId;
+                    counts.replaced++;
+                } else {
+                    finalName = makeUniqueName(incoming.name, projects);
+                    counts.renamed++;
+                }
+            } else {
+                counts.imported++;
+            }
+
+            projects[finalId] = {
+                id: finalId,
+                name: finalName,
+                items: Array.isArray(incoming.items) ? incoming.items.slice() : [],
+                extra: (incoming.extra && typeof incoming.extra === 'object') ? incoming.extra : {},
+                createdAt: incoming.createdAt || nowIso,
+                updatedAt: incoming.updatedAt || nowIso
+            };
+            existingByName[finalName.toLowerCase()] = finalId;
+        });
+
+        saveProjects(projects);
+        return counts;
+    }
+
+    function makeUniqueName(baseName, projects) {
+        var used = {};
+        Object.keys(projects).forEach(function (id) {
+            used[(projects[id].name || '').toLowerCase()] = true;
+        });
+        var candidate = baseName + ' (imported)';
+        var n = 2;
+        while (used[candidate.toLowerCase()]) {
+            candidate = baseName + ' (imported ' + n + ')';
+            n++;
+        }
+        return candidate;
+    }
+
+    // =================================================================
+    // Active-state reads & writes
+    // =================================================================
+
+    function getActiveState() {
+        return {
+            mode: state.mode,
+            projectId: state.projectId,
+            name: state.name,
+            items: state.items.slice(),
+            extra: deepClone(state.extra)
+        };
+    }
+
+    /**
+     * Patch a single field (or several) on an item by instance id.
+     * Skips silently if the item no longer exists.
+     */
+    function updateItem(instanceId, patch) {
+        var idx = indexOfItem(instanceId);
+        if (idx < 0 || !patch || typeof patch !== 'object') return;
+        var it = state.items[idx];
+        Object.keys(patch).forEach(function (k) {
+            it[k] = patch[k];
+        });
+        saveStateToSession();
+        renderPanel();
+        renderToggle();
+    }
+
+    function getProjectExtra(productKey) {
+        if (!productKey) return {};
+        return deepClone(state.extra && state.extra[productKey] ? state.extra[productKey] : {});
+    }
+
+    /**
+     * Shallow-merge a patch into state.extra[productKey] and persist.
+     */
+    function setProjectExtra(productKey, patch) {
+        if (!productKey || !patch || typeof patch !== 'object') return;
+        if (!state.extra[productKey]) state.extra[productKey] = {};
+        Object.keys(patch).forEach(function (k) {
+            state.extra[productKey][k] = patch[k];
+        });
+        saveStateToSession();
+    }
+
+    // =================================================================
+    // Mode setup (internal)
+    // =================================================================
+
+    function ensureModeChosen(onReady) {
+        if (state.mode !== null) {
+            onReady();
+            return;
+        }
+        openFirstSelectPrompt(onReady);
+    }
+
+    function startCartMode() {
+        state.mode = 'cart';
+        state.projectId = null;
+        state.name = 'Cart';
+        state.extra = {};
+        saveStateToSession();
+    }
+
+    function startProjectMode(project) {
+        state.mode = 'project';
+        state.projectId = project.id;
+        state.name = project.name;
+        state.items = Array.isArray(project.items) ? project.items.slice() : [];
+        state.extra = (project.extra && typeof project.extra === 'object')
+            ? deepClone(project.extra) : {};
+        var maxNum = 0;
+        state.items.forEach(function (it) {
+            var n = parseInt((it.instanceId || '').replace(/\D/g, ''), 10);
+            if (!isNaN(n) && n > maxNum) maxNum = n;
+        });
+        state.nextInstanceNum = maxNum + 1;
+        saveStateToSession();
+    }
+
+    // =================================================================
+    // Adding / removing / duplicating items
+    // =================================================================
+
+    function addItem(productKey, selectionId, label) {
+        ensureModeChosen(function () {
+            var instanceId = 'item_' + String(state.nextInstanceNum).padStart(4, '0');
+            state.nextInstanceNum++;
+            state.items.push({
+                instanceId: instanceId,
+                productKey: productKey,
+                selectionId: selectionId,
+                label: label || selectionId,
+                addedAt: new Date().toISOString(),
+                tag: ''
+            });
+            saveStateToSession();
+            renderPanel();
+            renderToggle();
+            flashToggle();
+        });
+    }
+
+    function duplicateItem(instanceId) {
+        var idx = indexOfItem(instanceId);
+        if (idx < 0) return;
+        var orig = state.items[idx];
+        var newInstanceId = 'item_' + String(state.nextInstanceNum).padStart(4, '0');
+        state.nextInstanceNum++;
+
+        // Deep-copy the original so optional array/object fields (like
+        // indoorTags) don't get shared by reference, then override the
+        // identity fields.
+        var duplicate;
+        try {
+            duplicate = JSON.parse(JSON.stringify(orig));
+        } catch (e) {
+            duplicate = {};
+        }
+        duplicate.instanceId = newInstanceId;
+        duplicate.addedAt = new Date().toISOString();
+        // Don't copy the tag - each item should get its own tag so the
+        // user doesn't accidentally end up with two items sharing one
+        duplicate.tag = '';
+
+        state.items.splice(idx + 1, 0, duplicate);
+        saveStateToSession();
+        renderPanel();
+        renderToggle();
+    }
+
+    function removeItem(instanceId) {
+        var idx = indexOfItem(instanceId);
+        if (idx < 0) return;
+        state.items.splice(idx, 1);
+        saveStateToSession();
+        renderPanel();
+        renderToggle();
+    }
+
+    function indexOfItem(instanceId) {
+        for (var i = 0; i < state.items.length; i++) {
+            if (state.items[i].instanceId === instanceId) return i;
+        }
+        return -1;
+    }
+
+    // =================================================================
+    // Cart-item label generation
+    // =================================================================
+
+    function computeLabel(product, sel, data) {
+        var row0 = sel.rows[0] || {};
+        var filterData = row0.filterData || {};
+        var scheduleData = row0.scheduleData || {};
+
+        var sizeValue = null;
+        var filterColumns = (data && data.filterColumns) || [];
+        for (var i = 0; i < filterColumns.length; i++) {
+            var v = filterData[filterColumns[i].name];
+            if (v !== null && v !== undefined && v !== '' && v !== '-') {
+                sizeValue = v;
+                break;
+            }
+        }
+
+        var modelCol = findModelColumn(data);
+        var modelValue = (modelCol && scheduleData[modelCol] !== undefined)
+            ? scheduleData[modelCol] : null;
+
+        var parts = [];
+        if (sizeValue !== null) {
+            var numeric = parseFloat(sizeValue);
+            if (!isNaN(numeric) && isFinite(numeric) && String(numeric) === String(sizeValue).trim()) {
+                parts.push(String(sizeValue) + ' TON');
+            } else {
+                parts.push(String(sizeValue));
+            }
+        }
+        if (modelValue !== null && modelValue !== undefined && modelValue !== '') {
+            parts.push(String(modelValue));
+        }
+        if (sel.rows.length > 1) {
+            parts.push('(' + sel.rows.length + ' indoor units)');
+        }
+        return parts.length ? parts.join(' / ') : sel.id;
+    }
+
+    function findModelColumn(data) {
+        var headerRows = (data && data.scheduleHeader && data.scheduleHeader.rows) || [];
+        var found = null;
+        for (var ri = 0; ri < headerRows.length; ri++) {
+            var row = headerRows[ri];
+            for (var ci = 0; ci < row.length; ci++) {
+                var cell = row[ci];
+                var val = (cell && cell.value !== undefined && cell.value !== null)
+                    ? String(cell.value).trim().toUpperCase() : '';
+                if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' || val === 'MODEL #') {
+                    found = cell.col;
+                }
+            }
+        }
+        return found;
+    }
+
+    // =================================================================
+    // DOM construction (cart toggle + slide-in panel)
+    // =================================================================
+
+    function buildUI() {
+        if (document.getElementById('cart-root')) return;
+
+        var root = document.createElement('div');
+        root.id = 'cart-root';
+
+        toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.id = 'cart-toggle';
+        toggleBtn.className = 'cart-toggle';
+        toggleBtn.setAttribute('aria-label', 'Open cart');
+        toggleBtn.addEventListener('click', togglePanel);
+
+        toggleLabel = document.createElement('span');
+        toggleLabel.className = 'cart-toggle-label';
+        toggleLabel.textContent = 'Cart';
+
+        toggleCount = document.createElement('span');
+        toggleCount.className = 'cart-toggle-count';
+        toggleCount.textContent = '0';
+
+        toggleBtn.appendChild(toggleLabel);
+        toggleBtn.appendChild(toggleCount);
+
+        panel = document.createElement('aside');
+        panel.id = 'cart-panel';
+        panel.className = 'cart-panel';
+
+        var panelHeader = document.createElement('div');
+        panelHeader.className = 'cart-panel-header';
+
+        panelTitle = document.createElement('h2');
+        panelTitle.className = 'cart-panel-title';
+        panelTitle.textContent = 'Cart';
+
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'cart-panel-close';
+        closeBtn.setAttribute('aria-label', 'Close cart');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', closePanel);
+
+        panelHeader.appendChild(panelTitle);
+        panelHeader.appendChild(closeBtn);
+
+        var viewProjectBtn = document.createElement('button');
+        viewProjectBtn.type = 'button';
+        viewProjectBtn.className = 'cart-view-project';
+        viewProjectBtn.textContent = 'View Project';
+        viewProjectBtn.addEventListener('click', function () {
+            closePanel();
+            if (state.mode === null) {
+                // No project/cart active yet - route to Projects list instead
+                HHpro.App.showView('projects');
+            } else {
+                HHpro.App.showView('project_view');
+            }
+        });
+
+        panelItemsList = document.createElement('div');
+        panelItemsList.className = 'cart-items-list';
+
+        panelEmpty = document.createElement('div');
+        panelEmpty.className = 'cart-items-empty';
+        panelEmpty.textContent = 'No items selected yet.';
+
+        panel.appendChild(panelHeader);
+        panel.appendChild(viewProjectBtn);
+        panel.appendChild(panelEmpty);
+        panel.appendChild(panelItemsList);
+
+        root.appendChild(toggleBtn);
+        root.appendChild(panel);
+        document.body.appendChild(root);
+    }
+
+    function openPanel() {
+        if (!panel) return;
+        panel.classList.add('open');
+        toggleBtn.classList.add('cart-toggle-hidden');
+    }
+
+    function closePanel() {
+        if (!panel) return;
+        panel.classList.remove('open');
+        toggleBtn.classList.remove('cart-toggle-hidden');
+    }
+
+    function togglePanel() {
+        if (!panel) return;
+        if (panel.classList.contains('open')) closePanel();
+        else openPanel();
+    }
+
+    function flashToggle() {
+        if (!toggleBtn) return;
+        toggleBtn.classList.remove('cart-toggle-flash');
+        void toggleBtn.offsetWidth;
+        toggleBtn.classList.add('cart-toggle-flash');
+    }
+
+    // =================================================================
+    // Panel rendering
+    // =================================================================
+
+    function renderPanel() {
+        if (!panel) return;
+        panelTitle.textContent = state.name || 'Cart';
+
+        if (!state.items.length) {
+            panelEmpty.style.display = '';
+            panelItemsList.innerHTML = '';
+            return;
+        }
+        panelEmpty.style.display = 'none';
+
+        var groups = {};
+        var order = [];
+        state.items.forEach(function (it) {
+            if (!groups[it.productKey]) {
+                groups[it.productKey] = [];
+                order.push(it.productKey);
+            }
+            groups[it.productKey].push(it);
+        });
+
+        panelItemsList.innerHTML = '';
+        order.forEach(function (productKey) {
+            var product = HHpro.Data && HHpro.Data.getProduct
+                ? HHpro.Data.getProduct(productKey) : null;
+            var productName = product ? product.displayName : productKey.toUpperCase();
+
+            var groupEl = document.createElement('div');
+            groupEl.className = 'cart-group';
+
+            var groupHeader = document.createElement('div');
+            groupHeader.className = 'cart-group-header';
+            groupHeader.textContent = productName;
+            groupEl.appendChild(groupHeader);
+
+            groups[productKey].forEach(function (it) {
+                groupEl.appendChild(renderCartItem(it));
+            });
+            panelItemsList.appendChild(groupEl);
+        });
+    }
+
+    function renderCartItem(item) {
+        var el = document.createElement('div');
+        el.className = 'cart-item';
+
+        var label = document.createElement('div');
+        label.className = 'cart-item-label';
+        label.textContent = item.label || item.selectionId;
+
+        var actions = document.createElement('div');
+        actions.className = 'cart-item-actions';
+
+        var dupBtn = document.createElement('button');
+        dupBtn.type = 'button';
+        dupBtn.className = 'cart-item-btn cart-item-btn-secondary';
+        dupBtn.textContent = 'Duplicate';
+        dupBtn.addEventListener('click', function () { duplicateItem(item.instanceId); });
+
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'cart-item-btn cart-item-btn-danger';
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', function () { removeItem(item.instanceId); });
+
+        actions.appendChild(dupBtn);
+        actions.appendChild(delBtn);
+
+        el.appendChild(label);
+        el.appendChild(actions);
+        return el;
+    }
+
+    function renderToggle() {
+        if (!toggleBtn) return;
+        toggleCount.textContent = String(state.items.length);
+        toggleBtn.classList.toggle('cart-toggle-has-items', state.items.length > 0);
+        // Label follows the active context: project name when working
+        // inside a project, "Cart" otherwise. Matches the panel title.
+        if (toggleLabel) {
+            toggleLabel.textContent = (state.mode === 'project' && state.name)
+                ? state.name
+                : 'Cart';
+            toggleBtn.setAttribute('aria-label',
+                'Open ' + (state.mode === 'project' ? 'project panel' : 'cart'));
+        }
+    }
+
+    // =================================================================
+    // First-select prompt modal
+    // =================================================================
+
+    function openFirstSelectPrompt(onReady) {
+        var backdrop = buildModalBackdrop();
+        var modal = buildModalBox();
+
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = 'Where should this item go?';
+
+        var desc = document.createElement('p');
+        desc.className = 'modal-desc';
+        desc.textContent = 'You can save selections to a named project (recommended) or use a temporary cart that won\'t be saved after you close the browser.';
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions modal-actions-stacked';
+
+        var createBtn = modalButton('Create new project', 'primary', function () {
+            closeModal(backdrop);
+            promptProjectName(function (projectName) {
+                if (!projectName) return;
+                var proj = createProject(projectName);
+                startProjectMode(proj);
+                renderPanel();
+                renderToggle();
+                onReady();
+            });
+        });
+
+        var projects = loadProjects();
+        var hasProjects = Object.keys(projects).length > 0;
+        var openBtn = modalButton('Open existing project', 'secondary', function () {
+            closeModal(backdrop);
+            openProjectPicker(function (project) {
+                if (!project) return;
+                startProjectMode(project);
+                renderPanel();
+                renderToggle();
+                onReady();
+            });
+        });
+        if (!hasProjects) {
+            openBtn.disabled = true;
+            openBtn.title = 'No projects saved yet';
+        }
+
+        var cartBtn = modalButton('Continue with temporary cart', 'secondary', function () {
+            closeModal(backdrop);
+            startCartMode();
+            onReady();
+        });
+
+        actions.appendChild(createBtn);
+        actions.appendChild(openBtn);
+        actions.appendChild(cartBtn);
+
+        modal.appendChild(title);
+        modal.appendChild(desc);
+        modal.appendChild(actions);
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+    }
+
+    // =================================================================
+    // Project-name modal (public)
+    // =================================================================
+
+    function promptProjectName(onDone) {
+        var backdrop = buildModalBackdrop();
+        var modal = buildModalBox();
+
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = 'Name your project';
+
+        var desc = document.createElement('p');
+        desc.className = 'modal-desc';
+        desc.textContent = 'Give this project a name you\'ll recognize later.';
+
+        var inputWrap = document.createElement('div');
+        inputWrap.className = 'modal-input-wrap';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'modal-input';
+        input.placeholder = 'e.g. Project Alpha';
+        input.maxLength = 80;
+        inputWrap.appendChild(input);
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+
+        var cancelBtn = modalButton('Cancel', 'secondary', function () {
+            closeModal(backdrop);
+            onDone(null);
+        });
+        var confirmBtn = modalButton('Create', 'primary', function () {
+            var name = input.value.trim();
+            if (!name) { input.focus(); return; }
+            closeModal(backdrop);
+            onDone(name);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); }
+            else if (e.key === 'Escape') { e.preventDefault(); cancelBtn.click(); }
+        });
+
+        actions.appendChild(cancelBtn);
+        actions.appendChild(confirmBtn);
+
+        modal.appendChild(title);
+        modal.appendChild(desc);
+        modal.appendChild(inputWrap);
+        modal.appendChild(actions);
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+
+        setTimeout(function () { input.focus(); }, 0);
+    }
+
+    // =================================================================
+    // Project picker modal
+    // =================================================================
+
+    function openProjectPicker(onDone) {
+        var list = listProjects();
+
+        var backdrop = buildModalBackdrop();
+        var modal = buildModalBox();
+
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = 'Open existing project';
+
+        var listEl = document.createElement('div');
+        listEl.className = 'modal-project-list';
+
+        list.forEach(function (proj) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'modal-project-item';
+
+            var name = document.createElement('div');
+            name.className = 'modal-project-name';
+            name.textContent = proj.name;
+
+            var meta = document.createElement('div');
+            meta.className = 'modal-project-meta';
+            var count = (proj.items && proj.items.length) || 0;
+            meta.textContent = count + ' item' + (count === 1 ? '' : 's');
+
+            btn.appendChild(name);
+            btn.appendChild(meta);
+            btn.addEventListener('click', function () {
+                closeModal(backdrop);
+                onDone(proj);
+            });
+            listEl.appendChild(btn);
+        });
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        var cancelBtn = modalButton('Cancel', 'secondary', function () {
+            closeModal(backdrop);
+            onDone(null);
+        });
+        actions.appendChild(cancelBtn);
+
+        modal.appendChild(title);
+        modal.appendChild(listEl);
+        modal.appendChild(actions);
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+    }
+
+    // =================================================================
+    // Shared modal helpers
+    // =================================================================
+
+    function buildModalBackdrop() {
+        var bd = document.createElement('div');
+        bd.className = 'modal-backdrop';
+        bd.addEventListener('click', function (e) {
+            if (e.target === bd) closeModal(bd);
+        });
+        return bd;
+    }
+
+    function buildModalBox() {
+        var m = document.createElement('div');
+        m.className = 'modal';
+        return m;
+    }
+
+    function closeModal(backdrop) {
+        if (backdrop && backdrop.parentNode) {
+            backdrop.parentNode.removeChild(backdrop);
+        }
+    }
+
+    function modalButton(text, variant, onClick) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'modal-btn modal-btn-' + (variant || 'secondary');
+        btn.textContent = text;
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    // =================================================================
+    // Auto-init (after login)
+    // =================================================================
+
+    function tryAutoInit() {
+        if (!HHpro.State || typeof HHpro.State.isLoggedIn !== 'function') return false;
+        if (!HHpro.State.isLoggedIn()) return false;
+        init();
+        return true;
+    }
+
+    function setupAutoInit() {
+        if (tryAutoInit()) return;
+        var intervalId = setInterval(function () {
+            if (tryAutoInit()) clearInterval(intervalId);
+        }, 1000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupAutoInit);
+    } else {
+        setupAutoInit();
+    }
+})();

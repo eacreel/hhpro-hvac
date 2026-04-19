@@ -1,0 +1,235 @@
+/* ============================================================
+   HHpro - Base Styles
+   ------------------------------------------------------------
+   CSS variables, reset, typography, and shared components used
+   across every view. All other CSS files build on these.
+   ============================================================ */
+
+:root {
+    /* Colors - surfaces */
+    --color-bg: #f5f7fa;
+    --color-bg-dark: #1e2a3a;
+    --color-surface: #ffffff;
+    --color-border: #dde3ec;
+    --color-border-strong: #b8c2d1;
+
+    /* Colors - text */
+    --color-text: #1a2332;
+    --color-text-muted: #5a6578;
+    --color-text-inverse: #ffffff;
+
+    /* Colors - brand */
+    --color-primary: #0f4c75;
+    --color-primary-hover: #123f5f;
+    --color-primary-light: #3282b8;
+
+    /* Colors - semantic */
+    --color-error: #c0392b;
+    --color-success: #27ae60;
+    --color-warning: #f39c12;
+    --color-row-hover: #eef4f8;
+
+    /* Product tile placeholder colors (used until real JPGs are added) */
+    --tile-projects: #2c3e50;
+    --tile-gas-packs: #c0392b;
+    --tile-marvair: #27ae60;
+    --tile-mini-splits: #2980b9;
+    --tile-multi-position-splits: #8e44ad;
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.5rem;
+    --font-size-xxl: 2rem;
+
+    /* Spacing scale */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+
+    /* Borders & radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-med: 250ms ease;
+}
+
+/* Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    /* Disable outer page scroll so each view controls its own scrolling.
+       Main view scrolls inside .app-main; product view scrolls inside
+       .schedule-wrap (header + filters stay pinned above). */
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+#app-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+p {
+    margin: 0;
+}
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+    padding: 0;
+}
+
+input, select {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Shared button component */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    transition: background-color var(--transition-fast);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+    background-color: var(--color-border-strong);
+    cursor: not-allowed;
+}
+
+/* App-level header (main view and product view both use this) */
+.app-header {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-inverse);
+    padding: var(--space-md) var(--space-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.app-header-brand {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.header-action {
+    color: var(--color-text-inverse);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: background-color var(--transition-fast);
+}
+
+.header-action:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Breadcrumb in the header */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.breadcrumb-link {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text-inverse);
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+    padding: 4px 0;
+    letter-spacing: 0.5px;
+}
+
+.breadcrumb-link:hover {
+    opacity: 0.85;
+}
+
+.breadcrumb-sep {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: var(--font-size-lg);
+}
+
+.breadcrumb-current {
+    font-size: var(--font-size-base);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Main content area - default is "scroll internally if content is tall".
+   Individual views can override this if they want to manage scroll differently
+   (e.g. product view uses overflow: hidden and puts scrolling on the table). */
+.app-main {
+    flex: 1;
+    padding: var(--space-xl);
+    overflow: auto;
+    min-height: 0;
+}
+
+/* Utility */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

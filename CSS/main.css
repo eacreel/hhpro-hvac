@@ -1,675 +1,89 @@
-/* ==========================================================================
-   main.css — Global layout, variables, reset, top bar, product tabs,
-   loading overlay
-   ========================================================================== */
+/* ============================================================
+   Main Overview View
+   ------------------------------------------------------------
+   Landing page after login. A grid of tiles: Projects first,
+   then one per product type.
+   ============================================================ */
 
-/* --------------------------------------------------------------------------
-   CSS Custom Properties
-   -------------------------------------------------------------------------- */
-:root {
-    /* Brand */
-    --color-brand:              #0054A6;
-    --color-brand-dark:         #003D7A;
-    --color-brand-light:        #E8F1FA;
-    --color-brand-lighter:      #F0F6FD;
-    --color-accent:             #E86A10;
-    --color-accent-hover:       #D05E00;
-    --color-accent-light:       #FFF3E8;
-
-    /* Neutrals — warmer tones */
-    --color-bg:                 #ECEEF4;
-    --color-surface:            #FFFFFF;
-    --color-surface-alt:        #F6F7FB;
-    --color-border:             #D0D5E0;
-    --color-border-light:       #E4E8F0;
-    --color-text:               #1B1F27;
-    --color-text-secondary:     #4A5268;
-    --color-text-muted:         #7E8698;
-    --color-text-inverse:       #FFFFFF;
-
-    /* Schedule-specific */
-    --color-header-bg:          #17528F;
-    --color-header-bg-sub:      #2670B5;
-    --color-header-text:        #FFFFFF;
-    --color-row-even:           #FFFFFF;
-    --color-row-odd:            #F4F6FA;
-    --color-row-hover:          #DCEAF8;
-    --color-cell-border:        #DEE2EA;
-    --color-cell-editable-bg:   #FFFDE7;
-
-    /* Feedback */
-    --color-success:            #1A8A4A;
-    --color-success-bg:         #E6F6ED;
-    --color-warning:            #B45309;
-    --color-warning-bg:         #FEF3C7;
-    --color-danger:             #D1293D;
-    --color-danger-bg:          #FDE8EB;
-
-    /* Typography */
-    --font-primary:             'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono:                'IBM Plex Mono', 'Consolas', 'Monaco', monospace;
-    --font-size-xs:             0.6875rem;   /* 11px */
-    --font-size-sm:             0.75rem;     /* 12px */
-    --font-size-base:           0.8125rem;   /* 13px */
-    --font-size-md:             0.875rem;    /* 14px */
-    --font-size-lg:             1rem;        /* 16px */
-    --font-size-xl:             1.25rem;     /* 20px */
-    --font-size-2xl:            1.5rem;      /* 24px */
-    --font-weight-regular:      400;
-    --font-weight-medium:       500;
-    --font-weight-semibold:     600;
-    --font-weight-bold:         700;
-
-    /* Spacing */
-    --space-xxs:                2px;
-    --space-xs:                 4px;
-    --space-sm:                 8px;
-    --space-md:                 12px;
-    --space-lg:                 16px;
-    --space-xl:                 24px;
-    --space-2xl:                32px;
-    --space-3xl:                48px;
-
-    /* Layout */
-    --top-bar-height:           56px;
-    --tab-bar-height:           46px;
-    --filter-bar-min-height:    56px;
-    --project-panel-width:      420px;
-    --border-radius:            6px;
-    --border-radius-lg:         10px;
-    --border-radius-xl:         14px;
-
-    /* Shadows — more layered and refined */
-    --shadow-sm:                0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.04);
-    --shadow-md:                0 2px 6px rgba(0, 0, 0, 0.05), 0 6px 16px rgba(0, 0, 0, 0.06);
-    --shadow-lg:                0 4px 8px rgba(0, 0, 0, 0.05), 0 12px 28px rgba(0, 0, 0, 0.1);
-    --shadow-panel:             -2px 0 16px rgba(0, 0, 0, 0.08), -8px 0 40px rgba(0, 0, 0, 0.12);
-    --shadow-card-hover:        0 4px 12px rgba(0, 84, 166, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06);
-
-    /* Transitions */
-    --transition-fast:          120ms ease;
-    --transition-base:          200ms ease;
-    --transition-slow:          300ms ease-out;
-}
-
-
-/* --------------------------------------------------------------------------
-   Reset & Base
-   -------------------------------------------------------------------------- */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}
-
-body {
-    font-family: var(--font-primary);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-regular);
-    line-height: 1.5;
+.main-title {
+    font-size: var(--font-size-xl);
     color: var(--color-text);
-    background-color: var(--color-bg);
-    overflow-x: hidden;
-    min-height: 100vh;
-}
-
-button {
-    font-family: inherit;
-    font-size: inherit;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: inherit;
-}
-
-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
-}
-
-select {
-    font-family: inherit;
-    font-size: inherit;
-}
-
-input {
-    font-family: inherit;
-    font-size: inherit;
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-a {
-    color: var(--color-brand);
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-
-/* --------------------------------------------------------------------------
-   Utility Classes
-   -------------------------------------------------------------------------- */
-.hidden {
-    display: none !important;
-}
-
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-
-/* --------------------------------------------------------------------------
-   Login Gate
-   -------------------------------------------------------------------------- */
-#login-gate {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(145deg, #002B5C 0%, #0054A6 45%, #1873C4 100%);
-    opacity: 1;
-    transition: opacity 0.4s ease-out;
-}
-
-#login-gate.login-gate-exit {
-    opacity: 0;
-    pointer-events: none;
-}
-
-#login-card {
-    width: 380px;
-    padding: var(--space-3xl) var(--space-2xl) var(--space-2xl);
-    background-color: var(--color-surface);
-    border-radius: var(--border-radius-xl);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
-    text-align: center;
-}
-
-#login-logo {
-    font-size: 2.2rem;
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    letter-spacing: -0.03em;
-    margin-bottom: var(--space-xs);
-}
-
-#login-logo-accent {
-    color: var(--color-accent);
-}
-
-#login-subtitle {
-    font-size: var(--font-size-md);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-2xl);
-}
-
-#login-form {
-    display: flex;
-    gap: var(--space-sm);
     margin-bottom: var(--space-lg);
 }
 
-#login-password {
-    flex: 1;
-    height: 44px;
-    padding: 0 var(--space-lg);
-    font-size: var(--font-size-md);
-    border: 1.5px solid var(--color-border);
-    border-radius: var(--border-radius);
-    background-color: var(--color-surface);
-    color: var(--color-text);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-#login-password:focus {
-    border-color: var(--color-brand);
-    box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.15);
-}
-
-#login-submit {
-    height: 44px;
-    padding: 0 var(--space-xl);
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-inverse);
-    background: linear-gradient(135deg, var(--color-brand) 0%, #1873C4 100%);
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
-    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.3);
-}
-
-#login-submit:hover {
-    background: linear-gradient(135deg, var(--color-brand-dark) 0%, var(--color-brand) 100%);
-    box-shadow: 0 4px 12px rgba(0, 84, 166, 0.4);
-    transform: translateY(-1px);
-}
-
-#login-error {
-    font-size: var(--font-size-sm);
-    color: var(--color-danger);
-    margin-top: var(--space-sm);
-}
-
-@keyframes login-shake {
-    0%, 100% { transform: translateX(0); }
-    20%      { transform: translateX(-8px); }
-    40%      { transform: translateX(8px); }
-    60%      { transform: translateX(-6px); }
-    80%      { transform: translateX(6px); }
-}
-
-.login-input-shake {
-    animation: login-shake 0.4s ease;
-}
-
-
-/* --------------------------------------------------------------------------
-   Loading Overlay
-   -------------------------------------------------------------------------- */
-.loading-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--color-bg);
-    opacity: 1;
-    transition: opacity 0.4s ease-out;
-}
-
-.loading-overlay.loading-hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-2xl);
-}
-
-.loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--color-border-light);
-    border-top-color: var(--color-brand);
-    border-radius: 50%;
-    animation: loading-spin 0.8s linear infinite;
-}
-
-@keyframes loading-spin {
-    to { transform: rotate(360deg); }
-}
-
-.loading-message {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
-    letter-spacing: -0.01em;
-}
-
-/* Inline loading bar — shown below tab bar during product switch */
-.tab-loading-bar {
-    position: fixed;
-    top: calc(var(--top-bar-height) + var(--tab-bar-height));
-    left: 0;
-    right: 0;
-    z-index: 95;
-    height: 3px;
-    background-color: transparent;
-    overflow: hidden;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-}
-
-.tab-loading-bar.active {
-    opacity: 1;
-}
-
-.tab-loading-bar::after {
-    content: '';
-    display: block;
-    width: 40%;
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-brand));
-    border-radius: 0 2px 2px 0;
-    animation: tab-loading-slide 1s ease-in-out infinite;
-}
-
-@keyframes tab-loading-slide {
-    0%   { transform: translateX(-100%); }
-    50%  { transform: translateX(200%); }
-    100% { transform: translateX(-100%); }
-}
-
-
-/* --------------------------------------------------------------------------
-   Top Bar
-   -------------------------------------------------------------------------- */
-#top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    height: var(--top-bar-height);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 var(--space-2xl);
-    background: linear-gradient(160deg, #002B5C 0%, #004A8F 40%, #1873C4 100%);
-    color: var(--color-text-inverse);
-    box-shadow: 0 2px 12px rgba(0, 20, 60, 0.35), 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-#top-bar-left {
-    display: flex;
-    align-items: center;
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-lg);
 }
 
-#logo {
-    font-size: 1.4rem;
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.03em;
-    user-select: none;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+/* A single tile (button for accessibility and keyboard navigation) */
+.tile {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    width: 100%;
 }
 
-#logo-accent {
-    color: var(--color-accent);
+.tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
-#logo-divider {
-    width: 1px;
-    height: 26px;
-    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+.tile:focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 2px;
 }
 
-#logo-tagline {
+/* Image / placeholder area at the top of each tile */
+.tile-image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.85);
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    opacity: 0.65;
-    letter-spacing: 0.08em;
+    font-weight: 500;
+    letter-spacing: 1px;
     text-transform: uppercase;
 }
 
-#top-bar-right {
-    display: flex;
-    align-items: center;
+.tile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-#btn-project-toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg);
-    border-radius: var(--border-radius);
-    color: var(--color-text-inverse);
-    background-color: rgba(255, 255, 255, 0.1);
+/* Label area below the image */
+.tile-body {
+    padding: var(--space-md);
+    background-color: var(--color-surface);
+}
+
+.tile-label {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.tile-sublabel {
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--color-text-muted);
+    margin-top: var(--space-xs);
 }
 
-#btn-project-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-#project-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: 10px;
-    background-color: var(--color-accent);
-    color: var(--color-text-inverse);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    line-height: 1;
-    box-shadow: 0 1px 4px rgba(232, 106, 16, 0.4);
-}
-
-
-/* --------------------------------------------------------------------------
-   Product Tabs
-   -------------------------------------------------------------------------- */
-#product-tabs {
-    position: fixed;
-    top: var(--top-bar-height);
-    left: 0;
-    right: 0;
-    z-index: 90;
-    display: flex;
-    align-items: stretch;
-    height: var(--tab-bar-height);
-    padding: 0 var(--space-2xl);
-    background: linear-gradient(180deg, #003264 0%, #002B5C 100%);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    gap: 2px;
-}
-
-.product-tab {
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--space-2xl);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: rgba(255, 255, 255, 0.45);
-    background: transparent;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    transition: color var(--transition-base), background-color var(--transition-base);
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-}
-
-.product-tab:hover:not(.disabled) {
-    color: rgba(255, 255, 255, 0.85);
-    background-color: rgba(255, 255, 255, 0.06);
-}
-
-.product-tab.active {
-    color: var(--color-text-inverse);
-    background-color: rgba(255, 255, 255, 0.12);
-}
-
-.product-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: var(--space-md);
-    right: var(--space-md);
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-accent), #F59E3B);
-    border-radius: 2px 2px 0 0;
-}
-
-.product-tab.disabled {
-    color: rgba(255, 255, 255, 0.2);
-    font-style: italic;
-}
-
-
-/* --------------------------------------------------------------------------
-   Main Content Area
-   -------------------------------------------------------------------------- */
-#content {
-    margin-top: calc(var(--top-bar-height) + var(--tab-bar-height));
-    padding: var(--space-2xl) var(--space-xl);
-    min-height: calc(100vh - var(--top-bar-height) - var(--tab-bar-height));
-    transition: margin-right var(--transition-slow);
-}
-
-body.project-open #content {
-    margin-right: var(--project-panel-width);
-}
-
-
-/* --------------------------------------------------------------------------
-   Fatal Error Display
-   -------------------------------------------------------------------------- */
-.fatal-error-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    padding: var(--space-3xl);
-}
-
-.fatal-error-inner {
-    text-align: center;
-    max-width: 500px;
-}
-
-.fatal-error-icon {
-    font-size: 48px;
-    margin-bottom: var(--space-lg);
-}
-
-.fatal-error-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--space-sm);
-    color: var(--color-danger);
-}
-
-.fatal-error-message {
-    font-size: var(--font-size-md);
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-}
-
-
-/* --------------------------------------------------------------------------
-   Scrollbar Styling (Webkit)
-   -------------------------------------------------------------------------- */
-::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-text-muted);
-}
-
-
-/* --------------------------------------------------------------------------
-   Global Micro-Interaction: Row added flash
-   -------------------------------------------------------------------------- */
-@keyframes row-added-flash {
-    0%   { background-color: var(--color-success-bg); }
-    100% { background-color: transparent; }
-}
-
-.row-just-added td {
-    animation: row-added-flash 1.2s ease-out;
-}
-
-@keyframes fade-in-up {
-    0% {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --------------------------------------------------------------------------
-   Content section fade-in animation
-   -------------------------------------------------------------------------- */
-@keyframes content-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.product-content:not(.hidden) {
-    animation: content-fade-in 0.4s ease-out;
-}
-
-
-/* --------------------------------------------------------------------------
-   Responsive  (collapse project panel to overlay on narrow screens)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1200px) {
-    body.project-open #content {
-        margin-right: 0;
-    }
-}
-
-@media (max-width: 768px) {
-    #top-bar {
-        padding: 0 var(--space-lg);
-    }
-
-    #product-tabs {
-        padding: 0 var(--space-md);
-        overflow-x: auto;
-    }
-
-    #content {
-        padding: var(--space-lg);
-    }
-
-    #logo-tagline {
-        display: none;
-    }
-
-    #logo-divider {
-        display: none;
-    }
-}
+/* Per-tile placeholder colors. When a real JPG loads, the image covers
+   the colored block so these colors only show while the picture is missing. */
+.tile-projects .tile-image { background-color: var(--tile-projects); }
+.tile-gas-packs .tile-image { background-color: var(--tile-gas-packs); }
+.tile-marvair .tile-image { background-color: var(--tile-marvair); }
+.tile-mini-splits .tile-image { background-color: var(--tile-mini-splits); }
+.tile-multi-position-splits .tile-image { background-color: var(--tile-multi-position-splits); }

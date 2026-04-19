@@ -1,0 +1,236 @@
+/* ============================================================
+   HHpro - Projects view
+   ------------------------------------------------------------
+   Layout for the projects-list page. Reuses the .modal* styles
+   from cart.css for the confirm/name-prompt/conflict modals.
+   ============================================================ */
+
+.projects-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg) var(--space-xl);
+    gap: var(--space-lg);
+    overflow: auto;
+    min-height: 0;
+}
+
+/* ---------- Title bar ---------- */
+.projects-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-shrink: 0;
+}
+
+.projects-title {
+    font-size: var(--font-size-xxl);
+    color: var(--color-text);
+    margin: 0;
+}
+
+/* ---------- Toolbar (New / Import / Export) ---------- */
+.projects-toolbar {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.projects-btn {
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.projects-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.projects-btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+.projects-btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+}
+
+.projects-btn-secondary {
+    background-color: white;
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+}
+.projects-btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+/* ---------- Project list ---------- */
+.projects-list-wrap {
+    flex: 1;
+    min-height: 0;
+}
+
+.projects-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: var(--space-md);
+}
+
+/* ---------- Project card ---------- */
+.project-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.project-card:hover {
+    border-color: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
+}
+
+.project-card-active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary), var(--shadow-sm);
+}
+
+.project-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.project-card-name-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.project-card-name {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.project-card-badge {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    background-color: rgba(15, 76, 117, 0.1);
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.project-card-meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* Action buttons at the bottom of the card */
+.project-card-actions {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.project-card-btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.project-card-btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+.project-card-btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.project-card-btn-secondary {
+    background-color: white;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+.project-card-btn-secondary:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-border-strong);
+}
+
+.project-card-btn-danger {
+    background-color: white;
+    color: var(--color-error, #c0392b);
+    border-color: var(--color-border);
+}
+.project-card-btn-danger:hover {
+    background-color: var(--color-error, #c0392b);
+    border-color: var(--color-error, #c0392b);
+    color: white;
+}
+
+/* ---------- Empty state ---------- */
+.projects-empty {
+    text-align: center;
+    padding: var(--space-xxl) var(--space-lg);
+    color: var(--color-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.projects-empty-msg {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    margin: 0;
+}
+
+.projects-empty-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 480px;
+}
+
+/* ---------- Danger-variant modal button (used by confirm modals) ----
+   Extends the .modal-btn family from cart.css with a destructive red
+   variant for Delete/Discard/Replace actions. */
+.modal-btn-danger {
+    background-color: var(--color-error, #c0392b);
+    color: white;
+    border-color: var(--color-error, #c0392b);
+}
+.modal-btn-danger:hover:not(:disabled) {
+    background-color: #a83325;
+    border-color: #a83325;
+}

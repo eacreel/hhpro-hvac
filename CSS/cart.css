@@ -1,0 +1,384 @@
+/* ============================================================
+   HHpro - Cart panel + modals
+   ------------------------------------------------------------
+   Visuals for the right-side cart panel, its toggle tab, and
+   the prompt/project-picker modals.
+
+   The panel is OVERLAY-POSITIONED (fixed to the right edge) so
+   opening it does not change the width of the schedule. The
+   autofit zoom on the schedule therefore doesn't need to
+   recompute when the cart opens/closes.
+   ============================================================ */
+
+/* ---------- Toggle tab (right edge, always visible) ---------- */
+.cart-toggle {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 40;
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: none;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    padding: var(--space-md) var(--space-sm);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 56px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    transition: background-color var(--transition-fast),
+                transform var(--transition-fast),
+                opacity var(--transition-fast);
+}
+
+.cart-toggle:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-50%) translateX(-2px);
+}
+
+.cart-toggle-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) translateX(20px);
+}
+
+.cart-toggle-label {
+    letter-spacing: 0.02em;
+}
+
+.cart-toggle-count {
+    background-color: white;
+    color: var(--color-primary);
+    border-radius: 999px;
+    min-width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-size-xs);
+    padding: 0 6px;
+}
+
+.cart-toggle-has-items .cart-toggle-count {
+    background-color: var(--color-warning, #f5b400);
+    color: var(--color-text);
+}
+
+/* Pulse when an item is added */
+@keyframes cart-flash {
+    0%   { box-shadow: var(--shadow-md); }
+    40%  { box-shadow: 0 0 0 8px rgba(245, 180, 0, 0.35), var(--shadow-md); }
+    100% { box-shadow: var(--shadow-md); }
+}
+.cart-toggle-flash {
+    animation: cart-flash 600ms ease-out;
+}
+
+/* ---------- Panel (slides in from right) ---------- */
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    max-width: 92vw;
+    background-color: var(--color-surface);
+    border-left: 1px solid var(--color-border);
+    box-shadow: -6px 0 20px rgba(0, 0, 0, 0.08);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 250ms ease-out;
+}
+
+.cart-panel.open {
+    transform: translateX(0);
+}
+
+.cart-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-inverse);
+    flex-shrink: 0;
+}
+
+.cart-panel-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.cart-panel-close {
+    background: transparent;
+    color: var(--color-text-inverse);
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 6px;
+    transition: opacity var(--transition-fast);
+}
+
+.cart-panel-close:hover {
+    opacity: 0.7;
+}
+
+/* "View Project" button below the header */
+.cart-view-project {
+    margin: var(--space-md) var(--space-lg) 0;
+    padding: 10px 14px;
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color var(--transition-fast);
+}
+
+.cart-view-project:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* Empty state */
+.cart-items-empty {
+    padding: var(--space-xl) var(--space-lg);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* Item list */
+.cart-items-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.cart-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.cart-group-header {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cart-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.cart-item-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.cart-item-actions {
+    display: flex;
+    gap: var(--space-xs);
+    justify-content: flex-end;
+}
+
+.cart-item-btn {
+    padding: 4px 10px;
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background-color: white;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.cart-item-btn-secondary:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-border-strong);
+}
+
+.cart-item-btn-danger:hover {
+    background-color: var(--color-error, #c0392b);
+    border-color: var(--color-error, #c0392b);
+    color: white;
+}
+
+/* ============================================================
+   Modals (first-select prompt, project name, project picker)
+   ============================================================ */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: var(--space-lg);
+}
+
+.modal {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 480px;
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.modal-title {
+    font-size: var(--font-size-xl);
+    margin: 0;
+    color: var(--color-text);
+}
+
+.modal-desc {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* "Stacked" variant used by the first-select prompt where each
+   option is its own full-width button */
+.modal-actions-stacked {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+.modal-actions-stacked .modal-btn {
+    width: 100%;
+    text-align: center;
+}
+
+.modal-btn {
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+.modal-btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+}
+
+.modal-btn-secondary {
+    background-color: white;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+.modal-btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-bg);
+    border-color: var(--color-border-strong);
+}
+
+/* ---- Input (project name) ---- */
+.modal-input-wrap {
+    display: flex;
+    flex-direction: column;
+}
+.modal-input {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-base);
+    width: 100%;
+    box-sizing: border-box;
+}
+.modal-input:focus {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -1px;
+    border-color: var(--color-primary-light);
+}
+
+/* ---- Project picker list ---- */
+.modal-project-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.modal-project-item {
+    text-align: left;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.modal-project-item:hover {
+    background-color: white;
+    border-color: var(--color-primary-light);
+}
+
+.modal-project-name {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.modal-project-meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}

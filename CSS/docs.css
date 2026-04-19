@@ -1,0 +1,128 @@
+/* ============================================================
+   HHpro - Documents popup
+   ------------------------------------------------------------
+   Styles specific to the "all available documents" modal that
+   appears when the user clicks the Docs button on a schedule
+   row. Reuses the generic .modal / .modal-backdrop / .modal-btn
+   classes defined in cart.css.
+   ============================================================ */
+
+/* The docs modal is slightly wider than the default to give the
+   doc list enough room to breathe on a 2-column layout */
+.docs-modal {
+    max-width: 640px;
+    gap: var(--space-sm);
+}
+
+/* Header row: title + close (X) button */
+.docs-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xs);
+}
+
+.docs-modal-close {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 6px;
+    transition: color var(--transition-fast);
+}
+
+.docs-modal-close:hover {
+    color: var(--color-text);
+}
+
+/* ---------- Document list ---------- */
+.docs-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: var(--space-xs) 0;
+    /* Subtle inset so the scrollbar doesn't sit flush against the modal edge */
+    margin-right: -4px;
+    padding-right: 4px;
+}
+
+.docs-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast),
+                background-color var(--transition-fast);
+}
+
+.docs-item:hover {
+    background-color: white;
+    border-color: var(--color-primary-light);
+}
+
+.docs-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0; /* allows the filename to truncate instead of pushing the button off */
+    flex: 1;
+}
+
+.docs-item-name {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.docs-item-file {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+/* Action button on the right side of each row */
+.docs-item-action {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 90px;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.docs-item-action-view {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.docs-item-action-view:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.docs-item-action-download {
+    background-color: white;
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+}
+
+.docs-item-action-download:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}

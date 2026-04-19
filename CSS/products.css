@@ -1,0 +1,300 @@
+/* ============================================================
+   Product pages - shared styles for all product types
+   ------------------------------------------------------------
+   Layout: breadcrumb header (from base.css), title row,
+   filter bar, filter status, and the schedule table (scrollable).
+   ============================================================ */
+
+.product-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg) var(--space-xl);
+    gap: var(--space-md);
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Title row at the top of the product page */
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-shrink: 0;
+    gap: var(--space-md);
+}
+
+.product-title {
+    font-size: var(--font-size-xxl);
+    color: var(--color-text);
+}
+
+.product-meta {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-xs);
+}
+
+/* "Back to Products" button in the top-right of the product header.
+   Styled like a secondary button so it reads as navigation rather
+   than a primary action. */
+.product-back-btn {
+    background-color: white;
+    color: var(--color-text);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: center;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+.product-back-btn:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+/* ---------- Filter bar ---------- */
+.filter-bar {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    min-width: 140px;
+}
+
+.filter-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    min-height: 20px;
+}
+
+.filter-select {
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: white;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    min-height: 36px;
+}
+
+.filter-select:focus {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -1px;
+    border-color: var(--color-primary-light);
+}
+
+.filter-clear {
+    padding: 8px 14px;
+    background-color: transparent;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast);
+    min-height: 36px;
+}
+
+.filter-clear:hover {
+    background-color: var(--color-bg);
+}
+
+.filter-status {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+/* ---------- Schedule table ---------- */
+.schedule-wrap {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: auto;
+    flex: 1;
+    min-height: 200px;
+}
+
+/* width: min-content gives us tight columns. Each column is sized to the
+   widest *unbreakable* content it holds - for data cells that's the full
+   text (since tbody td is nowrap), for header cells that's the longest
+   individual WORD (since thead th wraps at spaces). Multi-word headers like
+   "OPERATING WEIGHT" therefore wrap onto two lines and let the column be as
+   narrow as the widest data value. */
+.schedule-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--font-size-sm);
+    width: min-content;
+}
+
+/* Common cell styles - center both horizontally and vertically */
+.schedule-table th,
+.schedule-table td {
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 6px 10px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: var(--color-surface);
+}
+
+/* Headers wrap at word boundaries so long names ("OPERATING WEIGHT") can
+   break onto two lines and keep the column narrower. word-break: normal
+   means individual words WON'T be broken mid-letter even if they don't
+   fit - the column will grow instead. */
+.schedule-table thead th {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 600;
+    border-top: 1px solid var(--color-border);
+    white-space: normal;
+    word-break: normal;
+    /* Each thead row is sticky; the exact top value is set per-row in JS
+       (applyStickyHeaderOffsets) so multiple header rows stack visibly
+       instead of all piling up at top: 0. */
+    position: sticky;
+    z-index: 2;
+}
+
+/* Data cells stay on a single line so schedule values don't wrap */
+.schedule-table tbody td {
+    white-space: nowrap;
+}
+
+.schedule-table tbody tr.selection-boundary > td {
+    border-top: 2px solid var(--color-border-strong);
+}
+
+.schedule-table tbody tr:hover > td {
+    background-color: var(--color-row-hover);
+}
+
+/* ---------- Actions column ----------
+   The selector below uses `.schedule-table thead th.actions-head` so it
+   beats the specificity of `.schedule-table thead th` above. Without this
+   extra specificity, the z-index on actions-head gets overridden back to 2,
+   other thead cells render on top of it as they scroll past, and the
+   Actions header appears to "slide away" when you scroll horizontally. */
+.schedule-table thead th.actions-head {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-inverse);
+    left: 0;
+    z-index: 4; /* higher than other thead cells (2) and body action cells (1) */
+    min-width: 200px;
+}
+
+.schedule-table tbody td.actions-cell {
+    background-color: var(--color-bg);
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    border-right: 2px solid var(--color-border-strong);
+    padding: 6px 8px;
+}
+
+.schedule-table tbody tr:hover > td.actions-cell {
+    background-color: var(--color-bg);
+}
+
+.actions-row {
+    display: flex;
+    gap: var(--space-xs);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 4px 8px;
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.action-btn-select {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-weight: 500;
+}
+
+.action-btn-select:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.action-btn-secondary {
+    background-color: white;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.action-btn-secondary:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-border-strong);
+}
+
+/* ---------- Loading / error / empty states ---------- */
+.product-message {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xxl);
+    color: var(--color-text-muted);
+    text-align: center;
+    gap: var(--space-md);
+}
+
+.product-message p {
+    max-width: 640px;
+}
+
+.product-message.error {
+    color: var(--color-error);
+}
+
+.product-message-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.product-message-details {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-family: monospace;
+    background-color: var(--color-bg);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-md);
+    max-width: 640px;
+    overflow-wrap: break-word;
+}
+
+.zero-results {
+    padding: var(--space-xxl);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+}

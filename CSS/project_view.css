@@ -1,0 +1,1073 @@
+/* ============================================================
+   HHpro - View Project page
+   ------------------------------------------------------------
+   Layout + styling for the per-project detail view.
+   Reuses .schedule-table / .schedule-wrap rules from products.css
+   and .modal* rules from cart.css, with a few additions and
+   tweaks below.
+   ============================================================ */
+
+.project-view-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg) var(--space-xl);
+    gap: var(--space-md);
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ---------- Header (title + Back button) ---------- */
+.project-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-shrink: 0;
+}
+
+.project-title {
+    font-size: var(--font-size-xxl);
+    color: var(--color-text);
+    margin: 0;
+    word-break: break-word;
+}
+
+.project-meta {
+    margin: var(--space-xs) 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* Right-side cluster in the project view's header. Holds the
+   "Exit Project" + "All Projects" buttons (or just "Back" when
+   in temporary-cart mode). */
+.project-header-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+    align-items: center;
+}
+
+/* ---------- Empty states ---------- */
+.project-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-xxl) var(--space-lg);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.project-empty-title {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+}
+
+.project-empty-hint {
+    margin: 0;
+    max-width: 560px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.project-empty-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.project-loading {
+    padding: var(--space-xxl);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+/* ---------- Tab bar ---------- */
+.project-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    border-bottom: 2px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.project-tab {
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: 10px 18px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: color var(--transition-fast),
+                background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.project-tab:hover {
+    color: var(--color-text);
+    background-color: var(--color-bg);
+}
+
+.project-tab-active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* ---------- Tab body container ---------- */
+.project-tab-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    overflow: hidden;
+}
+
+.project-product-tab {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    overflow: auto;
+}
+
+/* ---------- Per-product toolbar ---------- */
+.project-toolbar {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background-color: var(--color-surface);
+    z-index: 5;
+    padding: var(--space-xs) 0;
+}
+
+/* ---------- Project schedule table ----------
+   Adds a Remove/Docs "actions" column as the leftmost column and a
+   Tag column just to its right. Both stay sticky when the schedule
+   scrolls sideways. Actions sit at left:0 (width 100px), Tag sits
+   at left:100px (past the actions column). */
+.project-schedule-wrap {
+    flex: 0 0 auto;
+}
+
+.project-sched-rm-head {
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+    min-width: 100px;
+    width: 100px;
+    padding: 0 !important;
+    left: 0;
+    z-index: 4;
+}
+
+.schedule-table thead th.project-sched-rm-head {
+    position: sticky;
+}
+
+.project-sched-rm-cell {
+    background-color: var(--color-bg) !important;
+    padding: 0 !important;
+    text-align: center;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 100px;
+    width: 100px;
+    border-right: 1px solid var(--color-border);
+}
+
+.schedule-table tbody tr:hover > td.project-sched-rm-cell {
+    background-color: var(--color-bg) !important;
+}
+
+/* Container for the per-row action buttons (X + Docs). Horizontally
+   centers both buttons and gives them a small gap. */
+.project-sched-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    min-height: 100%;
+}
+
+.project-sched-tag-head {
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+    left: 100px;
+    z-index: 4;
+    min-width: 90px;
+}
+
+.schedule-table thead th.project-sched-tag-head {
+    position: sticky;
+}
+
+.project-sched-tag-cell {
+    background-color: var(--color-bg) !important;
+    position: sticky;
+    left: 100px;
+    z-index: 1;
+    border-right: 2px solid var(--color-border-strong) !important;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.schedule-table tbody tr:hover > td.project-sched-tag-cell {
+    background-color: var(--color-bg) !important;
+}
+
+.project-sched-rm-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background-color: white;
+    color: var(--color-text-muted);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.project-sched-rm-btn:hover {
+    background-color: var(--color-error, #c0392b);
+    border-color: var(--color-error, #c0392b);
+    color: white;
+}
+
+/* Compact "Docs" button sitting beside the remove button. Styled to
+   match the Docs button on the main product tabs (same secondary
+   look) but narrower so both buttons fit in the sticky column. */
+.project-sched-docs-btn {
+    height: 28px;
+    padding: 0 8px;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background-color: white;
+    color: var(--color-text);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.project-sched-docs-btn:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+/* ============================================================
+   Auto Tag modal
+   ============================================================ */
+
+.autotag-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin: var(--space-sm) 0;
+}
+
+/* A group of inputs inside the Auto Tag modal - used when the product
+   has both outdoor and indoor tag columns, so the two prefix/start
+   pairs are visually separated with a subheader. Products without an
+   indoor tag column use just one ungrouped set of inputs (no header). */
+.autotag-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.autotag-section-header {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-xs);
+}
+
+.autotag-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.autotag-label {
+    min-width: 80px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.autotag-preview {
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-family: monospace;
+    word-break: break-all;
+}
+
+/* ============================================================
+   Columns modal
+   ============================================================ */
+
+.columns-modal {
+    max-width: 520px;
+}
+
+.columns-bulk {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.columns-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-xs);
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: var(--space-xs) 0;
+}
+
+.columns-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.columns-row:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-border);
+}
+
+.columns-row-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+/* ============================================================
+   Files tab
+   ------------------------------------------------------------
+   Two-column layout: left sidebar for doc-type bulk selection,
+   main tree for per-item file browsing. Both scroll independently.
+   ============================================================ */
+
+.files-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Top toolbar: count + Download button ---------- */
+.files-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-md);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.files-count-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* ---------- Body: sidebar + tree ---------- */
+.files-body {
+    flex: 1;
+    display: flex;
+    gap: var(--space-md);
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Left sidebar (bulk by doc type) ---------- */
+.files-sidebar {
+    flex-shrink: 0;
+    width: 260px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    padding: var(--space-sm);
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.files-sidebar-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 var(--space-sm) 0;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.files-type-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.files-type-row:hover {
+    background-color: var(--color-bg);
+}
+
+.files-type-cb {
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.files-type-label {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.files-type-count {
+    flex-shrink: 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background-color: var(--color-bg);
+    padding: 2px 8px;
+    border-radius: 999px;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* ---------- Main tree (products > items > files) ---------- */
+.files-tree {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    padding: var(--space-sm);
+}
+
+/* Product block */
+.files-product {
+    margin-bottom: var(--space-md);
+}
+
+.files-product:last-child {
+    margin-bottom: 0;
+}
+
+.files-product-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px 10px;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.files-product-cb {
+    cursor: pointer;
+}
+
+.files-product-name {
+    flex: 1;
+}
+
+/* Item block (inside a product) */
+.files-item {
+    margin-top: var(--space-sm);
+    margin-left: var(--space-md);
+}
+
+.files-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 6px 10px;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.files-item-header:hover {
+    background-color: var(--color-bg-hover, #e8ecef);
+}
+
+.files-item-cb {
+    cursor: pointer;
+}
+
+.files-item-name {
+    flex: 1;
+    word-break: break-word;
+}
+
+.files-item-empty {
+    padding: 6px 10px 6px 34px;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* File rows (inside an item) */
+.files-list {
+    margin-left: var(--space-md);
+    padding: var(--space-xs) 0;
+}
+
+.files-file-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.files-file-row:hover {
+    background-color: var(--color-bg);
+}
+
+.files-file-cb {
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.files-file-name {
+    flex-shrink: 0;
+    font-weight: 500;
+    color: var(--color-text);
+    min-width: 180px;
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.files-file-fname {
+    flex: 1;
+    color: var(--color-text-muted);
+    font-family: monospace;
+    font-size: var(--font-size-xs);
+    word-break: break-all;
+}
+
+.files-file-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: white;
+    background-color: var(--color-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    min-width: 32px;
+    text-align: center;
+}
+
+.files-file-badge-zip {
+    background-color: #8e44ad;
+}
+
+/* Responsive: collapse to single column on narrow viewports */
+@media (max-width: 900px) {
+    .files-body {
+        flex-direction: column;
+    }
+    .files-sidebar {
+        width: auto;
+        max-height: 200px;
+    }
+}
+/* ============================================================
+   Schedule notes section
+   ------------------------------------------------------------
+   Appears below the schedule on each per-product tab. Neutral
+   styling throughout - all three Marvair sections stacked
+   vertically. X button on the LEFT of deletable notes. Each
+   custom-notes row has a + button on the left to add the note
+   to the schedule notes above.
+   ============================================================ */
+
+.schedule-notes-section {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 2px solid var(--color-border);
+}
+
+/* Marvair stacks STANDARD, CONFIG, OPTIONAL vertically - never side by side */
+.notes-marvair-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Internal two-column split inside the STANDARD block */
+.notes-standard-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--space-md);
+    align-items: start;
+}
+
+.notes-standard-columns > .notes-list {
+    margin: 0;
+}
+
+/* ---------- Shared block shell ---------- */
+.notes-block {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    background-color: var(--color-surface);
+}
+
+.notes-block-header {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px dashed var(--color-border);
+}
+
+/* ---------- Notes list (ordered) ---------- */
+.notes-list {
+    list-style: decimal;
+    list-style-position: outside;
+    margin: 0;
+    padding: 0 0 0 28px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.notes-item {
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    color: var(--color-text);
+    padding: 2px 0;
+}
+
+/* Row for deletable items: X on LEFT, text to its right */
+.notes-item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+}
+
+.notes-item-text {
+    flex: 1;
+    word-break: break-word;
+}
+
+.notes-del-btn {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background-color: white;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+.notes-del-btn:hover {
+    background-color: var(--color-error, #c0392b);
+    border-color: var(--color-error, #c0392b);
+    color: white;
+}
+
+/* User-added custom notes use the same styling but with a subtle
+   left-border accent so they're distinguishable from built-in notes */
+.notes-item-custom-added {
+    border-left: 3px solid var(--color-primary);
+    padding-left: 6px;
+    margin-left: -9px;
+}
+
+/* ---------- Sub-notes (Marvair optional children) ----------
+   Left-padding chosen to align with main note text, which starts
+   after the delete button + gap (~30px from the li edge). */
+.notes-sublist {
+    list-style: none;
+    margin: var(--space-xs) 0 0 0;
+    padding: 0 0 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.notes-subitem {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    position: relative;
+    padding-left: 16px;
+}
+
+.notes-subitem::before {
+    content: "\2013";           /* en-dash */
+    position: absolute;
+    left: 0;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+/* ---------- Empty-state hint ---------- */
+.notes-empty-hint {
+    margin: 0;
+    padding: var(--space-sm) 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* ---------- Removed-notes restore row ---------- */
+.notes-removed {
+    background-color: var(--color-bg);
+    border-style: dashed;
+}
+
+.notes-removed-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.notes-removed-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 6px 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    background-color: white;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.notes-removed-item:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+/* Custom (user-added) removed notes get a dashed border so they're
+   visually distinct from removed built-in notes */
+.notes-removed-item-custom {
+    border-style: dashed;
+}
+
+.notes-restore-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.notes-removed-text {
+    word-break: break-word;
+    white-space: normal;
+    text-align: left;
+}
+
+/* ---------- Custom notes grid (with ADD button per row) ---------- */
+.notes-custom-hint {
+    margin: 0 0 var(--space-sm) 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.notes-custom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs) var(--space-md);
+}
+
+.notes-custom-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.notes-custom-number {
+    flex-shrink: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    min-width: 24px;
+    text-align: right;
+}
+
+/* "+" button that moves the textbox text into the schedule notes.
+   Placed between the row number and the textbox so the user's eye
+   reads "1. + [input]". Disabled when the textbox is empty. */
+.notes-custom-add-btn {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-strong);
+    background-color: white;
+    color: var(--color-primary);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast),
+                opacity var(--transition-fast);
+}
+
+.notes-custom-add-btn:hover:not(:disabled) {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.notes-custom-add-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.notes-custom-input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    background-color: white;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.notes-custom-input:hover {
+    border-color: var(--color-border-strong);
+}
+
+.notes-custom-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(15, 76, 117, 0.15);
+}
+
+/* Responsive: collapse internal columns on narrow viewports */
+@media (max-width: 900px) {
+    .notes-standard-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .notes-custom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   Extra editable schedule columns
+   ------------------------------------------------------------
+   Tag / Indoor Tag / Configuration / Accessories - all editable
+   via inputs inside the cells. Inputs appear borderless at rest
+   and reveal a border + white background on hover/focus, so the
+   schedule still reads like a schedule but the user can click any
+   field to edit it.
+   ============================================================ */
+
+/* Shared input styling for all editable schedule cells */
+.project-sched-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    margin: 0;
+    border: 1px solid transparent;
+    background-color: transparent;
+    font: inherit;
+    color: inherit;
+    border-radius: 3px;
+    transition: border-color var(--transition-fast),
+                background-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.project-sched-input:hover {
+    background-color: white;
+    border-color: var(--color-border);
+}
+
+.project-sched-input:focus {
+    outline: none;
+    background-color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(15, 76, 117, 0.15);
+}
+
+.project-sched-input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+    font-style: italic;
+}
+
+/* <select> variant for the Marvair Configuration cell */
+.project-sched-select {
+    cursor: pointer;
+    min-width: 160px;
+}
+
+/* When the Tag cell contains an input, reset the tag cell's
+   default font-weight so the input looks clean (otherwise the
+   input is styled with font-weight 600 through inheritance). */
+.project-sched-tag-cell .project-sched-input {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+/* ---------- Indoor Tag column ----------
+   Only sticky when the table has the 'schedule-has-indoor-tag'
+   class (Mini Splits + Multi Position Splits). Sits to the right
+   of the primary Tag column (Tag at left:44..134, Indoor Tag at
+   left:134..). */
+.project-sched-indoor-tag-head {
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+    min-width: 90px;
+    z-index: 4;
+}
+
+.project-sched-indoor-tag-cell {
+    background-color: var(--color-bg) !important;
+    border-right: 2px solid var(--color-border-strong) !important;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.schedule-has-indoor-tag .project-sched-indoor-tag-head {
+    position: sticky;
+    left: 190px;    /* 100 (Remove/Docs actions) + 90 (Tag) */
+}
+
+.schedule-has-indoor-tag .project-sched-indoor-tag-cell {
+    position: sticky;
+    left: 190px;
+    z-index: 1;
+}
+
+.schedule-has-indoor-tag tbody tr:hover > td.project-sched-indoor-tag-cell {
+    background-color: var(--color-bg) !important;
+}
+
+/* ---------- Configuration column (Marvair only) ----------
+   Rendered at the right end of the schedule (just before
+   Accessories). Not sticky. */
+.project-sched-config-head {
+    min-width: 160px;
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+}
+
+.project-sched-config-cell {
+    min-width: 160px;
+    background-color: var(--color-surface) !important;
+}
+
+/* ---------- Accessories column ----------
+   Rightmost column of every schedule. Not sticky - free-text
+   field that can fit a paragraph if needed. */
+.project-sched-acc-head {
+    min-width: 220px;
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+}
+
+.project-sched-acc-cell {
+    min-width: 220px;
+    background-color: var(--color-surface) !important;
+}

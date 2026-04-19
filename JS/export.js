@@ -1,1585 +1,1252 @@
-/* ==========================================================================
-   export.js — Document downloads, schedule export (Excel & PDF)
+/*
+============================================================
+  export.js  -  Schedule export (Excel + PDF)
+============================================================
 
-   Supports mini-splits, multi-position, gas-packs, and marvair-vertical.
-   All product types use combined single-row format (indoor + outdoor).
-   Notes section is a single unified section per product.
-   Products with preserveNoteNumbering flag (e.g. marvair-vertical) skip
-   the auto-numbering prefix since notes already contain their own prefixes.
+Exposes:
 
-   Local libraries (in JS/ folder):
-     - ExcelJS, jsPDF, jsPDF-AutoTable, JSZip
-   ========================================================================== */
+  HHpro.Export.toExcel(productKey, items, data, projectName)
+  HHpro.Export.toPDF  (productKey, items, data, projectName)
 
-const Export = (function () {
+Both build the same internal "grid" from the current schedule
+state and then render it out.
 
-    const TEMPLATE_PATHS = {
-        "mini-splits":       "DATA/MINI SPLIT SCHEDULE.xlsx",
-        "multi-position":    "DATA/MULTI POSITION SPLIT SCHEDULE.xlsx",
-        "gas-packs":         "DATA/GAS PACKS SCHEDULE.xlsx",
-        "marvair-vertical":  "DATA/MARVIAR SCHEDULE.xlsx",
+EXCEL OUTPUT (.xlsx)
+  A valid Office Open XML spreadsheet is built by hand using
+  JSZip. No new third-party library is needed - JSZip is
+  already vendored for the project's Files tab.
+
+  All cells are white - per the project spec. Headers are
+  bold; every cell has a thin black border. Merged cells are
+  preserved (rowSpan + colSpan).
+
+PDF OUTPUT
+  Opens a clean, print-ready window showing the schedule
+  laid out for landscape letter paper. The user's browser
+  picks it up from there: File > Print > Save as PDF
+  produces a PDF that matches the on-site layout (white
+  cells, black text, thin borders).
+
+  The print window is auto-populated and the print dialog
+  is triggered automatically, so the workflow is a
+  single click for the user.
+
+WHAT'S IN THE GRID
+  Column order:
+    Tag / Outdoor Tag
+    Indoor Tag           (Mini Splits + Multi Position Splits)
+    (all visible data columns from the schedule, respecting
+     Add/Remove Columns hidden state and horizontal merges)
+    Configuration        (Marvair only)
+    Accessories
+
+  Header rows mirror the site's multi-row header structure
+  (INDOOR UNIT over sub-groups, etc.) with the matching merges.
+
+  The Remove/Docs action column is deliberately NOT exported.
+============================================================
+*/
+
+(function () {
+    'use strict';
+
+    var HHpro = window.HHpro = window.HHpro || {};
+
+    HHpro.Export = {
+        toExcel: exportToExcel,
+        toPDF:   exportToPDF
     };
 
-    // -----------------------------------------------------------------------
-    // Initialization
-    // -----------------------------------------------------------------------
-    function init() {
-        document.getElementById("btn-export-csv").addEventListener("click", function () { Project.exportCsv(); });
-        document.getElementById("btn-export-schedule-xlsx").addEventListener("click", function () { exportScheduleXlsx(); });
-        document.getElementById("btn-export-schedule-pdf").addEventListener("click", function () { exportSchedulePdf(); });
-        document.getElementById("btn-download-docs").addEventListener("click", function () { downloadAllDocuments(); });
-        console.log("[Export] Initialized");
-    }
+    // =================================================================
+    // Public entry points
+    // =================================================================
 
-
-    // =====================================================================
-    //  Detect product type from entries
-    // =====================================================================
-    function groupEntriesByProduct() {
-        var entries = Project.getEntries();
-        var groups = {};
-        for (var i = 0; i < entries.length; i++) {
-            var sys = DataLoader.getSystemById(entries[i].systemId);
-            var pk = "mini-splits";
-            if (sys && sys.productKey === "multi-position") pk = "multi-position";
-            else if (sys && sys.productKey === "gas-packs") pk = "gas-packs";
-            else if (sys && sys.productKey === "marvair-vertical") pk = "marvair-vertical";
-            if (!groups[pk]) groups[pk] = [];
-            groups[pk].push(entries[i]);
+    function exportToExcel(productKey, items, data, projectName) {
+        if (!window.JSZip) {
+            alert('JSZip is not loaded - cannot export Excel.');
+            return;
         }
-        return groups;
-    }
-
-
-    // =====================================================================
-    //  DOWNLOAD ALL DOCUMENTS
-    // =====================================================================
-    async function downloadAllDocuments() {
-        var entries = Project.getEntries();
-        if (entries.length === 0) return;
-        if (typeof JSZip === "undefined") { Project.showToast("JSZip library not loaded", "toast-danger"); return; }
-        Project.showToast("Preparing document bundle…", "toast-success");
-        var zip = new JSZip();
-        var allDocs = [], seen = {};
-        for (var i = 0; i < entries.length; i++) {
-            var docs = DataLoader.getSystemDocuments(entries[i].systemId);
-            for (var d = 0; d < docs.length; d++) {
-                if (!seen[docs[d].path]) { seen[docs[d].path] = true; allDocs.push(docs[d]); }
-            }
-        }
-        if (allDocs.length === 0) { Project.showToast("No documents available", "toast-warning"); return; }
-        var fetched = 0, failed = 0;
-        for (var j = 0; j < allDocs.length; j++) {
-            try {
-                var response = await fetch(allDocs[j].path);
-                if (!response.ok) throw new Error(response.status);
-                var blob = await response.blob();
-                var zipPath = allDocs[j].path.replace(/^ASSETS\/[^/]+\//, "");
-                zip.file(zipPath, blob);
-                fetched++;
-            } catch (err) { failed++; }
-        }
-        if (fetched === 0) { Project.showToast("Could not retrieve any documents", "toast-danger"); return; }
-        try {
-            var zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
-            Project.downloadBlob(zipBlob, "HHpro_Documents.zip");
-            var msg = fetched + " document(s) downloaded";
-            if (failed > 0) msg += " (" + failed + " unavailable)";
-            Project.showToast(msg, "toast-success");
-        } catch (err) { Project.showToast("Failed to create ZIP", "toast-danger"); }
-    }
-
-
-    // =====================================================================
-    //  BORDER HELPERS
-    // =====================================================================
-    var _thin  = { style: "thin" };
-    var _medium = { style: "medium" };
-
-    function dataBorder(isFirstRow, isLastRow, isLeftEdge, isRightEdge) {
-        return {
-            top:    isFirstRow ? _medium : _thin,
-            bottom: isLastRow  ? _medium : _thin,
-            left:   isLeftEdge ? _medium : _thin,
-            right:  isRightEdge ? _medium : _thin,
-        };
-    }
-
-
-    // =====================================================================
-    //  EXPORT SCHEDULE AS EXCEL — Dispatch
-    // =====================================================================
-    async function exportScheduleXlsx(options) {
-        var groups = groupEntriesByProduct();
-        var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
-        var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
-        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
-        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
-
-        if (options && options.returnBlobs) {
-            var blobs = [];
-            if (hasMs) { var b = await exportMsScheduleXlsx({ returnBlob: true, entries: groups["mini-splits"] }); if (b) blobs.push({ name: "Mini Split Schedule.xlsx", blob: b }); }
-            if (hasMps) { var b2 = await exportMpsScheduleXlsx({ returnBlob: true, entries: groups["multi-position"] }); if (b2) blobs.push({ name: "Multi Position Split Schedule.xlsx", blob: b2 }); }
-            if (hasGp) { var b3 = await exportGpScheduleXlsx({ returnBlob: true, entries: groups["gas-packs"] }); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.xlsx", blob: b3 }); }
-            if (hasMv) { var b4 = await exportMvScheduleXlsx({ returnBlob: true, entries: groups["marvair-vertical"] }); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.xlsx", blob: b4 }); }
-            return blobs;
+        var grid = buildScheduleGrid(productKey, items, data);
+        if (!grid || !grid.rows.length) {
+            alert('Nothing to export - this tab has no items yet.');
+            return;
         }
 
-        if (options && options.returnBlob) {
-            if (hasMv && !hasMs && !hasMps && !hasGp) return exportMvScheduleXlsx(options);
-            if (hasGp && !hasMs && !hasMps) return exportGpScheduleXlsx(options);
-            if (hasMps && !hasMs) return exportMpsScheduleXlsx(options);
-            return exportMsScheduleXlsx(options);
-        }
-
-        if (hasMs) await exportMsScheduleXlsx({ entries: groups["mini-splits"] });
-        if (hasMps) await exportMpsScheduleXlsx({ entries: groups["multi-position"] });
-        if (hasGp) await exportGpScheduleXlsx({ entries: groups["gas-packs"] });
-        if (hasMv) await exportMvScheduleXlsx({ entries: groups["marvair-vertical"] });
+        var title = data.scheduleTitle || 'Schedule';
+        generateXlsxBlob(title, grid).then(function (blob) {
+            var safeName = safeFilename(projectName) + ' - ' +
+                           safeFilename(productTabLabel(productKey)) + '.xlsx';
+            downloadBlob(blob, safeName);
+        }).catch(function (err) {
+            alert('Excel export failed: ' + (err && err.message ? err.message : err));
+        });
     }
 
-
-    // =====================================================================
-    //  MINI SPLITS — EXCEL EXPORT (combined single-row)
-    // =====================================================================
-    async function exportMsScheduleXlsx(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        if (typeof ExcelJS === "undefined") { Project.showToast("ExcelJS library not loaded", "toast-danger"); return; }
-
-        Project.showToast("Generating Excel schedule…", "toast-success");
-
-        try {
-            var resp = await fetch(TEMPLATE_PATHS["mini-splits"]);
-            if (!resp.ok) throw new Error("Template not found");
-            var buf = await resp.arrayBuffer();
-            var wb = new ExcelJS.Workbook();
-            await wb.xlsx.load(buf);
-            var tws = wb.getWorksheet(1);
-            var styles = extractStyles(tws);
-            var numCols = 26; // A through Z
-            var colWidths = [];
-            for (var ci = 1; ci <= numCols; ci++) colWidths.push(tws.getColumn(ci).width || 8.43);
-            wb.removeWorksheet(tws.id);
-
-            var ws = wb.addWorksheet("Split System Schedule", {
-                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-            });
-            for (var wi = 0; wi < colWidths.length; wi++) ws.getColumn(wi + 1).width = colWidths[wi];
-
-            var row = 1;
-
-            // TITLE
-            ws.mergeCells(row, 1, row, numCols);
-            applyStyle(ws.getCell(row, 1), "SPLIT SYSTEM SCHEDULE", styles.title);
-            ws.getRow(row).height = 22; row++;
-
-            // Section labels: INDOOR UNIT | OUTDOOR UNIT
-            ws.mergeCells(row, 1, row, 14);
-            applyStyle(ws.getCell(row, 1), "INDOOR UNIT", styles.sectionLabel);
-            ws.mergeCells(row, 15, row, numCols);
-            applyStyle(ws.getCell(row, 15), "OUTDOOR UNIT", styles.sectionLabel);
-            ws.getRow(row).height = 20; row++;
-
-            // Headers — copy structure from template rows 3-4
-            // Row 3 (h1) and Row 4 (h2) match the template
-            var h1 = row, h2 = row + 1;
-            // The template headers are already defined in the template file;
-            // we rebuild them here to match
-            ws.mergeCells(h1, 1, h2, 1); applyStyle(ws.getCell(h1, 1), "SYMBOL", styles.headerOuter);
-            ws.mergeCells(h1, 2, h2, 2); applyStyle(ws.getCell(h1, 2), "CFM", styles.headerInner);
-            ws.mergeCells(h1, 3, h1, 6); applyStyle(ws.getCell(h1, 3), "COOLING CAPACITY", styles.headerInner);
-            ws.mergeCells(h1, 7, h1, 8); applyStyle(ws.getCell(h1, 7), "HEAT PUMP HEATING CAPACITY", styles.headerInner);
-            ws.mergeCells(h1, 9, h2, 9); applyStyle(ws.getCell(h1, 9), "OPERATING\nWEIGHT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 10, h2, 10); applyStyle(ws.getCell(h1, 10), "INDOOR UNIT\nTYPE", styles.headerInnerWrap);
-            ws.mergeCells(h1, 11, h1, 13); applyStyle(ws.getCell(h1, 11), "ELECTRICAL", styles.headerInner);
-            ws.mergeCells(h1, 14, h2, 14); applyStyle(ws.getCell(h1, 14), "MANUFACTURER\nDAIKIN", styles.headerInnerWrap);
-            ws.mergeCells(h1, 15, h2, 15); applyStyle(ws.getCell(h1, 15), "SYMBOL", styles.headerOuter);
-            ws.mergeCells(h1, 16, h2, 16); applyStyle(ws.getCell(h1, 16), "OA AMBIENT\n(COOLING)", styles.headerInnerWrap);
-            ws.mergeCells(h1, 17, h2, 17); applyStyle(ws.getCell(h1, 17), "OA AMBIENT\n(HEATING)", styles.headerInnerWrap);
-            ws.mergeCells(h1, 18, h2, 18); applyStyle(ws.getCell(h1, 18), "OPERATING\nWEIGHT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 19, h2, 19); applyStyle(ws.getCell(h1, 19), "SEER2/EER2/\nHSPF2", styles.headerInnerWrap);
-            ws.mergeCells(h1, 20, h1, 22); applyStyle(ws.getCell(h1, 20), "ELECTRICAL", styles.headerInner);
-            ws.mergeCells(h1, 23, h2, 23); applyStyle(ws.getCell(h1, 23), "MANUFACTURER\nDAIKIN", styles.headerInnerWrap);
-            ws.mergeCells(h1, 24, h2, 24); applyStyle(ws.getCell(h1, 24), "REFRIGERANT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 25, h2, 25); applyStyle(ws.getCell(h1, 25), "MAX ALLOWABLE\nLINE-SET LENGTHS", styles.headerInnerWrap);
-            ws.mergeCells(h1, 26, h2, 26); applyStyle(ws.getCell(h1, 26), "NOTES", styles.headerOuter);
-
-            applyStyle(ws.getCell(h2, 3), "EDB", styles.headerSub);
-            applyStyle(ws.getCell(h2, 4), "EWB", styles.headerSub);
-            applyStyle(ws.getCell(h2, 5), "TOTAL\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 6), "SENSIBLE\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 7), "EDB", styles.headerSub);
-            applyStyle(ws.getCell(h2, 8), "TOTAL\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 11), "Voltage", styles.headerSub);
-            applyStyle(ws.getCell(h2, 12), "MCA", styles.headerSub);
-            applyStyle(ws.getCell(h2, 13), "MOP", styles.headerSub);
-            applyStyle(ws.getCell(h2, 20), "Voltage", styles.headerSub);
-            applyStyle(ws.getCell(h2, 21), "MCA", styles.headerSub);
-            applyStyle(ws.getCell(h2, 22), "MOP", styles.headerSub);
-            ws.getRow(h1).height = 16; ws.getRow(h2).height = 31;
-            row = h2 + 1;
-
-            // DATA ROWS — each indoor unit is a row, outdoor cols span
-            var totalRows = 0;
-            for (var ci2 = 0; ci2 < entries.length; ci2++) { var cSys = DataLoader.getSystemById(entries[ci2].systemId); if (cSys) totalRows += cSys.indoorUnits.length; }
-            var rowIndex = 0;
-
-            for (var ei = 0; ei < entries.length; ei++) {
-                var entry = entries[ei];
-                var sys = DataLoader.getSystemById(entry.systemId);
-                if (!sys) continue;
-                var odu = sys.outdoorUnit;
-                var numIdu = sys.indoorUnits.length;
-
-                for (var j = 0; j < numIdu; j++) {
-                    var idu = sys.indoorUnits[j];
-                    var r = row;
-                    var iduTag = (j < entry.iduTags.length) ? entry.iduTags[j] : "IDU-";
-                    var isFirst = (rowIndex === 0); var isLast = (rowIndex === totalRows - 1);
-
-                    applyDataCell(ws.getCell(r, 1), iduTag, styles, isFirst, isLast, true, false);
-                    applyDataCell(ws.getCell(r, 2), idu.cfm, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 3), idu.coolingEdb, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 4), idu.coolingEwb, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 5), idu.coolingTotal, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 6), idu.coolingSensible, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 7), idu.heatingEdb, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 8), idu.heatingTotal, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 9), idu.weight, styles, isFirst, isLast, false, false);
-                    applyDataCell(ws.getCell(r, 10), idu.type || "", styles, isFirst, isLast, false, false);
-                    if (idu.poweredFromOutdoor) {
-                        ws.mergeCells(r, 11, r, 13);
-                        applyDataCell(ws.getCell(r, 11), "Indoor Powered From Outdoor Unit", styles, isFirst, isLast, false, false);
-                    } else {
-                        applyDataCell(ws.getCell(r, 11), idu.voltage || "", styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 12), idu.mca, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 13), idu.mop, styles, isFirst, isLast, false, false);
-                    }
-                    applyDataCell(ws.getCell(r, 14), idu.manufacturer || "", styles, isFirst, isLast, false, false);
-
-                    // Outdoor columns (first indoor row only, with merge for multi-zone)
-                    if (j === 0) {
-                        var oduTag = entry.oduTag || "ODU-";
-                        if (numIdu > 1) {
-                            for (var oc = 15; oc <= 26; oc++) {
-                                ws.mergeCells(r, oc, r + numIdu - 1, oc);
-                            }
-                        }
-                        applyDataCell(ws.getCell(r, 15), oduTag, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 16), odu.coolingAmbient, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 17), odu.heatingAmbient, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 18), odu.weight, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 19), odu.seer || "", styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 20), odu.voltage || "", styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 21), odu.mca, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 22), odu.mop, styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 23), odu.manufacturer || "", styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 24), odu.refrigerant || "", styles, isFirst, isLast, false, false);
-                        applyDataCell(ws.getCell(r, 25), odu.lineSet || "", styles, isFirst, isLast, false, false);
-                        var accVal = (entry.iduAccessories && j < entry.iduAccessories.length) ? (entry.iduAccessories[j] || "") : "";
-                        applyDataCell(ws.getCell(r, 26), accVal, styles, isFirst, isLast, false, true);
-                    }
-
-                    ws.getRow(r).height = 15.75;
-                    rowIndex++; row++;
-                }
-            }
-
-            // NOTES SECTION
-            writeNotesSection(ws, row, styles, numCols, "mini-splits");
-
-            var buffer = await wb.xlsx.writeBuffer();
-            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            if (options && options.returnBlob) return blob;
-            Project.downloadBlob(blob, "Mini Split Schedule.xlsx");
-            Project.showToast("Schedule exported as Excel", "toast-success");
-        } catch (err) {
-            console.error("[Export] Excel generation failed:", err);
-            Project.showToast("Excel export failed — see console", "toast-danger");
+    function exportToPDF(productKey, items, data, projectName) {
+        var grid = buildScheduleGrid(productKey, items, data);
+        if (!grid || !grid.rows.length) {
+            alert('Nothing to export - this tab has no items yet.');
+            return;
         }
+        openPrintWindow(productTabLabel(productKey), projectName, grid);
     }
 
-
-    // =====================================================================
-    //  MPS — EXCEL EXPORT (combined single-row)
-    // =====================================================================
-    async function exportMpsScheduleXlsx(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        if (typeof ExcelJS === "undefined") { Project.showToast("ExcelJS library not loaded", "toast-danger"); return; }
-
-        Project.showToast("Generating Excel schedule…", "toast-success");
-
-        try {
-            var resp = await fetch(TEMPLATE_PATHS["multi-position"]);
-            if (!resp.ok) throw new Error("MPS Template not found");
-            var buf = await resp.arrayBuffer();
-            var wb = new ExcelJS.Workbook();
-            await wb.xlsx.load(buf);
-            var tws = wb.getWorksheet(1);
-            var styles = extractStyles(tws);
-            var numCols = 32; // A through AF
-            var colWidths = [];
-            for (var ci = 1; ci <= numCols; ci++) colWidths.push(tws.getColumn(ci).width || 8.43);
-            wb.removeWorksheet(tws.id);
-
-            var ws = wb.addWorksheet("Multi Position Split Schedule", {
-                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-            });
-            for (var wi = 0; wi < colWidths.length; wi++) ws.getColumn(wi + 1).width = colWidths[wi];
-
-            var row = 1;
-
-            // TITLE
-            ws.mergeCells(row, 2, row, numCols);
-            applyStyle(ws.getCell(row, 2), "MULTI POSITION SPLIT SYSTEM SCHEDULE", styles.title);
-            ws.getRow(row).height = 22; row++;
-
-            // Section labels
-            ws.mergeCells(row, 2, row, 18);
-            applyStyle(ws.getCell(row, 2), "INDOOR AIR HANDLING UNIT", styles.sectionLabel);
-            ws.mergeCells(row, 19, row, numCols);
-            applyStyle(ws.getCell(row, 19), "OUTDOOR CONDENSING UNIT", styles.sectionLabel);
-            ws.getRow(row).height = 20; row++;
-
-            // Headers (matching template rows 3-4)
-            var h1 = row, h2 = row + 1;
-
-            // Indoor headers
-            ws.mergeCells(h1, 2, h2, 2); applyStyle(ws.getCell(h1, 2), "TAG", styles.headerOuter);
-            ws.mergeCells(h1, 3, h2, 3); applyStyle(ws.getCell(h1, 3), "MODEL\n(DAIKIN)", styles.headerInnerWrap);
-            ws.mergeCells(h1, 4, h1, 6); applyStyle(ws.getCell(h1, 4), "SUPPLY FAN", styles.headerInner);
-            ws.mergeCells(h1, 7, h1, 11); applyStyle(ws.getCell(h1, 7), "COOLING", styles.headerInner);
-            ws.mergeCells(h1, 12, h2, 12); applyStyle(ws.getCell(h1, 12), "HEAT PUMP\nTOTAL CAPACITY", styles.headerInnerWrap);
-            ws.mergeCells(h1, 13, h1, 14); applyStyle(ws.getCell(h1, 13), "AUX. ELECTRIC HEAT", styles.headerInner);
-            ws.mergeCells(h1, 15, h1, 17); applyStyle(ws.getCell(h1, 15), "ELECTRICAL DATA", styles.headerInner);
-            ws.mergeCells(h1, 18, h2, 18); applyStyle(ws.getCell(h1, 18), "WEIGHT", styles.headerInnerWrap);
-
-            // Outdoor headers
-            ws.mergeCells(h1, 19, h2, 19); applyStyle(ws.getCell(h1, 19), "TAG", styles.headerOuter);
-            ws.mergeCells(h1, 20, h2, 20); applyStyle(ws.getCell(h1, 20), "MODEL\n(DAIKIN)", styles.headerInnerWrap);
-            ws.mergeCells(h1, 21, h1, 23); applyStyle(ws.getCell(h1, 21), "HEAT PUMP HEATING DATA", styles.headerInner);
-            ws.mergeCells(h1, 24, h1, 26); applyStyle(ws.getCell(h1, 24), "ELECTRICAL DATA", styles.headerInner);
-            ws.mergeCells(h1, 27, h2, 27); applyStyle(ws.getCell(h1, 27), "OUTDOOR\nAMBIENT\n(COOLING)", styles.headerInnerWrap);
-            ws.mergeCells(h1, 28, h2, 28); applyStyle(ws.getCell(h1, 28), "REFRIGERANT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 29, h2, 29); applyStyle(ws.getCell(h1, 29), "EFFICIENCY", styles.headerInnerWrap);
-            ws.mergeCells(h1, 30, h2, 30); applyStyle(ws.getCell(h1, 30), "COMPRESSOR\nSTAGES", styles.headerInnerWrap);
-            ws.mergeCells(h1, 31, h2, 31); applyStyle(ws.getCell(h1, 31), "WEIGHT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 32, h2, 32); applyStyle(ws.getCell(h1, 32), "NOTES", styles.headerOuter);
-
-            // Sub-headers
-            applyStyle(ws.getCell(h2, 4), "AIRFLOW\n(CFM)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 5), "MOTOR\n(HP)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 6), "MOTOR\nTYPE", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 7), "EAT\n(DB)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 8), "EAT\n(WB)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 9), "LAT\n(DB)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 10), "TOTAL\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 11), "SENSIBLE\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 13), "kW", styles.headerSub);
-            applyStyle(ws.getCell(h2, 14), "TEMPERATURE\nRISE (DB)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 15), "VOLTAGE\n/ PHASE", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 16), "MCA", styles.headerSub);
-            applyStyle(ws.getCell(h2, 17), "MOP", styles.headerSub);
-            applyStyle(ws.getCell(h2, 21), "OUTDOOR\nAMBIENT (DB)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 22), "TOTAL\nCAPACITY", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 23), "EFFICIENCY", styles.headerSub);
-            applyStyle(ws.getCell(h2, 24), "VOLTAGE\n/ PHASE", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 25), "MCA", styles.headerSub);
-            applyStyle(ws.getCell(h2, 26), "MOP", styles.headerSub);
-            ws.getRow(h1).height = 16; ws.getRow(h2).height = 31;
-            row = h2 + 1;
-
-            // DATA ROWS
-            for (var ei = 0; ei < entries.length; ei++) {
-                var entry = entries[ei];
-                var sys = DataLoader.getSystemById(entry.systemId);
-                if (!sys) continue;
-                var idu = sys.indoorUnits[0];
-                var odu = sys.outdoorUnit;
-                var r = row;
-                var isFirst = (ei === 0); var isLast = (ei === entries.length - 1);
-                var iduTag = (entry.iduTags.length > 0) ? entry.iduTags[0] : "AHU-";
-
-                applyDataCell(ws.getCell(r, 2), iduTag, styles, isFirst, isLast, true, false);
-                applyDataCell(ws.getCell(r, 3), idu.model || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 4), idu.airflow, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 5), idu.motorHp, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 6), idu.motorType || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 7), idu.coolingEatDb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 8), idu.coolingEatWb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 9), idu.coolingLatDb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 10), idu.coolingTotal, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 11), idu.coolingSensible, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 12), idu.heatPumpTotalCapacity, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 13), idu.auxHeatKw || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 14), idu.auxHeatTempRise || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 15), idu.voltage || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 16), idu.mca, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 17), idu.mop, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 18), idu.weight, styles, isFirst, isLast, false, false);
-
-                applyDataCell(ws.getCell(r, 19), entry.oduTag || "CU-", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 20), odu.model || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 21), odu.heatingAmbient, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 22), odu.heatingTotal, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 23), odu.heatingEfficiency || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 24), odu.voltage || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 25), odu.mca, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 26), odu.mop, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 27), odu.coolingAmbient, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 28), odu.refrigerant || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 29), odu.efficiency || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 30), odu.compressorStages || "", styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 31), odu.weight, styles, isFirst, isLast, false, false);
-                var accVal = (entry.iduAccessories && entry.iduAccessories.length > 0) ? (entry.iduAccessories[0] || "") : "";
-                applyDataCell(ws.getCell(r, 32), accVal, styles, isFirst, isLast, false, true);
-                ws.getRow(r).height = 15.75;
-                row++;
-            }
-
-            // NOTES SECTION
-            writeNotesSection(ws, row, styles, numCols, "multi-position");
-
-            var buffer = await wb.xlsx.writeBuffer();
-            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            if (options && options.returnBlob) return blob;
-            Project.downloadBlob(blob, "Multi Position Split Schedule.xlsx");
-            Project.showToast("Schedule exported as Excel", "toast-success");
-        } catch (err) {
-            console.error("[Export] MPS Excel generation failed:", err);
-            Project.showToast("Excel export failed — see console", "toast-danger");
-        }
-    }
-
-
-    // =====================================================================
-    //  GAS PACKS — EXCEL EXPORT (unchanged from before — template-based)
-    // =====================================================================
-    async function exportGpScheduleXlsx(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        if (typeof ExcelJS === "undefined") { Project.showToast("ExcelJS library not loaded", "toast-danger"); return; }
-        Project.showToast("Generating Excel schedule…", "toast-success");
-
-        try {
-            var resp = await fetch(TEMPLATE_PATHS["gas-packs"]);
-            if (!resp.ok) throw new Error("Gas Packs Template not found");
-            var buf = await resp.arrayBuffer();
-            var wb = new ExcelJS.Workbook();
-            await wb.xlsx.load(buf);
-            var tws = wb.getWorksheet(1);
-            var styles = extractStyles(tws);
-            var numCols = 25;
-            var colWidths = [];
-            for (var ci = 1; ci <= numCols; ci++) colWidths.push(tws.getColumn(ci).width || 8.43);
-            wb.removeWorksheet(tws.id);
-
-            var ws = wb.addWorksheet("Gas Pack RTU Schedule", {
-                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-            });
-            for (var wi = 0; wi < colWidths.length; wi++) ws.getColumn(wi + 1).width = colWidths[wi];
-
-            var row = 1;
-            ws.mergeCells(row, 1, row, numCols);
-            applyStyle(ws.getCell(row, 1), "PACKAGED ROOFTOP UNITS", styles.headerOuter);
-            ws.getRow(row).height = 20; row++;
-
-            var h1 = row;
-            ws.mergeCells(h1, 1, h1 + 1, 1); applyStyle(ws.getCell(h1, 1), "TAG", styles.headerOuter);
-            ws.mergeCells(h1, 2, h1 + 1, 2); applyStyle(ws.getCell(h1, 2), "MAKE", styles.headerOuter);
-            ws.mergeCells(h1, 3, h1 + 1, 3); applyStyle(ws.getCell(h1, 3), "MODEL NUMBER", styles.headerOuter);
-            ws.mergeCells(h1, 4, h1 + 1, 4); applyStyle(ws.getCell(h1, 4), "NOM TONS", styles.headerOuter);
-            ws.mergeCells(h1, 5, h1, 7); applyStyle(ws.getCell(h1, 5), "Fan Data", styles.headerInner);
-            ws.mergeCells(h1, 8, h1, 14); applyStyle(ws.getCell(h1, 8), "Cooling Performance", styles.headerInner);
-            ws.mergeCells(h1, 15, h1, 18); applyStyle(ws.getCell(h1, 15), "Heating Performance", styles.headerInner);
-            ws.mergeCells(h1, 19, h1 + 1, 19); applyStyle(ws.getCell(h1, 19), "MODULATING\nHOT GAS\nREHEAT", styles.headerInnerWrap);
-            ws.mergeCells(h1, 20, h1 + 1, 20); applyStyle(ws.getCell(h1, 20), "COOLING\nSTAGES", styles.headerInnerWrap);
-            ws.mergeCells(h1, 21, h1, 24); applyStyle(ws.getCell(h1, 21), "Electrical Data", styles.headerInner);
-            ws.mergeCells(h1, 25, h1 + 1, 25); applyStyle(ws.getCell(h1, 25), "NOTES", styles.headerOuter);
-
-            var h2 = h1 + 1;
-            applyStyle(ws.getCell(h2, 5), "CFM", styles.headerSub);
-            applyStyle(ws.getCell(h2, 6), "ESP (IWG)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 7), "TESP (IWG)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 8), "TOTAL CAPACITY\n(BTU/h)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 9), "SENSIBLE CAPACITY\n(BTU/h)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 10), "EFFICIENCY\n(AT AHRI)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 11), "EDB (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 12), "EWB (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 13), "LDB (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 14), "LWB (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 15), "INPUT (MBH)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 16), "OUTPUT (MBH)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 17), "EAT (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 18), "LAT (°F)", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 21), "VOLT/PH", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 22), "INDOOR\nMOTOR HP", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 23), "Unit MCA", styles.headerSubWrap);
-            applyStyle(ws.getCell(h2, 24), "Unit MOCP", styles.headerSubWrap);
-            ws.getRow(h1).height = 16; ws.getRow(h2).height = 31;
-            row = h2 + 1;
-
-            for (var ei = 0; ei < entries.length; ei++) {
-                var entry = entries[ei];
-                var sys = DataLoader.getSystemById(entry.systemId);
-                if (!sys) continue;
-                var sc = sys.schedule;
-                var r = row;
-                var isFirst = (ei === 0); var isLast = (ei === entries.length - 1);
-
-                applyDataCell(ws.getCell(r, 1), entry.oduTag || "RTU-", styles, isFirst, isLast, true, false);
-                applyDataCell(ws.getCell(r, 2), sc.manufacturer, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 3), sc.model, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 4), sc.nomTons, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 5), sc.cfm, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 6), sc.esp, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 7), sc.tesp, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 8), sc.coolingTotalCapacity, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 9), sc.coolingSensibleCapacity, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 10), sc.efficiency, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 11), sc.edb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 12), sc.ewb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 13), sc.ldb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 14), sc.lwb, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 15), sc.heatingInput, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 16), sc.heatingOutput, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 17), sc.heatingEat, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 18), sc.heatingLat, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 19), sc.hgrh, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 20), sc.coolingStages, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 21), sc.voltage, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 22), sc.motorHp, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 23), sc.mca, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 24), sc.mocp, styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 25), entry.outdoorAccessories || "", styles, isFirst, isLast, false, true);
-                ws.getRow(r).height = 15.75;
-                row++;
-            }
-
-            writeNotesSection(ws, row, styles, numCols, "gas-packs");
-
-            var buffer = await wb.xlsx.writeBuffer();
-            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            if (options && options.returnBlob) return blob;
-            Project.downloadBlob(blob, "Gas Pack RTU Schedule.xlsx");
-            Project.showToast("Schedule exported as Excel", "toast-success");
-        } catch (err) {
-            console.error("[Export] Gas Pack Excel generation failed:", err);
-            Project.showToast("Excel export failed — see console", "toast-danger");
-        }
-    }
-
-
-    // =====================================================================
-    //  MARVAIR VERTICAL WALL MOUNT — EXCEL EXPORT (template-based)
-    //  Template: DATA/MARVIAR SCHEDULE.xlsx
-    //  Columns A-R (18 cols): A blank, B-R are data columns
-    //  Row 1 blank, Row 2 title (merged B:R), Row 3 header row
-    // =====================================================================
-    async function exportMvScheduleXlsx(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        if (typeof ExcelJS === "undefined") { Project.showToast("ExcelJS library not loaded", "toast-danger"); return; }
-        Project.showToast("Generating Excel schedule…", "toast-success");
-
-        try {
-            var resp = await fetch(TEMPLATE_PATHS["marvair-vertical"]);
-            if (!resp.ok) throw new Error("Marvair Template not found");
-            var buf = await resp.arrayBuffer();
-            var wb = new ExcelJS.Workbook();
-            await wb.xlsx.load(buf);
-            var tws = wb.getWorksheet(1);
-            var styles = extractStyles(tws);
-            var numCols = 18; // A through R
-            var colWidths = [];
-            for (var ci = 1; ci <= numCols; ci++) colWidths.push(tws.getColumn(ci).width || 8.43);
-            wb.removeWorksheet(tws.id);
-
-            var ws = wb.addWorksheet("Marvair VWM Schedule", {
-                pageSetup: { orientation: "landscape", paperSize: 17, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
-            });
-            for (var wi = 0; wi < colWidths.length; wi++) ws.getColumn(wi + 1).width = colWidths[wi];
-
-            var row = 1;
-
-            // Row 1: blank (leave empty for template spacing)
-            ws.getRow(row).height = 8;
-            row++;
-
-            // Row 2: Title (merged B:R)
-            ws.mergeCells(row, 2, row, numCols);
-            applyStyle(ws.getCell(row, 2), "VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", styles.title);
-            ws.getRow(row).height = 22;
-            row++;
-
-            // Row 3: Header row (single row — no merged groups in this template)
-            var hr = row;
-            applyStyle(ws.getCell(hr, 2),  "TAG",                       styles.headerOuter);
-            applyStyle(ws.getCell(hr, 3),  "MODEL\n(MARVAIR)",          styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 4),  "NOMINAL\nSIZE (TONS)",      styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 5),  "CFM",                       styles.headerInner);
-            applyStyle(ws.getCell(hr, 6),  "TOTAL\nCAPACITY",           styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 7),  "SENSIBLE\nCAPACITY",        styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 8),  "OUTSIDE\nAIR (°F)",         styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 9),  "ENTERING AIR\nDB/WB (°F)",  styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 10), "ELECTRIC\nHEAT (KW)",       styles.headerInnerWrap);
-            applyStyle(ws.getCell(hr, 11), "VOLTS-HZ-PH",               styles.headerInner);
-            applyStyle(ws.getCell(hr, 12), "MCA",                       styles.headerInner);
-            applyStyle(ws.getCell(hr, 13), "MOCP",                      styles.headerInner);
-            applyStyle(ws.getCell(hr, 14), "REFRIGERANT",               styles.headerInner);
-            applyStyle(ws.getCell(hr, 15), "EER",                       styles.headerInner);
-            applyStyle(ws.getCell(hr, 16), "IEER",                      styles.headerInner);
-            applyStyle(ws.getCell(hr, 17), "CONFIGURATION",             styles.headerInner);
-            applyStyle(ws.getCell(hr, 18), "OPTIONS FOR\nOUTSIDE AIR\nVENTILATION", styles.headerInnerWrap);
-            ws.getRow(hr).height = 42;
-            row++;
-
-            // Data rows
-            for (var ei = 0; ei < entries.length; ei++) {
-                var entry = entries[ei];
-                var sys = DataLoader.getSystemById(entry.systemId);
-                if (!sys) continue;
-                var sc = sys.schedule;
-                var r = row;
-                var isFirst = (ei === 0);
-                var isLast = (ei === entries.length - 1);
-
-                applyDataCell(ws.getCell(r, 2),  entry.oduTag || "AC-",     styles, isFirst, isLast, true,  false);
-                applyDataCell(ws.getCell(r, 3),  sc.model || "",            styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 4),  sc.nomTons || "",          styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 5),  sc.cfm,                    styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 6),  sc.totalCapacity,          styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 7),  sc.sensibleCapacity,       styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 8),  sc.outsideAir,             styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 9),  sc.enteringAir || "",      styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 10), sc.electricHeat,           styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 11), sc.voltage || "",          styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 12), sc.mca,                    styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 13), sc.mocp,                   styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 14), sc.refrigerant || "",      styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 15), sc.eer,                    styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 16), sc.ieer,                   styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 17), sc.configuration || "",    styles, isFirst, isLast, false, false);
-                applyDataCell(ws.getCell(r, 18), sc.ventilation || "",      styles, isFirst, isLast, false, true);
-                ws.getRow(r).height = 15.75;
-                row++;
-            }
-
-            writeNotesSection(ws, row, styles, numCols, "marvair-vertical");
-
-            var buffer = await wb.xlsx.writeBuffer();
-            var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            if (options && options.returnBlob) return blob;
-            Project.downloadBlob(blob, "Marvair Vertical Wall Mount Schedule.xlsx");
-            Project.showToast("Schedule exported as Excel", "toast-success");
-        } catch (err) {
-            console.error("[Export] Marvair Excel generation failed:", err);
-            Project.showToast("Excel export failed — see console", "toast-danger");
-        }
-    }
-
-
-    // =====================================================================
-    //  NOTES SECTION WRITER (unified single section)
-    //  Honors preserveNoteNumbering flag — when true, skips the auto "n-" prefix
-    //  since notes already contain their own numbering/section headers.
-    // =====================================================================
-    function writeNotesSection(ws, row, styles, numCols, productKey) {
-        var activeNotes = Project.getProductActiveNotes(productKey);
-        if (activeNotes.length === 0) return;
-
-        var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(productKey)) || {};
-        var preserveNumbering = !!settings.preserveNoteNumbering;
-
-        row++;
-        ws.getCell(row, 1).value = "NOTES:";
-        ws.getCell(row, 1).font = styles.notesHeader ? styles.notesHeader.font : { bold: true, size: 9 };
-        ws.getCell(row, 1).alignment = styles.notesHeader ? styles.notesHeader.alignment : { horizontal: "left" };
-        row++;
-
-        for (var ni = 0; ni < activeNotes.length; ni++) {
-            if (preserveNumbering) {
-                // Write note text directly in column 1 (merged across the width)
-                ws.mergeCells(row, 1, row, Math.min(numCols, 15));
-                ws.getCell(row, 1).value = activeNotes[ni];
-                ws.getCell(row, 1).font = styles.notesText ? styles.notesText.font : { size: 8 };
-                ws.getCell(row, 1).alignment = styles.notesText ? styles.notesText.alignment : { horizontal: "left", wrapText: true };
-            } else {
-                ws.getCell(row, 1).value = (ni + 1) + "-";
-                ws.getCell(row, 1).font = styles.notesNum ? styles.notesNum.font : { size: 8 };
-                ws.getCell(row, 1).alignment = styles.notesNum ? styles.notesNum.alignment : { horizontal: "right" };
-                ws.mergeCells(row, 2, row, Math.min(numCols, 15));
-                ws.getCell(row, 2).value = activeNotes[ni];
-                ws.getCell(row, 2).font = styles.notesText ? styles.notesText.font : { size: 8 };
-                ws.getCell(row, 2).alignment = styles.notesText ? styles.notesText.alignment : { horizontal: "left", wrapText: true };
-            }
-            row++;
-        }
-    }
-
-
-    // =====================================================================
-    //  CELL HELPERS
-    // =====================================================================
-    function applyDataCell(cell, value, styles, isFirstRow, isLastRow, isLeftEdge, isRightEdge) {
-        if (value !== null && value !== undefined) cell.value = value;
-        cell.font = styles.data.font;
-        cell.alignment = styles.data.alignment;
-        cell.border = dataBorder(isFirstRow, isLastRow, isLeftEdge, isRightEdge);
-    }
-
-    function applyStyle(cell, value, style) {
-        if (value !== undefined) cell.value = value;
-        if (style) {
-            if (style.font) cell.font = style.font;
-            if (style.alignment) cell.alignment = style.alignment;
-            if (style.fill) cell.fill = style.fill;
-            if (style.border) cell.border = style.border;
-        }
-    }
-
-
-    // =====================================================================
-    //  STYLE EXTRACTION
-    // =====================================================================
-    function extractStyles(tws) {
-        var titleCell = tws.getCell("B1");
-        var sectionCell = tws.getCell("B2");
-        var headerB3 = tws.getCell("B3");
-        var headerE3 = tws.getCell("E3") || tws.getCell("D3");
-        var subHeader = tws.getCell("E4") || tws.getCell("D4");
-        var dataCell = tws.getCell("B5");
-
-        return {
-            title: { font: titleCell.font || { bold: true, size: 14 }, alignment: titleCell.alignment || { horizontal: "center", vertical: "middle" } },
-            sectionLabel: { font: sectionCell.font || { bold: true, size: 11 }, alignment: sectionCell.alignment || { horizontal: "center", vertical: "middle" } },
-            headerOuter: { font: headerB3.font || { bold: true, size: 9, color: { argb: "FFFFFFFF" } }, alignment: headerB3.alignment || { horizontal: "center", vertical: "middle", wrapText: true }, fill: headerB3.fill },
-            headerInner: { font: (headerE3 && headerE3.font) || { bold: true, size: 9 }, alignment: { horizontal: "center", vertical: "middle", wrapText: false }, fill: (headerE3 && headerE3.fill) || headerB3.fill },
-            headerInnerWrap: { font: (headerE3 && headerE3.font) || { bold: true, size: 9 }, alignment: { horizontal: "center", vertical: "middle", wrapText: true }, fill: (headerE3 && headerE3.fill) || headerB3.fill },
-            headerSub: { font: (subHeader && subHeader.font) || { size: 8 }, alignment: { horizontal: "center", vertical: "middle" }, fill: (subHeader && subHeader.fill) },
-            headerSubWrap: { font: (subHeader && subHeader.font) || { size: 8 }, alignment: { horizontal: "center", vertical: "middle", wrapText: true }, fill: (subHeader && subHeader.fill) },
-            headerOuterOdu: { font: headerB3.font || { bold: true, size: 9, color: { argb: "FFFFFFFF" } }, alignment: headerB3.alignment || { horizontal: "center", vertical: "middle", wrapText: true }, fill: headerB3.fill },
-            data: { font: dataCell.font || { size: 9 }, alignment: dataCell.alignment || { horizontal: "center", vertical: "middle" } },
-            notesHeader: { font: { bold: true, size: 9 }, alignment: { horizontal: "left", vertical: "middle" } },
-            notesNum: { font: { size: 8 }, alignment: { horizontal: "right", vertical: "middle" } },
-            notesText: { font: { size: 8 }, alignment: { horizontal: "left", vertical: "middle", wrapText: true } },
-        };
-    }
-
-
-
-    // =====================================================================
-    //  Column Visibility + Width Helpers for Export
-    // =====================================================================
-    function getExportVisibility() {
-        var hidden = SchedulePreview.getHiddenColumns();
-        return function(key) { return !hidden.has(key); };
-    }
-
-    function getExportWidths() {
-        return SchedulePreview.getColumnWidths();
-    }
-
-    // Convert pixel widths to PDF points (approximate: 1px ≈ 0.75pt)
-    function pxToPt(px) { return Math.round(px * 0.75); }
-
-    // =====================================================================
-    //  PDF EXPORT — Dispatch
-    // =====================================================================
-    function exportSchedulePdf(options) {
-        var groups = groupEntriesByProduct();
-        var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
-        var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
-        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
-        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
-
-        if (options && options.returnBlobs) {
-            var blobs = [];
-            if (hasMs) { var b = exportMsSchedulePdf({ returnBlob: true, entries: groups["mini-splits"] }); if (b) blobs.push({ name: "Mini Split Schedule.pdf", blob: b }); }
-            if (hasMps) { var b2 = exportMpsSchedulePdf({ returnBlob: true, entries: groups["multi-position"] }); if (b2) blobs.push({ name: "Multi Position Split Schedule.pdf", blob: b2 }); }
-            if (hasGp) { var b3 = exportGpSchedulePdf({ returnBlob: true, entries: groups["gas-packs"] }); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.pdf", blob: b3 }); }
-            if (hasMv) { var b4 = exportMvSchedulePdf({ returnBlob: true, entries: groups["marvair-vertical"] }); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.pdf", blob: b4 }); }
-            return blobs;
-        }
-
-        if (options && options.returnBlob) {
-            if (hasMv && !hasMs && !hasMps && !hasGp) return exportMvSchedulePdf(options);
-            if (hasGp && !hasMs && !hasMps) return exportGpSchedulePdf(options);
-            if (hasMps && !hasMs) return exportMpsSchedulePdf(options);
-            return exportMsSchedulePdf(options);
-        }
-
-        if (hasMs) exportMsSchedulePdf({ entries: groups["mini-splits"] });
-        if (hasMps) exportMpsSchedulePdf({ entries: groups["multi-position"] });
-        if (hasGp) exportGpSchedulePdf({ entries: groups["gas-packs"] });
-        if (hasMv) exportMvSchedulePdf({ entries: groups["marvair-vertical"] });
-    }
-
-    function fp(val) { if (val === null || val === undefined) return ""; if (typeof val === "number" && Number.isInteger(val) && val >= 1000) return val.toLocaleString("en-US"); return String(val); }
-
-
-
-    // =====================================================================
-    //  Generic PDF Table Renderer (column-visibility & width aware)
-    // =====================================================================
-    function renderPdfTable(doc, title, sectionLabels, colDefs, groupDefs, dataRowBuilder, entries, productKey) {
-        var pw = doc.internal.pageSize.getWidth();
-        var M = 1.0; var T = 0.25; var lm = 15;
-        var v = getExportVisibility();
-        var visCols = colDefs.filter(function(c) { return c.always || v(c.key); });
-
-        // Title bar
-        doc.setDrawColor(0); doc.setLineWidth(M);
-        var titleW = pw - 2 * lm;
-        doc.rect(lm, 15, titleW, 18, "S");
-        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
-        doc.text(title, pw / 2, 28, { align: "center" });
-        var startY = 33;
-
-        // Build header rows
-        var headRows = [];
-
-        // Section label row — as part of autoTable so it aligns with columns
-        if (sectionLabels && sectionLabels.length === 2) {
-            var indoorCount = 0, outdoorCount = 0, notesCount = 0;
-            for (var si = 0; si < visCols.length; si++) {
-                var k = visCols[si].key;
-                if (k.indexOf("-notes") !== -1) notesCount++;
-                else if (k.indexOf("-odu-") !== -1) outdoorCount++;
-                else indoorCount++;
-            }
-            var secRow = [];
-            if (indoorCount > 0) secRow.push({ content: sectionLabels[0], colSpan: indoorCount });
-            if (outdoorCount > 0) secRow.push({ content: sectionLabels[1], colSpan: outdoorCount });
-            if (notesCount > 0) secRow.push({ content: "", colSpan: notesCount });
-            headRows.push(secRow);
-        }
-
-        // Group header row + sub-header row
-        var headRow1 = [], headRow2 = [];
-        for (var gi = 0; gi < groupDefs.length; gi++) {
-            var grp = groupDefs[gi];
-            var grpVisCols = grp.cols.filter(function(gk) {
-                for (var ci = 0; ci < visCols.length; ci++) { if (visCols[ci].key === gk) return true; }
-                return false;
-            });
-            if (grpVisCols.length === 0) continue;
-            if (grp.sub) {
-                headRow1.push({ content: grp.label, colSpan: grpVisCols.length });
-                for (var sj = 0; sj < grpVisCols.length; sj++) {
-                    var colDef2 = null;
-                    for (var cj = 0; cj < visCols.length; cj++) { if (visCols[cj].key === grpVisCols[sj]) { colDef2 = visCols[cj]; break; } }
-                    headRow2.push(colDef2 ? colDef2.subHeader : "");
-                }
-            } else {
-                headRow1.push({ content: grp.label, rowSpan: 2 });
-            }
-        }
-        headRows.push(headRow1);
-        headRows.push(headRow2);
-
-        // Build data rows
-        var rows = [];
-        for (var ri = 0; ri < entries.length; ri++) {
-            var vals = dataRowBuilder(entries[ri]);
-            if (!vals) continue;
-            var row = [];
-            for (var vi2 = 0; vi2 < visCols.length; vi2++) {
-                var cellVal = vals[visCols[vi2].key];
-                if (cellVal === "__SKIP__") continue;
-                if (cellVal && typeof cellVal === "object" && cellVal.colSpan) {
-                    // Count how many of the spanned columns are actually visible
-                    var visSpan = 1;
-                    for (var sk = vi2 + 1; sk < visCols.length && visSpan < cellVal.colSpan; sk++) {
-                        if (vals[visCols[sk].key] === "__SKIP__") visSpan++;
-                        else break;
-                    }
-                    row.push({ content: cellVal.content, colSpan: visSpan, styles: { fontStyle: "italic", halign: "center" } });
-                } else {
-                    row.push(cellVal || "");
-                }
-            }
-            rows.push(row);
-        }
-
-        doc.autoTable({
-            startY: startY, head: headRows, body: rows, theme: "grid",
-            styles: { font: "helvetica", fontSize: 5.5, cellPadding: 1.5, halign: "center", valign: "middle", lineWidth: T, lineColor: [0,0,0], textColor: [0,0,0] },
-            headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: "bold", lineWidth: M, lineColor: [0,0,0] },
-            alternateRowStyles: { fillColor: [255,255,255] },
-            tableLineWidth: M, tableLineColor: [0,0,0],
-            margin: { left: lm, right: lm },
+    // =================================================================
+    // Schedule grid builder
+    // -----------------------------------------------------------------
+    // Builds a 2D cell grid that can be rendered as either XLSX or
+    // HTML for print. Each cell is an object { value, rowSpan,
+    // colSpan, bold }. Covered-by-merge positions are left as null.
+    //
+    // Result shape:
+    //   {
+    //     rows:        [ [ cell | null, ... ], ... ],
+    //     merges:      [ { r1, c1, r2, c2 }, ... ],
+    //     numHeaderRows: N,
+    //     colCount:    M,
+    //     colWidths:   [ characterWidth, ... ]   (for XLSX)
+    //   }
+    // =================================================================
+
+    function buildScheduleGrid(productKey, items, data) {
+        var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
+            ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
+        var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
+        var hiddenSet = {};
+        hidden.forEach(function (l) { hiddenSet[l] = true; });
+
+        var allLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
+        var visibleLetters = allLetters.filter(function (l) { return !hiddenSet[l]; });
+        if (!visibleLetters.length) visibleLetters = allLetters.slice();
+
+        // Resolve selections for each item. If a selection can't be
+        // matched (e.g. data was regenerated and ids changed) we skip
+        // the item entirely - a warning would be noisy here.
+        var entries = [];
+        items.forEach(function (it) {
+            var sel = findSelectionById(data, it.selectionId);
+            if (!sel) return;
+            entries.push({ item: it, selection: sel });
         });
 
-        writePdfNotes(doc, productKey, lm, pw - 2 * lm);
-    }
-
-    // =====================================================================
-    //  MINI SPLITS — PDF (simplified single-table)
-    // =====================================================================
-    function exportMsSchedulePdf(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
-        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
-
-        var colDefs = [
-            {key:"ms-idu-sym",subHeader:"SYMBOL",always:true},{key:"ms-idu-cfm",subHeader:"CFM",always:true},
-            {key:"ms-idu-cool-edb",subHeader:"EDB"},{key:"ms-idu-cool-ewb",subHeader:"EWB"},
-            {key:"ms-idu-cool-total",subHeader:"TOTAL\nCAP.",always:true},{key:"ms-idu-cool-sens",subHeader:"SENS.\nCAP.",always:true},
-            {key:"ms-idu-heat-edb",subHeader:"EDB"},{key:"ms-idu-heat-total",subHeader:"TOTAL\nCAP."},
-            {key:"ms-idu-weight",subHeader:"OP.\nWEIGHT"},{key:"ms-idu-type",subHeader:"INDOOR\nTYPE"},
-            {key:"ms-idu-voltage",subHeader:"Voltage"},{key:"ms-idu-mca",subHeader:"MCA"},{key:"ms-idu-mop",subHeader:"MOP"},
-            {key:"ms-idu-mfg",subHeader:"MFG\nDAIKIN"},
-            {key:"ms-odu-sym",subHeader:"SYMBOL",always:true},
-            {key:"ms-odu-cool-amb",subHeader:"OA AMB\n(COOL)"},{key:"ms-odu-heat-amb",subHeader:"OA AMB\n(HEAT)"},
-            {key:"ms-odu-weight",subHeader:"OP.\nWEIGHT"},{key:"ms-odu-seer",subHeader:"SEER2/EER2/\nHSPF2"},
-            {key:"ms-odu-voltage",subHeader:"Voltage"},{key:"ms-odu-mca",subHeader:"MCA"},{key:"ms-odu-mop",subHeader:"MOP"},
-            {key:"ms-odu-mfg",subHeader:"MFG\nDAIKIN"},{key:"ms-odu-refrig",subHeader:"REFRIG."},{key:"ms-odu-lineset",subHeader:"MAX LINE-SET"},
-            {key:"ms-notes",subHeader:"NOTES",always:true},
-        ];
-        var groupDefs = [
-            {label:"SYMBOL",cols:["ms-idu-sym"]},{label:"CFM",cols:["ms-idu-cfm"]},
-            {label:"COOLING CAPACITY",cols:["ms-idu-cool-edb","ms-idu-cool-ewb","ms-idu-cool-total","ms-idu-cool-sens"],sub:true},
-            {label:"HP HEATING",cols:["ms-idu-heat-edb","ms-idu-heat-total"],sub:true},
-            {label:"OP.\nWEIGHT",cols:["ms-idu-weight"]},{label:"INDOOR\nTYPE",cols:["ms-idu-type"]},
-            {label:"ELECTRICAL",cols:["ms-idu-voltage","ms-idu-mca","ms-idu-mop"],sub:true},
-            {label:"MFG\nDAIKIN",cols:["ms-idu-mfg"]},
-            {label:"SYMBOL",cols:["ms-odu-sym"]},
-            {label:"OA AMB\n(COOL)",cols:["ms-odu-cool-amb"]},{label:"OA AMB\n(HEAT)",cols:["ms-odu-heat-amb"]},
-            {label:"OP.\nWEIGHT",cols:["ms-odu-weight"]},{label:"SEER2/EER2/\nHSPF2",cols:["ms-odu-seer"]},
-            {label:"ELECTRICAL",cols:["ms-odu-voltage","ms-odu-mca","ms-odu-mop"],sub:true},
-            {label:"MFG\nDAIKIN",cols:["ms-odu-mfg"]},{label:"REFRIG.",cols:["ms-odu-refrig"]},{label:"LINE-SET",cols:["ms-odu-lineset"]},
-            {label:"NOTES",cols:["ms-notes"]},
-        ];
-        var allRows = [];
-        for (var i=0;i<entries.length;i++) {
-            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue;
-            for (var j=0;j<s.indoorUnits.length;j++) {
-                var u=s.indoorUnits[j], odu=s.outdoorUnit;
-                var iduAcc=(e.iduAccessories&&j<e.iduAccessories.length)?(e.iduAccessories[j]||""):"";
-                allRows.push(e);
-            }
+        if (!entries.length) {
+            return { rows: [], merges: [], numHeaderRows: 0, dataEndRow: 0, colCount: 0, colWidths: [] };
         }
-        renderPdfTable(doc, "SPLIT SYSTEM SCHEDULE", ["INDOOR UNIT","OUTDOOR UNIT"], colDefs, groupDefs,
-            function(entry) {
-                var s=DataLoader.getSystemById(entry.systemId); if (!s) return null;
-                var vals = {};
-                for (var j=0;j<s.indoorUnits.length;j++) {
-                    var u=s.indoorUnits[j], odu=s.outdoorUnit;
-                    vals["ms-idu-sym"]=entry.iduTags[j]||"IDU-";vals["ms-idu-cfm"]=fp(u.cfm);
-                    vals["ms-idu-cool-edb"]=fp(u.coolingEdb);vals["ms-idu-cool-ewb"]=fp(u.coolingEwb);vals["ms-idu-cool-total"]=fp(u.coolingTotal);vals["ms-idu-cool-sens"]=fp(u.coolingSensible);
-                    vals["ms-idu-heat-edb"]=fp(u.heatingEdb);vals["ms-idu-heat-total"]=fp(u.heatingTotal);
-                    vals["ms-idu-weight"]=fp(u.weight);vals["ms-idu-type"]=u.type||"";
-                    if (u.poweredFromOutdoor) {
-                        vals["ms-idu-voltage"]={content:"Powered From ODU",colSpan:3};vals["ms-idu-mca"]="__SKIP__";vals["ms-idu-mop"]="__SKIP__";
-                    } else {
-                        vals["ms-idu-voltage"]=u.voltage||"";vals["ms-idu-mca"]=fp(u.mca);vals["ms-idu-mop"]=fp(u.mop);
+
+        var showIndoor = hasIndoorTagColumn(productKey);
+        var showConfig = hasConfigurationColumn(productKey);
+
+        // Column layout
+        var tagCol = 0;
+        var indoorTagCol = showIndoor ? 1 : -1;
+        var dataStartCol = showIndoor ? 2 : 1;
+        var dataEndCol = dataStartCol + visibleLetters.length - 1;
+        var configCol = showConfig ? (dataEndCol + 1) : -1;
+        var accCol = dataEndCol + (showConfig ? 2 : 1);
+        var colCount = accCol + 1;
+
+        var letterToCol = {};
+        visibleLetters.forEach(function (l, i) { letterToCol[l] = dataStartCol + i; });
+        var visibleSet = {};
+        visibleLetters.forEach(function (l) { visibleSet[l] = true; });
+
+        // --- Pick displayed header rows from the product JSON --------
+        // The first row is always the merged schedule title the
+        // converter produced; we skip it here and supply our own
+        // canonical title (see getExportScheduleTitle below).
+        var headerRows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
+        var startIdx = 0;
+        if (headerRows.length > 1 &&
+            headerRows[0].length === 1 &&
+            headerRows[0][0].value === data.scheduleTitle) {
+            startIdx = 1;
+        }
+        var displayHeader = headerRows.slice(startIdx);
+        if (!displayHeader.length) displayHeader = [[]];
+        var numColHeaderRows = displayHeader.length;
+
+        var rows = [];
+        var merges = [];
+
+        // --- Row 0: title row spanning the full schedule width ------
+        var titleText = getExportScheduleTitle(productKey);
+        putCell(rows, merges, 0, 0,
+                { value: titleText, bold: true, title: true },
+                1, colCount);
+        var titleRowCount = 1;
+
+        // Header rows start right after the title row
+        var headerStartRow = titleRowCount;
+        var numHeaderRows = titleRowCount + numColHeaderRows;
+
+        // Tag header
+        putCell(rows, merges, headerStartRow, tagCol,
+                { value: getPrimaryTagLabel(productKey), bold: true },
+                numColHeaderRows, 1);
+
+        // Indoor Tag header
+        if (showIndoor) {
+            putCell(rows, merges, headerStartRow, indoorTagCol,
+                    { value: 'Indoor Tag', bold: true },
+                    numColHeaderRows, 1);
+        }
+
+        // Data column headers (with their row/col merges)
+        displayHeader.forEach(function (hdrRow, rowIdx) {
+            hdrRow.forEach(function (cell) {
+                var startAll = allLetters.indexOf(cell.col);
+                if (startAll < 0) return;
+                var origColspan = cell.colspan || 1;
+                // Compute the leftmost visible column this merge covers
+                // + how many visible columns in total.
+                var firstVisibleCol = -1;
+                var visibleSpan = 0;
+                for (var i = 0; i < origColspan; i++) {
+                    var letter = allLetters[startAll + i];
+                    if (visibleSet[letter]) {
+                        if (firstVisibleCol === -1) firstVisibleCol = letterToCol[letter];
+                        visibleSpan++;
                     }
-                    vals["ms-idu-mfg"]=u.manufacturer||"";
-                    vals["ms-odu-sym"]=entry.oduTag||"ODU-";vals["ms-odu-cool-amb"]=fp(odu.coolingAmbient);vals["ms-odu-heat-amb"]=fp(odu.heatingAmbient);
-                    vals["ms-odu-weight"]=fp(odu.weight);vals["ms-odu-seer"]=odu.seer||"";
-                    vals["ms-odu-voltage"]=odu.voltage||"";vals["ms-odu-mca"]=fp(odu.mca);vals["ms-odu-mop"]=fp(odu.mop);
-                    vals["ms-odu-mfg"]=odu.manufacturer||"";vals["ms-odu-refrig"]=odu.refrigerant||"";vals["ms-odu-lineset"]=odu.lineSet||"";
-                    vals["ms-notes"]=(entry.iduAccessories&&j<entry.iduAccessories.length)?(entry.iduAccessories[j]||""):"";
                 }
-                return vals;
-            }, entries, "mini-splits");
+                if (visibleSpan === 0) return;
+                var val = (cell.value !== null && cell.value !== undefined)
+                    ? String(cell.value) : '';
+                var rowspan = cell.rowspan || 1;
+                putCell(rows, merges, headerStartRow + rowIdx, firstVisibleCol,
+                        { value: val, bold: true },
+                        rowspan, visibleSpan);
+            });
+        });
 
-        if (options && options.returnBlob) return doc.output("blob");
-        doc.save("Mini Split Schedule.pdf");
-        Project.showToast("Schedule exported as PDF", "toast-success");
-    }
+        // Configuration header
+        if (showConfig) {
+            putCell(rows, merges, headerStartRow, configCol,
+                    { value: 'Configuration', bold: true },
+                    numColHeaderRows, 1);
+        }
 
+        // Accessories header
+        putCell(rows, merges, headerStartRow, accCol,
+                { value: 'Accessories', bold: true },
+                numColHeaderRows, 1);
 
-    // =====================================================================
-    //  MPS — PDF (simplified single-table)
-    // =====================================================================
-    function exportMpsSchedulePdf(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
-        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
-        var colDefs = [
-            {key:"mps-idu-tag",subHeader:"TAG",always:true},{key:"mps-idu-model",subHeader:"MODEL",always:true},
-            {key:"mps-idu-cfm",subHeader:"CFM"},{key:"mps-idu-hp",subHeader:"HP"},{key:"mps-idu-fan-type",subHeader:"TYPE"},
-            {key:"mps-idu-eat-db",subHeader:"EAT DB"},{key:"mps-idu-eat-wb",subHeader:"EAT WB"},{key:"mps-idu-lat-db",subHeader:"LAT DB"},
-            {key:"mps-idu-cool-total",subHeader:"TOTAL"},{key:"mps-idu-cool-sens",subHeader:"SENS."},
-            {key:"mps-idu-hp-total",subHeader:"HP TOTAL\nCAP."},{key:"mps-idu-aux-kw",subHeader:"kW"},{key:"mps-idu-aux-rise",subHeader:"RISE"},
-            {key:"mps-idu-voltage",subHeader:"V/PH"},{key:"mps-idu-mca",subHeader:"MCA"},{key:"mps-idu-mop",subHeader:"MOP"},
-            {key:"mps-idu-weight",subHeader:"WEIGHT"},
-            {key:"mps-odu-tag",subHeader:"TAG",always:true},{key:"mps-odu-model",subHeader:"MODEL",always:true},
-            {key:"mps-odu-heat-amb",subHeader:"AMB DB"},{key:"mps-odu-heat-total",subHeader:"TOTAL"},{key:"mps-odu-heat-eff",subHeader:"EFF."},
-            {key:"mps-odu-voltage",subHeader:"V/PH"},{key:"mps-odu-mca",subHeader:"MCA"},{key:"mps-odu-mop",subHeader:"MOP"},
-            {key:"mps-odu-cool-amb",subHeader:"OA AMB\n(COOL)"},{key:"mps-odu-refrig",subHeader:"REFRIG."},
-            {key:"mps-odu-eff",subHeader:"EFF."},{key:"mps-odu-comp",subHeader:"COMP."},{key:"mps-odu-weight",subHeader:"WEIGHT"},
-            {key:"mps-notes",subHeader:"NOTES",always:true},
-        ];
-        var groupDefs = [
-            {label:"TAG",cols:["mps-idu-tag"]},{label:"MODEL\n(DAIKIN)",cols:["mps-idu-model"]},
-            {label:"SUPPLY FAN",cols:["mps-idu-cfm","mps-idu-hp","mps-idu-fan-type"],sub:true},
-            {label:"COOLING",cols:["mps-idu-eat-db","mps-idu-eat-wb","mps-idu-lat-db","mps-idu-cool-total","mps-idu-cool-sens"],sub:true},
-            {label:"HP TOTAL\nCAP.",cols:["mps-idu-hp-total"]},
-            {label:"AUX. HEAT",cols:["mps-idu-aux-kw","mps-idu-aux-rise"],sub:true},
-            {label:"ELECTRICAL",cols:["mps-idu-voltage","mps-idu-mca","mps-idu-mop"],sub:true},
-            {label:"WEIGHT",cols:["mps-idu-weight"]},
-            {label:"TAG",cols:["mps-odu-tag"]},{label:"MODEL\n(DAIKIN)",cols:["mps-odu-model"]},
-            {label:"HP HEATING",cols:["mps-odu-heat-amb","mps-odu-heat-total","mps-odu-heat-eff"],sub:true},
-            {label:"ELECTRICAL",cols:["mps-odu-voltage","mps-odu-mca","mps-odu-mop"],sub:true},
-            {label:"OA AMB\n(COOL)",cols:["mps-odu-cool-amb"]},{label:"REFRIG.",cols:["mps-odu-refrig"]},
-            {label:"EFF.",cols:["mps-odu-eff"]},{label:"COMP.",cols:["mps-odu-comp"]},{label:"WEIGHT",cols:["mps-odu-weight"]},
-            {label:"NOTES",cols:["mps-notes"]},
-        ];
-        renderPdfTable(doc, "MULTI POSITION SPLIT SYSTEM SCHEDULE", ["INDOOR AIR HANDLING UNIT","OUTDOOR CONDENSING UNIT"], colDefs, groupDefs,
-            function(entry) {
-                var s=DataLoader.getSystemById(entry.systemId); if (!s) return null;
-                var u=s.indoorUnits[0], od=s.outdoorUnit;
-                var iduAcc=(entry.iduAccessories&&entry.iduAccessories.length>0)?(entry.iduAccessories[0]||""):"";
-                return {"mps-idu-tag":entry.iduTags[0]||"AHU-","mps-idu-model":u.model||"","mps-idu-cfm":fp(u.airflow),"mps-idu-hp":fp(u.motorHp),"mps-idu-fan-type":u.motorType||"",
-                    "mps-idu-eat-db":fp(u.coolingEatDb),"mps-idu-eat-wb":fp(u.coolingEatWb),"mps-idu-lat-db":fp(u.coolingLatDb),"mps-idu-cool-total":fp(u.coolingTotal),"mps-idu-cool-sens":fp(u.coolingSensible),
-                    "mps-idu-hp-total":fp(u.heatPumpTotalCapacity),"mps-idu-aux-kw":u.auxHeatKw||"","mps-idu-aux-rise":u.auxHeatTempRise||"",
-                    "mps-idu-voltage":u.voltage||"","mps-idu-mca":fp(u.mca),"mps-idu-mop":fp(u.mop),"mps-idu-weight":fp(u.weight),
-                    "mps-odu-tag":entry.oduTag||"CU-","mps-odu-model":od.model||"","mps-odu-heat-amb":fp(od.heatingAmbient),"mps-odu-heat-total":fp(od.heatingTotal),"mps-odu-heat-eff":od.heatingEfficiency||"",
-                    "mps-odu-voltage":od.voltage||"","mps-odu-mca":fp(od.mca),"mps-odu-mop":fp(od.mop),
-                    "mps-odu-cool-amb":fp(od.coolingAmbient),"mps-odu-refrig":od.refrigerant||"","mps-odu-eff":od.efficiency||"","mps-odu-comp":od.compressorStages||"","mps-odu-weight":fp(od.weight),
-                    "mps-notes":iduAcc};
-            }, entries, "multi-position");
-        if (options && options.returnBlob) return doc.output("blob");
-        doc.save("Multi Position Split Schedule.pdf");
-        Project.showToast("Schedule exported as PDF", "toast-success");
-    }
+        // --- Data rows ------------------------------------------------
+        var curRow = numHeaderRows;
 
+        entries.forEach(function (entry) {
+            var item = entry.item;
+            var sel = entry.selection;
+            var numItemRows = sel.rows.length;
 
-    // =====================================================================
-    //  GAS PACKS — PDF
-    // =====================================================================
-    function exportGpSchedulePdf(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
-        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
-        var colDefs = [
-            {key:"gp-tag",subHeader:"TAG",always:true},{key:"gp-model",subHeader:"MODEL",always:true},{key:"gp-tons",subHeader:"NOM\nTONS",always:true},
-            {key:"gp-cfm",subHeader:"CFM"},{key:"gp-esp",subHeader:"ESP"},{key:"gp-tesp",subHeader:"TESP"},
-            {key:"gp-cool-total",subHeader:"TOTAL\nCAP."},{key:"gp-cool-sens",subHeader:"SENS.\nCAP."},
-            {key:"gp-eff",subHeader:"EFF."},{key:"gp-edb",subHeader:"EDB"},{key:"gp-ewb",subHeader:"EWB"},{key:"gp-ldb",subHeader:"LDB"},{key:"gp-lwb",subHeader:"LWB"},
-            {key:"gp-heat-input",subHeader:"INPUT"},{key:"gp-heat-output",subHeader:"OUTPUT"},{key:"gp-heat-eat",subHeader:"EAT"},{key:"gp-heat-lat",subHeader:"LAT"},
-            {key:"gp-hgrh",subHeader:"HGRH"},{key:"gp-cool-stages",subHeader:"COOL\nSTAGES"},
-            {key:"gp-voltage",subHeader:"V/PH"},{key:"gp-hp",subHeader:"HP"},{key:"gp-mca",subHeader:"MCA"},{key:"gp-mocp",subHeader:"MOCP"},
-            {key:"gp-notes",subHeader:"NOTES",always:true},
-        ];
-        var groupDefs = [
-            {label:"TAG",cols:["gp-tag"]},{label:"MODEL",cols:["gp-model"]},{label:"NOM\nTONS",cols:["gp-tons"]},
-            {label:"FAN DATA",cols:["gp-cfm","gp-esp","gp-tesp"],sub:true},
-            {label:"COOLING PERFORMANCE",cols:["gp-cool-total","gp-cool-sens","gp-eff","gp-edb","gp-ewb","gp-ldb","gp-lwb"],sub:true},
-            {label:"HEATING PERFORMANCE",cols:["gp-heat-input","gp-heat-output","gp-heat-eat","gp-heat-lat"],sub:true},
-            {label:"HGRH",cols:["gp-hgrh"]},{label:"COOL\nSTAGES",cols:["gp-cool-stages"]},
-            {label:"ELECTRICAL",cols:["gp-voltage","gp-hp","gp-mca","gp-mocp"],sub:true},
-            {label:"NOTES",cols:["gp-notes"]},
-        ];
-        renderPdfTable(doc, "PACKAGED ROOFTOP UNITS", null, colDefs, groupDefs,
-            function(entry) {
-                var s=DataLoader.getSystemById(entry.systemId); if (!s) return null; var sc=s.schedule;
-                return {"gp-tag":entry.oduTag||"RTU-","gp-model":sc.model||"","gp-tons":fp(sc.nomTons),
-                    "gp-cfm":fp(sc.cfm),"gp-esp":fp(sc.esp),"gp-tesp":fp(sc.tesp),
-                    "gp-cool-total":fp(sc.coolingTotalCapacity),"gp-cool-sens":fp(sc.coolingSensibleCapacity),
-                    "gp-eff":sc.efficiency||"","gp-edb":fp(sc.edb),"gp-ewb":fp(sc.ewb),"gp-ldb":fp(sc.ldb),"gp-lwb":fp(sc.lwb),
-                    "gp-heat-input":fp(sc.heatingInput),"gp-heat-output":fp(sc.heatingOutput),"gp-heat-eat":fp(sc.heatingEat),"gp-heat-lat":fp(sc.heatingLat),
-                    "gp-hgrh":sc.hgrh||"","gp-cool-stages":fp(sc.coolingStages),
-                    "gp-voltage":sc.voltage||"","gp-hp":fp(sc.motorHp),"gp-mca":fp(sc.mca),"gp-mocp":fp(sc.mocp),
-                    "gp-notes":entry.outdoorAccessories||""};
-            }, entries, "gas-packs");
-        if (options && options.returnBlob) return doc.output("blob");
-        doc.save("Gas Pack RTU Schedule.pdf");
-        Project.showToast("Schedule exported as PDF", "toast-success");
-    }
-
-
-    // =====================================================================
-    //  MARVAIR VERTICAL WALL MOUNT — PDF
-    // =====================================================================
-    function exportMvSchedulePdf(options) {
-        var entries = (options && options.entries) ? options.entries : Project.getEntries();
-        if (entries.length === 0) return;
-        var C = (typeof window.jspdf !== "undefined") ? window.jspdf.jsPDF : jsPDF;
-        var doc = new C({ orientation: "landscape", unit: "pt", format: "tabloid" });
-        var colDefs = [
-            {key:"mv-tag",subHeader:"TAG",always:true},
-            {key:"mv-model",subHeader:"MODEL\n(MARVAIR)",always:true},
-            {key:"mv-tons",subHeader:"NOMINAL\nSIZE (TONS)",always:true},
-            {key:"mv-cfm",subHeader:"CFM"},
-            {key:"mv-total",subHeader:"TOTAL"},{key:"mv-sens",subHeader:"SENS."},
-            {key:"mv-oa",subHeader:"OA (°F)"},{key:"mv-eat",subHeader:"EAT\nDB/WB"},
-            {key:"mv-heat",subHeader:"ELECTRIC\nHEAT (KW)"},
-            {key:"mv-voltage",subHeader:"V-HZ-PH"},{key:"mv-mca",subHeader:"MCA"},{key:"mv-mocp",subHeader:"MOCP"},
-            {key:"mv-refrig",subHeader:"REFRIGERANT"},
-            {key:"mv-eer",subHeader:"EER"},{key:"mv-ieer",subHeader:"IEER"},
-            {key:"mv-notes",subHeader:"NOTES",always:true},
-        ];
-        var groupDefs = [
-            {label:"TAG",cols:["mv-tag"]},
-            {label:"MODEL\n(MARVAIR)",cols:["mv-model"]},
-            {label:"NOMINAL\nSIZE (TONS)",cols:["mv-tons"]},
-            {label:"CFM",cols:["mv-cfm"]},
-            {label:"COOLING CAPACITY",cols:["mv-total","mv-sens"],sub:true},
-            {label:"COOLING CONDITIONS",cols:["mv-oa","mv-eat"],sub:true},
-            {label:"ELECTRIC\nHEAT (KW)",cols:["mv-heat"]},
-            {label:"ELECTRICAL",cols:["mv-voltage","mv-mca","mv-mocp"],sub:true},
-            {label:"REFRIGERANT",cols:["mv-refrig"]},
-            {label:"EFFICIENCY",cols:["mv-eer","mv-ieer"],sub:true},
-            {label:"NOTES",cols:["mv-notes"]},
-        ];
-        renderPdfTable(doc, "VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", null, colDefs, groupDefs,
-            function(entry) {
-                var s=DataLoader.getSystemById(entry.systemId); if (!s) return null; var sc=s.schedule;
-                return {
-                    "mv-tag":entry.oduTag||"AC-",
-                    "mv-model":sc.model||"",
-                    "mv-tons":sc.nomTons||"",
-                    "mv-cfm":fp(sc.cfm),
-                    "mv-total":fp(sc.totalCapacity),
-                    "mv-sens":fp(sc.sensibleCapacity),
-                    "mv-oa":fp(sc.outsideAir),
-                    "mv-eat":sc.enteringAir||"",
-                    "mv-heat":fp(sc.electricHeat),
-                    "mv-voltage":sc.voltage||"",
-                    "mv-mca":fp(sc.mca),
-                    "mv-mocp":fp(sc.mocp),
-                    "mv-refrig":sc.refrigerant||"",
-                    "mv-eer":fp(sc.eer),
-                    "mv-ieer":fp(sc.ieer),
-                    "mv-notes":entry.outdoorAccessories||""
-                };
-            }, entries, "marvair-vertical");
-        if (options && options.returnBlob) return doc.output("blob");
-        doc.save("Marvair Vertical Wall Mount Schedule.pdf");
-        Project.showToast("Schedule exported as PDF", "toast-success");
-    }
-
-
-    // =====================================================================
-    //  PDF Notes Writer (unified single section)
-    //  Honors preserveNoteNumbering flag — skips the auto "n- " prefix
-    //  when notes already have their own embedded numbering / section headers.
-    // =====================================================================
-    function writePdfNotes(doc, productKey, leftMargin, tableWidth) {
-        var notes = Project.getProductActiveNotes(productKey);
-        if (notes.length === 0) return;
-
-        var settings = (DataLoader.getProductSettings && DataLoader.getProductSettings(productKey)) || {};
-        var preserveNumbering = !!settings.preserveNoteNumbering;
-
-        // Use actual table dimensions for perfect alignment
-        var at = doc.lastAutoTable;
-        var nY = at.finalY;
-        var tblX = at.settings.margin.left || leftMargin;
-        var tblW = at.table ? at.table.width : (tableWidth || 400);
-        var noteLineH = 9;
-        var boxH = 14 + (notes.length * noteLineH) + 4;
-
-        // Draw only left, right, bottom borders (table's bottom border is the top)
-        doc.setDrawColor(0); doc.setLineWidth(1.0);
-        doc.line(tblX, nY, tblX, nY + boxH);                   // left
-        doc.line(tblX + tblW, nY, tblX + tblW, nY + boxH);     // right
-        doc.line(tblX, nY + boxH, tblX + tblW, nY + boxH);     // bottom
-
-        doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(0);
-        doc.text("NOTES:", tblX + 4, nY + 10);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        for (var ni = 0; ni < notes.length; ni++) {
-            if (preserveNumbering) {
-                // Notes already have their own numbering/section headers — render as-is
-                doc.text(notes[ni], tblX + 4, nY + 14 + 4 + (ni * noteLineH));
-            } else {
-                doc.text((ni + 1) + "- " + notes[ni], tblX + 20, nY + 14 + 4 + (ni * noteLineH));
+            // Add the rows to the grid
+            for (var rr = 0; rr < numItemRows; rr++) {
+                rows.push(new Array(colCount).fill(null));
             }
-        }
-    }
 
+            // Tag (rowSpan over all sub-rows of the selection)
+            putCell(rows, merges, curRow, tagCol,
+                    { value: item.tag || '', dataRow: true },
+                    numItemRows, 1);
 
-    // =====================================================================
-    //  DXF EXPORT — Dispatch
-    // =====================================================================
-    function exportScheduleDxf(options) {
-        var groups = groupEntriesByProduct();
-        var hasMs = groups["mini-splits"] && groups["mini-splits"].length > 0;
-        var hasMps = groups["multi-position"] && groups["multi-position"].length > 0;
-        var hasGp = groups["gas-packs"] && groups["gas-packs"].length > 0;
-        var hasMv = groups["marvair-vertical"] && groups["marvair-vertical"].length > 0;
-
-        if (options && options.returnBlobs) {
-            var blobs = [];
-            if (hasMs) { var b = buildMsDxf(groups["mini-splits"]); if (b) blobs.push({ name: "Mini Split Schedule.dxf", blob: b }); }
-            if (hasMps) { var b2 = buildMpsDxf(groups["multi-position"]); if (b2) blobs.push({ name: "Multi Position Split Schedule.dxf", blob: b2 }); }
-            if (hasGp) { var b3 = buildGpDxf(groups["gas-packs"]); if (b3) blobs.push({ name: "Gas Pack RTU Schedule.dxf", blob: b3 }); }
-            if (hasMv) { var b4 = buildMvDxf(groups["marvair-vertical"]); if (b4) blobs.push({ name: "Marvair Vertical Wall Mount Schedule.dxf", blob: b4 }); }
-            return blobs;
-        }
-
-        if (hasMs) { var msB = buildMsDxf(groups["mini-splits"]); if (msB) Project.downloadBlob(msB, "Mini Split Schedule.dxf"); }
-        if (hasMps) { var mpsB = buildMpsDxf(groups["multi-position"]); if (mpsB) Project.downloadBlob(mpsB, "Multi Position Split Schedule.dxf"); }
-        if (hasGp) { var gpB = buildGpDxf(groups["gas-packs"]); if (gpB) Project.downloadBlob(gpB, "Gas Pack RTU Schedule.dxf"); }
-        if (hasMv) { var mvB = buildMvDxf(groups["marvair-vertical"]); if (mvB) Project.downloadBlob(mvB, "Marvair Vertical Wall Mount Schedule.dxf"); }
-        Project.showToast("DXF schedule exported", "toast-success");
-    }
-
-    // =====================================================================
-    //  DXF Rendering Engine
-    // =====================================================================
-    function renderDxf(title, sectionLabels, groupHeaders, subHeaders, colWidths, dataRows, notes) {
-        if (typeof DxfDrawing === "undefined") { Project.showToast("DXF library not loaded", "toast-danger"); return null; }
-
-        var ROW_H = 20, HDR_H = 24, GRP_H = 22, TITLE_H = 30, LABEL_H = 24, NOTE_H = 14;
-        var TXT_DATA = 5.0, TXT_HDR = 4.0, TXT_GRP = 6.5, TXT_TITLE = 10.0, TXT_LABEL = 7.0, TXT_NOTE = 4.5;
-
-        var d = new DxfDrawing();
-        d.setUnits("Millimeters");
-
-        function tw(widths) { var w=0; for(var i=0;i<widths.length;i++) w+=widths[i]; return w; }
-
-        // Auto-expand column widths to fit data content
-        var CHAR_W = TXT_DATA * 0.65;
-        var CELL_PAD = 4;
-        for (var ai = 0; ai < colWidths.length; ai++) {
-            var maxTextLen = 0;
-            for (var ar = 0; ar < dataRows.length; ar++) {
-                var colIdx = 0;
-                for (var ac = 0; ac < dataRows[ar].length; ac++) {
-                    var cv2 = dataRows[ar][ac];
-                    var cs2 = 1;
-                    var txt = "";
-                    if (cv2 && typeof cv2 === "object" && cv2.content) {
-                        txt = String(cv2.content); cs2 = cv2.colSpan || 1;
-                    } else { txt = String(cv2 || ""); }
-                    if (cs2 === 1 && colIdx === ai) {
-                        if (txt.length > maxTextLen) maxTextLen = txt.length;
-                    }
-                    colIdx += cs2;
+            // Indoor Tag - one per sub-row
+            if (showIndoor) {
+                for (var ir = 0; ir < numItemRows; ir++) {
+                    var tag = '';
+                    if (Array.isArray(item.indoorTags)) tag = item.indoorTags[ir] || '';
+                    putCell(rows, merges, curRow + ir, indoorTagCol,
+                            { value: tag, dataRow: true }, 1, 1);
                 }
             }
-            var needed = maxTextLen * CHAR_W + CELL_PAD * 2;
-            if (needed > colWidths[ai]) colWidths[ai] = needed;
+
+            // Data cells (use computeCellLayout to preserve the same
+            // merge pattern the on-screen schedule shows)
+            var layout = computeCellLayout(sel, visibleLetters);
+            for (var rIdx = 0; rIdx < numItemRows; rIdx++) {
+                visibleLetters.forEach(function (letter) {
+                    var cell = layout[rIdx][letter];
+                    if (!cell) return;             // covered by a merge above
+                    var targetCol = letterToCol[letter];
+                    putCell(rows, merges,
+                            curRow + rIdx, targetCol,
+                            { value: formatCellValue(cell.value), dataRow: true },
+                            cell.rowSpan || 1,
+                            cell.colSpan || 1);
+                });
+            }
+
+            // Configuration (rowSpan over all sub-rows)
+            if (showConfig) {
+                putCell(rows, merges, curRow, configCol,
+                        { value: item.configuration || '', dataRow: true },
+                        numItemRows, 1);
+            }
+
+            // Accessories (rowSpan over all sub-rows) - centered
+            // like every other data cell, not left-aligned.
+            putCell(rows, merges, curRow, accCol,
+                    { value: item.accessories || '', dataRow: true },
+                    numItemRows, 1);
+
+            curRow += numItemRows;
+        });
+
+        var dataEndRow = curRow;   // first row NOT in data (i.e. notes start here)
+
+        // --- Schedule notes section ----------------------------------
+        appendNotesSection(rows, merges, colCount, productKey, data, curRow);
+
+        // Column width heuristics (Excel character units)
+        var colWidths = computeColumnWidths(
+            rows, colCount, tagCol, indoorTagCol, dataStartCol,
+            dataEndCol, configCol, accCol, showIndoor, showConfig
+        );
+
+        return {
+            rows: rows,
+            merges: merges,
+            numHeaderRows: numHeaderRows,       // includes title + col headers
+            titleRowCount: titleRowCount,
+            dataEndRow: dataEndRow,
+            colCount: colCount,
+            colWidths: colWidths
+        };
+    }
+
+    // =================================================================
+    // Schedule notes appended after the data rows
+    // -----------------------------------------------------------------
+    // For Marvair schedules we emit three sections (STANDARD,
+    // CONFIGURATION, OPTIONAL) to match the on-screen layout.
+    // For everything else we emit a single SCHEDULE NOTES section.
+    //
+    // User-added custom notes (from the Custom project notes row) are
+    // included inline with continued numbering.
+    // =================================================================
+
+    function appendNotesSection(rows, merges, colCount, productKey, data, startRow) {
+        var notes = collectVisibleNotes(productKey, data);
+        var r = startRow;
+
+        if (notes.format === 'marvair') {
+            if (notes.standard.length) {
+                r = emitNotesBox(rows, merges, colCount, r,
+                    'STANDARD OPTIONS/ACCESSORIES:',
+                    notes.standard.map(function (text, i) {
+                        return (i + 1) + '. ' + text;
+                    }));
+            }
+            // CONFIGURATION section used to live here, but it's been
+            // removed now that the "Configuration" column in the
+            // schedule itself captures this information per-item.
+            // The sn.configuration array is still loaded from the
+            // JSON so the Configuration column's dropdown options
+            // continue to come from there.
+
+            // OPTIONAL section: flatten built-in optional notes (with
+            // their sub-notes) and any user-added custom notes into a
+            // single list with continuous numbering.
+            var optionalLines = [];
+            var optNum = 1;
+            notes.optional.forEach(function (opt) {
+                optionalLines.push(optNum + '. ' + opt.text);
+                optNum++;
+                opt.sub.forEach(function (s) {
+                    optionalLines.push('    \u2013 ' + s);
+                });
+            });
+            notes.customAdded.forEach(function (text) {
+                optionalLines.push(optNum + '. ' + text);
+                optNum++;
+            });
+            if (optionalLines.length) {
+                r = emitNotesBox(rows, merges, colCount, r,
+                    'OPTIONAL ACCESSORIES:', optionalLines);
+            }
+            return;
         }
 
-        var X0 = 10, Y0 = 800, y = Y0;
-        var tableW = tw(colWidths);
+        // Simple list format (Gas Packs, Mini Splits, Multi Position Splits)
+        if (notes.notes.length) {
+            var lines = notes.notes.map(function (text, i) {
+                return (i + 1) + '. ' + text;
+            });
+            emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:', lines);
+        }
+    }
 
-        // Helper: draw a rectangle using 4 lines
-        function rect(x, yTop, w, h) {
-            d.drawLine(x, yTop, x + w, yTop);
-            d.drawLine(x + w, yTop, x + w, yTop - h);
-            d.drawLine(x + w, yTop - h, x, yTop - h);
-            d.drawLine(x, yTop - h, x, yTop);
+    /**
+     * Emit one notes section as a single bordered "box": the section
+     * header plus each note line share an outer frame (top of the box
+     * on the first row, bottom of the box on the last row, left+right
+     * on every row); there are no horizontal lines between rows inside
+     * the box. This matches the "schedule notes" look the user asked
+     * for (one outer border around the whole section, no per-row
+     * inner borders).
+     *
+     * `header` is the bold section title (e.g. "SCHEDULE NOTES:" or
+     * "STANDARD OPTIONS/ACCESSORIES:"). Pass null to skip it, in which
+     * case the first line becomes the top of the box.
+     */
+    function emitNotesBox(rows, merges, colCount, r, header, lines) {
+        var totalRows = (header ? 1 : 0) + lines.length;
+        if (totalRows === 0) return r;
+
+        var firstRow = r;
+        var lastRow = r + totalRows - 1;
+
+        function posFor(rowIdx) {
+            if (firstRow === lastRow) return 'only';
+            if (rowIdx === firstRow) return 'first';
+            if (rowIdx === lastRow) return 'last';
+            return 'middle';
         }
 
-        // Helper: draw centered text (multi-line splits into stacked single lines)
-        function drawCenterText(cx, cy, h, text) {
-            var lines = String(text).split("\n");
-            if (lines.length === 1) {
-                d.drawText(cx, cy, h, 0, text, "center", "middle");
-            } else {
-                var lineSpacing = h * 1.4;
-                var totalH = lines.length * lineSpacing;
-                var startY = cy + (totalH / 2) - (lineSpacing / 2);
-                for (var li = 0; li < lines.length; li++) {
-                    d.drawText(cx, startY - (li * lineSpacing), h, 0, lines[li], "center", "middle");
-                }
+        if (header) {
+            putCell(rows, merges, r, 0, {
+                value: header, bold: true, align: 'left',
+                notesRow: true, borderPos: posFor(r)
+            }, 1, colCount);
+            r++;
+        }
+
+        lines.forEach(function (line) {
+            putCell(rows, merges, r, 0, {
+                value: line, align: 'left',
+                notesRow: true, borderPos: posFor(r)
+            }, 1, colCount);
+            r++;
+        });
+
+        return r;
+    }
+
+    /**
+     * Merge data.scheduleNotes with the user's state-level edits
+     * (deleted built-ins, added custom notes, removed customs) to
+     * produce the notes that should actually print on the schedule.
+     */
+    function collectVisibleNotes(productKey, data) {
+        var sn = data.scheduleNotes;
+        var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
+            ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
+        var nstate = extra.scheduleNotesState || {};
+        var deletedIndices = Array.isArray(nstate.deletedIndices)
+            ? nstate.deletedIndices : [];
+        var deletedSet = {};
+        deletedIndices.forEach(function (i) { deletedSet[i] = true; });
+
+        var customAdded = Array.isArray(nstate.customAdded)
+            ? nstate.customAdded : [];
+        var deletedCustomIds = Array.isArray(nstate.deletedCustomIds)
+            ? nstate.deletedCustomIds : [];
+        var hiddenCustom = {};
+        deletedCustomIds.forEach(function (id) { hiddenCustom[id] = true; });
+        var visibleCustom = customAdded
+            .filter(function (a) { return a && a.id && !hiddenCustom[a.id]; })
+            .map(function (a) { return String(a.text || ''); });
+
+        if (sn && sn.format === 'marvair') {
+            return {
+                format: 'marvair',
+                standard: (sn.standard || []).map(function (x) { return String(x); }),
+                configuration: (sn.configuration || []).map(function (x) { return String(x); }),
+                optional: (sn.optional || [])
+                    .map(function (o, idx) {
+                        return {
+                            text: String(o && o.text || ''),
+                            sub: (o && Array.isArray(o.sub) ? o.sub : []).map(String),
+                            __hidden: !!deletedSet[idx]
+                        };
+                    })
+                    .filter(function (o) { return !o.__hidden; }),
+                customAdded: visibleCustom
+            };
+        }
+
+        // Legacy / list format
+        var rawList = [];
+        if (sn && Array.isArray(sn.notes)) rawList = sn.notes;
+        else if (Array.isArray(sn)) rawList = sn;
+        var visibleBuiltIn = rawList
+            .filter(function (_, i) { return !deletedSet[i]; })
+            .map(function (n) { return String(n || ''); });
+        return {
+            format: 'list',
+            notes: visibleBuiltIn.concat(visibleCustom)
+        };
+    }
+
+    /**
+     * Canonical schedule title used at the top of the exported
+     * schedule (Excel + PDF). Matches the titles the user requested.
+     */
+    function getExportScheduleTitle(productKey) {
+        var titles = {
+            'gas_packs':              'PACKAGED ROOFTOP UNIT SCHEDULE',
+            'marvair':                'VERTICAL WALL MOUNTED PACKAGED SCHEDULE',
+            'mini_splits':            'MINI SPLIT SCHEDULE',
+            'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE'
+        };
+        return titles[productKey] || 'SCHEDULE';
+    }
+
+    // -----------------------------------------------------------------
+    // Cell placement helper: writes a cell value at (r, c), marks any
+    // covered positions with { covered: true } so the XLSX exporter
+    // can emit bordered empty cells for them (otherwise merged ranges
+    // look like they have missing borders in Excel).
+    // -----------------------------------------------------------------
+    function putCell(rows, merges, r, c, cellData, rowSpan, colSpan) {
+        rowSpan = rowSpan || 1;
+        colSpan = colSpan || 1;
+        // Extend rows if needed
+        while (rows.length < r + rowSpan) rows.push([]);
+        for (var rr = r; rr < r + rowSpan; rr++) {
+            while (rows[rr].length < c + colSpan) rows[rr].push(null);
+        }
+        rows[r][c] = {
+            value: (cellData.value === undefined || cellData.value === null)
+                    ? '' : cellData.value,
+            rowSpan: rowSpan,
+            colSpan: colSpan,
+            bold: !!cellData.bold,
+            title: !!cellData.title,
+            align: cellData.align || '',
+            notesRow: !!cellData.notesRow,
+            dataRow: !!cellData.dataRow,
+            borderPos: cellData.borderPos || ''
+        };
+        // Mark every covered position so neither the XLSX nor the
+        // HTML-for-PDF renderer overwrites it later, AND so the XLSX
+        // can emit an empty <c> element there with the bordered
+        // style (fixes the "missing borders on merged cells" bug).
+        for (var rr2 = r; rr2 < r + rowSpan; rr2++) {
+            for (var cc2 = c; cc2 < c + colSpan; cc2++) {
+                if (rr2 === r && cc2 === c) continue;
+                rows[rr2][cc2] = { covered: true };
             }
         }
+        if (rowSpan > 1 || colSpan > 1) {
+            merges.push({
+                r1: r, c1: c,
+                r2: r + rowSpan - 1, c2: c + colSpan - 1
+            });
+        }
+    }
 
-        // Title bar
-        rect(X0, y, tableW, TITLE_H);
-        d.drawText(X0 + tableW / 2, y - TITLE_H / 2, TXT_TITLE, 0, title, "center", "middle");
-        y -= TITLE_H;
+    // -----------------------------------------------------------------
+    // Pick reasonable column widths (in Excel character units) based
+    // on column purpose + longest content. Wide Accessories, narrow
+    // numeric columns.
+    // -----------------------------------------------------------------
+    function computeColumnWidths(rows, colCount, tagCol, indoorTagCol,
+                                 dataStartCol, dataEndCol, configCol,
+                                 accCol, showIndoor, showConfig) {
+        var widths = new Array(colCount).fill(10);
+        // Base widths per role
+        widths[tagCol] = 11;
+        if (showIndoor) widths[indoorTagCol] = 11;
+        if (showConfig) widths[configCol] = 20;
+        widths[accCol] = 30;
 
-        // Section labels (INDOOR UNIT / OUTDOOR UNIT)
-        if (sectionLabels && sectionLabels.length === 2) {
-            var halfW = tableW / 2;
-            rect(X0, y, halfW, LABEL_H);
-            d.drawText(X0 + halfW / 2, y - LABEL_H / 2, TXT_LABEL, 0, sectionLabels[0], "center", "middle");
-            rect(X0 + halfW, y, halfW, LABEL_H);
-            d.drawText(X0 + halfW + halfW / 2, y - LABEL_H / 2, TXT_LABEL, 0, sectionLabels[1], "center", "middle");
-            y -= LABEL_H;
+        // Auto-fit data columns to their content's max length,
+        // clamped so nothing is ridiculously wide.
+        for (var c = dataStartCol; c <= dataEndCol; c++) {
+            var maxLen = 6;
+            for (var r = 0; r < rows.length; r++) {
+                var cell = rows[r] && rows[r][c];
+                if (!cell || !cell.value) continue;
+                var s = String(cell.value);
+                if (s.length > maxLen) maxLen = s.length;
+            }
+            // Add small margin; cap at 22 chars so even long model
+            // numbers don't blow out the whole sheet.
+            widths[c] = Math.min(Math.max(maxLen + 1, 7), 22);
+        }
+        return widths;
+    }
+
+    // =================================================================
+    // XLSX generation (OOXML + JSZip)
+    // =================================================================
+
+    function generateXlsxBlob(sheetTitle, grid) {
+        var zip = new window.JSZip();
+        zip.file('[Content_Types].xml', contentTypesXml());
+        zip.file('_rels/.rels', rootRelsXml());
+        zip.file('xl/workbook.xml', workbookXml(sanitizeSheetName(sheetTitle)));
+        zip.file('xl/_rels/workbook.xml.rels', workbookRelsXml());
+        zip.file('xl/styles.xml', stylesXml());
+        zip.file('xl/worksheets/sheet1.xml', sheetXml(grid));
+        return zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            compression: 'DEFLATE'
+        });
+    }
+
+    function contentTypesXml() {
+        return XML_HEADER +
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+              '<Default Extension="xml" ContentType="application/xml"/>' +
+              '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+              '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+              '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+              '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+            '</Types>';
+    }
+
+    function rootRelsXml() {
+        return XML_HEADER +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+              '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+            '</Relationships>';
+    }
+
+    function workbookXml(sheetName) {
+        return XML_HEADER +
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
+                     ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+              '<sheets>' +
+                '<sheet name="' + xmlEscape(sheetName) + '" sheetId="1" r:id="rId1"/>' +
+              '</sheets>' +
+            '</workbook>';
+    }
+
+    function workbookRelsXml() {
+        return XML_HEADER +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+              '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+              '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+            '</Relationships>';
+    }
+
+    /**
+     * Four cell style indexes referenced from cells in sheet1.xml:
+     *   s="0"   default (unused)
+     *   s="1"   data cell - border, centered horizontally + vertically, wrap
+     *   s="2"   header cell - bold, border, centered, wrap
+     *   s="3"   left-aligned text cell - used for Accessories which
+     *           is typically longer multi-word text that reads better
+     *           left-aligned than centered
+     */
+    function stylesXml() {
+        return XML_HEADER +
+            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+              '<fonts count="3">' +
+                // fontId 0 - default body text
+                '<font><sz val="10"/><name val="Calibri"/></font>' +
+                // fontId 1 - bold body text (column headers, notes section headers)
+                '<font><b/><sz val="10"/><name val="Calibri"/></font>' +
+                // fontId 2 - bold larger text for the schedule title
+                '<font><b/><sz val="14"/><name val="Calibri"/></font>' +
+              '</fonts>' +
+              '<fills count="2">' +
+                '<fill><patternFill patternType="none"/></fill>' +
+                '<fill><patternFill patternType="gray125"/></fill>' +
+              '</fills>' +
+              // Five border variants used throughout the schedule:
+              '<borders count="5">' +
+                '<border/>' +                            // 0 - none
+                '<border>' +                             // 1 - full (all 4 sides)
+                  '<left style="thin"><color auto="1"/></left>' +
+                  '<right style="thin"><color auto="1"/></right>' +
+                  '<top style="thin"><color auto="1"/></top>' +
+                  '<bottom style="thin"><color auto="1"/></bottom>' +
+                '</border>' +
+                '<border>' +                             // 2 - left+right only (middle of a notes box)
+                  '<left style="thin"><color auto="1"/></left>' +
+                  '<right style="thin"><color auto="1"/></right>' +
+                '</border>' +
+                '<border>' +                             // 3 - top+left+right (first row of a notes box)
+                  '<left style="thin"><color auto="1"/></left>' +
+                  '<right style="thin"><color auto="1"/></right>' +
+                  '<top style="thin"><color auto="1"/></top>' +
+                '</border>' +
+                '<border>' +                             // 4 - bottom+left+right (last row of a notes box)
+                  '<left style="thin"><color auto="1"/></left>' +
+                  '<right style="thin"><color auto="1"/></right>' +
+                  '<bottom style="thin"><color auto="1"/></bottom>' +
+                '</border>' +
+              '</borders>' +
+              '<cellStyleXfs count="1">' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
+              '</cellStyleXfs>' +
+              // Cell style indexes referenced from cells in sheet1.xml:
+              //   0  default (unused)
+              //   1  data cell - full border, centered h+v, wrap
+              //   2  column-header cell - bold, full border, centered h+v, wrap
+              //   3  left-aligned text cell with full border - Accessories
+              //      column, also notes lines in a single-row section
+              //   4  title row - large bold, full border, centered, wrap
+              //   5  notes-box section header (bold) with full border -
+              //      used only when a section has one row total
+              //   6  notes-box line (non-bold) with left+right only
+              //   7  notes-box line (non-bold) with top+left+right
+              //   8  notes-box line (non-bold) with bottom+left+right
+              //   9  notes-box section header (bold) with top+left+right -
+              //      used for the header row of a multi-row section
+              '<cellXfs count="10">' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="1" fillId="0" borderId="1" applyFont="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="2" fillId="0" borderId="1" applyFont="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="1" fillId="0" borderId="1" applyFont="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="2" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="3" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="0" fillId="0" borderId="4" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="1" fillId="0" borderId="3" applyFont="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+              '</cellXfs>' +
+              '<cellStyles count="1">' +
+                '<cellStyle name="Normal" xfId="0" builtinId="0"/>' +
+              '</cellStyles>' +
+            '</styleSheet>';
+    }
+
+    function sheetXml(grid) {
+        var parts = [XML_HEADER,
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'];
+
+        // Column widths
+        if (grid.colWidths && grid.colWidths.length) {
+            parts.push('<cols>');
+            grid.colWidths.forEach(function (w, i) {
+                parts.push('<col min="' + (i + 1) + '" max="' + (i + 1) +
+                           '" width="' + w + '" customWidth="1"/>');
+            });
+            parts.push('</cols>');
         }
 
-        // Group header row
-        rect(X0, y, tableW, GRP_H);
-        for (var g = 0; g < groupHeaders.length; g++) {
-            var gh = groupHeaders[g], gx = X0;
-            for (var gi = 0; gi < gh.start; gi++) gx += colWidths[gi];
-            var gw = 0; for (var gj = 0; gj < gh.span; gj++) gw += colWidths[gh.start + gj];
-            if (gh.start > 0) d.drawLine(gx, y, gx, y - GRP_H);
-            d.drawText(gx + gw / 2, y - GRP_H / 2, TXT_GRP, 0, gh.text.replace(/\n/g, " "), "center", "middle");
-        }
-        y -= GRP_H;
-
-        // Sub-header row
-        rect(X0, y, tableW, HDR_H);
-        var hx = X0;
-        for (var hi = 0; hi < subHeaders.length; hi++) {
-            if (hi > 0) d.drawLine(hx, y, hx, y - HDR_H);
-            drawCenterText(hx + colWidths[hi] / 2, y - HDR_H / 2, TXT_HDR, subHeaders[hi]);
-            hx += colWidths[hi];
-        }
-        y -= HDR_H;
-
-        // Data rows
-        for (var ri = 0; ri < dataRows.length; ri++) {
-            var row = dataRows[ri];
-            rect(X0, y, tableW, ROW_H);
-            var rx = X0, ci = 0;
+        parts.push('<sheetData>');
+        for (var r = 0; r < grid.rows.length; r++) {
+            var row = grid.rows[r];
+            if (!row) continue;
+            var cellXmls = [];
             for (var c = 0; c < row.length; c++) {
-                var cv = row[c], ct2 = "", cs = 1;
-                if (cv && typeof cv === "object" && cv.content) { ct2 = cv.content; cs = cv.colSpan || 1; } else { ct2 = String(cv || ""); }
-                var cw = 0; for (var s = 0; s < cs; s++) cw += colWidths[ci + s];
-                if (ci > 0) d.drawLine(rx, y, rx, y - ROW_H);
-                if (ct2) d.drawText(rx + cw / 2, y - ROW_H / 2, TXT_DATA, 0, ct2, "center", "middle");
-                rx += cw; ci += cs;
+                var cell = row[c];
+                if (!cell) continue;
+                cellXmls.push(buildCellXml(r, c, cell, grid));
             }
-            y -= ROW_H;
+            // Row height:
+            //   title row (r == 0)        - tall (30pt) to show the big title
+            //   column header rows        - a bit taller so wrapped text fits
+            //   everything else (data, notes) - default Excel row height
+            var heightAttr = '';
+            if (r === 0 && grid.titleRowCount) {
+                heightAttr = ' ht="30" customHeight="1"';
+            } else if (r < grid.numHeaderRows) {
+                heightAttr = ' ht="24" customHeight="1"';
+            }
+            if (!cellXmls.length) {
+                // Blank row (spacer between data and notes) - leave it truly empty
+                parts.push('<row r="' + (r + 1) + '"/>');
+            } else {
+                parts.push('<row r="' + (r + 1) + '"' + heightAttr + '>' +
+                           cellXmls.join('') + '</row>');
+            }
+        }
+        parts.push('</sheetData>');
+
+        // Merged cells
+        if (grid.merges && grid.merges.length) {
+            parts.push('<mergeCells count="' + grid.merges.length + '">');
+            grid.merges.forEach(function (m) {
+                parts.push('<mergeCell ref="' + a1Range(m.r1, m.c1, m.r2, m.c2) + '"/>');
+            });
+            parts.push('</mergeCells>');
         }
 
-        // Notes section
-        if (notes && notes.length > 0) {
-            var noteBoxH = 12 + notes.length * NOTE_H + 8;
-            d.drawLine(X0, y, X0, y - noteBoxH);
-            d.drawLine(X0 + tableW, y, X0 + tableW, y - noteBoxH);
-            d.drawLine(X0, y - noteBoxH, X0 + tableW, y - noteBoxH);
-            d.drawText(X0 + 5, y - 8, TXT_HDR, 0, "NOTES:", "left", "middle");
-            for (var ni = 0; ni < notes.length; ni++) {
-                d.drawText(X0 + 14, y - 14 - (ni * NOTE_H) - NOTE_H / 2, TXT_NOTE, 0, (ni + 1) + "- " + notes[ni], "left", "middle");
-            }
-        }
-
-        var dxfString = d.toDxfString();
-        return new Blob([dxfString], { type: "application/dxf" });
+        parts.push('</worksheet>');
+        return parts.join('');
     }
 
-    // =====================================================================
-    //  MINI SPLITS — DXF
-    // =====================================================================
-    function buildMsDxf(entries) {
-        var v = getExportVisibility(); var W = getExportWidths();
-        var cols = [
-            {k:"ms-idu-sym",h:"SYMBOL",a:true},{k:"ms-idu-cfm",h:"CFM",a:true},
-            {k:"ms-idu-cool-edb",h:"EDB"},{k:"ms-idu-cool-ewb",h:"EWB"},
-            {k:"ms-idu-cool-total",h:"TOTAL\nCAP.",a:true},{k:"ms-idu-cool-sens",h:"SENS.\nCAP.",a:true},
-            {k:"ms-idu-heat-edb",h:"EDB"},{k:"ms-idu-heat-total",h:"TOTAL\nCAP."},
-            {k:"ms-idu-weight",h:"OP.\nWEIGHT"},{k:"ms-idu-type",h:"INDOOR\nTYPE"},
-            {k:"ms-idu-voltage",h:"VOLTAGE"},{k:"ms-idu-mca",h:"MCA"},{k:"ms-idu-mop",h:"MOP"},
-            {k:"ms-idu-mfg",h:"MFG\nDAIKIN"},
-            {k:"ms-odu-sym",h:"SYMBOL",a:true},
-            {k:"ms-odu-cool-amb",h:"OA AMB\n(COOL)"},{k:"ms-odu-heat-amb",h:"OA AMB\n(HEAT)"},
-            {k:"ms-odu-weight",h:"OP.\nWEIGHT"},{k:"ms-odu-seer",h:"SEER2/EER2\n/HSPF2"},
-            {k:"ms-odu-voltage",h:"VOLTAGE"},{k:"ms-odu-mca",h:"MCA"},{k:"ms-odu-mop",h:"MOP"},
-            {k:"ms-odu-mfg",h:"MFG\nDAIKIN"},{k:"ms-odu-refrig",h:"REFRIG."},{k:"ms-odu-lineset",h:"LINE-SET"},
-            {k:"ms-notes",h:"NOTES",a:true},
-        ];
-        var vc = cols.filter(function(c){ return c.a || v(c.k); });
-        var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
-        var groupHeaders = [{text:"SPLIT SYSTEM SCHEDULE",start:0,span:vc.length}];
-        var rows = [];
-        for (var i=0;i<entries.length;i++) {
-            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue;
-            for (var j=0;j<s.indoorUnits.length;j++) {
-                var u=s.indoorUnits[j], odu=s.outdoorUnit;
-                var iduAcc=(e.iduAccessories&&j<e.iduAccessories.length)?(e.iduAccessories[j]||""):"";
-                var allVals={
-                    "ms-idu-sym":e.iduTags[j]||"IDU-","ms-idu-cfm":fp(u.cfm),
-                    "ms-idu-cool-edb":fp(u.coolingEdb),"ms-idu-cool-ewb":fp(u.coolingEwb),"ms-idu-cool-total":fp(u.coolingTotal),"ms-idu-cool-sens":fp(u.coolingSensible),
-                    "ms-idu-heat-edb":fp(u.heatingEdb),"ms-idu-heat-total":fp(u.heatingTotal),
-                    "ms-idu-weight":fp(u.weight),"ms-idu-type":u.type||"",
-                    "ms-idu-voltage":u.poweredFromOutdoor?{content:"Powered From ODU",colSpan:3}:(u.voltage||""),
-                    "ms-idu-mca":u.poweredFromOutdoor?"__SKIP__":fp(u.mca),
-                    "ms-idu-mop":u.poweredFromOutdoor?"__SKIP__":fp(u.mop),
-                    "ms-idu-mfg":u.manufacturer||"",
-                    "ms-odu-sym":e.oduTag||"ODU-","ms-odu-cool-amb":fp(odu.coolingAmbient),"ms-odu-heat-amb":fp(odu.heatingAmbient),
-                    "ms-odu-weight":fp(odu.weight),"ms-odu-seer":odu.seer||"",
-                    "ms-odu-voltage":odu.voltage||"","ms-odu-mca":fp(odu.mca),"ms-odu-mop":fp(odu.mop),
-                    "ms-odu-mfg":odu.manufacturer||"","ms-odu-refrig":odu.refrigerant||"","ms-odu-lineset":odu.lineSet||"",
-                    "ms-notes":iduAcc,
+    /** Build one <c> element for a cell. */
+    function buildCellXml(r, c, cell, grid) {
+        var ref = a1(r, c);
+
+        // Covered cell: emit an empty bordered placeholder so Excel
+        // renders the merge's perimeter borders correctly. The style
+        // depends on whether the covering merge is a data/header row
+        // (full border) or a notes-box row (partial border matching
+        // the surrounding section).
+        if (cell.covered) {
+            return '<c r="' + ref + '" s="' + coveredStyleForRow(grid, r, c) + '"/>';
+        }
+
+        var value = cell.value;
+        var style = pickStyle(cell);
+
+        if (value === '' || value === null || value === undefined) {
+            return '<c r="' + ref + '" s="' + style + '"/>';
+        }
+
+        // Numeric? Store as number so Excel can use it in formulas.
+        // Leave things like "208/60/1" and "21.0 / 12.0 / 10.0" as text.
+        var str = String(value);
+        if (/^-?\d+(\.\d+)?$/.test(str)) {
+            return '<c r="' + ref + '" s="' + style + '"><v>' + str + '</v></c>';
+        }
+        return '<c r="' + ref + '" s="' + style + '" t="inlineStr"><is><t xml:space="preserve">' +
+                xmlEscape(str) + '</t></is></c>';
+    }
+
+    /** Pick the cell XF style index that matches this cell's role. */
+    function pickStyle(cell) {
+        if (cell.title) return 4;             // title row
+
+        if (cell.notesRow) {
+            var pos = cell.borderPos || 'middle';
+            if (cell.bold) {
+                // Section header (bold) - top+left+right normally,
+                // full frame if it's the only row in its section.
+                return (pos === 'only') ? 5 : 9;
+            }
+            // Regular note line
+            if (pos === 'first') return 7;     // top+left+right
+            if (pos === 'last')  return 8;     // bottom+left+right
+            if (pos === 'only')  return 3;     // full border (left-aligned)
+            return 6;                           // middle (left+right only)
+        }
+
+        if (cell.bold) return 2;              // column header
+        if (cell.align === 'left') return 3;  // accessories / left-aligned
+        return 1;                              // default data cell
+    }
+
+    /**
+     * Style index to use for an empty covered-by-merge cell. For
+     * notes rows we need to match the partial-border style of the
+     * anchor so the merge's perimeter renders cleanly; for everything
+     * else the full-border data style (s="1") works.
+     */
+    function coveredStyleForRow(grid, r, c) {
+        // Find the merge this covered cell belongs to and look at the
+        // anchor cell's styling. We only care about picking a border
+        // style, so scan the same row's cells for the anchor.
+        var row = grid.rows[r];
+        if (!row) return 1;
+        // Walk leftward to find the anchor (first non-covered cell in
+        // this row that is part of our merge). In practice for notes
+        // merges the anchor is always at column 0, and notes rows
+        // don't have cell-by-cell stylistic changes across the merge,
+        // so we can just look at cell (r, 0).
+        var anchor = row[0];
+        if (anchor && !anchor.covered && anchor.notesRow) {
+            // Match the anchor's border position
+            var pos = anchor.borderPos || 'middle';
+            if (anchor.bold) {
+                return (pos === 'only') ? 5 : 9;
+            }
+            if (pos === 'first') return 7;
+            if (pos === 'last')  return 8;
+            if (pos === 'only')  return 3;
+            return 6;
+        }
+        // Default: full-border data cell
+        return 1;
+    }
+
+    // Convert 0-indexed column number to Excel letter (A, B, ..., AA...)
+    function colLetter(c) {
+        var n = c + 1;
+        var s = '';
+        while (n > 0) {
+            n--;
+            s = String.fromCharCode(65 + (n % 26)) + s;
+            n = Math.floor(n / 26);
+        }
+        return s;
+    }
+
+    function a1(row, col) { return colLetter(col) + (row + 1); }
+    function a1Range(r1, c1, r2, c2) { return a1(r1, c1) + ':' + a1(r2, c2); }
+
+    function xmlEscape(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+    }
+
+    /** Excel forbids these characters in sheet names. Cap at 31 chars. */
+    function sanitizeSheetName(name) {
+        var s = String(name || 'Schedule').replace(/[\\/?*\[\]:]/g, '_').trim();
+        if (!s) s = 'Schedule';
+        return s.length > 31 ? s.slice(0, 31) : s;
+    }
+
+    var XML_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+
+    // =================================================================
+    // Print-to-PDF
+    // -----------------------------------------------------------------
+    // Renders the grid as a styled HTML table in a new window and
+    // triggers print(). User picks "Save as PDF" in the print dialog
+    // (every modern browser has this built in).
+    // =================================================================
+
+    function openPrintWindow(productLabel, projectName, grid) {
+        var w = window.open('', '_blank');
+        if (!w) {
+            alert('Please allow popups from this site to use the PDF export.');
+            return;
+        }
+        // Document title (browser-tab / suggested-PDF-filename). The
+        // user asked that the project name NOT appear at the top of
+        // the schedule itself, but it's still useful as the filename.
+        var docTitle = (projectName ? projectName + ' - ' : '') + productLabel;
+        w.document.open();
+        w.document.write(buildPrintHtml(docTitle, grid));
+        w.document.close();
+
+        // Wait for layout, then auto-fit to page width and fire print.
+        // The delay gives the new window's stylesheet time to apply;
+        // without it Chrome can print a partially-unstyled page.
+        w.focus();
+        setTimeout(function () {
+            fitToPageWidth(w);
+            try {
+                w.print();
+            } catch (e) {
+                // Some browsers throw if the window was closed first
+            }
+        }, 300);
+    }
+
+    /**
+     * Shrink the document's zoom so the widest element (the schedule
+     * table) fits within the printable width of landscape letter.
+     * Uses CSS `zoom`, which is respected when printing in Chrome,
+     * Edge, Safari. Firefox ignores zoom but its print dialog has a
+     * built-in "Scale: Fit to page" option the user can pick.
+     */
+    function fitToPageWidth(w) {
+        try {
+            var doc = w.document;
+            var table = doc.querySelector('table');
+            if (!table) return;
+            // Landscape letter minus 0.4" margins on each side:
+            //   (11 - 0.8) * 96 = 979 px of usable width at 96 dpi.
+            var availableWidth = 979;
+            // scrollWidth measures the full rendered width including
+            // anything pushing out past the visible viewport.
+            var tableWidth = table.scrollWidth;
+            if (tableWidth > availableWidth) {
+                var scale = availableWidth / tableWidth;
+                // Don't shrink below 40% - past that text becomes
+                // unreadable and the user is better off accepting a
+                // second page from their print dialog.
+                if (scale < 0.4) scale = 0.4;
+                doc.body.style.zoom = scale;
+            }
+        } catch (e) {
+            // If anything goes wrong just leave the zoom alone; the
+            // print dialog's own scaling options will still work.
+        }
+    }
+
+    function buildPrintHtml(docTitle, grid) {
+        return '<!DOCTYPE html>\n<html><head>' +
+            '<meta charset="UTF-8">' +
+            '<title>' + xmlEscape(docTitle) + '</title>' +
+            '<style>' + printCss() + '</style>' +
+          '</head><body>' +
+            renderGridAsHtmlTable(grid) +
+          '</body></html>';
+    }
+
+    function printCss() {
+        return '' +
+            // Landscape letter with small margins so the table has
+            // as much printable area as possible.
+            '@page { size: letter landscape; margin: 0.4in; }' +
+
+            'html, body { margin: 0; padding: 0;' +
+                  ' background: #fff; color: #000;' +
+                  ' font-family: Calibri, Arial, sans-serif; }' +
+
+            // Auto layout (NOT fixed) so columns size to their content.
+            // Combined with nowrap on data rows, this produces the
+            // minimum-necessary column widths - headers & notes still
+            // wrap so they never cause the table to get absurdly wide.
+            'table { border-collapse: collapse; width: auto;' +
+                  ' margin: 0; color: #000; background-color: #fff;' +
+                  ' font-size: 8pt; }' +
+
+            'th, td { border: 1px solid #000; padding: 3px 5px;' +
+                  ' vertical-align: middle; text-align: center;' +
+                  ' background-color: #fff !important;' +
+                  ' color: #000 !important; }' +
+
+            // Headers wrap so a long label doesn\'t push column width
+            // unnecessarily wide.
+            'th { font-weight: bold; white-space: normal;' +
+                  ' word-wrap: break-word; overflow-wrap: break-word; }' +
+
+            // The title row: big bold, centered, single line.
+            'tr.title-row td, tr.title-row th { font-size: 14pt;' +
+                  ' font-weight: bold; white-space: nowrap;' +
+                  ' padding: 6px 4px; }' +
+
+            // EVERY data row stays on a single line - no text wraps.
+            // This matches the way the schedule looks in the site.
+            'tr.data-row td { white-space: nowrap; }' +
+
+            // Notes rows: one outer border around the whole section,
+            // no horizontal lines between individual note rows.
+            // - every notes cell has left + right borders
+            // - top border only on the section-first row
+            // - bottom border only on the section-last row
+            // - internal rows have no top or bottom border
+            'tr.notes-row td { text-align: left; white-space: normal;' +
+                  ' word-wrap: break-word; overflow-wrap: break-word;' +
+                  ' padding: 3px 6px;' +
+                  ' border-top: none; border-bottom: none;' +
+                  ' border-left: 1px solid #000; border-right: 1px solid #000; }' +
+            'tr.notes-row.notes-first td { border-top: 1px solid #000; }' +
+            'tr.notes-row.notes-last td { border-bottom: 1px solid #000; }' +
+            'tr.notes-row.notes-only td { border-top: 1px solid #000;' +
+                  ' border-bottom: 1px solid #000; }' +
+            'tr.notes-row.notes-header td { font-weight: bold; }' +
+
+            // Chrome/Edge: force backgrounds through to the print.
+            '@media print {' +
+                ' * { -webkit-print-color-adjust: exact !important;' +
+                '     print-color-adjust: exact !important; }' +
+                ' html, body { width: auto; }' +
+            '}';
+    }
+
+    /**
+     * Render the grid as an HTML <table>. Cells that are null or
+     * covered by a merge are skipped - rowspan / colspan on the
+     * anchor cell already lays out the merged region correctly.
+     * Each row gets a class (title-row / header-row / data-row /
+     * notes-row) so the print CSS can apply row-level styling. For
+     * notes-rows we also add a notes-first / notes-middle / notes-last
+     * / notes-only class so only the section's outer border shows
+     * (no per-row horizontal lines inside the box).
+     */
+    function renderGridAsHtmlTable(grid) {
+        var out = ['<table>'];
+        var titleRowCount = grid.titleRowCount || 0;
+        var numHeaderRows = grid.numHeaderRows || 0;
+        var dataEndRow = (grid.dataEndRow != null) ? grid.dataEndRow : grid.rows.length;
+
+        for (var r = 0; r < grid.rows.length; r++) {
+            var row = grid.rows[r];
+            var rowClass;
+            if (r < titleRowCount) {
+                rowClass = 'title-row';
+            } else if (r < numHeaderRows) {
+                rowClass = 'header-row';
+            } else if (r < dataEndRow) {
+                rowClass = 'data-row';
+            } else {
+                rowClass = 'notes-row';
+            }
+
+            // For notes rows, find the anchor cell (first non-covered
+            // cell on the row) and read its borderPos so the row's
+            // CSS class matches the section's box position.
+            var extraClasses = '';
+            if (rowClass === 'notes-row') {
+                var anchor = rowAnchor(row);
+                if (anchor) {
+                    if (anchor.borderPos === 'first') extraClasses += ' notes-first';
+                    else if (anchor.borderPos === 'last')  extraClasses += ' notes-last';
+                    else if (anchor.borderPos === 'only')  extraClasses += ' notes-only';
+                    if (anchor.bold) extraClasses += ' notes-header';
+                }
+            }
+
+            out.push('<tr class="' + rowClass + extraClasses + '">');
+            for (var c = 0; c < grid.colCount; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+                // Title rows use <th>, header rows use <th>, everything
+                // else is <td>. Notes rows are left-aligned prose so
+                // they stay <td>.
+                var tag = (r < numHeaderRows) ? 'th' : 'td';
+                var attrs = '';
+                if (cell.rowSpan > 1) attrs += ' rowspan="' + cell.rowSpan + '"';
+                if (cell.colSpan > 1) attrs += ' colspan="' + cell.colSpan + '"';
+                out.push('<' + tag + attrs + '>' +
+                         xmlEscape(String(cell.value || '')) +
+                         '</' + tag + '>');
+            }
+            out.push('</tr>');
+        }
+        out.push('</table>');
+        return out.join('');
+    }
+
+    /** Return the first non-null, non-covered cell in a row (its
+     *  anchor cell) or null if the row is entirely empty/covered. */
+    function rowAnchor(row) {
+        if (!row) return null;
+        for (var i = 0; i < row.length; i++) {
+            var c = row[i];
+            if (c && !c.covered) return c;
+        }
+        return null;
+    }
+
+    // =================================================================
+    // Shared small helpers (duplicated from project_view.js so this
+    // module doesn't need to reach into that one's private closure)
+    // =================================================================
+
+    function hasIndoorTagColumn(productKey) {
+        return productKey === 'mini_splits' ||
+               productKey === 'multi_position_splits';
+    }
+
+    function hasConfigurationColumn(productKey) {
+        return productKey === 'marvair';
+    }
+
+    function getPrimaryTagLabel(productKey) {
+        if (productKey === 'mini_splits' ||
+            productKey === 'multi_position_splits') {
+            return 'Outdoor Tag';
+        }
+        return 'Tag';
+    }
+
+    function findSelectionById(data, selectionId) {
+        var sels = (data && data.selections) || [];
+        for (var i = 0; i < sels.length; i++) {
+            if (sels[i].id === selectionId) return sels[i];
+        }
+        return null;
+    }
+
+    function formatCellValue(val) {
+        if (val === null || val === undefined) return '';
+        if (typeof val === 'number') {
+            // Strip trailing .0 from whole numbers, keep decimals otherwise
+            return (val % 1 === 0) ? String(val) : String(val);
+        }
+        return String(val);
+    }
+
+    /** Build the 2D layout of data cells with outdoor-column rowSpans
+     *  preserved. Mirrors the logic in project_view.js. */
+    function computeCellLayout(sel, visibleLetters) {
+        var numRows = sel.rows.length;
+        var layout = [];
+        for (var i = 0; i < numRows; i++) layout.push({});
+
+        visibleLetters.forEach(function (colLetter) {
+            var rowsWithValue = [];
+            sel.rows.forEach(function (row, i) {
+                var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+                if (v !== undefined) rowsWithValue.push(i);
+            });
+
+            if (rowsWithValue.length === 0) {
+                for (var r = 0; r < numRows; r++) {
+                    layout[r][colLetter] = { value: '', rowSpan: 1, colSpan: 1 };
+                }
+            } else if (rowsWithValue.length === 1 && rowsWithValue[0] === 0 && numRows > 1) {
+                layout[0][colLetter] = {
+                    value: sel.rows[0].scheduleData[colLetter],
+                    rowSpan: numRows,
+                    colSpan: 1
                 };
-                rows.push(vc.map(function(c){ var v2=allVals[c.k]; return v2==="__SKIP__"?v2:v2||""; }).filter(function(v2){ return v2!=="__SKIP__"; }));
+                for (var r2 = 1; r2 < numRows; r2++) {
+                    layout[r2][colLetter] = null;
+                }
+            } else {
+                sel.rows.forEach(function (row, i) {
+                    var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+                    layout[i][colLetter] = {
+                        value: (v !== undefined ? v : ''),
+                        rowSpan: 1,
+                        colSpan: 1
+                    };
+                });
             }
-        }
-        var notes = Project.getProductActiveNotes("mini-splits");
-        return renderDxf("SPLIT SYSTEM SCHEDULE", ["INDOOR UNIT","OUTDOOR UNIT"], groupHeaders, headers, colWidths, rows, notes);
+        });
+
+        // Horizontal colspans from scheduleCellSpans
+        var visibleIdx = {};
+        visibleLetters.forEach(function (l, i) { visibleIdx[l] = i; });
+        sel.rows.forEach(function (row, rowIndex) {
+            var spans = row.scheduleCellSpans;
+            if (!spans) return;
+            Object.keys(spans).forEach(function (startCol) {
+                var colspan = parseInt(spans[startCol], 10);
+                if (!colspan || colspan <= 1) return;
+                if (!visibleIdx.hasOwnProperty(startCol)) return;
+                var anchor = layout[rowIndex][startCol];
+                if (!anchor) return;
+
+                var startVisibleIdx = visibleIdx[startCol];
+                var reach = 1;
+                for (var k = 1; k < colspan; k++) {
+                    var nextLetter = visibleLetters[startVisibleIdx + k];
+                    if (!nextLetter) break;
+                    reach++;
+                }
+                if (reach <= 1) return;
+                anchor.colSpan = reach;
+                for (var j = 1; j < reach; j++) {
+                    var coveredLetter = visibleLetters[startVisibleIdx + j];
+                    var rowsCovered = anchor.rowSpan || 1;
+                    for (var rr = 0; rr < rowsCovered; rr++) {
+                        if (layout[rowIndex + rr]) {
+                            layout[rowIndex + rr][coveredLetter] = null;
+                        }
+                    }
+                }
+            });
+        });
+
+        return layout;
     }
 
-    // =====================================================================
-    //  MPS — DXF
-    // =====================================================================
-    function buildMpsDxf(entries) {
-        var v = getExportVisibility(); var W = getExportWidths();
-        var cols = [
-            {k:"mps-idu-tag",h:"TAG",a:true},{k:"mps-idu-model",h:"MODEL",a:true},
-            {k:"mps-idu-cfm",h:"CFM"},{k:"mps-idu-hp",h:"HP"},{k:"mps-idu-fan-type",h:"TYPE"},
-            {k:"mps-idu-eat-db",h:"EAT DB"},{k:"mps-idu-eat-wb",h:"EAT WB"},{k:"mps-idu-lat-db",h:"LAT DB"},
-            {k:"mps-idu-cool-total",h:"TOTAL"},{k:"mps-idu-cool-sens",h:"SENS."},
-            {k:"mps-idu-hp-total",h:"HP TOTAL\nCAP."},{k:"mps-idu-aux-kw",h:"kW"},{k:"mps-idu-aux-rise",h:"RISE"},
-            {k:"mps-idu-voltage",h:"V/PH"},{k:"mps-idu-mca",h:"MCA"},{k:"mps-idu-mop",h:"MOP"},
-            {k:"mps-idu-weight",h:"WEIGHT"},
-            {k:"mps-odu-tag",h:"TAG",a:true},{k:"mps-odu-model",h:"MODEL",a:true},
-            {k:"mps-odu-heat-amb",h:"AMB DB"},{k:"mps-odu-heat-total",h:"TOTAL"},{k:"mps-odu-heat-eff",h:"EFF."},
-            {k:"mps-odu-voltage",h:"V/PH"},{k:"mps-odu-mca",h:"MCA"},{k:"mps-odu-mop",h:"MOP"},
-            {k:"mps-odu-cool-amb",h:"OA AMB\n(COOL)"},{k:"mps-odu-refrig",h:"REFRIG."},
-            {k:"mps-odu-eff",h:"EFF."},{k:"mps-odu-comp",h:"COMP.\nSTAGES"},{k:"mps-odu-weight",h:"WEIGHT"},
-            {k:"mps-notes",h:"NOTES",a:true},
-        ];
-        var vc = cols.filter(function(c){ return c.a || v(c.k); });
-        var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
-        var groupHeaders = [{text:"MULTI POSITION SPLIT SYSTEM SCHEDULE",start:0,span:vc.length}];
-        var rows = [];
-        for (var i=0;i<entries.length;i++) {
-            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue;
-            var u=s.indoorUnits[0], od=s.outdoorUnit;
-            var iduAcc=(e.iduAccessories&&e.iduAccessories.length>0)?(e.iduAccessories[0]||""):"";
-            var allVals={
-                "mps-idu-tag":e.iduTags[0]||"AHU-","mps-idu-model":u.model||"","mps-idu-cfm":fp(u.airflow),"mps-idu-hp":fp(u.motorHp),"mps-idu-fan-type":u.motorType||"",
-                "mps-idu-eat-db":fp(u.coolingEatDb),"mps-idu-eat-wb":fp(u.coolingEatWb),"mps-idu-lat-db":fp(u.coolingLatDb),"mps-idu-cool-total":fp(u.coolingTotal),"mps-idu-cool-sens":fp(u.coolingSensible),
-                "mps-idu-hp-total":fp(u.heatPumpTotalCapacity),"mps-idu-aux-kw":u.auxHeatKw||"","mps-idu-aux-rise":u.auxHeatTempRise||"",
-                "mps-idu-voltage":u.voltage||"","mps-idu-mca":fp(u.mca),"mps-idu-mop":fp(u.mop),"mps-idu-weight":fp(u.weight),
-                "mps-odu-tag":e.oduTag||"CU-","mps-odu-model":od.model||"","mps-odu-heat-amb":fp(od.heatingAmbient),"mps-odu-heat-total":fp(od.heatingTotal),"mps-odu-heat-eff":od.heatingEfficiency||"",
-                "mps-odu-voltage":od.voltage||"","mps-odu-mca":fp(od.mca),"mps-odu-mop":fp(od.mop),
-                "mps-odu-cool-amb":fp(od.coolingAmbient),"mps-odu-refrig":od.refrigerant||"","mps-odu-eff":od.efficiency||"","mps-odu-comp":od.compressorStages||"","mps-odu-weight":fp(od.weight),
-                "mps-notes":iduAcc,
-            };
-            rows.push(vc.map(function(c){ return allVals[c.k]||""; }));
-        }
-        var notes = Project.getProductActiveNotes("multi-position");
-        return renderDxf("MULTI POSITION SPLIT SYSTEM SCHEDULE", ["INDOOR AIR HANDLING UNIT","OUTDOOR CONDENSING UNIT"], groupHeaders, headers, colWidths, rows, notes);
+    // Map product key to its user-facing tab label. Mirrors the labels
+    // in HHpro.Data.getProducts but kept local so this module doesn't
+    // have to depend on that call succeeding.
+    function productTabLabel(productKey) {
+        var product = (HHpro.Data && HHpro.Data.getProduct)
+            ? HHpro.Data.getProduct(productKey) : null;
+        if (product && product.name) return product.name;
+        var fallback = {
+            'gas_packs': 'Gas Pack RTUs',
+            'marvair': 'Marvair Vertical Wall Mount',
+            'mini_splits': 'Mini Splits',
+            'multi_position_splits': 'Multi Position Splits'
+        };
+        return fallback[productKey] || productKey;
     }
 
-    // =====================================================================
-    //  GAS PACKS — DXF
-    // =====================================================================
-    function buildGpDxf(entries) {
-        var v = getExportVisibility(); var W = getExportWidths();
-        var cols = [
-            {k:"gp-tag",h:"TAG",a:true},{k:"gp-model",h:"MODEL",a:true},{k:"gp-tons",h:"NOM\nTONS",a:true},
-            {k:"gp-cfm",h:"CFM"},{k:"gp-esp",h:"ESP"},{k:"gp-tesp",h:"TESP"},
-            {k:"gp-cool-total",h:"TOTAL\nCAP."},{k:"gp-cool-sens",h:"SENS.\nCAP."},
-            {k:"gp-eff",h:"EFF."},{k:"gp-edb",h:"EDB"},{k:"gp-ewb",h:"EWB"},{k:"gp-ldb",h:"LDB"},{k:"gp-lwb",h:"LWB"},
-            {k:"gp-heat-input",h:"INPUT"},{k:"gp-heat-output",h:"OUTPUT"},{k:"gp-heat-eat",h:"EAT"},{k:"gp-heat-lat",h:"LAT"},
-            {k:"gp-hgrh",h:"HGRH"},{k:"gp-cool-stages",h:"COOL\nSTAGES"},
-            {k:"gp-voltage",h:"V/PH"},{k:"gp-hp",h:"HP"},{k:"gp-mca",h:"MCA"},{k:"gp-mocp",h:"MOCP"},
-            {k:"gp-notes",h:"NOTES",a:true},
-        ];
-        var vc = cols.filter(function(c){ return c.a || v(c.k); });
-        var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
-        var groupHeaders = [{text:"PACKAGED ROOFTOP UNITS",start:0,span:vc.length}];
-        var rows = [];
-        for (var i=0;i<entries.length;i++) {
-            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue; var sc=s.schedule;
-            var allVals={
-                "gp-tag":e.oduTag||"RTU-","gp-model":sc.model||"","gp-tons":fp(sc.nomTons),
-                "gp-cfm":fp(sc.cfm),"gp-esp":fp(sc.esp),"gp-tesp":fp(sc.tesp),
-                "gp-cool-total":fp(sc.coolingTotalCapacity),"gp-cool-sens":fp(sc.coolingSensibleCapacity),
-                "gp-eff":sc.efficiency||"","gp-edb":fp(sc.edb),"gp-ewb":fp(sc.ewb),"gp-ldb":fp(sc.ldb),"gp-lwb":fp(sc.lwb),
-                "gp-heat-input":fp(sc.heatingInput),"gp-heat-output":fp(sc.heatingOutput),"gp-heat-eat":fp(sc.heatingEat),"gp-heat-lat":fp(sc.heatingLat),
-                "gp-hgrh":sc.hgrh||"","gp-cool-stages":fp(sc.coolingStages),
-                "gp-voltage":sc.voltage||"","gp-hp":fp(sc.motorHp),"gp-mca":fp(sc.mca),"gp-mocp":fp(sc.mocp),
-                "gp-notes":e.outdoorAccessories||"",
-            };
-            rows.push(vc.map(function(c){ return allVals[c.k]||""; }));
-        }
-        var notes = Project.getProductActiveNotes("gas-packs");
-        return renderDxf("PACKAGED ROOFTOP UNITS", null, groupHeaders, headers, colWidths, rows, notes);
+    function safeFilename(name) {
+        return String(name || '').replace(/[\\/:*?"<>|]/g, '_').trim() || 'schedule';
     }
 
-
-    // =====================================================================
-    //  MARVAIR VERTICAL WALL MOUNT — DXF
-    // =====================================================================
-    function buildMvDxf(entries) {
-        var v = getExportVisibility(); var W = getExportWidths();
-        var cols = [
-            {k:"mv-tag",h:"TAG",a:true},{k:"mv-model",h:"MODEL",a:true},{k:"mv-tons",h:"NOM\nTONS",a:true},
-            {k:"mv-cfm",h:"CFM"},
-            {k:"mv-total",h:"TOTAL\nCAP."},{k:"mv-sens",h:"SENS.\nCAP."},
-            {k:"mv-oa",h:"OA (°F)"},{k:"mv-eat",h:"EAT\nDB/WB"},
-            {k:"mv-heat",h:"ELEC.\nHEAT (KW)"},
-            {k:"mv-voltage",h:"V-HZ-PH"},{k:"mv-mca",h:"MCA"},{k:"mv-mocp",h:"MOCP"},
-            {k:"mv-refrig",h:"REFRIG."},
-            {k:"mv-eer",h:"EER"},{k:"mv-ieer",h:"IEER"},
-            {k:"mv-notes",h:"NOTES",a:true},
-        ];
-        var vc = cols.filter(function(c){ return c.a || v(c.k); });
-        var headers = vc.map(function(c){ return c.h; });
-        var colWidths = vc.map(function(c){ return pxToPt(W[c.k]||60)/1.5; });
-        var groupHeaders = [{text:"VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE",start:0,span:vc.length}];
-        var rows = [];
-        for (var i=0;i<entries.length;i++) {
-            var e=entries[i], s=DataLoader.getSystemById(e.systemId); if (!s) continue; var sc=s.schedule;
-            var allVals={
-                "mv-tag":e.oduTag||"AC-","mv-model":sc.model||"","mv-tons":sc.nomTons||"",
-                "mv-cfm":fp(sc.cfm),
-                "mv-total":fp(sc.totalCapacity),"mv-sens":fp(sc.sensibleCapacity),
-                "mv-oa":fp(sc.outsideAir),"mv-eat":sc.enteringAir||"",
-                "mv-heat":fp(sc.electricHeat),
-                "mv-voltage":sc.voltage||"","mv-mca":fp(sc.mca),"mv-mocp":fp(sc.mocp),
-                "mv-refrig":sc.refrigerant||"",
-                "mv-eer":fp(sc.eer),"mv-ieer":fp(sc.ieer),
-                "mv-notes":e.outdoorAccessories||"",
-            };
-            rows.push(vc.map(function(c){ return allVals[c.k]||""; }));
-        }
-        var notes = Project.getProductActiveNotes("marvair-vertical");
-        return renderDxf("VERTICAL WALL MOUNTED AIR CONDITIONER SCHEDULE", null, groupHeaders, headers, colWidths, rows, notes);
+    function downloadBlob(blob, filename) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     }
-
-
-    // =====================================================================
-    //  SINGLE-PRODUCT EXPORT FUNCTIONS (for per-tab download buttons)
-    // =====================================================================
-    async function exportSingleProductXlsx(productKey) {
-        var groups = groupEntriesByProduct();
-        var entries = groups[productKey];
-        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
-        if (productKey === "mini-splits") await exportMsScheduleXlsx({ entries: entries });
-        else if (productKey === "multi-position") await exportMpsScheduleXlsx({ entries: entries });
-        else if (productKey === "gas-packs") await exportGpScheduleXlsx({ entries: entries });
-        else if (productKey === "marvair-vertical") await exportMvScheduleXlsx({ entries: entries });
-    }
-
-    function exportSingleProductPdf(productKey) {
-        var groups = groupEntriesByProduct();
-        var entries = groups[productKey];
-        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
-        if (productKey === "mini-splits") exportMsSchedulePdf({ entries: entries });
-        else if (productKey === "multi-position") exportMpsSchedulePdf({ entries: entries });
-        else if (productKey === "gas-packs") exportGpSchedulePdf({ entries: entries });
-        else if (productKey === "marvair-vertical") exportMvSchedulePdf({ entries: entries });
-    }
-
-    function exportSingleProductDxf(productKey) {
-        var groups = groupEntriesByProduct();
-        var entries = groups[productKey];
-        if (!entries || entries.length === 0) { Project.showToast("No entries for this tab", "toast-warning"); return; }
-        var blob = null;
-        var filename = "";
-        if (productKey === "mini-splits") { blob = buildMsDxf(entries); filename = "Mini Split Schedule.dxf"; }
-        else if (productKey === "multi-position") { blob = buildMpsDxf(entries); filename = "Multi Position Split Schedule.dxf"; }
-        else if (productKey === "gas-packs") { blob = buildGpDxf(entries); filename = "Gas Pack RTU Schedule.dxf"; }
-        else if (productKey === "marvair-vertical") { blob = buildMvDxf(entries); filename = "Marvair Vertical Wall Mount Schedule.dxf"; }
-        if (blob) { Project.downloadBlob(blob, filename); Project.showToast("DXF schedule exported", "toast-success"); }
-    }
-
-
-    // -----------------------------------------------------------------------
-    return {
-        init: init,
-        downloadAllDocuments: downloadAllDocuments,
-        exportScheduleXlsx: exportScheduleXlsx,
-        exportSchedulePdf: exportSchedulePdf,
-        exportScheduleDxf: exportScheduleDxf,
-        exportSingleProductXlsx: exportSingleProductXlsx,
-        exportSingleProductPdf: exportSingleProductPdf,
-        exportSingleProductDxf: exportSingleProductDxf,
-    };
 })();
