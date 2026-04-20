@@ -61,6 +61,19 @@
             pictureFile: 'DATA/PICTURES/MARVAIR VERTICAL WALL MOUNT.jpg',
             assetsFolder: 'ASSETS/MARVAIR',
             tileClass: 'tile-marvair'
+        },
+        {
+            productKey: 'vfds',
+            displayName: 'VFDs',
+            jsonFile: 'DATA/JSON/vfds.json',
+            pictureFile: 'DATA/PICTURES/VFDs.jpg',
+            assetsFolder: 'ASSETS/VFDs',
+            tileClass: 'tile-vfds',
+            // Unlike the other products, VFD schedule notes are a fixed
+            // authoritative list - users can't delete items or add
+            // custom ones. The notes render as a plain numbered list
+            // in the order defined on the SCHEDULE NOTES tab.
+            scheduleNotesReadOnly: true
         }
     ];
 

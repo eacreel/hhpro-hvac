@@ -56,9 +56,8 @@
     margin-top: var(--space-xs);
 }
 
-/* Product grid - centered on the page. `justify-content: center`
-   would leave orphan gaps on the final row; instead we let the grid
-   auto-size and center the whole container horizontally with margin. */
+/* Product grid - centered on the page. Each tile is capped at 320px
+   wide so they stay a reasonable size on ultra-wide monitors. */
 .tile-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
@@ -136,3 +135,4 @@
 .tile-marvair .tile-image { background-color: var(--tile-marvair); }
 .tile-mini-splits .tile-image { background-color: var(--tile-mini-splits); }
 .tile-multi-position-splits .tile-image { background-color: var(--tile-multi-position-splits); }
+.tile-vfds .tile-image { background-color: var(--tile-vfds); }

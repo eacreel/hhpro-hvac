@@ -1963,8 +1963,17 @@
 
         var notes = normalizeScheduleNotes(data.scheduleNotes);
         var nstate = loadNotesState(productKey);
+        var readOnly = isScheduleNotesReadOnly(productKey);
 
         // Main notes area
+        if (readOnly) {
+            // Read-only: plain numbered list, no delete buttons, no
+            // customs, no restore pills. Used for VFDs whose notes
+            // are an authoritative fixed list.
+            section.appendChild(buildReadOnlyNotesBlock(notes));
+            return section;
+        }
+
         if (notes.format === 'marvair') {
             section.appendChild(buildMarvairNotesBlocks(productKey, notes, nstate));
         } else {
@@ -1976,10 +1985,69 @@
             section.appendChild(buildRemovedNotesBlock(productKey, notes, nstate));
         }
 
-        // Custom-notes input area (always shown)
+        // Custom-notes input area (always shown for editable products)
         section.appendChild(buildCustomNotesBlock(productKey, nstate));
 
         return section;
+    }
+
+    /**
+     * True if the given product's schedule notes should be displayed
+     * as an authoritative, non-editable list. Driven by the
+     * `scheduleNotesReadOnly` flag on the product entry in data.js.
+     */
+    function isScheduleNotesReadOnly(productKey) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        return !!(product && product.scheduleNotesReadOnly);
+    }
+
+    /**
+     * Render a schedule-notes block for a read-only product: plain
+     * numbered list in the order the notes came out of the Excel
+     * SCHEDULE NOTES tab. No delete buttons, no custom-note inputs,
+     * no restore area.
+     */
+    function buildReadOnlyNotesBlock(notes) {
+        var block = document.createElement('div');
+        block.className = 'notes-block notes-plain notes-readonly';
+        block.appendChild(buildBlockHeader('SCHEDULE NOTES:'));
+
+        // For read-only mode we only handle the 'list' notes format.
+        // The Marvair layout doesn't apply here (VFDs use a plain
+        // list on the SCHEDULE NOTES tab). If a future read-only
+        // product used Marvair-format notes, this is where the
+        // rendering for that variant would live.
+        var lines = [];
+        if (notes.format === 'marvair') {
+            lines = (notes.standard || []).concat(notes.configuration || []);
+            (notes.optional || []).forEach(function (o) {
+                lines.push(o.text);
+                (o.sub || []).forEach(function (s) { lines.push('\u2014 ' + s); });
+            });
+        } else {
+            lines = notes.notes || [];
+        }
+
+        if (!lines.length) {
+            block.appendChild(buildEmptyNotesHint('(none)'));
+            return block;
+        }
+
+        var list = document.createElement('ol');
+        list.className = 'notes-list';
+        lines.forEach(function (text) {
+            var li = document.createElement('li');
+            li.className = 'notes-item';
+            var span = document.createElement('span');
+            span.className = 'notes-item-text';
+            span.textContent = String(text);
+            li.appendChild(span);
+            list.appendChild(li);
+        });
+        block.appendChild(list);
+        return block;
     }
 
     // -----------------------------------------------------------------

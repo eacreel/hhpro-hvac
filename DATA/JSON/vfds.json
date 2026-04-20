@@ -1,0 +1,5030 @@
+{
+  "productType": "VFDs",
+  "assetsFolder": "VFDs",
+  "scheduleTitle": "VFD Schedule",
+  "supportsMultiRowSelections": false,
+  "scheduleHeader": {
+    "columnLetters": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M"
+    ],
+    "rows": [
+      [
+        {
+          "col": "A",
+          "value": "VFD Schedule",
+          "colspan": 13,
+          "rowspan": 1
+        }
+      ],
+      [
+        {
+          "col": "A",
+          "value": "VFD Tag",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "B",
+          "value": "Servicing",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "C",
+          "value": "Motor Data",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "F",
+          "value": "Enclosure Rating",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "G",
+          "value": "Harmonic Mitigation",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "H",
+          "value": "Disconnect",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "I",
+          "value": "Bypass",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "J",
+          "value": "Communications",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "K",
+          "value": "VFD Min. SCCR",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "L",
+          "value": "Basis of Design",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "M",
+          "value": "Notes",
+          "colspan": 1,
+          "rowspan": 2
+        }
+      ],
+      [
+        {
+          "col": "C",
+          "value": "Qty",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "D",
+          "value": "Voltage",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "E",
+          "value": "HP (ea)",
+          "colspan": 1,
+          "rowspan": 1
+        }
+      ]
+    ]
+  },
+  "filterColumns": [
+    {
+      "name": "HP",
+      "col": "O"
+    },
+    {
+      "name": "ELECTRICAL",
+      "col": "P"
+    },
+    {
+      "name": "ENCLOSURE",
+      "col": "Q"
+    },
+    {
+      "name": "HARMONIC MITIGATION",
+      "col": "R"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "T",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "U",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "V",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "W",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "X",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "Y",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "Z",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "AA",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "AB",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "AC",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "AD",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AE",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AF",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AG",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AH",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AI",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AJ",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AK",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "selections": [
+    {
+      "id": "sel_0001",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-02A1-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0002",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A0-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0003",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A5-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0004",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-04A8-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0005",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-07A6-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0006",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-012A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0007",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-014A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0008",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-023A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0009",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-027A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0010",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-034A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0011",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-044A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0012",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-052A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0013",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-065A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0014",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-077A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0015",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-096A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0016",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-124A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0017",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-156A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0018",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-180A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0019",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-240A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0020",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-302A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0021",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-361A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0022",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-414A-4",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0023",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-02A1-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0024",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A0-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0025",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A5-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0026",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-04A8-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0027",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-07A6-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0028",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-012A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0029",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-014A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0030",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-023A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0031",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-027A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0032",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-034A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0033",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-044A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0034",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-052A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0035",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-065A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0036",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-077A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0037",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-096A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0038",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-124A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0039",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-156A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0040",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-180A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0041",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-240A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0042",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-302A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0043",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-361A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0044",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-414A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 10"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0045",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-02A1-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0046",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A0-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0047",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A5-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0048",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-04A8-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0049",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-07A6-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0050",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-012A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0051",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-014A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0052",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-023A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0053",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-027A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0054",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-034A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0055",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-044A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0056",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-052A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0057",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-065A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0058",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-077A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0059",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-096A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0060",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-124A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0061",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-156A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0062",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-180A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0063",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-240A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0064",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-302A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0065",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-361A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0066",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-414A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0067",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-02A1-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0068",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A0-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0069",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-03A5-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0070",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-04A8-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0071",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-07A6-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0072",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-012A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0073",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-014A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0074",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-023A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0075",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-027A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0076",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-034A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0077",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-044A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0078",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-052A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0079",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-065A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0080",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-077A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0081",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-096A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0082",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-124A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0083",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-156A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0084",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-180A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0085",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-240A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0086",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-302A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0087",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-361A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0088",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "None",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-PCR-414A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0089",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-02A1-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0090",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-03A0-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0091",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-03A5-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0092",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-04A8-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0093",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-07A6-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0094",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-012A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0095",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-014A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0096",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-023A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0097",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-027A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0098",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-034A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0099",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-044A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0100",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-052A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0101",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-065A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0102",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Vertical)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-VCR-077A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0103",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-096A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0104",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-124A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0105",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-156A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0106",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-180A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0107",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-240A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0108",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-302A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0109",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-361A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0110",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 1",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-414A-4",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0111",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-02A1-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0112",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A0-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0113",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A5-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0114",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-04A8-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0115",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-07A6-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0116",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-012A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0117",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-014A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0118",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-023A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0119",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-027A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0120",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-034A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0121",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-044A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0122",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-052A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0123",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-065A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0124",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-077A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0125",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-096A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0126",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-124A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0127",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-156A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0128",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-180A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0129",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-240A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0130",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-302A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0131",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-361A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0132",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 1",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-414A-4+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 1",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0133",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-02A1-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0134",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A0-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0135",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A5-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0136",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-04A8-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0137",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-07A6-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0138",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-012A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0139",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-014A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0140",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-023A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0141",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-027A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0142",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-034A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0143",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-044A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0144",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-052A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0145",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-065A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0146",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-077A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0147",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-096A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0148",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-124A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0149",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-156A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0150",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-180A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0151",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-240A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0152",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-302A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0153",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-361A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0154",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 3R",
+            "G": "5% Impedance",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-414A-4+B058",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "5% Impedance"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0155",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-02A1-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0156",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 1.5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A0-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 1.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0157",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 2,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-03A5-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 2,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0158",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 3,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-04A8-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 3,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0159",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-07A6-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0160",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 7.5,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-012A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 7.5,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0161",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 10,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-014A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 10,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0162",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 15,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-023A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 15,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0163",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 20,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-027A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 20,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0164",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 25,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-034A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 25,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0165",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 30,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-044A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 30,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0166",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 40,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-052A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 40,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0167",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 50,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-065A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 50,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0168",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 60,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-077A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 60,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0169",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 75,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-096A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 75,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0170",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 100,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-124A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 100,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0171",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 125,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-156A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 125,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0172",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 150,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-180A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 150,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0173",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 200,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-240A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 200,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0174",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 250,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-302A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 250,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0175",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 300,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-361A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 300,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    },
+    {
+      "id": "sel_0176",
+      "rows": [
+        {
+          "scheduleData": {
+            "C": 1,
+            "D": "460V",
+            "E": 350,
+            "F": "UL Type 3R",
+            "G": "Passive Filter",
+            "H": "Circuit Breaker",
+            "I": "FVNR (Box Style)",
+            "J": "BACnet MS/TP",
+            "K": "100 KA",
+            "L": "ABB ACH580-BCR-414A-4+B058+E211",
+            "M": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+          },
+          "filterData": {
+            "HP": 350,
+            "ELECTRICAL": "460V",
+            "ENCLOSURE": "UL Type 3R",
+            "HARMONIC MITIGATION": "Passive Filter"
+          },
+          "documentationData": {}
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": [
+      "1. At minimum, VFD shall include 5% impedance via 5% AC line reactor or dual DC bus chokes sized to 5% equivalent impedance.  VFD input Amps shall not exceed VFD output Amps.",
+      "2. Provide UL1449 surge suppression device.",
+      "3. VFD shall include alpha-numeric keypad interface, with display in plain English.  (Displays relying solely on codes are not acceptable).",
+      "4. Provide internal EMI/RFI filter per IEC 61800-3.",
+      "5. VFD shall be BTL Listed for BACnet MS/TP, and also include Modbus and N2.",
+      "6. VFD shall include real time clock with battery backup (include 10 year battery).",
+      "7. Phase Loss Protection & Broken Belt (loss of load) indication while in Bypass.",
+      "8. Bypass Contactors shall be powered by Switch Mode Power supply, allowing +30% to -30% Input Voltage Tolerance.  (120 V CPT not allowed).",
+      "9. VFD and Bypass shall both include BACnet MS/TP, Damper Control and Fireman’s override functionality.",
+      "10. Bypass operation to auto-reset after a brown out condition.",
+      "11. Include fast acting drive isolation fuses.",
+      "12. Bypass shall be fully functional in the event of a VFD failure.  Bypass shall not relay on the VFD or the VFD’s control board/relays.",
+      "13. Passive harmonic filter shall be factory mounted in the same enclosure as the VFD.",
+      "14. Passive harmonic filter shall include capacitor drop-out contactor.",
+      "15. Passive harmonic filter shall reduce harmonics to 5% THiD, measured at the filter lugs, while operating at full load.",
+      "16. System to meet IEEE 519-2014 based on the harmonic mitigation method(s) identified in the above schedule"
+    ]
+  },
+  "_meta": {
+    "sourceFile": "VFD DATA.xlsx",
+    "generatedAt": "2026-04-20T12:29:12",
+    "dataRowCount": 176,
+    "selectionCount": 176
+  }
+}

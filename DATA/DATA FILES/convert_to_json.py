@@ -103,6 +103,14 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "MULTI POSITION SPLITS",
     },
+    "VFD DATA.xlsx": {
+        "productType": "VFDs",
+        "outputFileName": "vfds.json",
+        "headerRows": 3,
+        "dataStartRow": 5,
+        "supportsMultiRow": False,
+        "assetsFolder": "VFDs",
+    },
 }
 
 
