@@ -73,7 +73,23 @@
             // authoritative list - users can't delete items or add
             // custom ones. The notes render as a plain numbered list
             // in the order defined on the SCHEDULE NOTES tab.
-            scheduleNotesReadOnly: true
+            scheduleNotesReadOnly: true,
+            // Schedule column letters to hide on the selection (browse)
+            // page. The project-view schedule creator still shows these.
+            // For VFDs, column M is the "Notes" column (per-item note
+            // numbers) - useful in the final schedule but noisy while
+            // browsing.
+            hiddenSelectionColumns: ['M'],
+            // Don't render the free-text "Accessories" column anywhere
+            // (browse page, project schedule creator, Excel/PDF export).
+            // VFDs convey per-item annotations via the Notes column.
+            hideAccessoriesColumn: true,
+            // Render a manual-input "Serves" column immediately to the
+            // right of the primary Tag column in the project schedule
+            // creator (and in Excel/PDF export).
+            hasServesColumn: true,
+            // Auto Tag prefix default for this product.
+            autoTagPrefix: 'VFD-'
         }
     ];
 

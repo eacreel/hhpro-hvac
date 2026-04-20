@@ -135,15 +135,21 @@ WHAT'S IN THE GRID
 
         var showIndoor = hasIndoorTagColumn(productKey);
         var showConfig = hasConfigurationColumn(productKey);
+        var showServes = hasServesColumn(productKey);
+        var showAcc    = hasAccessoriesColumn(productKey);
 
-        // Column layout
+        // Column layout. Left-to-right:
+        //   [Tag] [Serves?] [Indoor Tag?] [...data columns...] [Configuration?] [Accessories?]
         var tagCol = 0;
-        var indoorTagCol = showIndoor ? 1 : -1;
-        var dataStartCol = showIndoor ? 2 : 1;
+        var nextLeft = 1;
+        var servesCol = showServes ? nextLeft++ : -1;
+        var indoorTagCol = showIndoor ? nextLeft++ : -1;
+        var dataStartCol = nextLeft;
         var dataEndCol = dataStartCol + visibleLetters.length - 1;
-        var configCol = showConfig ? (dataEndCol + 1) : -1;
-        var accCol = dataEndCol + (showConfig ? 2 : 1);
-        var colCount = accCol + 1;
+        var nextRight = dataEndCol + 1;
+        var configCol = showConfig ? nextRight++ : -1;
+        var accCol = showAcc ? nextRight++ : -1;
+        var colCount = nextRight;    // one past the last used column
 
         var letterToCol = {};
         visibleLetters.forEach(function (l, i) { letterToCol[l] = dataStartCol + i; });
@@ -183,6 +189,13 @@ WHAT'S IN THE GRID
         putCell(rows, merges, headerStartRow, tagCol,
                 { value: getPrimaryTagLabel(productKey), bold: true },
                 numColHeaderRows, 1);
+
+        // Serves header (between Tag and Indoor Tag for flagged products)
+        if (showServes) {
+            putCell(rows, merges, headerStartRow, servesCol,
+                    { value: 'Serves', bold: true },
+                    numColHeaderRows, 1);
+        }
 
         // Indoor Tag header
         if (showIndoor) {
@@ -225,10 +238,12 @@ WHAT'S IN THE GRID
                     numColHeaderRows, 1);
         }
 
-        // Accessories header
-        putCell(rows, merges, headerStartRow, accCol,
-                { value: 'Accessories', bold: true },
-                numColHeaderRows, 1);
+        // Accessories header (unless opted out via data.js)
+        if (showAcc) {
+            putCell(rows, merges, headerStartRow, accCol,
+                    { value: 'Accessories', bold: true },
+                    numColHeaderRows, 1);
+        }
 
         // --- Data rows ------------------------------------------------
         var curRow = numHeaderRows;
@@ -247,6 +262,14 @@ WHAT'S IN THE GRID
             putCell(rows, merges, curRow, tagCol,
                     { value: item.tag || '', dataRow: true },
                     numItemRows, 1);
+
+            // Serves (rowSpan over all sub-rows) - free-text value
+            // stored on the cart item by the project-view renderer
+            if (showServes) {
+                putCell(rows, merges, curRow, servesCol,
+                        { value: item.serves || '', dataRow: true },
+                        numItemRows, 1);
+            }
 
             // Indoor Tag - one per sub-row
             if (showIndoor) {
@@ -283,9 +306,11 @@ WHAT'S IN THE GRID
 
             // Accessories (rowSpan over all sub-rows) - centered
             // like every other data cell, not left-aligned.
-            putCell(rows, merges, curRow, accCol,
-                    { value: item.accessories || '', dataRow: true },
-                    numItemRows, 1);
+            if (showAcc) {
+                putCell(rows, merges, curRow, accCol,
+                        { value: item.accessories || '', dataRow: true },
+                        numItemRows, 1);
+            }
 
             curRow += numItemRows;
         });
@@ -297,8 +322,9 @@ WHAT'S IN THE GRID
 
         // Column width heuristics (Excel character units)
         var colWidths = computeColumnWidths(
-            rows, colCount, tagCol, indoorTagCol, dataStartCol,
-            dataEndCol, configCol, accCol, showIndoor, showConfig
+            rows, colCount, tagCol, servesCol, indoorTagCol, dataStartCol,
+            dataEndCol, configCol, accCol, showServes, showIndoor,
+            showConfig, showAcc
         );
 
         return {
@@ -485,7 +511,8 @@ WHAT'S IN THE GRID
             'gas_packs':              'PACKAGED ROOFTOP UNIT SCHEDULE',
             'marvair':                'VERTICAL WALL MOUNTED PACKAGED SCHEDULE',
             'mini_splits':            'MINI SPLIT SCHEDULE',
-            'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE'
+            'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE',
+            'vfds':                   'VFD SCHEDULE'
         };
         return titles[productKey] || 'SCHEDULE';
     }
@@ -539,15 +566,17 @@ WHAT'S IN THE GRID
     // on column purpose + longest content. Wide Accessories, narrow
     // numeric columns.
     // -----------------------------------------------------------------
-    function computeColumnWidths(rows, colCount, tagCol, indoorTagCol,
-                                 dataStartCol, dataEndCol, configCol,
-                                 accCol, showIndoor, showConfig) {
+    function computeColumnWidths(rows, colCount, tagCol, servesCol,
+                                 indoorTagCol, dataStartCol, dataEndCol,
+                                 configCol, accCol, showServes, showIndoor,
+                                 showConfig, showAcc) {
         var widths = new Array(colCount).fill(10);
         // Base widths per role
         widths[tagCol] = 11;
+        if (showServes) widths[servesCol] = 24;
         if (showIndoor) widths[indoorTagCol] = 11;
         if (showConfig) widths[configCol] = 20;
-        widths[accCol] = 30;
+        if (showAcc) widths[accCol] = 30;
 
         // Auto-fit data columns to their content's max length,
         // clamped so nothing is ridiculously wide.
@@ -1116,6 +1145,20 @@ WHAT'S IN THE GRID
 
     function hasConfigurationColumn(productKey) {
         return productKey === 'marvair';
+    }
+
+    function hasServesColumn(productKey) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        return !!(product && product.hasServesColumn);
+    }
+
+    function hasAccessoriesColumn(productKey) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        return !(product && product.hideAccessoriesColumn);
     }
 
     function getPrimaryTagLabel(productKey) {

@@ -441,12 +441,19 @@
     function buildScheduleTable(data, selections, product) {
         var table = document.createElement('table');
         table.className = 'schedule-table';
-        table.appendChild(buildScheduleHead(data));
-        table.appendChild(buildScheduleBody(data, selections, product));
+        // Per-product "always hidden" columns (declared in data.js via
+        // hiddenSelectionColumns). The project-view schedule creator
+        // still shows these; only the browse page hides them.
+        var hiddenSet = {};
+        var hidden = (product && product.hiddenSelectionColumns) || [];
+        hidden.forEach(function (letter) { hiddenSet[letter] = true; });
+        table.appendChild(buildScheduleHead(data, hiddenSet));
+        table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));
         return table;
     }
 
-    function buildScheduleHead(data) {
+    function buildScheduleHead(data, hiddenSet) {
+        hiddenSet = hiddenSet || {};
         var thead = document.createElement('thead');
         var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
 
@@ -457,6 +464,8 @@
             startIdx = 1;
         }
         var displayRows = rows.slice(startIdx);
+
+        var allLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
 
         displayRows.forEach(function (row, rowIndex) {
             var tr = document.createElement('tr');
@@ -470,8 +479,27 @@
             }
 
             row.forEach(function (cell) {
+                // Recompute colspan taking hidden columns into account.
+                // A merged header cell that spans cols A..C where only
+                // B is hidden should still render, with colspan 2.
+                var startCol = allLetters.indexOf(cell.col);
+                var origColspan = cell.colspan || 1;
+                var visibleSpan = 0;
+                if (startCol < 0) {
+                    // Column not in the schedule letter set; fall back to
+                    // the original colspan (preserves pre-existing behavior
+                    // for any edge-case headers).
+                    visibleSpan = origColspan;
+                } else {
+                    for (var i = 0; i < origColspan; i++) {
+                        var letter = allLetters[startCol + i];
+                        if (!hiddenSet[letter]) visibleSpan++;
+                    }
+                }
+                if (visibleSpan === 0) return;   // entire merge is hidden
+
                 var th = document.createElement('th');
-                if (cell.colspan && cell.colspan > 1) th.colSpan = cell.colspan;
+                if (visibleSpan > 1) th.colSpan = visibleSpan;
                 if (cell.rowspan && cell.rowspan > 1) th.rowSpan = cell.rowspan;
                 th.textContent = (cell.value !== null && cell.value !== undefined) ? String(cell.value) : '';
                 tr.appendChild(th);
@@ -483,9 +511,11 @@
         return thead;
     }
 
-    function buildScheduleBody(data, selections, product) {
+    function buildScheduleBody(data, selections, product, hiddenSet) {
+        hiddenSet = hiddenSet || {};
         var tbody = document.createElement('tbody');
-        var colLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
+        var allLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
+        var colLetters = allLetters.filter(function (l) { return !hiddenSet[l]; });
         var colIndexMap = {}; // letter -> index in colLetters
         colLetters.forEach(function (l, i) { colIndexMap[l] = i; });
 

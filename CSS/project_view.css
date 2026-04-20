@@ -1010,6 +1010,24 @@
     color: var(--color-text);
 }
 
+/* ---------- Serves column ----------
+   Optional manual-input column for products flagged with
+   hasServesColumn in data.js (currently VFDs only). Sits
+   immediately to the right of the primary Tag column. Not sticky -
+   having too many sticky columns makes horizontal scrolling feel
+   cramped, and the Tag column is the only one users really need
+   pinned when they're comparing across wide schedules. */
+.project-sched-serves-head {
+    min-width: 160px;
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+}
+
+.project-sched-serves-cell {
+    min-width: 160px;
+    background-color: var(--color-surface) !important;
+}
+
 /* ---------- Indoor Tag column ----------
    Only sticky when the table has the 'schedule-has-indoor-tag'
    class (Mini Splits + Multi Position Splits). Sits to the right

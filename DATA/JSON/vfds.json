@@ -15,14 +15,15 @@
       "H",
       "I",
       "J",
-      "K"
+      "K",
+      "L"
     ],
     "rows": [
       [
         {
           "col": "A",
           "value": "VFD SCHEDULE",
-          "colspan": 11,
+          "colspan": 12,
           "rowspan": 1
         }
       ],
@@ -71,12 +72,18 @@
         },
         {
           "col": "J",
-          "value": "Basis of Design",
+          "value": "Manufacturer",
           "colspan": 1,
           "rowspan": 2
         },
         {
           "col": "K",
+          "value": "Model",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "L",
           "value": "Notes",
           "colspan": 1,
           "rowspan": 2
@@ -107,131 +114,131 @@
   "filterColumns": [
     {
       "name": "HP",
-      "col": "M"
-    },
-    {
-      "name": "ELECTRICAL",
       "col": "N"
     },
     {
-      "name": "ENCLOSURE",
+      "name": "ELECTRICAL",
       "col": "O"
     },
     {
-      "name": "BYPASS",
+      "name": "ENCLOSURE",
       "col": "P"
     },
     {
-      "name": "HARMONIC MITIGATION",
+      "name": "BYPASS",
       "col": "Q"
+    },
+    {
+      "name": "HARMONIC MITIGATION",
+      "col": "R"
     }
   ],
   "documentationColumns": [
     {
       "name": "SUBMITTAL (OUTDOOR UNIT)",
-      "col": "S",
-      "folder": "SUBMITTALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "T",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "SUBMITTAL (SYSTEM)",
+      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "U",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "name": "SUBMITTAL (SYSTEM)",
       "col": "V",
-      "folder": "ENGINEERING MANUALS",
+      "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (SYSTEM)",
       "col": "W",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
       "col": "X",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "CAPACITY TABLE",
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
       "col": "Y",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "Z",
       "folder": "CAPACITY TABLES",
       "fileExtension": "pdf"
     },
     {
       "name": "INSTALLATION MANUAL (OUTDOOR)",
-      "col": "Z",
-      "folder": "INSTALLATION MANUALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AA",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AB",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (OUTDOOR)",
+      "name": "INSTALLATION MANUAL (SYSTEM)",
       "col": "AC",
-      "folder": "REVIT",
-      "fileExtension": "zip"
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (INDOOR)",
+      "name": "REVIT (OUTDOOR)",
       "col": "AD",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "REVIT (SYSTEM)",
+      "name": "REVIT (INDOOR)",
       "col": "AE",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (OUTDOOR)",
+      "name": "REVIT (SYSTEM)",
       "col": "AF",
-      "folder": "CAD",
+      "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (INDOOR)",
+      "name": "CAD (OUTDOOR)",
       "col": "AG",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (SYSTEM)",
+      "name": "CAD (INDOOR)",
       "col": "AH",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CONTROLS OPTIONS",
+      "name": "CAD (SYSTEM)",
       "col": "AI",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AJ",
       "folder": "CONTROLS",
       "fileExtension": "pdf"
     },
     {
       "name": "OPERATION MANUAL",
-      "col": "AJ",
+      "col": "AK",
       "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
@@ -251,8 +258,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-02A1-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-02A1-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 1,
@@ -279,8 +287,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A0-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A0-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 1.5,
@@ -307,8 +316,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A5-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A5-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 2,
@@ -335,8 +345,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-04A8-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-04A8-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 3,
@@ -363,8 +374,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-07A6-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-07A6-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 5,
@@ -391,8 +403,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-012A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-012A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 7.5,
@@ -419,8 +432,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-014A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-014A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 10,
@@ -447,8 +461,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-023A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-023A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 15,
@@ -475,8 +490,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-027A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-027A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 20,
@@ -503,8 +519,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-034A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-034A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 25,
@@ -531,8 +548,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-044A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-044A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 30,
@@ -559,8 +577,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-052A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-052A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 40,
@@ -587,8 +606,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-065A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-065A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 50,
@@ -615,8 +635,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-077A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-077A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 60,
@@ -643,8 +664,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-096A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-096A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 75,
@@ -671,8 +693,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-124A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-124A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 100,
@@ -699,8 +722,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-156A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-156A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 125,
@@ -727,8 +751,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-180A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-180A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 150,
@@ -755,8 +780,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-240A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-240A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 200,
@@ -783,8 +809,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-302A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-302A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 250,
@@ -811,8 +838,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-361A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-361A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 300,
@@ -839,8 +867,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-414A-4",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-414A-4",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 350,
@@ -867,8 +896,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-02A1-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-02A1-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 1,
@@ -895,8 +925,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A0-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A0-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 1.5,
@@ -923,8 +954,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A5-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A5-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 2,
@@ -951,8 +983,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-04A8-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-04A8-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 3,
@@ -979,8 +1012,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-07A6-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-07A6-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 5,
@@ -1007,8 +1041,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-012A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-012A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 7.5,
@@ -1035,8 +1070,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-014A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-014A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 10,
@@ -1063,8 +1099,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-023A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-023A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 15,
@@ -1091,8 +1128,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-027A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-027A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 20,
@@ -1119,8 +1157,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-034A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-034A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 25,
@@ -1147,8 +1186,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-044A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-044A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 30,
@@ -1175,8 +1215,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-052A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-052A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 40,
@@ -1203,8 +1244,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-065A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-065A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 50,
@@ -1231,8 +1273,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-077A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-077A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 60,
@@ -1259,8 +1302,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-096A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-096A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 75,
@@ -1287,8 +1331,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-124A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-124A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 100,
@@ -1315,8 +1360,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-156A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-156A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 125,
@@ -1343,8 +1389,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-180A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-180A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 150,
@@ -1371,8 +1418,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-240A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-240A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 200,
@@ -1399,8 +1447,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-302A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-302A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 250,
@@ -1427,8 +1476,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-361A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-361A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 300,
@@ -1455,8 +1505,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-414A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 10"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-414A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 10"
           },
           "filterData": {
             "HP": 350,
@@ -1483,8 +1534,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-02A1-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-02A1-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1,
@@ -1511,8 +1563,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A0-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A0-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -1539,8 +1592,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A5-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A5-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 2,
@@ -1567,8 +1621,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-04A8-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-04A8-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 3,
@@ -1595,8 +1650,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-07A6-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-07A6-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 5,
@@ -1623,8 +1679,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-012A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-012A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -1651,8 +1708,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-014A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-014A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 10,
@@ -1679,8 +1737,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-023A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-023A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 15,
@@ -1707,8 +1766,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-027A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-027A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 20,
@@ -1735,8 +1795,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-034A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-034A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 25,
@@ -1763,8 +1824,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-044A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-044A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 30,
@@ -1791,8 +1853,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-052A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-052A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 40,
@@ -1819,8 +1882,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-065A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-065A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 50,
@@ -1847,8 +1911,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-077A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-077A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 60,
@@ -1875,8 +1940,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-096A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-096A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 75,
@@ -1903,8 +1969,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-124A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-124A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 100,
@@ -1931,8 +1998,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-156A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-156A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 125,
@@ -1959,8 +2027,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-180A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-180A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 150,
@@ -1987,8 +2056,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-240A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-240A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 200,
@@ -2015,8 +2085,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-302A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-302A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 250,
@@ -2043,8 +2114,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-361A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-361A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 300,
@@ -2071,8 +2143,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-414A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-414A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 350,
@@ -2099,8 +2172,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-02A1-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-02A1-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1,
@@ -2127,8 +2201,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A0-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A0-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -2155,8 +2230,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-03A5-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-03A5-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 2,
@@ -2183,8 +2259,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-04A8-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-04A8-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 3,
@@ -2211,8 +2288,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-07A6-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-07A6-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 5,
@@ -2239,8 +2317,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-012A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-012A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -2267,8 +2346,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-014A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-014A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 10,
@@ -2295,8 +2375,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-023A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-023A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 15,
@@ -2323,8 +2404,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-027A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-027A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 20,
@@ -2351,8 +2433,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-034A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-034A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 25,
@@ -2379,8 +2462,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-044A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-044A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 30,
@@ -2407,8 +2491,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-052A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-052A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 40,
@@ -2435,8 +2520,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-065A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-065A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 50,
@@ -2463,8 +2549,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-077A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-077A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 60,
@@ -2491,8 +2578,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-096A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-096A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 75,
@@ -2519,8 +2607,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-124A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-124A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 100,
@@ -2547,8 +2636,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-156A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-156A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 125,
@@ -2575,8 +2665,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-180A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-180A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 150,
@@ -2603,8 +2694,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-240A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-240A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 200,
@@ -2631,8 +2723,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-302A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-302A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 250,
@@ -2659,8 +2752,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-361A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-361A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 300,
@@ -2687,8 +2781,9 @@
             "G": "None",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-PCR-414A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-PCR-414A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 350,
@@ -2715,8 +2810,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-02A1-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-02A1-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 1,
@@ -2743,8 +2839,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-03A0-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-03A0-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -2771,8 +2868,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-03A5-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-03A5-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 2,
@@ -2799,8 +2897,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-04A8-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-04A8-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 3,
@@ -2827,8 +2926,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-07A6-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-07A6-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 5,
@@ -2855,8 +2955,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-012A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-012A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -2883,8 +2984,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-014A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-014A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 10,
@@ -2911,8 +3013,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-023A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-023A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 15,
@@ -2939,8 +3042,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-027A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-027A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 20,
@@ -2967,8 +3071,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-034A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-034A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 25,
@@ -2995,8 +3100,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-044A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-044A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 30,
@@ -3023,8 +3129,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-052A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-052A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 40,
@@ -3051,8 +3158,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-065A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-065A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 50,
@@ -3079,8 +3187,9 @@
             "G": "FVNR (Vertical)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-VCR-077A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-VCR-077A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 60,
@@ -3107,8 +3216,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-096A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-096A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 75,
@@ -3135,8 +3245,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-124A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-124A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 100,
@@ -3163,8 +3274,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-156A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-156A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 125,
@@ -3191,8 +3303,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-180A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-180A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 150,
@@ -3219,8 +3332,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-240A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-240A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 200,
@@ -3247,8 +3361,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-302A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-302A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 250,
@@ -3275,8 +3390,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-361A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-361A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 300,
@@ -3303,8 +3419,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-414A-4",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-414A-4",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 350,
@@ -3331,8 +3448,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-02A1-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-02A1-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1,
@@ -3359,8 +3477,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A0-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A0-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -3387,8 +3506,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A5-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A5-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 2,
@@ -3415,8 +3535,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-04A8-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-04A8-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 3,
@@ -3443,8 +3564,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-07A6-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-07A6-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 5,
@@ -3471,8 +3593,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-012A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-012A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -3499,8 +3622,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-014A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-014A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 10,
@@ -3527,8 +3651,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-023A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-023A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 15,
@@ -3555,8 +3680,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-027A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-027A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 20,
@@ -3583,8 +3709,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-034A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-034A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 25,
@@ -3611,8 +3738,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-044A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-044A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 30,
@@ -3639,8 +3767,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-052A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-052A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 40,
@@ -3667,8 +3796,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-065A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-065A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 50,
@@ -3695,8 +3825,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-077A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-077A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 60,
@@ -3723,8 +3854,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-096A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-096A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 75,
@@ -3751,8 +3883,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-124A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-124A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 100,
@@ -3779,8 +3912,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-156A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-156A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 125,
@@ -3807,8 +3941,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-180A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-180A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 150,
@@ -3835,8 +3970,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-240A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-240A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 200,
@@ -3863,8 +3999,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-302A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-302A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 250,
@@ -3891,8 +4028,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-361A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-361A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 300,
@@ -3919,8 +4057,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-414A-4+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-414A-4+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 350,
@@ -3947,8 +4086,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-02A1-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-02A1-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 1,
@@ -3975,8 +4115,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A0-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A0-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -4003,8 +4144,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A5-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A5-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 2,
@@ -4031,8 +4173,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-04A8-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-04A8-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 3,
@@ -4059,8 +4202,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-07A6-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-07A6-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 5,
@@ -4087,8 +4231,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-012A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-012A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -4115,8 +4260,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-014A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-014A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 10,
@@ -4143,8 +4289,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-023A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-023A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 15,
@@ -4171,8 +4318,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-027A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-027A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 20,
@@ -4199,8 +4347,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-034A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-034A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 25,
@@ -4227,8 +4376,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-044A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-044A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 30,
@@ -4255,8 +4405,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-052A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-052A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 40,
@@ -4283,8 +4434,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-065A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-065A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 50,
@@ -4311,8 +4463,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-077A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-077A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 60,
@@ -4339,8 +4492,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-096A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-096A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 75,
@@ -4367,8 +4521,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-124A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-124A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 100,
@@ -4395,8 +4550,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-156A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-156A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 125,
@@ -4423,8 +4579,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-180A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-180A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 150,
@@ -4451,8 +4608,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-240A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-240A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 200,
@@ -4479,8 +4637,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-302A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-302A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 250,
@@ -4507,8 +4666,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-361A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-361A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 300,
@@ -4535,8 +4695,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-414A-4+B058",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-414A-4+B058",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16"
           },
           "filterData": {
             "HP": 350,
@@ -4563,8 +4724,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-02A1-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-02A1-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1,
@@ -4591,8 +4753,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A0-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A0-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 1.5,
@@ -4619,8 +4782,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-03A5-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-03A5-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 2,
@@ -4647,8 +4811,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-04A8-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-04A8-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 3,
@@ -4675,8 +4840,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-07A6-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-07A6-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 5,
@@ -4703,8 +4869,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-012A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-012A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 7.5,
@@ -4731,8 +4898,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-014A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-014A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 10,
@@ -4759,8 +4927,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-023A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-023A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 15,
@@ -4787,8 +4956,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-027A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-027A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 20,
@@ -4815,8 +4985,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-034A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-034A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 25,
@@ -4843,8 +5014,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-044A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-044A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 30,
@@ -4871,8 +5043,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-052A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-052A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 40,
@@ -4899,8 +5072,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-065A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-065A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 50,
@@ -4927,8 +5101,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-077A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-077A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 60,
@@ -4955,8 +5130,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-096A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-096A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 75,
@@ -4983,8 +5159,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-124A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-124A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 100,
@@ -5011,8 +5188,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-156A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-156A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 125,
@@ -5039,8 +5217,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-180A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-180A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 150,
@@ -5067,8 +5246,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-240A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-240A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 200,
@@ -5095,8 +5275,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-302A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-302A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 250,
@@ -5123,8 +5304,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-361A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-361A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 300,
@@ -5151,8 +5333,9 @@
             "G": "FVNR (Box Style)",
             "H": "BACnet MS/TP",
             "I": "100 KA",
-            "J": "ABB ACH580-BCR-414A-4+B058+E211",
-            "K": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
+            "J": "ABB",
+            "K": "ABB ACH580-BCR-414A-4+B058+E211",
+            "L": "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16"
           },
           "filterData": {
             "HP": 350,
@@ -5189,7 +5372,7 @@
   },
   "_meta": {
     "sourceFile": "VFD DATA.xlsx",
-    "generatedAt": "2026-04-20T12:48:45",
+    "generatedAt": "2026-04-20T13:06:59",
     "dataRowCount": 176,
     "selectionCount": 176
   }

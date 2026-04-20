@@ -452,7 +452,8 @@
             var tr = document.createElement('tr');
 
             // LEFT-SIDE sticky columns: Remove, then primary Tag, then
-            // Indoor Tag (when applicable). All span every header row.
+            // Serves (when applicable), then Indoor Tag (when applicable).
+            // All span every header row.
             if (rowIndex === 0) {
                 var actionsTh = document.createElement('th');
                 actionsTh.className = 'project-sched-rm-head';
@@ -465,6 +466,14 @@
                 tagTh.rowSpan = displayRows.length;
                 tagTh.textContent = getPrimaryTagLabel(productKey);
                 tr.appendChild(tagTh);
+
+                if (hasServesColumn(productKey)) {
+                    var servesTh = document.createElement('th');
+                    servesTh.className = 'project-sched-serves-head';
+                    servesTh.rowSpan = displayRows.length;
+                    servesTh.textContent = 'Serves';
+                    tr.appendChild(servesTh);
+                }
 
                 if (hasIndoorTagColumn(productKey)) {
                     var indoorTh = document.createElement('th');
@@ -494,7 +503,8 @@
             });
 
             // RIGHT-SIDE columns: Configuration (Marvair only) and then
-            // Accessories. Both spanning the full header height.
+            // Accessories (unless the product opts out). Both span the
+            // full header height.
             if (rowIndex === 0) {
                 if (hasConfigurationColumn(productKey)) {
                     var cfgTh = document.createElement('th');
@@ -504,11 +514,13 @@
                     tr.appendChild(cfgTh);
                 }
 
-                var accTh = document.createElement('th');
-                accTh.className = 'project-sched-acc-head';
-                accTh.rowSpan = displayRows.length;
-                accTh.textContent = 'Accessories';
-                tr.appendChild(accTh);
+                if (hasAccessoriesColumn(productKey)) {
+                    var accTh = document.createElement('th');
+                    accTh.className = 'project-sched-acc-head';
+                    accTh.rowSpan = displayRows.length;
+                    accTh.textContent = 'Accessories';
+                    tr.appendChild(accTh);
+                }
             }
 
             thead.appendChild(tr);
@@ -576,6 +588,13 @@
                     tr.appendChild(actionsTd);
 
                     tr.appendChild(buildTagCell(item, numRows, productKey));
+
+                    // Serves cell (VFDs and any other product flagged
+                    // with hasServesColumn in data.js). Spans all rows
+                    // of a multi-row selection.
+                    if (hasServesColumn(productKey)) {
+                        tr.appendChild(buildServesCell(item, numRows));
+                    }
                 }
 
                 // Indoor Tag cell: appears on EVERY row (per indoor unit)
@@ -597,11 +616,14 @@
 
                 // RIGHT-SIDE columns: Configuration (Marvair) + Accessories,
                 // both spanning every row of a multi-row selection.
+                // Accessories can be opted out via data.js flag.
                 if (rowIndex === 0) {
                     if (hasConfigurationColumn(productKey)) {
                         tr.appendChild(buildConfigCell(item, data, numRows));
                     }
-                    tr.appendChild(buildAccessoriesCell(item, numRows));
+                    if (hasAccessoriesColumn(productKey)) {
+                        tr.appendChild(buildAccessoriesCell(item, numRows));
+                    }
                 }
 
                 tbody.appendChild(tr);
@@ -629,6 +651,27 @@
             placeholder: getPrimaryTagLabel(productKey),
             onSave: function (val) {
                 HHpro.Cart.updateItem(item.instanceId, { tag: val });
+            }
+        }));
+        return td;
+    }
+
+    /**
+     * Serves column cell - free-text input for "what this item serves"
+     * (typically a space / zone / equipment tag the VFD drives).
+     * Appears between Tag and Indoor Tag on products flagged with
+     * hasServesColumn in data.js. Spans every row of a multi-row
+     * selection, same as the primary Tag cell.
+     */
+    function buildServesCell(item, numRows) {
+        var td = document.createElement('td');
+        td.className = 'project-sched-serves-cell';
+        if (numRows > 1) td.rowSpan = numRows;
+        td.appendChild(makeScheduleTextInput({
+            value: item.serves || '',
+            placeholder: 'Serves',
+            onSave: function (val) {
+                HHpro.Cart.updateItem(item.instanceId, { serves: val });
             }
         }));
         return td;
@@ -763,6 +806,31 @@
 
     function hasConfigurationColumn(productKey) {
         return productKey === 'marvair';
+    }
+
+    /**
+     * True if the product should render a manual-input "Serves" column
+     * immediately to the right of the primary Tag column in the project
+     * schedule creator (and in Excel/PDF export). Driven by the
+     * hasServesColumn flag in data.js.
+     */
+    function hasServesColumn(productKey) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        return !!(product && product.hasServesColumn);
+    }
+
+    /**
+     * True if the product should render the free-text "Accessories"
+     * column at the right end of the schedule. Default is true; a
+     * product can opt out by setting hideAccessoriesColumn in data.js.
+     */
+    function hasAccessoriesColumn(productKey) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        return !(product && product.hideAccessoriesColumn);
     }
 
     function getPrimaryTagLabel(productKey) {
@@ -1098,6 +1166,13 @@
 
     /** Default outdoor/primary tag prefix for each product. */
     function defaultPrefixFor(productKey) {
+        // Per-product override from data.js (e.g. VFDs use 'VFD-').
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey)
+            : null;
+        if (product && product.autoTagPrefix) {
+            return product.autoTagPrefix;
+        }
         switch (productKey) {
             case 'gas_packs':              return 'RTU-';
             case 'marvair':                return 'AC-';
