@@ -1,5 +1,6 @@
 {
   "productType": "MARVAIR VERTICAL WALL MOUNT",
+  "assetsFolder": "MARVAIR",
   "scheduleTitle": "VERTICAL WALL MOUNTED PACKAGED AIR HANDLING UNIT SCHEDULE",
   "supportsMultiRowSelections": false,
   "scheduleHeader": {
@@ -24,101 +25,101 @@
       [
         {
           "col": "A",
+          "value": "VERTICAL WALL MOUNTED PACKAGED AIR HANDLING UNIT SCHEDULE",
           "colspan": 15,
-          "rowspan": 1,
-          "value": "VERTICAL WALL MOUNTED PACKAGED AIR HANDLING UNIT SCHEDULE"
+          "rowspan": 1
         }
       ],
       [
         {
           "col": "A",
+          "value": "MAKE",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MAKE"
+          "rowspan": 1
         },
         {
           "col": "B",
+          "value": "MODEL",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MODEL"
+          "rowspan": 1
         },
         {
           "col": "C",
+          "value": "NOMINAL SIZE (TONS)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "NOMINAL SIZE (TONS)"
+          "rowspan": 1
         },
         {
           "col": "D",
+          "value": "CFM",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "CFM"
+          "rowspan": 1
         },
         {
           "col": "E",
+          "value": "TOTAL CAPACITY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TOTAL CAPACITY"
+          "rowspan": 1
         },
         {
           "col": "F",
+          "value": "SENSIBLE CAPACITY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "SENSIBLE CAPACITY"
+          "rowspan": 1
         },
         {
           "col": "G",
+          "value": "OUTSIDE AIR (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "OUTSIDE AIR (°F)"
+          "rowspan": 1
         },
         {
           "col": "H",
+          "value": "ENTERING AIR DB/WB (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "ENTERING AIR DB/WB (°F)"
+          "rowspan": 1
         },
         {
           "col": "I",
+          "value": "ELECTRIC HEAT (KW)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "ELECTRIC HEAT (KW)"
+          "rowspan": 1
         },
         {
           "col": "J",
+          "value": "VOLTS-HZ-PH",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "VOLTS-HZ-PH"
+          "rowspan": 1
         },
         {
           "col": "K",
+          "value": "MCA",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MCA"
+          "rowspan": 1
         },
         {
           "col": "L",
+          "value": "MOCP",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MOCP"
+          "rowspan": 1
         },
         {
           "col": "M",
+          "value": "REFRIGERANT",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "REFRIGERANT"
+          "rowspan": 1
         },
         {
           "col": "N",
+          "value": "EER",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EER"
+          "rowspan": 1
         },
         {
           "col": "O",
+          "value": "IEER",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "IEER"
+          "rowspan": 1
         }
       ]
     ]
@@ -237,7 +238,13 @@
     {
       "name": "CONTROLS OPTIONS",
       "col": "AK",
-      "folder": "CONTROLS OPTIONS",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AL",
+      "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
   ],
@@ -1653,7 +1660,7 @@
   },
   "_meta": {
     "sourceFile": "MARVAIR DATA.xlsx",
-    "generatedAt": "2026-04-19T10:55:47",
+    "generatedAt": "2026-04-20T10:25:18",
     "dataRowCount": 40,
     "selectionCount": 40
   }

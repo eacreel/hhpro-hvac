@@ -61,29 +61,30 @@
         title.textContent = 'Select Projects or a product type to get started';
         main.appendChild(title);
 
+        // Projects row: the single Projects tile centered on its own
+        // row above the product grid. Uses a flex container so the
+        // tile sits in the middle regardless of viewport width.
+        var projectsRow = document.createElement('div');
+        projectsRow.className = 'projects-row';
+        projectsRow.appendChild(createProjectsTile());
+        main.appendChild(projectsRow);
+
+        // Product grid: one tile per product type, laid out in the same
+        // responsive auto-fill grid as before.
         var grid = document.createElement('div');
         grid.className = 'tile-grid';
-
-        // Projects tile always comes first
-        grid.appendChild(createProjectsTile());
-
-        // Then one tile per registered product type
         HHpro.Data.getProducts().forEach(function (product) {
             grid.appendChild(createProductTile(product));
         });
-
         main.appendChild(grid);
+
         return main;
     }
 
     function createProjectsTile() {
         var tile = document.createElement('button');
         tile.type = 'button';
-        tile.className = 'tile tile-projects';
-
-        var image = document.createElement('div');
-        image.className = 'tile-image';
-        image.textContent = 'Projects';
+        tile.className = 'tile tile-projects tile-projects-compact';
 
         var body = document.createElement('div');
         body.className = 'tile-body';
@@ -98,7 +99,6 @@
 
         body.appendChild(label);
         body.appendChild(sublabel);
-        tile.appendChild(image);
         tile.appendChild(body);
 
         tile.addEventListener('click', function () {

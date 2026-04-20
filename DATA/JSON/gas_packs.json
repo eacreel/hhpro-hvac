@@ -1,5 +1,6 @@
 {
   "productType": "GAS PACK RTUS",
+  "assetsFolder": "GAS PACKS",
   "scheduleTitle": "PACKAGED ROOFTOP UNITS",
   "supportsMultiRowSelections": false,
   "scheduleHeader": {
@@ -32,175 +33,175 @@
       [
         {
           "col": "A",
+          "value": "PACKAGED ROOFTOP UNITS",
           "colspan": 23,
-          "rowspan": 1,
-          "value": "PACKAGED ROOFTOP UNITS"
+          "rowspan": 1
         }
       ],
       [
         {
           "col": "A",
+          "value": "MAKE",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MAKE"
+          "rowspan": 2
         },
         {
           "col": "B",
+          "value": "MODEL NUMBER",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MODEL NUMBER"
+          "rowspan": 2
         },
         {
           "col": "C",
+          "value": "NOM TONS",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "NOM TONS"
+          "rowspan": 2
         },
         {
           "col": "D",
+          "value": "Fan Data",
           "colspan": 3,
-          "rowspan": 1,
-          "value": "Fan Data"
+          "rowspan": 1
         },
         {
           "col": "G",
+          "value": "Cooling Performance",
           "colspan": 7,
-          "rowspan": 1,
-          "value": "Cooling Performance"
+          "rowspan": 1
         },
         {
           "col": "N",
+          "value": "Heating Performance",
           "colspan": 4,
-          "rowspan": 1,
-          "value": "Heating Performance"
+          "rowspan": 1
         },
         {
           "col": "R",
+          "value": "MODULATING HOT GAS REHEAT",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MODULATING HOT GAS REHEAT"
+          "rowspan": 2
         },
         {
           "col": "S",
+          "value": "COOLING STAGES",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "COOLING STAGES"
+          "rowspan": 2
         },
         {
           "col": "T",
+          "value": "Electrical Data",
           "colspan": 4,
-          "rowspan": 1,
-          "value": "Electrical Data"
+          "rowspan": 1
         }
       ],
       [
         {
           "col": "D",
+          "value": "CFM",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "CFM"
+          "rowspan": 1
         },
         {
           "col": "E",
+          "value": "ESP (IWG)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "ESP (IWG)"
+          "rowspan": 1
         },
         {
           "col": "F",
+          "value": "TESP (IWG)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TESP (IWG)"
+          "rowspan": 1
         },
         {
           "col": "G",
+          "value": "TOTAL CAPACITY (BTU/h)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TOTAL CAPACITY (BTU/h)"
+          "rowspan": 1
         },
         {
           "col": "H",
+          "value": "SENSIBLE CAPACITY (BTU/h)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "SENSIBLE CAPACITY (BTU/h)"
+          "rowspan": 1
         },
         {
           "col": "I",
+          "value": "EFFICIENCY (AT AHRI)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EFFICIENCY (AT AHRI)"
+          "rowspan": 1
         },
         {
           "col": "J",
+          "value": "EDB (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EDB (°F)"
+          "rowspan": 1
         },
         {
           "col": "K",
+          "value": "EWB (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EWB (°F)"
+          "rowspan": 1
         },
         {
           "col": "L",
+          "value": "LDB (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "LDB (°F)"
+          "rowspan": 1
         },
         {
           "col": "M",
+          "value": "LWB (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "LWB (°F)"
+          "rowspan": 1
         },
         {
           "col": "N",
+          "value": "INPUT (MBH)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "INPUT (MBH)"
+          "rowspan": 1
         },
         {
           "col": "O",
+          "value": "OUTPUT (MBH)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "OUTPUT (MBH)"
+          "rowspan": 1
         },
         {
           "col": "P",
+          "value": "EAT (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EAT (°F)"
+          "rowspan": 1
         },
         {
           "col": "Q",
+          "value": "LAT (°F)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "LAT (°F)"
+          "rowspan": 1
         },
         {
           "col": "T",
+          "value": "VOLT/PH",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "VOLT/PH"
+          "rowspan": 1
         },
         {
           "col": "U",
+          "value": "INDOOR MOTOR HP",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "INDOOR MOTOR HP"
+          "rowspan": 1
         },
         {
           "col": "V",
+          "value": "Unit MCA",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "Unit MCA"
+          "rowspan": 1
         },
         {
           "col": "W",
+          "value": "Unit MOCP",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "Unit MOCP"
+          "rowspan": 1
         }
       ]
     ]
@@ -331,7 +332,13 @@
     {
       "name": "CONTROLS OPTIONS",
       "col": "AV",
-      "folder": "CONTROLS OPTIONS",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AW",
+      "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
   ],
@@ -7965,7 +7972,7 @@
   },
   "_meta": {
     "sourceFile": "GAS PACKS DATA.xlsx",
-    "generatedAt": "2026-04-19T10:55:47",
+    "generatedAt": "2026-04-20T10:25:18",
     "dataRowCount": 162,
     "selectionCount": 162
   }

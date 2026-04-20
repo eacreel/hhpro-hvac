@@ -11,10 +11,59 @@
     margin-bottom: var(--space-lg);
 }
 
+/* Projects tile row - centered above the product grid. */
+.projects-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-xl);
+}
+
+/* The compact Projects tile - no image block, just a nicely styled
+   card with the primary action text. Wider than a product tile is
+   tall so the two lines of text have room to breathe, and visually
+   prominent (dark background + light text) to read as the primary
+   action on the page. */
+.tile.tile-projects-compact {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(135deg, var(--tile-projects) 0%, #1f2d3d 100%);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg) var(--space-xl);
+    text-align: center;
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.tile.tile-projects-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.tile.tile-projects-compact .tile-body {
+    background-color: transparent;
+    padding: 0;
+}
+
+.tile.tile-projects-compact .tile-label {
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-xxl);
+    letter-spacing: 0.5px;
+}
+
+.tile.tile-projects-compact .tile-sublabel {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: var(--font-size-md);
+    margin-top: var(--space-xs);
+}
+
+/* Product grid - centered on the page. `justify-content: center`
+   would leave orphan gaps on the final row; instead we let the grid
+   auto-size and center the whole container horizontally with margin. */
 .tile-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
     gap: var(--space-lg);
+    justify-content: center;
 }
 
 /* A single tile (button for accessibility and keyboard navigation) */

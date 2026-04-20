@@ -1,0 +1,45 @@
+HHpro - Asset validation report
+Generated: 2026-04-20T10:30:22
+HHpro root: C:\Users\ericc\Documents\HHpro
+======================================================================
+
+=== GAS PACK RTUS ===
+  Assets folder     : GAS PACKS
+  Selections        : 162
+  References total  : 400
+  Missing files     : 0
+  Orphan files      : 0
+
+
+=== MARVAIR VERTICAL WALL MOUNT ===
+  Assets folder     : MARVAIR
+  Selections        : 40
+  References total  : 2
+  Missing files     : 0
+  Orphan files      : 0
+
+
+=== MINI SPLITS ===
+  Assets folder     : MINI SPLITS
+  Selections        : 390
+  References total  : 209
+  Missing files     : 0
+  Orphan files      : 0
+
+
+=== MULTI POSITION SPLITS ===
+  Assets folder     : MULTI POSITION SPLITS
+  Selections        : 562
+  References total  : 263
+  Missing files     : 1
+  Orphan files      : 0
+
+  MISSING FILES:
+    [SUBMITTAL (INDOOR UNIT)]  'DFVE48CP0300.pdf'
+       folder:     ASSETS\MULTI POSITION SPLITS\SUBMITTALS
+       suggestion: 'DFVE48DP1300.pdf'
+
+
+======================================================================
+TOTAL missing files: 1
+TOTAL orphan files : 0

@@ -1,5 +1,6 @@
 {
   "productType": "MULTI POSITION SPLITS",
+  "assetsFolder": "MULTI POSITION SPLITS",
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": false,
   "scheduleHeader": {
@@ -39,243 +40,243 @@
       [
         {
           "col": "A",
+          "value": "SPLIT SYSTEM SCHEDULE",
           "colspan": 30,
-          "rowspan": 1,
-          "value": "SPLIT SYSTEM SCHEDULE"
+          "rowspan": 1
         }
       ],
       [
         {
           "col": "A",
+          "value": "INDOOR AIR HANDLING UNIT",
           "colspan": 17,
-          "rowspan": 1,
-          "value": "INDOOR AIR HANDLING UNIT"
+          "rowspan": 1
         },
         {
           "col": "R",
+          "value": "OUTDOOR CONDENSING UNIT",
           "colspan": 13,
-          "rowspan": 1,
-          "value": "OUTDOOR CONDENSING UNIT"
+          "rowspan": 1
         }
       ],
       [
         {
           "col": "A",
+          "value": "MAKE",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MAKE"
+          "rowspan": 2
         },
         {
           "col": "B",
+          "value": "MODEL",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MODEL"
+          "rowspan": 2
         },
         {
           "col": "C",
+          "value": "SUPPLY FAN",
           "colspan": 3,
-          "rowspan": 1,
-          "value": "SUPPLY FAN"
+          "rowspan": 1
         },
         {
           "col": "F",
+          "value": "COOLING",
           "colspan": 5,
-          "rowspan": 1,
-          "value": "COOLING"
+          "rowspan": 1
         },
         {
           "col": "K",
+          "value": "HEAT PUMP TOTAL CAPACITY",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "HEAT PUMP TOTAL CAPACITY"
+          "rowspan": 2
         },
         {
           "col": "L",
+          "value": "AUX. ELECTRIC HEAT",
           "colspan": 2,
-          "rowspan": 1,
-          "value": "AUX. ELECTRIC HEAT"
+          "rowspan": 1
         },
         {
           "col": "N",
+          "value": "ELECTRICAL DATA",
           "colspan": 3,
-          "rowspan": 1,
-          "value": "ELECTRICAL DATA"
+          "rowspan": 1
         },
         {
           "col": "Q",
+          "value": "WEIGHT",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "WEIGHT"
+          "rowspan": 2
         },
         {
           "col": "R",
+          "value": "MAKE",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MAKE"
+          "rowspan": 2
         },
         {
           "col": "S",
+          "value": "MODEL",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "MODEL"
+          "rowspan": 2
         },
         {
           "col": "T",
+          "value": "HEAT PUMP HEATING DATA",
           "colspan": 3,
-          "rowspan": 1,
-          "value": "HEAT PUMP HEATING DATA"
+          "rowspan": 1
         },
         {
           "col": "W",
+          "value": "ELECTRICAL DATA",
           "colspan": 3,
-          "rowspan": 1,
-          "value": "ELECTRICAL DATA"
+          "rowspan": 1
         },
         {
           "col": "Z",
+          "value": "OUTDOOR AMBIENT (COOLING)",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "OUTDOOR AMBIENT (COOLING)"
+          "rowspan": 2
         },
         {
           "col": "AA",
+          "value": "REFRIGERANT",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "REFRIGERANT"
+          "rowspan": 2
         },
         {
           "col": "AB",
+          "value": "EFFICIENCY",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "EFFICIENCY"
+          "rowspan": 2
         },
         {
           "col": "AC",
+          "value": "WEIGHT",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "WEIGHT"
+          "rowspan": 2
         },
         {
           "col": "AD",
+          "value": "COMPRESSOR STAGES",
           "colspan": 1,
-          "rowspan": 2,
-          "value": "COMPRESSOR STAGES"
+          "rowspan": 2
         }
       ],
       [
         {
           "col": "C",
+          "value": "AIRFLOW (CFM)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "AIRFLOW (CFM)"
+          "rowspan": 1
         },
         {
           "col": "D",
+          "value": "MOTOR (HP)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MOTOR (HP)"
+          "rowspan": 1
         },
         {
           "col": "E",
+          "value": "MOTOR TYPE",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MOTOR TYPE"
+          "rowspan": 1
         },
         {
           "col": "F",
+          "value": "EAT (DB)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EAT (DB)"
+          "rowspan": 1
         },
         {
           "col": "G",
+          "value": "EAT (WB)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EAT (WB)"
+          "rowspan": 1
         },
         {
           "col": "H",
+          "value": "LAT (DB)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "LAT (DB)"
+          "rowspan": 1
         },
         {
           "col": "I",
+          "value": "TOTAL CAPACITY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TOTAL CAPACITY"
+          "rowspan": 1
         },
         {
           "col": "J",
+          "value": "SENSIBLE CAPACITY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "SENSIBLE CAPACITY"
+          "rowspan": 1
         },
         {
           "col": "L",
+          "value": "kW",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "kW"
+          "rowspan": 1
         },
         {
           "col": "M",
+          "value": "TEMPERATURE RISE (DB)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TEMPERATURE RISE (DB)"
+          "rowspan": 1
         },
         {
           "col": "N",
+          "value": "VOLTAGE / PHASE",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "VOLTAGE / PHASE"
+          "rowspan": 1
         },
         {
           "col": "O",
+          "value": "MCA",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MCA"
+          "rowspan": 1
         },
         {
           "col": "P",
+          "value": "MOP",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MOP"
+          "rowspan": 1
         },
         {
           "col": "T",
+          "value": "OUTDOOR AMBIENT (DB)",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "OUTDOOR AMBIENT (DB)"
+          "rowspan": 1
         },
         {
           "col": "U",
+          "value": "TOTAL CAPACITY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "TOTAL CAPACITY"
+          "rowspan": 1
         },
         {
           "col": "V",
+          "value": "EFFICIENCY",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "EFFICIENCY"
+          "rowspan": 1
         },
         {
           "col": "W",
+          "value": "VOLTAGE / PHASE",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "VOLTAGE / PHASE"
+          "rowspan": 1
         },
         {
           "col": "X",
+          "value": "MCA",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MCA"
+          "rowspan": 1
         },
         {
           "col": "Y",
+          "value": "MOP",
           "colspan": 1,
-          "rowspan": 1,
-          "value": "MOP"
+          "rowspan": 1
         }
       ]
     ]
@@ -410,7 +411,13 @@
     {
       "name": "CONTROLS OPTIONS",
       "col": "BD",
-      "folder": "CONTROLS OPTIONS",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "BE",
+      "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
   ],
@@ -32511,7 +32518,7 @@
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-04-19T10:56:03",
+    "generatedAt": "2026-04-20T10:25:35",
     "dataRowCount": 562,
     "selectionCount": 562
   }

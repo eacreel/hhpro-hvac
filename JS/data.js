@@ -39,14 +39,6 @@
             tileClass: 'tile-gas-packs'
         },
         {
-            productKey: 'marvair',
-            displayName: 'MARVAIR VERTICAL WALL MOUNT',
-            jsonFile: 'DATA/JSON/marvair.json',
-            pictureFile: 'DATA/PICTURES/MARVAIR VERTICAL WALL MOUNT.jpg',
-            assetsFolder: 'ASSETS/MARVAIR',
-            tileClass: 'tile-marvair'
-        },
-        {
             productKey: 'mini_splits',
             displayName: 'MINI SPLITS',
             jsonFile: 'DATA/JSON/mini_splits.json',
@@ -61,6 +53,14 @@
             pictureFile: 'DATA/PICTURES/MULTI POSITION SPLITS.jpg',
             assetsFolder: 'ASSETS/MULTI POSITION SPLITS',
             tileClass: 'tile-multi-position-splits'
+        },
+        {
+            productKey: 'marvair',
+            displayName: 'MARVAIR VERTICAL WALL MOUNT',
+            jsonFile: 'DATA/JSON/marvair.json',
+            pictureFile: 'DATA/PICTURES/MARVAIR VERTICAL WALL MOUNT.jpg',
+            assetsFolder: 'ASSETS/MARVAIR',
+            tileClass: 'tile-marvair'
         }
     ];
 
