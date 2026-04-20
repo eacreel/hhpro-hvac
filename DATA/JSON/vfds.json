@@ -132,116 +132,120 @@
       "col": "Q"
     },
     {
-      "name": "HARMONIC MITIGATION",
+      "name": "BYPASS",
       "col": "R"
+    },
+    {
+      "name": "HARMONIC MITIGATION",
+      "col": "S"
     }
   ],
   "documentationColumns": [
     {
       "name": "SUBMITTAL (OUTDOOR UNIT)",
-      "col": "T",
-      "folder": "SUBMITTALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "U",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "SUBMITTAL (SYSTEM)",
+      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "V",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "name": "SUBMITTAL (SYSTEM)",
       "col": "W",
-      "folder": "ENGINEERING MANUALS",
+      "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (SYSTEM)",
       "col": "X",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
       "col": "Y",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "CAPACITY TABLE",
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
       "col": "Z",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AA",
       "folder": "CAPACITY TABLES",
       "fileExtension": "pdf"
     },
     {
       "name": "INSTALLATION MANUAL (OUTDOOR)",
-      "col": "AA",
-      "folder": "INSTALLATION MANUALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AB",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AC",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (OUTDOOR)",
+      "name": "INSTALLATION MANUAL (SYSTEM)",
       "col": "AD",
-      "folder": "REVIT",
-      "fileExtension": "zip"
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (INDOOR)",
+      "name": "REVIT (OUTDOOR)",
       "col": "AE",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "REVIT (SYSTEM)",
+      "name": "REVIT (INDOOR)",
       "col": "AF",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (OUTDOOR)",
+      "name": "REVIT (SYSTEM)",
       "col": "AG",
-      "folder": "CAD",
+      "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (INDOOR)",
+      "name": "CAD (OUTDOOR)",
       "col": "AH",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (SYSTEM)",
+      "name": "CAD (INDOOR)",
       "col": "AI",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CONTROLS OPTIONS",
+      "name": "CAD (SYSTEM)",
       "col": "AJ",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AK",
       "folder": "CONTROLS",
       "fileExtension": "pdf"
     },
     {
       "name": "OPERATION MANUAL",
-      "col": "AK",
+      "col": "AL",
       "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
@@ -268,6 +272,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -295,6 +300,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -322,6 +328,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -349,6 +356,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -376,6 +384,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -403,6 +412,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -430,6 +440,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -457,6 +468,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -484,6 +496,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -511,6 +524,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -538,6 +552,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -565,6 +580,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -592,6 +608,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -619,6 +636,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -646,6 +664,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -673,6 +692,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -700,6 +720,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -727,6 +748,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -754,6 +776,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -781,6 +804,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -808,6 +832,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -835,6 +860,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -862,6 +888,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -889,6 +916,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -916,6 +944,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -943,6 +972,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -970,6 +1000,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -997,6 +1028,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1024,6 +1056,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1051,6 +1084,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1078,6 +1112,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1105,6 +1140,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1132,6 +1168,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1159,6 +1196,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1186,6 +1224,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1213,6 +1252,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1240,6 +1280,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1267,6 +1308,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1294,6 +1336,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1321,6 +1364,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1348,6 +1392,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1375,6 +1420,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1402,6 +1448,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1429,6 +1476,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -1456,6 +1504,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1483,6 +1532,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1510,6 +1560,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1537,6 +1588,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1564,6 +1616,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1591,6 +1644,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1618,6 +1672,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1645,6 +1700,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1672,6 +1728,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1699,6 +1756,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1726,6 +1784,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1753,6 +1812,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1780,6 +1840,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1807,6 +1868,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1834,6 +1896,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1861,6 +1924,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1888,6 +1952,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1915,6 +1980,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1942,6 +2008,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1969,6 +2036,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -1996,6 +2064,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2023,6 +2092,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2050,6 +2120,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2077,6 +2148,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2104,6 +2176,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2131,6 +2204,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2158,6 +2232,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2185,6 +2260,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2212,6 +2288,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2239,6 +2316,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2266,6 +2344,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2293,6 +2372,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2320,6 +2400,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2347,6 +2428,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2374,6 +2456,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2401,6 +2484,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2428,6 +2512,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2455,6 +2540,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2482,6 +2568,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2509,6 +2596,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2536,6 +2624,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2563,6 +2652,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2590,6 +2680,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2617,6 +2708,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "None",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -2644,6 +2736,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2671,6 +2764,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2698,6 +2792,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2725,6 +2820,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2752,6 +2848,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2779,6 +2876,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2806,6 +2904,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2833,6 +2932,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2860,6 +2960,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2887,6 +2988,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2914,6 +3016,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2941,6 +3044,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2968,6 +3072,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -2995,6 +3100,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3022,6 +3128,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3049,6 +3156,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3076,6 +3184,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3103,6 +3212,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3130,6 +3240,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3157,6 +3268,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3184,6 +3296,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3211,6 +3324,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3238,6 +3352,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3265,6 +3380,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3292,6 +3408,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3319,6 +3436,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3346,6 +3464,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3373,6 +3492,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3400,6 +3520,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3427,6 +3548,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3454,6 +3576,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3481,6 +3604,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3508,6 +3632,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3535,6 +3660,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3562,6 +3688,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3589,6 +3716,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3616,6 +3744,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3643,6 +3772,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3670,6 +3800,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3697,6 +3828,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3724,6 +3856,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3751,6 +3884,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3778,6 +3912,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3805,6 +3940,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 1",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -3832,6 +3968,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3859,6 +3996,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3886,6 +4024,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3913,6 +4052,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3940,6 +4080,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3967,6 +4108,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -3994,6 +4136,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4021,6 +4164,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4048,6 +4192,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4075,6 +4220,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4102,6 +4248,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4129,6 +4276,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4156,6 +4304,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4183,6 +4332,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4210,6 +4360,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4237,6 +4388,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4264,6 +4416,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4291,6 +4444,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4318,6 +4472,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4345,6 +4500,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4372,6 +4528,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4399,6 +4556,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "5% Impedance"
           },
           "documentationData": {}
@@ -4426,6 +4584,7 @@
             "HP": 1,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4453,6 +4612,7 @@
             "HP": 1.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4480,6 +4640,7 @@
             "HP": 2,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4507,6 +4668,7 @@
             "HP": 3,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4534,6 +4696,7 @@
             "HP": 5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4561,6 +4724,7 @@
             "HP": 7.5,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4588,6 +4752,7 @@
             "HP": 10,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4615,6 +4780,7 @@
             "HP": 15,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4642,6 +4808,7 @@
             "HP": 20,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4669,6 +4836,7 @@
             "HP": 25,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4696,6 +4864,7 @@
             "HP": 30,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4723,6 +4892,7 @@
             "HP": 40,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4750,6 +4920,7 @@
             "HP": 50,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4777,6 +4948,7 @@
             "HP": 60,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4804,6 +4976,7 @@
             "HP": 75,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4831,6 +5004,7 @@
             "HP": 100,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4858,6 +5032,7 @@
             "HP": 125,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4885,6 +5060,7 @@
             "HP": 150,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4912,6 +5088,7 @@
             "HP": 200,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4939,6 +5116,7 @@
             "HP": 250,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4966,6 +5144,7 @@
             "HP": 300,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -4993,6 +5172,7 @@
             "HP": 350,
             "ELECTRICAL": "460V",
             "ENCLOSURE": "UL Type 3R",
+            "BYPASS": "YES",
             "HARMONIC MITIGATION": "Passive Filter"
           },
           "documentationData": {}
@@ -5023,7 +5203,7 @@
   },
   "_meta": {
     "sourceFile": "VFD DATA.xlsx",
-    "generatedAt": "2026-04-20T12:29:12",
+    "generatedAt": "2026-04-20T12:35:07",
     "dataRowCount": 176,
     "selectionCount": 176
   }
