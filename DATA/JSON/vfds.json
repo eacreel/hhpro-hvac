@@ -5183,27 +5183,27 @@
   "scheduleNotes": {
     "format": "list",
     "notes": [
-      "1. At minimum, VFD shall include 5% impedance via 5% AC line reactor or dual DC bus chokes sized to 5% equivalent impedance.  VFD input Amps shall not exceed VFD output Amps.",
-      "2. Provide UL1449 surge suppression device.",
-      "3. VFD shall include alpha-numeric keypad interface, with display in plain English.  (Displays relying solely on codes are not acceptable).",
-      "4. Provide internal EMI/RFI filter per IEC 61800-3.",
-      "5. VFD shall be BTL Listed for BACnet MS/TP, and also include Modbus and N2.",
-      "6. VFD shall include real time clock with battery backup (include 10 year battery).",
-      "7. Phase Loss Protection & Broken Belt (loss of load) indication while in Bypass.",
-      "8. Bypass Contactors shall be powered by Switch Mode Power supply, allowing +30% to -30% Input Voltage Tolerance.  (120 V CPT not allowed).",
-      "9. VFD and Bypass shall both include BACnet MS/TP, Damper Control and Fireman’s override functionality.",
-      "10. Bypass operation to auto-reset after a brown out condition.",
-      "11. Include fast acting drive isolation fuses.",
-      "12. Bypass shall be fully functional in the event of a VFD failure.  Bypass shall not relay on the VFD or the VFD’s control board/relays.",
-      "13. Passive harmonic filter shall be factory mounted in the same enclosure as the VFD.",
-      "14. Passive harmonic filter shall include capacitor drop-out contactor.",
-      "15. Passive harmonic filter shall reduce harmonics to 5% THiD, measured at the filter lugs, while operating at full load.",
-      "16. System to meet IEEE 519-2014 based on the harmonic mitigation method(s) identified in the above schedule"
+      "At minimum, VFD shall include 5% impedance via 5% AC line reactor or dual DC bus chokes sized to 5% equivalent impedance.  VFD input Amps shall not exceed VFD output Amps.",
+      "Provide UL1449 surge suppression device.",
+      "VFD shall include alpha-numeric keypad interface, with display in plain English.  (Displays relying solely on codes are not acceptable).",
+      "Provide internal EMI/RFI filter per IEC 61800-3.",
+      "VFD shall be BTL Listed for BACnet MS/TP, and also include Modbus and N2.",
+      "VFD shall include real time clock with battery backup (include 10 year battery).",
+      "Phase Loss Protection & Broken Belt (loss of load) indication while in Bypass.",
+      "Bypass Contactors shall be powered by Switch Mode Power supply, allowing +30% to -30% Input Voltage Tolerance.  (120 V CPT not allowed).",
+      "VFD and Bypass shall both include BACnet MS/TP, Damper Control and Fireman’s override functionality.",
+      "Bypass operation to auto-reset after a brown out condition.",
+      "Include fast acting drive isolation fuses.",
+      "Bypass shall be fully functional in the event of a VFD failure.  Bypass shall not relay on the VFD or the VFD’s control board/relays.",
+      "Passive harmonic filter shall be factory mounted in the same enclosure as the VFD.",
+      "Passive harmonic filter shall include capacitor drop-out contactor.",
+      "Passive harmonic filter shall reduce harmonics to 5% THiD, measured at the filter lugs, while operating at full load.",
+      "System to meet IEEE 519-2014 based on the harmonic mitigation method(s) identified in the above schedule"
     ]
   },
   "_meta": {
     "sourceFile": "VFD DATA.xlsx",
-    "generatedAt": "2026-04-20T12:35:07",
+    "generatedAt": "2026-04-20T12:41:39",
     "dataRowCount": 176,
     "selectionCount": 176
   }
