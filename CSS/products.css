@@ -180,6 +180,13 @@
     white-space: nowrap;
 }
 
+/* Zebra striping makes it easier to track a row across the wide horizontal
+   scroll. Even-numbered rows get a soft tint; odd rows stay surface-white.
+   Hover and the selection-boundary border still win above this. */
+.schedule-table tbody tr:nth-child(even) > td {
+    background-color: #fafbfd;
+}
+
 .schedule-table tbody tr.selection-boundary > td {
     border-top: 2px solid var(--color-border-strong);
 }
@@ -200,6 +207,9 @@
     left: 0;
     z-index: 4; /* higher than other thead cells (2) and body action cells (1) */
     min-width: 200px;
+    /* Soft right-edge shadow so the pinned column reads as one continuous
+       sticky element from header through the last data row. */
+    box-shadow: 6px 0 8px -4px rgba(15, 32, 56, 0.12);
 }
 
 .schedule-table tbody td.actions-cell {
@@ -209,9 +219,16 @@
     z-index: 1;
     border-right: 2px solid var(--color-border-strong);
     padding: 6px 8px;
+    box-shadow: 6px 0 8px -4px rgba(15, 32, 56, 0.12);
 }
 
 .schedule-table tbody tr:hover > td.actions-cell {
+    background-color: var(--color-bg);
+}
+
+/* Zebra rule above also paints the actions-cell, but the pinned action
+   column should keep its own bg color regardless of row parity. */
+.schedule-table tbody tr:nth-child(even) > td.actions-cell {
     background-color: var(--color-bg);
 }
 
