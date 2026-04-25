@@ -229,10 +229,15 @@
     margin: 0;
 }
 
-/* The results schedule-wrap uses the same component as the product
-   page; this override caps its height so the page can still scroll. */
+/* Make the results table fill almost the whole viewport so the user
+   sees many rows at once (the multi-tier sticky thead would otherwise
+   eat most of a smaller wrap). The form-row above sets margin-top so
+   we have a small spacer above when the user scrolls the results into
+   view, and the page itself runs the JS-driven scrollIntoView after a
+   search so the user lands here directly instead of having to scroll
+   manually past the form. */
 .design-search-schedule-wrap {
-    max-height: 60vh;
+    max-height: calc(100vh - 120px);
 }
 
 /* ---------- Responsive: stack target rows on narrow screens ---------- */
