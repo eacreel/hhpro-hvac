@@ -737,10 +737,7 @@
         var selectBtn = document.createElement('button');
         selectBtn.type = 'button';
         selectBtn.className = 'action-btn action-btn-select';
-        selectBtn.appendChild(HHpro.UI.icon('plus'));
-        var selectLabel = document.createElement('span');
-        selectLabel.textContent = 'Select';
-        selectBtn.appendChild(selectLabel);
+        selectBtn.textContent = 'Select';
         selectBtn.addEventListener('click', function () {
             if (!HHpro.Cart || typeof HHpro.Cart.addItem !== 'function') return;
             // Compute a human-readable label for the cart now (so the cart
@@ -755,10 +752,7 @@
         var subBtn = document.createElement('button');
         subBtn.type = 'button';
         subBtn.className = 'action-btn action-btn-secondary';
-        subBtn.appendChild(HHpro.UI.icon('file-text'));
-        var subLabel = document.createElement('span');
-        subLabel.textContent = 'Submittal';
-        subBtn.appendChild(subLabel);
+        subBtn.textContent = 'Submittal';
         subBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openSubmittal === 'function') {
                 HHpro.Docs.openSubmittal(product, sel, data);
@@ -769,10 +763,7 @@
         var docsBtn = document.createElement('button');
         docsBtn.type = 'button';
         docsBtn.className = 'action-btn action-btn-secondary';
-        docsBtn.appendChild(HHpro.UI.icon('folder'));
-        var docsLabel = document.createElement('span');
-        docsLabel.textContent = 'Docs';
-        docsBtn.appendChild(docsLabel);
+        docsBtn.textContent = 'Docs';
         docsBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openDocsModal === 'function') {
                 HHpro.Docs.openDocsModal(product, sel, data);
