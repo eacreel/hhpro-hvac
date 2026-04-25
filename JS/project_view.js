@@ -176,18 +176,17 @@
 
         header.appendChild(left);
 
-        // Right-side header buttons. In project mode we show undo/redo
-        // (for any in-project mutation), "Exit Project" (detach the
-        // active context so the next item selection prompts the
-        // first-select modal again) and "All Projects" (navigate to
-        // the project list). In cart mode just show a plain "Back".
+        // Right-side header buttons. Undo/redo always appear so the
+        // user can recover from a mistake regardless of cart vs project
+        // mode. Project-only buttons (Exit Project, All Projects) sit
+        // beside them.
         var actionsRight = document.createElement('div');
         actionsRight.className = 'project-header-actions';
 
-        if (activeState.mode === 'project') {
-            actionsRight.appendChild(buildUndoButton());
-            actionsRight.appendChild(buildRedoButton());
+        actionsRight.appendChild(buildUndoButton());
+        actionsRight.appendChild(buildRedoButton());
 
+        if (activeState.mode === 'project') {
             var exitBtn = document.createElement('button');
             exitBtn.type = 'button';
             exitBtn.className = 'projects-btn projects-btn-secondary';

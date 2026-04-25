@@ -119,12 +119,12 @@
     };
 
     // =================================================================
-    // Undo / redo history (project mode only)
+    // Undo / redo history
     // -----------------------------------------------------------------
-    // Every mutating function that touches `state` in project mode
+    // Every mutating function that touches `state` once a mode is set
     // pushes a deep-cloned snapshot onto the undo stack via pushUndo()
-    // BEFORE applying its change. Cart mode is intentionally not
-    // tracked -- it's already ephemeral and clears on tab close.
+    // BEFORE applying its change. Tracked in BOTH cart and project
+    // modes so the same buttons work on either view.
     // =================================================================
 
     var UNDO_LIMIT = 50;
@@ -136,7 +136,8 @@
     }
 
     function pushUndo() {
-        if (state.mode !== 'project') return;
+        // No mode = no work in progress, nothing meaningful to undo to.
+        if (!state.mode) return;
         undoStack.push(snapshotState());
         if (undoStack.length > UNDO_LIMIT) undoStack.shift();
         // A new mutation invalidates any forward branch -- standard
@@ -497,6 +498,7 @@
     }
 
     function startCartMode() {
+        clearHistory();
         state.mode = 'cart';
         state.projectId = null;
         state.name = 'Cart';
