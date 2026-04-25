@@ -65,7 +65,7 @@
 }
 
 .docs-item:hover {
-    background-color: white;
+    background-color: var(--color-surface);
     border-color: var(--color-primary-light);
 }
 
@@ -116,13 +116,13 @@
 }
 
 .docs-item-action-download {
-    background-color: white;
+    background-color: var(--color-surface);
     color: var(--color-text);
     border-color: var(--color-border-strong);
 }
 
 .docs-item-action-download:hover {
-    background-color: var(--color-bg);
+    background-color: var(--color-row-hover);
     border-color: var(--color-primary-light);
-    color: var(--color-primary);
+    color: var(--color-primary-light);
 }

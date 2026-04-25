@@ -6,28 +6,40 @@
    ============================================================ */
 
 :root {
-    /* Colors - surfaces */
-    --color-bg: #f5f7fa;
-    --color-bg-dark: #1e2a3a;
-    --color-surface: #ffffff;
-    --color-border: #dde3ec;
-    --color-border-strong: #b8c2d1;
+    /* ---- Dark mode palette ----
+       Surface hierarchy (darkest -> brightest):
+         --color-bg-dark  : deep saturated dark (sticky sub-headers,
+                            inset wells under cards)
+         --color-bg       : page background (default canvas behind cards)
+         --color-surface  : cards, modals, table cells, form inputs
+       Brand blue is reserved for the top app header + buttons so it
+       reads as the action / brand surface, separate from the neutral
+       dark page chrome.
+    */
 
-    /* Colors - text */
-    --color-text: #1a2332;
-    --color-text-muted: #5a6578;
+    /* Colors - surfaces */
+    --color-bg: #0f172a;
+    --color-bg-dark: #0a1220;
+    --color-surface: #1e293b;
+    --color-border: #2a3a52;
+    --color-border-strong: #475569;
+
+    /* Colors - text (high contrast on dark surfaces) */
+    --color-text: #e6edf3;
+    --color-text-muted: #94a3b8;
     --color-text-inverse: #ffffff;
 
-    /* Colors - brand */
+    /* Colors - brand (kept the same brand blue so the favicon/logo
+       stay coherent; hover/light variants tuned for dark backgrounds) */
     --color-primary: #0f4c75;
-    --color-primary-hover: #123f5f;
-    --color-primary-light: #3282b8;
+    --color-primary-hover: #1a6090;
+    --color-primary-light: #5ba9d8;
 
-    /* Colors - semantic */
-    --color-error: #c0392b;
-    --color-success: #27ae60;
-    --color-warning: #f39c12;
-    --color-row-hover: #eef4f8;
+    /* Colors - semantic (slightly more vibrant on dark backgrounds) */
+    --color-error: #ef4444;
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-row-hover: #2a3b54;
 
     /* Product tile placeholder colors (used until real JPGs are added) */
     --tile-projects: #2c3e50;
@@ -119,9 +131,20 @@ button {
     padding: 0;
 }
 
-input, select {
+input, select, textarea {
     font-family: inherit;
     font-size: inherit;
+    /* Dark-mode defaults so native form controls don't fall back to
+       the user-agent's white background and dark text. Class-based
+       overrides (e.g. transparent inputs on the schedule) win because
+       a single class beats an element selector. */
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.6;
 }
 
 /* Shared button component */
@@ -150,9 +173,12 @@ input, select {
     cursor: not-allowed;
 }
 
-/* App-level header (main view and product view both use this) */
+/* App-level header (main view and product view both use this).
+   Uses the brand primary color so the top of every page carries the
+   HHpro identity; sub-headers (cart panel, files-tree blocks) keep
+   the neutral dark surface to stay quieter. */
 .app-header {
-    background-color: var(--color-bg-dark);
+    background-color: var(--color-primary);
     color: var(--color-text-inverse);
     padding: var(--space-md) var(--space-xl);
     display: flex;

@@ -22,7 +22,7 @@
 
 .login-title {
     font-size: var(--font-size-xxl);
-    color: var(--color-primary);
+    color: var(--color-primary-light);
     margin-bottom: var(--space-xs);
     text-align: center;
     letter-spacing: 1px;

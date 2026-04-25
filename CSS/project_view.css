@@ -117,8 +117,8 @@
 }
 
 .project-tab-active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
+    color: var(--color-primary-light);
+    border-bottom-color: var(--color-primary-light);
     font-weight: 600;
 }
 
@@ -235,8 +235,8 @@
     width: 28px;
     height: 28px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background-color: white;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-surface);
     color: var(--color-text-muted);
     font-size: 18px;
     line-height: 1;
@@ -263,8 +263,8 @@
     font-size: var(--font-size-xs);
     font-weight: 500;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background-color: white;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     white-space: nowrap;
@@ -733,8 +733,8 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background-color: white;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-bg);
     color: var(--color-text-muted);
     font-size: 16px;
     line-height: 1;
@@ -817,7 +817,7 @@
     padding: 6px 12px;
     border: 1px solid var(--color-border-strong);
     border-radius: 999px;
-    background-color: white;
+    background-color: var(--color-bg);
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
     cursor: pointer;
@@ -889,8 +889,8 @@
     height: 26px;
     border-radius: 50%;
     border: 1px solid var(--color-border-strong);
-    background-color: white;
-    color: var(--color-primary);
+    background-color: var(--color-bg);
+    color: var(--color-primary-light);
     font-size: 18px;
     font-weight: 700;
     line-height: 1;
@@ -922,8 +922,8 @@
     padding: 6px 10px;
     font-size: var(--font-size-sm);
     color: var(--color-text);
-    background-color: white;
-    border: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
     transition: border-color var(--transition-fast),
                 box-shadow var(--transition-fast);
@@ -935,8 +935,8 @@
 
 .notes-custom-input:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(15, 76, 117, 0.15);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 2px rgba(91, 169, 216, 0.25);
 }
 
 /* Responsive: collapse internal columns on narrow viewports */
@@ -979,15 +979,15 @@
 }
 
 .project-sched-input:hover {
-    background-color: white;
-    border-color: var(--color-border);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-border-strong);
 }
 
 .project-sched-input:focus {
     outline: none;
-    background-color: white;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(15, 76, 117, 0.15);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 2px rgba(91, 169, 216, 0.25);
 }
 
 .project-sched-input::placeholder {

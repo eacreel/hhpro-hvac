@@ -213,8 +213,8 @@
     padding: 4px 10px;
     font-size: var(--font-size-xs);
     border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background-color: white;
+    border: 1px solid var(--color-border-strong);
+    background-color: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     transition: background-color var(--transition-fast),
@@ -318,13 +318,13 @@
 }
 
 .modal-btn-secondary {
-    background-color: white;
+    background-color: var(--color-surface);
     color: var(--color-text);
-    border-color: var(--color-border);
+    border-color: var(--color-border-strong);
 }
 .modal-btn-secondary:hover:not(:disabled) {
     background-color: var(--color-bg);
-    border-color: var(--color-border-strong);
+    border-color: var(--color-primary-light);
 }
 
 /* ---- Input (project name) ---- */
@@ -367,7 +367,7 @@
 }
 
 .modal-project-item:hover {
-    background-color: white;
+    background-color: var(--color-surface);
     border-color: var(--color-primary-light);
 }
 
