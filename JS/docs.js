@@ -16,8 +16,11 @@
 
    Public API:
      HHpro.Docs.openSubmittal(product, selection, data)
-         Opens the best-available submittal PDF in a new tab.
-         Preference order: SYSTEM > OUTDOOR UNIT > any other.
+         Opens every available submittal PDF for the selection,
+         each in its own tab. For 1:1 systems this is a single
+         SYSTEM submittal; for multi-split / multi-position-split
+         systems this is the outdoor unit submittal plus one
+         submittal per distinct indoor unit.
 
      HHpro.Docs.openDocsModal(product, selection, data)
          Opens a popup with every available document for the
@@ -34,53 +37,32 @@
     };
 
     // =================================================================
-    // Public: open the "best" submittal for a selection
+    // Public: open every submittal PDF for a selection
     // =================================================================
 
     function openSubmittal(product, sel, data) {
         var docColumns = (data && data.documentationColumns) || [];
-        var best = findBestSubmittal(sel, docColumns);
-        if (!best) {
+        var submittals = collectSelectionSubmittals(sel, docColumns);
+        if (!submittals.length) {
             alert('No submittal is available for this item.');
             return;
         }
-        var url = buildDocUrl(product, best.docColumn, best.filename);
-        openInNewTab(url);
+        submittals.forEach(function (item) {
+            var url = buildDocUrl(product, item.docColumn, item.filename);
+            openInNewTab(url);
+        });
     }
 
     /**
-     * Pick the submittal to open when the user clicks the Submittal button.
-     * Priority: system-level > outdoor-unit > any submittal column found.
-     * Returns { docColumn, filename } or null if none available.
+     * Collect every unique submittal (column, filename) pair across all
+     * rows of the selection. Deduplicates so the outdoor unit submittal
+     * doesn't open once per indoor-unit row in a multi-split system.
      */
-    function findBestSubmittal(sel, docColumns) {
+    function collectSelectionSubmittals(sel, docColumns) {
         var submittalCols = docColumns.filter(function (dc) {
             return /SUBMITTAL/i.test(dc.name);
         });
-        if (!submittalCols.length) return null;
-
-        var ranked = submittalCols.slice().sort(function (a, b) {
-            return submittalRank(a.name) - submittalRank(b.name);
-        });
-
-        for (var i = 0; i < ranked.length; i++) {
-            var dc = ranked[i];
-            for (var r = 0; r < sel.rows.length; r++) {
-                var docData = sel.rows[r].documentationData || {};
-                var filename = docData[dc.name];
-                if (filename) {
-                    return { docColumn: dc, filename: String(filename) };
-                }
-            }
-        }
-        return null;
-    }
-
-    function submittalRank(name) {
-        var up = String(name || '').toUpperCase();
-        if (up.indexOf('SYSTEM') !== -1) return 0;
-        if (up.indexOf('OUTDOOR') !== -1) return 1;
-        return 2;
+        return collectSelectionDocs(sel, submittalCols);
     }
 
     // =================================================================

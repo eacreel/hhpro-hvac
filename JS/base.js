@@ -38,8 +38,8 @@
    Action buttons (per row):
      - Select:    HHpro.Cart.addItem (first click may show the
                   project-or-cart prompt modal)
-     - Submittal: HHpro.Docs.openSubmittal - opens the system/outdoor
-                  submittal PDF in a new tab
+     - Submittal: HHpro.Docs.openSubmittal - opens every submittal
+                  PDF for the selection (one tab per unique PDF)
      - Docs:      HHpro.Docs.openDocsModal - popup with every
                   available document for the selection
    ============================================================ */
