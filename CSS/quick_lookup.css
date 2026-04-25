@@ -1,0 +1,100 @@
+/* ============================================================
+   Quick Model Lookup
+   ------------------------------------------------------------
+   Header search input + floating dropdown of matches.
+   ============================================================ */
+
+/* The wrapper sits in the app header between the brand and the
+   Log out button. flex: 1 lets it absorb remaining horizontal
+   space; max-width keeps it from stretching to absurd widths on
+   ultra-wide monitors. */
+.quick-lookup {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 var(--space-lg);
+    max-width: 480px;
+    /* Auto-grow within the max so the input fills middle space. */
+}
+
+.quick-lookup-input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.12);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.quick-lookup-input::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.quick-lookup-input:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+.quick-lookup-input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Dropdown (positioned via JS) ---------- */
+
+.quick-lookup-dropdown {
+    position: fixed;
+    z-index: 200;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 360px;
+    overflow-y: auto;
+    /* Match input width by default; minWidth set inline by JS to the
+       input's actual rendered width so the dropdown can be wider on
+       small screens but not narrower than the input. */
+}
+
+.quick-lookup-empty {
+    padding: var(--space-md) var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-style: italic;
+}
+
+.quick-lookup-item {
+    width: 100%;
+    text-align: left;
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: background-color var(--transition-fast);
+}
+
+.quick-lookup-item:hover,
+.quick-lookup-item-active {
+    background-color: var(--color-row-hover);
+}
+
+.quick-lookup-model {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    word-break: break-all;
+}
+
+.quick-lookup-product {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}

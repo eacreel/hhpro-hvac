@@ -320,6 +320,19 @@ WHAT'S IN THE GRID
         // --- Schedule notes section ----------------------------------
         appendNotesSection(rows, merges, colCount, productKey, data, curRow);
 
+        // --- Footer watermark ----------------------------------------
+        // A single right-aligned line below the notes box. Marked
+        // watermark: true so the renderers (XLSX styles + print CSS)
+        // pick a no-border italic light-gray style. Spans the full
+        // column count so the text aligns flush with the right edge of
+        // the schedule.
+        var watermarkRow = rows.length;
+        putCell(rows, merges, watermarkRow, 0, {
+            value: 'Created from HHpro-HVAC.com',
+            watermark: true,
+            align: 'right'
+        }, 1, colCount);
+
         // Column width heuristics (Excel character units)
         var colWidths = computeColumnWidths(
             rows, colCount, tagCol, servesCol, indoorTagCol, dataStartCol,
@@ -333,6 +346,7 @@ WHAT'S IN THE GRID
             numHeaderRows: numHeaderRows,       // includes title + col headers
             titleRowCount: titleRowCount,
             dataEndRow: dataEndRow,
+            watermarkRow: watermarkRow,
             colCount: colCount,
             colWidths: colWidths
         };
@@ -541,7 +555,8 @@ WHAT'S IN THE GRID
             align: cellData.align || '',
             notesRow: !!cellData.notesRow,
             dataRow: !!cellData.dataRow,
-            borderPos: cellData.borderPos || ''
+            borderPos: cellData.borderPos || '',
+            watermark: !!cellData.watermark
         };
         // Mark every covered position so neither the XLSX nor the
         // HTML-for-PDF renderer overwrites it later, AND so the XLSX
@@ -662,13 +677,15 @@ WHAT'S IN THE GRID
     function stylesXml() {
         return XML_HEADER +
             '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-              '<fonts count="3">' +
+              '<fonts count="4">' +
                 // fontId 0 - default body text
                 '<font><sz val="10"/><name val="Calibri"/></font>' +
                 // fontId 1 - bold body text (column headers, notes section headers)
                 '<font><b/><sz val="10"/><name val="Calibri"/></font>' +
                 // fontId 2 - bold larger text for the schedule title
                 '<font><b/><sz val="14"/><name val="Calibri"/></font>' +
+                // fontId 3 - faint italic for the footer watermark
+                '<font><i/><sz val="9"/><color rgb="FF999999"/><name val="Calibri"/></font>' +
               '</fonts>' +
               '<fills count="2">' +
                 '<fill><patternFill patternType="none"/></fill>' +
@@ -715,7 +732,8 @@ WHAT'S IN THE GRID
               //   8  notes-box line (non-bold) with bottom+left+right
               //   9  notes-box section header (bold) with top+left+right -
               //      used for the header row of a multi-row section
-              '<cellXfs count="10">' +
+              //  10  watermark footer (italic, light gray, right-aligned, no border)
+              '<cellXfs count="11">' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
@@ -735,6 +753,8 @@ WHAT'S IN THE GRID
                   '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
                 '<xf numFmtId="0" fontId="1" fillId="0" borderId="3" applyFont="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
+                '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" applyFont="1" applyAlignment="1">' +
+                  '<alignment horizontal="right" vertical="center"/></xf>' +
               '</cellXfs>' +
               '<cellStyles count="1">' +
                 '<cellStyle name="Normal" xfId="0" builtinId="0"/>' +
@@ -831,6 +851,7 @@ WHAT'S IN THE GRID
 
     /** Pick the cell XF style index that matches this cell's role. */
     function pickStyle(cell) {
+        if (cell.watermark) return 10;        // footer watermark (no border)
         if (cell.title) return 4;             // title row
 
         if (cell.notesRow) {
@@ -880,6 +901,12 @@ WHAT'S IN THE GRID
             if (pos === 'last')  return 8;
             if (pos === 'only')  return 3;
             return 6;
+        }
+        if (anchor && !anchor.covered && anchor.watermark) {
+            // Watermark cells span the full width as a single merge;
+            // covered positions need the same no-border style so they
+            // don't inherit the data-cell border.
+            return 10;
         }
         // Default: full-border data cell
         return 1;
@@ -1050,6 +1077,14 @@ WHAT'S IN THE GRID
                   ' border-bottom: 1px solid #000; }' +
             'tr.notes-row.notes-header td { font-weight: bold; }' +
 
+            // Footer watermark: faint italic line below the notes box,
+            // right-aligned and borderless so it reads as a quiet
+            // attribution rather than another schedule cell.
+            'tr.watermark-row td { border: none !important;' +
+                  ' text-align: right !important;' +
+                  ' font-style: italic; font-size: 7pt;' +
+                  ' color: #999 !important; padding: 4px 6px 0; }' +
+
             // Chrome/Edge: force backgrounds through to the print.
             '@media print {' +
                 ' * { -webkit-print-color-adjust: exact !important;' +
@@ -1073,11 +1108,14 @@ WHAT'S IN THE GRID
         var titleRowCount = grid.titleRowCount || 0;
         var numHeaderRows = grid.numHeaderRows || 0;
         var dataEndRow = (grid.dataEndRow != null) ? grid.dataEndRow : grid.rows.length;
+        var watermarkRow = (grid.watermarkRow != null) ? grid.watermarkRow : -1;
 
         for (var r = 0; r < grid.rows.length; r++) {
             var row = grid.rows[r];
             var rowClass;
-            if (r < titleRowCount) {
+            if (r === watermarkRow) {
+                rowClass = 'watermark-row';
+            } else if (r < titleRowCount) {
                 rowClass = 'title-row';
             } else if (r < numHeaderRows) {
                 rowClass = 'header-row';

@@ -37,6 +37,8 @@
         brand.appendChild(HHpro.UI.createLogo());
         header.appendChild(brand);
 
+        header.appendChild(HHpro.UI.createLookupInput());
+
         // Logout button on the right. Later steps may add additional
         // header actions alongside this one.
         var logoutBtn = document.createElement('button');

@@ -136,6 +136,33 @@
         },
 
         /**
+         * Build the model-lookup search input shown in the app header.
+         * Returns a wrapper div containing the icon + input, with the
+         * QuickLookup behavior already attached.
+         *
+         * @returns {HTMLElement}
+         */
+        createLookupInput: function () {
+            var wrap = document.createElement('div');
+            wrap.className = 'quick-lookup';
+
+            var input = document.createElement('input');
+            input.type = 'search';
+            input.className = 'quick-lookup-input';
+            input.placeholder = 'Find a model number...';
+            input.setAttribute('aria-label', 'Find a model number');
+            wrap.appendChild(input);
+
+            // Defer the attach until QuickLookup is loaded (script order
+            // already places it before this view code runs, but guard
+            // anyway so a stray load order doesn't blow up the header).
+            if (HHpro.QuickLookup && typeof HHpro.QuickLookup.attach === 'function') {
+                HHpro.QuickLookup.attach(input);
+            }
+            return wrap;
+        },
+
+        /**
          * Build the dark top header used on every logged-in view.
          *
          * @param {string=} currentPage - optional breadcrumb label shown after the logo.
@@ -172,6 +199,8 @@
             }
 
             header.appendChild(brandWrap);
+
+            header.appendChild(HHpro.UI.createLookupInput());
 
             var logout = document.createElement('button');
             logout.type = 'button';
