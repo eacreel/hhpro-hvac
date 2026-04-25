@@ -929,10 +929,19 @@
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
             var topPx = cumulativeTop + 'px';
+            // See base.js applyStickyHeaderOffsets for the rationale: only
+            // single-row cells contribute to a row's true height, since
+            // rowspan>1 cells extend into following rows.
+            var rowHeight = 0;
             for (var j = 0; j < tr.cells.length; j++) {
-                tr.cells[j].style.top = topPx;
+                var cell = tr.cells[j];
+                cell.style.top = topPx;
+                if ((cell.rowSpan || 1) === 1) {
+                    var h = cell.getBoundingClientRect().height;
+                    if (h > rowHeight) rowHeight = h;
+                }
             }
-            cumulativeTop += tr.getBoundingClientRect().height;
+            cumulativeTop += Math.floor(rowHeight);
         }
     }
 

@@ -658,10 +658,27 @@
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
             var topPx = cumulativeTop + 'px';
+            // The "true" height of a thead row is the height of its single-row
+            // cells -- not tr.getBoundingClientRect().height, which reflects
+            // the tallest cell INCLUDING any rowspan>1 cells that visually
+            // extend into following rows. Group-header layouts (Actions,
+            // MAKE, MODEL all span both header rows while Fan Data / Cooling
+            // Performance only span the first) would otherwise make the
+            // first row's measured height equal both rows combined, pushing
+            // row 2's sticky offset past where row 1 ends and leaving a
+            // gap that scrolling data shows through.
+            var rowHeight = 0;
             for (var j = 0; j < tr.cells.length; j++) {
-                tr.cells[j].style.top = topPx;
+                var cell = tr.cells[j];
+                cell.style.top = topPx;
+                if ((cell.rowSpan || 1) === 1) {
+                    var h = cell.getBoundingClientRect().height;
+                    if (h > rowHeight) rowHeight = h;
+                }
             }
-            cumulativeTop += tr.getBoundingClientRect().height;
+            // Floor avoids sub-pixel gaps where the next sticky row would
+            // sit a fraction of a pixel below the previous row's bottom.
+            cumulativeTop += Math.floor(rowHeight);
         }
     }
 
