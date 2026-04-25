@@ -924,24 +924,28 @@
 
     function applyStickyHeaderOffsets(table) {
         var thead = table && table.tHead;
-        if (!thead) return;
-        var cumulativeTop = 0;
+        if (!thead || thead.rows.length === 0) return;
+
+        // See base.js applyStickyHeaderOffsets for the rationale. Briefly:
+        // clear every cell's top so the thead falls out of sticky mode,
+        // measure each row's natural top, then reapply correct offsets.
+        // The browser's layout is the only correct source of row top
+        // positions when rowspan>1 cells wrap to multiple lines.
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
-            var topPx = cumulativeTop + 'px';
-            // See base.js applyStickyHeaderOffsets for the rationale: only
-            // single-row cells contribute to a row's true height, since
-            // rowspan>1 cells extend into following rows.
-            var rowHeight = 0;
             for (var j = 0; j < tr.cells.length; j++) {
-                var cell = tr.cells[j];
-                cell.style.top = topPx;
-                if ((cell.rowSpan || 1) === 1) {
-                    var h = cell.getBoundingClientRect().height;
-                    if (h > rowHeight) rowHeight = h;
-                }
+                tr.cells[j].style.top = '';
             }
-            cumulativeTop += Math.floor(rowHeight);
+        }
+        void thead.offsetHeight;
+
+        var headTop = thead.getBoundingClientRect().top;
+        for (var i2 = 0; i2 < thead.rows.length; i2++) {
+            var row = thead.rows[i2];
+            var topPx = Math.floor(row.getBoundingClientRect().top - headTop) + 'px';
+            for (var k = 0; k < row.cells.length; k++) {
+                row.cells[k].style.top = topPx;
+            }
         }
     }
 

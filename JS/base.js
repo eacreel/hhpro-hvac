@@ -653,32 +653,36 @@
 
     function applyStickyHeaderOffsets(table) {
         var thead = table && table.tHead;
-        if (!thead) return;
-        var cumulativeTop = 0;
+        if (!thead || thead.rows.length === 0) return;
+
+        // Temporarily clear every cell's `top` so the cells drop out of
+        // sticky mode and fall back to their natural in-flow positions.
+        // We then measure each row's true top relative to the thead and
+        // reapply the correct sticky offsets. Cumulative-height math fails
+        // here because rowspan>1 cells that wrap to multiple lines (e.g.
+        // "MAX ALLOWABLE LINE-SET LENGTHS") pull extra height into the
+        // row they start in, and the browser's own layout is the only
+        // source of truth that accounts for that.
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
-            var topPx = cumulativeTop + 'px';
-            // The "true" height of a thead row is the height of its single-row
-            // cells -- not tr.getBoundingClientRect().height, which reflects
-            // the tallest cell INCLUDING any rowspan>1 cells that visually
-            // extend into following rows. Group-header layouts (Actions,
-            // MAKE, MODEL all span both header rows while Fan Data / Cooling
-            // Performance only span the first) would otherwise make the
-            // first row's measured height equal both rows combined, pushing
-            // row 2's sticky offset past where row 1 ends and leaving a
-            // gap that scrolling data shows through.
-            var rowHeight = 0;
             for (var j = 0; j < tr.cells.length; j++) {
-                var cell = tr.cells[j];
-                cell.style.top = topPx;
-                if ((cell.rowSpan || 1) === 1) {
-                    var h = cell.getBoundingClientRect().height;
-                    if (h > rowHeight) rowHeight = h;
-                }
+                tr.cells[j].style.top = '';
             }
-            // Floor avoids sub-pixel gaps where the next sticky row would
-            // sit a fraction of a pixel below the previous row's bottom.
-            cumulativeTop += Math.floor(rowHeight);
+        }
+        // Force a synchronous reflow so the cleared `top` values take
+        // effect before we read positions.
+        void thead.offsetHeight;
+
+        var headTop = thead.getBoundingClientRect().top;
+        for (var i2 = 0; i2 < thead.rows.length; i2++) {
+            var row = thead.rows[i2];
+            // floor: rounding down by sub-pixel makes the next sticky row
+            // overlap the previous by a fraction of a pixel rather than
+            // leaving a gap that scrolling content can show through.
+            var topPx = Math.floor(row.getBoundingClientRect().top - headTop) + 'px';
+            for (var k = 0; k < row.cells.length; k++) {
+                row.cells[k].style.top = topPx;
+            }
         }
     }
 
