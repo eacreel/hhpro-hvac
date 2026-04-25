@@ -58,7 +58,16 @@
     HHpro.Schedule = {
         buildTable: function (data, selections, product) { return buildScheduleTable(data, selections, product); },
         applyFilters: function (selections, filterValues) { return applyFilters(selections, filterValues); },
-        applyStickyHeaderOffsets: function (table) { return applyStickyHeaderOffsets(table); }
+        applyStickyHeaderOffsets: function (table) { return applyStickyHeaderOffsets(table); },
+        // Per-product filter visibility logic (mini splits hides per-zone
+        // SIZE/TYPE filters until the user picks NUMBER OF INDOOR UNITS,
+        // for example). Mirrors the behavior on the main product page.
+        getVisibleFilters: function (productKey, data, currentFilters) {
+            return getVisibleFilters(productKey, data, currentFilters);
+        },
+        pruneFilterValues: function (filterValues, visibleFilters) {
+            return pruneFilterValues(filterValues, visibleFilters);
+        }
     };
 
     HHpro.Views.product = {

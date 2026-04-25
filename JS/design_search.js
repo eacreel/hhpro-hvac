@@ -169,7 +169,15 @@
 
     function rerenderWorkArea() {
         var work = document.querySelector('.design-search-work');
-        if (work) renderWorkArea(work);
+        if (!work) return;
+        // Preserve the form's internal scroll position across re-renders
+        // so toggling NUMBER OF INDOOR UNITS doesn't jump the user back
+        // to the top of the form.
+        var prevForm = work.querySelector('.design-search-form');
+        var savedScroll = prevForm ? prevForm.scrollTop : 0;
+        renderWorkArea(work);
+        var newForm = work.querySelector('.design-search-form');
+        if (newForm) newForm.scrollTop = savedScroll;
     }
 
     function renderWorkArea(work) {
@@ -253,9 +261,16 @@
             form.appendChild(targetsBox);
         }
 
-        // Filter dropdowns -- same UX as the main product page.
-        var filterCols = (data.filterColumns || []);
-        if (filterCols.length) {
+        // Filter dropdowns -- same UX as the main product page, including
+        // per-product visibility logic (e.g. mini splits hides SIZE/TYPE
+        // (INDOOR UNIT #N) until NUMBER OF INDOOR UNITS is picked, then
+        // shows only the relevant N rows). Prune any stored values that
+        // refer to currently-hidden filters so a stale "SIZE (INDOOR
+        // UNIT #5)" doesn't silently affect search after the user drops
+        // the unit count down to 1.
+        var visibleFilters = HHpro.Schedule.getVisibleFilters(state.productKey, data, state.filterValues);
+        HHpro.Schedule.pruneFilterValues(state.filterValues, visibleFilters);
+        if (visibleFilters.length) {
             var filtersBox = document.createElement('section');
             filtersBox.className = 'design-search-section';
             var fhdr = document.createElement('h2');
@@ -270,7 +285,7 @@
 
             var fgrid = document.createElement('div');
             fgrid.className = 'design-filter-grid';
-            filterCols.forEach(function (fc) {
+            visibleFilters.forEach(function (fc) {
                 fgrid.appendChild(buildFilterDropdown(fc, data));
             });
             filtersBox.appendChild(fgrid);
@@ -390,6 +405,10 @@
 
         select.addEventListener('change', function () {
             state.filterValues[filterCol.name] = select.value || null;
+            // Re-render so per-product visibility logic kicks in -- e.g.
+            // changing NUMBER OF INDOOR UNITS on mini splits should hide
+            // or reveal the matching SIZE/TYPE rows.
+            rerenderWorkArea();
         });
         group.appendChild(select);
         return group;
