@@ -24,7 +24,7 @@
 
             var title = document.createElement('h1');
             title.className = 'login-title';
-            title.textContent = 'HHpro';
+            title.appendChild(HHpro.UI.createLogo());
 
             var subtitle = document.createElement('p');
             subtitle.className = 'login-subtitle';

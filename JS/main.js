@@ -34,7 +34,7 @@
 
         var brand = document.createElement('div');
         brand.className = 'app-header-brand';
-        brand.textContent = 'HHpro';
+        brand.appendChild(HHpro.UI.createLogo());
         header.appendChild(brand);
 
         // Logout button on the right. Later steps may add additional

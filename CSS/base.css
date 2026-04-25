@@ -168,6 +168,38 @@ input, select {
     letter-spacing: 0.5px;
 }
 
+/* ============================================================
+   Brand wordmark
+   ------------------------------------------------------------
+   Shared between the login title, the main header, and the
+   product/projects breadcrumb. Inherits font-size from the
+   parent (.app-header-brand, .breadcrumb-link, .login-title)
+   so each surface controls its own scale. The "HH" half uses
+   currentColor so it picks up white on dark headers and the
+   primary blue on the white login card; "pro" stays in the
+   lighter brand accent on every surface.
+   ============================================================ */
+.brand-logo {
+    display: inline-flex;
+    align-items: baseline;
+    /* Tighter than the previous 0.5-1px tracking because wordmarks
+       read better when letters sit close together. */
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.brand-mark {
+    color: currentColor;
+    font-weight: 700;
+}
+
+.brand-accent {
+    color: var(--color-primary-light);
+    font-weight: 500;
+    /* Slight optical correction so "pro" doesn't feel glued to the H */
+    margin-left: 0.04em;
+}
+
 .header-action {
     color: var(--color-text-inverse);
     padding: 8px 14px;

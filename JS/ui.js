@@ -12,11 +12,37 @@
 
     HHpro.UI = {
         /**
+         * Build the HHpro brand wordmark. Two spans inside a wrapper:
+         *   - .brand-mark  ("HH")  - currentColor, bold
+         *   - .brand-accent ("pro") - fixed brand-light blue, lighter weight
+         * The element inherits font-size and color from its parent, so the
+         * same helper works on the dark headers and the white login card.
+         *
+         * @returns {HTMLElement}
+         */
+        createLogo: function () {
+            var wrap = document.createElement('span');
+            wrap.className = 'brand-logo';
+
+            var mark = document.createElement('span');
+            mark.className = 'brand-mark';
+            mark.textContent = 'HH';
+
+            var accent = document.createElement('span');
+            accent.className = 'brand-accent';
+            accent.textContent = 'pro';
+
+            wrap.appendChild(mark);
+            wrap.appendChild(accent);
+            return wrap;
+        },
+
+        /**
          * Build the dark top header used on every logged-in view.
          *
-         * @param {string=} currentPage - optional breadcrumb label shown after "HHpro".
-         *                                When omitted, the header shows just the HHpro
-         *                                title (as on the main overview page).
+         * @param {string=} currentPage - optional breadcrumb label shown after the logo.
+         *                                When omitted, the header shows just the logo
+         *                                (as on the main overview page).
          * @returns {HTMLElement}
          */
         buildHeader: function (currentPage) {
@@ -29,7 +55,7 @@
             var brand = document.createElement('button');
             brand.type = 'button';
             brand.className = 'breadcrumb-link';
-            brand.textContent = 'HHpro';
+            brand.appendChild(HHpro.UI.createLogo());
             brand.addEventListener('click', function () {
                 HHpro.App.showView('main');
             });
