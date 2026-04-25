@@ -11,18 +11,22 @@
     margin-bottom: var(--space-lg);
 }
 
-/* Projects tile row - centered above the product grid. */
+/* Action tiles row - centered above the product grid. Holds the
+   Projects tile and the Design Search tile side-by-side so the
+   user's two main entry points are equally prominent. */
 .projects-row {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
     margin-bottom: var(--space-xl);
 }
 
-/* The compact Projects tile - no image block, just a nicely styled
+/* The compact action tile - no image block, just a nicely styled
    card with the primary action text. Wider than a product tile is
    tall so the two lines of text have room to breathe, and visually
-   prominent (dark background + light text) to read as the primary
-   action on the page. */
+   prominent (saturated background + light text) to read as a
+   primary action on the page. */
 .tile.tile-projects-compact {
     width: 100%;
     max-width: 420px;
@@ -32,6 +36,13 @@
     text-align: center;
     transition: transform var(--transition-fast),
                 box-shadow var(--transition-fast);
+}
+
+/* Design Search tile uses the brand blue gradient so it reads as
+   "the engineer's tool" -- distinct from the dark navy Projects
+   tile while sharing the same compact layout. */
+.tile.tile-design-search.tile-projects-compact {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
 }
 
 .tile.tile-projects-compact:hover {

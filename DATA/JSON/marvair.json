@@ -3,6 +3,17 @@
   "assetsFolder": "MARVAIR",
   "scheduleTitle": "VERTICAL WALL MOUNTED PACKAGED AIR HANDLING UNIT SCHEDULE",
   "supportsMultiRowSelections": false,
+  "searchSchema": {
+    "displayName": "Marvair Vertical Wall Mount",
+    "description": "Vertical wall-mount packaged air handling units. Enter design loads and the page returns models that meet the targets within your tolerance.",
+    "targets": [
+      { "label": "Nominal Size", "col": "C", "unit": "tons", "defaultTolerance": 10 },
+      { "label": "Total Cooling Capacity", "col": "E", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Sensible Cooling Capacity", "col": "F", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Electric Heat", "col": "I", "unit": "kW", "defaultTolerance": 10 },
+      { "label": "Airflow", "col": "D", "unit": "CFM", "defaultTolerance": 10 }
+    ]
+  },
   "scheduleHeader": {
     "columnLetters": [
       "A",

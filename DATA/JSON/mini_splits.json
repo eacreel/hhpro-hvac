@@ -3,6 +3,16 @@
   "assetsFolder": "MINI SPLITS",
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": true,
+  "searchSchema": {
+    "displayName": "Mini Splits",
+    "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
+    "targets": [
+      { "label": "Indoor Unit Cooling Capacity", "col": "D", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Indoor Unit Sensible Capacity", "col": "E", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "G", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Indoor Unit Airflow", "col": "A", "unit": "CFM", "defaultTolerance": 15 }
+    ]
+  },
   "scheduleHeader": {
     "columnLetters": [
       "A",

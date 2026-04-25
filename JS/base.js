@@ -51,6 +51,16 @@
     HHpro.Views = HHpro.Views || {};
     HHpro.ProductExtensions = HHpro.ProductExtensions || {};
 
+    // Reusable schedule pieces. Other views (design_search, etc.) build
+    // result tables that should look and behave identically to the main
+    // product page schedule, so they share the same builders. Function
+    // declarations below are hoisted -- the references here resolve fine.
+    HHpro.Schedule = {
+        buildTable: function (data, selections, product) { return buildScheduleTable(data, selections, product); },
+        applyFilters: function (selections, filterValues) { return applyFilters(selections, filterValues); },
+        applyStickyHeaderOffsets: function (table) { return applyStickyHeaderOffsets(table); }
+    };
+
     HHpro.Views.product = {
         render: function (root, params) {
             var productKey = params && params.productKey;

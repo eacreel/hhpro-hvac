@@ -3,6 +3,17 @@
   "assetsFolder": "MULTI POSITION SPLITS",
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": false,
+  "searchSchema": {
+    "displayName": "Multi Position Splits",
+    "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
+    "targets": [
+      { "label": "Indoor Cooling Capacity", "col": "I", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Indoor Sensible Capacity", "col": "J", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Heat Pump Heating Capacity", "col": "U", "unit": "BTU/h", "defaultTolerance": 10 },
+      { "label": "Aux. Electric Heat", "col": "L", "unit": "kW", "defaultTolerance": 10 },
+      { "label": "Indoor Airflow", "col": "C", "unit": "CFM", "defaultTolerance": 10 }
+    ]
+  },
   "scheduleHeader": {
     "columnLetters": [
       "A",

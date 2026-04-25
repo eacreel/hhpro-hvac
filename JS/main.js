@@ -64,12 +64,13 @@
         title.textContent = 'Select Projects or a product type to get started';
         main.appendChild(title);
 
-        // Projects row: the single Projects tile centered on its own
-        // row above the product grid. Uses a flex container so the
-        // tile sits in the middle regardless of viewport width.
+        // Action tiles row: prominent shortcuts above the product grid.
+        // Centered as a flex row so the two tiles sit together regardless
+        // of viewport width.
         var projectsRow = document.createElement('div');
         projectsRow.className = 'projects-row';
         projectsRow.appendChild(createProjectsTile());
+        projectsRow.appendChild(createDesignSearchTile());
         main.appendChild(projectsRow);
 
         // Product grid: one tile per product type, laid out in the same
@@ -106,6 +107,33 @@
 
         tile.addEventListener('click', function () {
             HHpro.App.showView('projects');
+        });
+
+        return tile;
+    }
+
+    function createDesignSearchTile() {
+        var tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'tile tile-design-search tile-projects-compact';
+
+        var body = document.createElement('div');
+        body.className = 'tile-body';
+
+        var label = document.createElement('h3');
+        label.className = 'tile-label';
+        label.textContent = 'Design Search';
+
+        var sublabel = document.createElement('p');
+        sublabel.className = 'tile-sublabel';
+        sublabel.textContent = 'Find equipment by design loads';
+
+        body.appendChild(label);
+        body.appendChild(sublabel);
+        tile.appendChild(body);
+
+        tile.addEventListener('click', function () {
+            HHpro.App.showView('design_search');
         });
 
         return tile;
