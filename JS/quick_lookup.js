@@ -29,16 +29,6 @@
     'use strict';
     window.HHpro = window.HHpro || {};
 
-    // Header values (case-insensitive) that mark a column as the model
-    // number for a product. Tracked as a Set so adding a synonym is one
-    // line rather than another `||` branch.
-    var MODEL_HEADER_SET = {
-        'MODEL': true,
-        'MODEL NUMBER': true,
-        'MODEL#': true,
-        'MODEL #': true
-    };
-
     var MAX_RESULTS = 10;
     var DEBOUNCE_MS = 120;
 
@@ -205,7 +195,12 @@
             inputEl.value = '';
             hide();
             inputEl.blur();
-            HHpro.App.showView('product', { productKey: m.productKey });
+            // Pass the model string so the product view can filter the
+            // schedule down to just selections containing it.
+            HHpro.App.showView('product', {
+                productKey: m.productKey,
+                modelQuery: m.model
+            });
         }
 
         function hide() {
@@ -246,7 +241,11 @@
     }
 
     function buildEntriesFor(product, data, out, seen) {
-        var modelCols = findModelColumns(data);
+        // Defer to the shared HHpro.Schedule.findModelColumns so adding a
+        // new "model"-style header synonym is a one-place change.
+        var modelCols = (HHpro.Schedule && HHpro.Schedule.findModelColumns)
+            ? HHpro.Schedule.findModelColumns(data)
+            : [];
         if (!modelCols.length) return;
 
         (data.selections || []).forEach(function (sel) {
@@ -270,28 +269,6 @@
                 });
             });
         });
-    }
-
-    /**
-     * Walk scheduleHeader.rows and return every column whose header text
-     * marks it as a model number column. Returns [{ col, label }].
-     */
-    function findModelColumns(data) {
-        var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
-        var found = [];
-        var seenCol = {};
-        rows.forEach(function (hdrRow) {
-            (hdrRow || []).forEach(function (cell) {
-                var label = (cell && cell.value !== undefined && cell.value !== null)
-                    ? String(cell.value).trim() : '';
-                var up = label.toUpperCase();
-                if (!MODEL_HEADER_SET[up]) return;
-                if (seenCol[cell.col]) return;
-                seenCol[cell.col] = true;
-                found.push({ col: cell.col, label: label });
-            });
-        });
-        return found;
     }
 
     // -----------------------------------------------------------------

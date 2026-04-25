@@ -51,6 +51,16 @@
     HHpro.Views = HHpro.Views || {};
     HHpro.ProductExtensions = HHpro.ProductExtensions || {};
 
+    // Header values (case-insensitive) that mark a column as a model
+    // number column. Used by the quick-lookup index, by the schedule
+    // rendering, and by the model filter pulled in from the lookup.
+    var MODEL_HEADER_SET = {
+        'MODEL': true,
+        'MODEL NUMBER': true,
+        'MODEL#': true,
+        'MODEL #': true
+    };
+
     // Reusable schedule pieces. Other views (design_search, etc.) build
     // result tables that should look and behave identically to the main
     // product page schedule, so they share the same builders. Function
@@ -67,8 +77,58 @@
         },
         pruneFilterValues: function (filterValues, visibleFilters) {
             return pruneFilterValues(filterValues, visibleFilters);
+        },
+        findModelColumns: function (data) { return findModelColumns(data); },
+        applyModelFilter: function (selections, query, data) {
+            return applyModelFilter(selections, query, data);
         }
     };
+
+    /**
+     * Walk a product's scheduleHeader and return every column whose
+     * header text identifies it as a model number column. Returns
+     * [{ col, label }] de-duplicated by column letter.
+     */
+    function findModelColumns(data) {
+        var rows = (data && data.scheduleHeader && data.scheduleHeader.rows) || [];
+        var found = [];
+        var seen = {};
+        rows.forEach(function (hdrRow) {
+            (hdrRow || []).forEach(function (cell) {
+                var label = (cell && cell.value !== undefined && cell.value !== null)
+                    ? String(cell.value).trim() : '';
+                var up = label.toUpperCase();
+                if (!MODEL_HEADER_SET[up]) return;
+                if (seen[cell.col]) return;
+                seen[cell.col] = true;
+                found.push({ col: cell.col, label: label });
+            });
+        });
+        return found;
+    }
+
+    /**
+     * Filter `selections` down to those where at least one row has a
+     * value in any model column that contains `query` (case-insensitive
+     * substring match). Used when the quick-lookup picks a model and
+     * navigates to the product page so the schedule shows just that
+     * model's selections.
+     */
+    function applyModelFilter(selections, query, data) {
+        var modelCols = findModelColumns(data);
+        if (!modelCols.length || !query) return selections.slice();
+        var q = String(query).toLowerCase();
+        return selections.filter(function (sel) {
+            return (sel.rows || []).some(function (row) {
+                if (!row.scheduleData) return false;
+                return modelCols.some(function (mc) {
+                    var v = row.scheduleData[mc.col];
+                    if (v === undefined || v === null) return false;
+                    return String(v).toLowerCase().indexOf(q) !== -1;
+                });
+            });
+        });
+    }
 
     HHpro.Views.product = {
         render: function (root, params) {
@@ -83,7 +143,7 @@
 
             HHpro.Data.loadProduct(productKey)
                 .then(function (data) {
-                    renderPage(root, product, data);
+                    renderPage(root, product, data, params);
                 })
                 .catch(function (err) {
                     var msg = (err && err.message) ? err.message : String(err);
@@ -146,7 +206,7 @@
     // Main page render
     // ---------------------------------------------------------------
 
-    function renderPage(root, product, data) {
+    function renderPage(root, product, data, params) {
         root.innerHTML = '';
         root.appendChild(HHpro.UI.buildHeader(product.displayName));
 
@@ -196,9 +256,22 @@
         // --- Shared mutable state ---
         var filterValues = {};
         var autoSelectedNames = {};
+        // Optional model-substring filter passed in from the quick-lookup
+        // search ("show only selections containing this model"). Cleared
+        // by the chip's clear button. Initialized from params, so a
+        // direct navigation to /product without params shows everything.
+        var modelFilter = (params && typeof params.modelQuery === 'string' && params.modelQuery.trim())
+            ? params.modelQuery.trim()
+            : null;
 
         var filterBarContainer = document.createElement('div');
         main.appendChild(filterBarContainer);
+
+        // Container for the active model-filter chip. Empty when there
+        // is no active model filter, so it takes no layout space.
+        var modelChipContainer = document.createElement('div');
+        modelChipContainer.className = 'model-filter-chip-row';
+        main.appendChild(modelChipContainer);
 
         var statusLine = document.createElement('div');
         statusLine.className = 'filter-status';
@@ -214,6 +287,7 @@
         var initialVisible = getVisibleFilters(product.productKey, data, filterValues);
         initialVisible.forEach(function (fc) { filterValues[fc.name] = null; });
 
+        renderModelFilterChip();
         applyFilterChange();
 
         // Sticky header offsets AND auto-fit zoom both depend on rendered
@@ -285,9 +359,42 @@
             filterBarContainer.appendChild(bar);
         }
 
+        function renderModelFilterChip() {
+            modelChipContainer.innerHTML = '';
+            if (!modelFilter) return;
+
+            var chip = document.createElement('div');
+            chip.className = 'model-filter-chip';
+
+            var label = document.createElement('span');
+            label.className = 'model-filter-chip-label';
+            label.textContent = 'Model contains "' + modelFilter + '"';
+            chip.appendChild(label);
+
+            var clear = document.createElement('button');
+            clear.type = 'button';
+            clear.className = 'model-filter-chip-clear';
+            clear.setAttribute('aria-label', 'Clear model filter');
+            clear.appendChild(HHpro.UI.icon('x'));
+            var clearText = document.createElement('span');
+            clearText.textContent = 'Clear';
+            clear.appendChild(clearText);
+            clear.addEventListener('click', function () {
+                modelFilter = null;
+                renderModelFilterChip();
+                refreshSchedule();
+            });
+            chip.appendChild(clear);
+
+            modelChipContainer.appendChild(chip);
+        }
+
         function refreshSchedule() {
             scheduleWrap.innerHTML = '';
             var visible = applyFilters(data.selections || [], filterValues);
+            if (modelFilter) {
+                visible = applyModelFilter(visible, modelFilter, data);
+            }
             updateStatus(visible.length, (data.selections || []).length);
             if (visible.length === 0) {
                 var zero = document.createElement('div');
