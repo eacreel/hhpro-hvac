@@ -328,7 +328,7 @@ WHAT'S IN THE GRID
         // the schedule.
         var watermarkRow = rows.length;
         putCell(rows, merges, watermarkRow, 0, {
-            value: 'Created from HHpro-HVAC.com',
+            value: 'Created with HHpro-HVAC.com',
             watermark: true,
             align: 'right'
         }, 1, colCount);
