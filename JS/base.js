@@ -51,10 +51,6 @@
     HHpro.Views = HHpro.Views || {};
     HHpro.ProductExtensions = HHpro.ProductExtensions || {};
 
-    // Zoom floor - beyond here text becomes unreadable and we'd rather have
-    // horizontal scroll.
-    var MIN_AUTOFIT_ZOOM = 0.6;
-
     HHpro.Views.product = {
         render: function (root, params) {
             var productKey = params && params.productKey;
@@ -208,7 +204,6 @@
         function onResize() {
             var table = scheduleWrap.querySelector('.schedule-table');
             if (!table) return;
-            autoFitScheduleWidth(scheduleWrap, table);
             applyStickyHeaderOffsets(table);
         }
 
@@ -284,10 +279,6 @@
             }
             var table = buildScheduleTable(data, visible, product);
             scheduleWrap.appendChild(table);
-            // Order matters: auto-fit first (applies CSS zoom if needed),
-            // then sticky offsets (resets zoom internally to measure in
-            // natural pre-zoom CSS pixels).
-            autoFitScheduleWidth(scheduleWrap, table);
             applyStickyHeaderOffsets(table);
             scheduleStickyRecomputes(table);
         }
@@ -314,7 +305,6 @@
             if (document.fonts && document.fonts.ready) {
                 document.fonts.ready.then(function () {
                     if (!table.isConnected) return;
-                    autoFitScheduleWidth(scheduleWrap, table);
                     applyStickyHeaderOffsets(table);
                 });
             }
@@ -710,20 +700,10 @@
         var thead = table && table.tHead;
         if (!thead || thead.rows.length === 0) return;
 
-        // Temporarily reset the table's CSS zoom (set by autoFitScheduleWidth)
-        // so we measure positions in natural pre-zoom CSS pixels. Sticky `top`
-        // values inside a zoomed element are interpreted in the element's
-        // local layout coords (pre-zoom in Chrome), so taking measurements
-        // post-zoom and applying them as sticky offsets causes drift on every
-        // scroll. Reset zoom -> measure -> restore zoom in a single JS turn
-        // so the browser never repaints the natural-size state.
-        var savedZoom = table.style.zoom;
-        table.style.zoom = '1';
-
         // Drop every cell out of sticky mode so the thead snaps back to its
         // natural in-flow layout. Then read each row's actual top relative
         // to the thead -- the browser's own layout is the only source of
-        // truth that accounts for multi-line rowspan cells.
+        // truth when rowspan>1 cells wrap to multiple lines.
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
             for (var j = 0; j < tr.cells.length; j++) {
@@ -733,45 +713,16 @@
         void thead.offsetHeight; // force sync layout in the natural state
 
         var headTop = thead.getBoundingClientRect().top;
-        var tops = [];
         for (var i2 = 0; i2 < thead.rows.length; i2++) {
             var row = thead.rows[i2];
             // floor: rounding down by sub-pixel makes the next sticky row
             // overlap the previous by a fraction of a pixel rather than
             // leaving a gap that scrolling content can show through.
-            tops.push(Math.floor(row.getBoundingClientRect().top - headTop));
-        }
-
-        // Restore zoom BEFORE assigning top values so the browser's layout
-        // pipeline applies sticky positioning relative to the zoomed table.
-        table.style.zoom = savedZoom;
-
-        for (var i3 = 0; i3 < thead.rows.length; i3++) {
-            var topPx = tops[i3] + 'px';
-            var r = thead.rows[i3];
-            for (var k = 0; k < r.cells.length; k++) {
-                r.cells[k].style.top = topPx;
+            var topPx = Math.floor(row.getBoundingClientRect().top - headTop) + 'px';
+            for (var k = 0; k < row.cells.length; k++) {
+                row.cells[k].style.top = topPx;
             }
         }
-    }
-
-    // ---------------------------------------------------------------
-    // Auto-fit zoom
-    // ---------------------------------------------------------------
-
-    function autoFitScheduleWidth(scheduleWrap, table) {
-        table.style.zoom = '1';
-
-        var naturalWidth = table.scrollWidth;
-        var availableWidth = scheduleWrap.clientWidth;
-
-        if (naturalWidth <= availableWidth || availableWidth <= 0) {
-            return;
-        }
-
-        var scale = availableWidth / naturalWidth;
-        if (scale < MIN_AUTOFIT_ZOOM) scale = MIN_AUTOFIT_ZOOM;
-        table.style.zoom = String(scale);
     }
 
     // ---------------------------------------------------------------
