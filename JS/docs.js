@@ -88,7 +88,7 @@
         closeBtn.type = 'button';
         closeBtn.className = 'docs-modal-close';
         closeBtn.setAttribute('aria-label', 'Close');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.appendChild(HHpro.UI.icon('x'));
         closeBtn.addEventListener('click', function () { closeModal(backdrop); });
 
         header.appendChild(title);

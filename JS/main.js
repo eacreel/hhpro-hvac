@@ -42,7 +42,10 @@
         var logoutBtn = document.createElement('button');
         logoutBtn.type = 'button';
         logoutBtn.className = 'header-action';
-        logoutBtn.textContent = 'Log out';
+        logoutBtn.appendChild(HHpro.UI.icon('log-out'));
+        var logoutLabel = document.createElement('span');
+        logoutLabel.textContent = 'Log out';
+        logoutBtn.appendChild(logoutLabel);
         logoutBtn.addEventListener('click', function () {
             HHpro.State.logout();
             HHpro.App.showView('login');

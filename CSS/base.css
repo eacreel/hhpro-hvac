@@ -147,16 +147,69 @@ input::placeholder, textarea::placeholder {
     opacity: 0.6;
 }
 
+/* ============================================================
+   Inline icons
+   ------------------------------------------------------------
+   SVGs returned by HHpro.UI.icon() get .icon. They size to 1em so
+   they follow the surrounding font-size automatically; flex-shrink
+   keeps them from squashing in tight buttons.
+   ============================================================ */
+.icon {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    /* Slight optical lift so the stroke baseline aligns with the
+       cap-height of adjacent text rather than the descender. */
+    vertical-align: -0.125em;
+}
+
 /* Shared button component */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 10px 20px;
     border-radius: var(--radius-sm);
     font-weight: 500;
-    transition: background-color var(--transition-fast);
+    transition: background-color var(--transition-fast),
+                transform var(--transition-fast);
     white-space: nowrap;
+}
+
+/* Press feedback: tiny scale-down on active for any button that
+   isn't using its transform for layout positioning (cart-toggle,
+   tile lift, login shake all manage their own transforms). The
+   ":not(:disabled)" guard prevents disabled buttons from twitching. */
+.btn:active:not(:disabled),
+.action-btn:active:not(:disabled),
+.modal-btn:active:not(:disabled),
+.projects-btn:active:not(:disabled),
+.project-card-btn:active:not(:disabled),
+.cart-item-btn:active:not(:disabled),
+.docs-item-action:active:not(:disabled),
+.product-back-btn:active:not(:disabled),
+.header-action:active:not(:disabled),
+.docs-modal-close:active:not(:disabled),
+.cart-panel-close:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+/* Buttons that contain an icon + text (or a standalone icon) need
+   inline-flex layout so the icon and label align cleanly. This is
+   the single rule that unifies the behavior across the app's button
+   families instead of repeating it per file. */
+.action-btn,
+.modal-btn,
+.projects-btn,
+.project-card-btn,
+.cart-item-btn,
+.docs-item-action,
+.product-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .btn-primary {
@@ -232,7 +285,11 @@ input::placeholder, textarea::placeholder {
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     font-weight: 500;
-    transition: background-color var(--transition-fast);
+    transition: background-color var(--transition-fast),
+                transform var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .header-action:hover {

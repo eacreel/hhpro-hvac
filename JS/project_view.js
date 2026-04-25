@@ -123,7 +123,10 @@
         var toMain = document.createElement('button');
         toMain.type = 'button';
         toMain.className = 'projects-btn projects-btn-secondary';
-        toMain.textContent = 'Back to overview';
+        toMain.appendChild(HHpro.UI.icon('arrow-left'));
+        var toMainLabel = document.createElement('span');
+        toMainLabel.textContent = 'Back to overview';
+        toMain.appendChild(toMainLabel);
         toMain.addEventListener('click', function () { HHpro.App.showView('main'); });
         actions.appendChild(toMain);
 

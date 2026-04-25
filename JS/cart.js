@@ -592,7 +592,7 @@
 
         toggleLabel = document.createElement('span');
         toggleLabel.className = 'cart-toggle-label';
-        toggleLabel.textContent = 'Cart';
+        toggleLabel.appendChild(HHpro.UI.icon('shopping-cart'));
 
         toggleCount = document.createElement('span');
         toggleCount.className = 'cart-toggle-count';
@@ -616,7 +616,7 @@
         closeBtn.type = 'button';
         closeBtn.className = 'cart-panel-close';
         closeBtn.setAttribute('aria-label', 'Close cart');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.appendChild(HHpro.UI.icon('x'));
         closeBtn.addEventListener('click', closePanel);
 
         panelHeader.appendChild(panelTitle);

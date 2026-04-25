@@ -81,21 +81,30 @@
         var newBtn = document.createElement('button');
         newBtn.type = 'button';
         newBtn.className = 'projects-btn projects-btn-primary';
-        newBtn.textContent = '+ New Project';
+        newBtn.appendChild(HHpro.UI.icon('file-plus'));
+        var newLabel = document.createElement('span');
+        newLabel.textContent = 'New Project';
+        newBtn.appendChild(newLabel);
         newBtn.addEventListener('click', handleNewProject);
         bar.appendChild(newBtn);
 
         var importBtn = document.createElement('button');
         importBtn.type = 'button';
         importBtn.className = 'projects-btn projects-btn-secondary';
-        importBtn.textContent = 'Import from CSV';
+        importBtn.appendChild(HHpro.UI.icon('upload'));
+        var importLabel = document.createElement('span');
+        importLabel.textContent = 'Import from CSV';
+        importBtn.appendChild(importLabel);
         importBtn.addEventListener('click', handleImportCSV);
         bar.appendChild(importBtn);
 
         var exportBtn = document.createElement('button');
         exportBtn.type = 'button';
         exportBtn.className = 'projects-btn projects-btn-secondary';
-        exportBtn.textContent = 'Export all to CSV';
+        exportBtn.appendChild(HHpro.UI.icon('download'));
+        var exportLabel = document.createElement('span');
+        exportLabel.textContent = 'Export all to CSV';
+        exportBtn.appendChild(exportLabel);
         exportBtn.addEventListener('click', handleExportAllCSV);
         if (!HHpro.Cart.listProjects().length) {
             exportBtn.disabled = true;

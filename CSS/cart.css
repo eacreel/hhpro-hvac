@@ -49,6 +49,16 @@
 
 .cart-toggle-label {
     letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Cart toggle holds an icon now; bump it up so it reads as a real
+   icon rather than tiny text-sized strokes. */
+.cart-toggle-label .icon {
+    width: 22px;
+    height: 22px;
 }
 
 .cart-toggle-count {
@@ -237,6 +247,18 @@
    Modals (first-select prompt, project name, project picker)
    ============================================================ */
 
+/* Modal entrance animations: backdrop fades in, the modal itself pops
+   slightly from below. Browsers respecting prefers-reduced-motion get
+   the static appearance instead. */
+@keyframes hh-modal-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes hh-modal-pop {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -246,18 +268,24 @@
     justify-content: center;
     z-index: 100;
     padding: var(--space-lg);
+    animation: hh-modal-fade 180ms ease-out;
 }
 
 .modal {
     background-color: var(--color-surface);
     border-radius: var(--radius-md);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
     width: 100%;
     max-width: 480px;
     padding: var(--space-xl);
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
+    animation: hh-modal-pop 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-backdrop, .modal { animation: none; }
 }
 
 .modal-title {

@@ -36,7 +36,7 @@
 
 .tile.tile-projects-compact:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-primary-light);
 }
 
 .tile.tile-projects-compact .tile-body {
@@ -81,7 +81,9 @@
 
 .tile:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    /* Soft elevation shadow + 1px brand-blue ring so the tile reads
+       as actively hovered instead of just lifted. */
+    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-primary-light);
 }
 
 .tile:focus-visible {
