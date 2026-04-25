@@ -110,8 +110,75 @@
         createAndActivateProject: createAndActivateProject,
         exitProject: clearActiveState,
         promptProjectName: promptProjectName,
-        mergeImportedProjects: mergeImportedProjects
+        mergeImportedProjects: mergeImportedProjects,
+
+        undo: undo,
+        redo: redo,
+        canUndo: canUndo,
+        canRedo: canRedo
     };
+
+    // =================================================================
+    // Undo / redo history (project mode only)
+    // -----------------------------------------------------------------
+    // Every mutating function that touches `state` in project mode
+    // pushes a deep-cloned snapshot onto the undo stack via pushUndo()
+    // BEFORE applying its change. Cart mode is intentionally not
+    // tracked -- it's already ephemeral and clears on tab close.
+    // =================================================================
+
+    var UNDO_LIMIT = 50;
+    var undoStack = [];
+    var redoStack = [];
+
+    function snapshotState() {
+        return JSON.parse(JSON.stringify(state));
+    }
+
+    function pushUndo() {
+        if (state.mode !== 'project') return;
+        undoStack.push(snapshotState());
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        // A new mutation invalidates any forward branch -- standard
+        // undo/redo semantics. Keeping the redo stack here would let
+        // the user redo into a state that no longer agrees with the
+        // current items, which is more confusing than helpful.
+        redoStack = [];
+    }
+
+    function clearHistory() {
+        undoStack = [];
+        redoStack = [];
+    }
+
+    function applyHistorySnapshot(snap) {
+        // Reassigning `state` (rather than mutating it in place) is fine
+        // because every other function in this module looks up `state`
+        // through the closure each call -- they all see the new object.
+        state = snap;
+        saveStateToSession();
+        renderPanel();
+        renderToggle();
+    }
+
+    function undo() {
+        if (!undoStack.length) return false;
+        redoStack.push(snapshotState());
+        if (redoStack.length > UNDO_LIMIT) redoStack.shift();
+        applyHistorySnapshot(undoStack.pop());
+        return true;
+    }
+
+    function redo() {
+        if (!redoStack.length) return false;
+        undoStack.push(snapshotState());
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        applyHistorySnapshot(redoStack.pop());
+        return true;
+    }
+
+    function canUndo() { return undoStack.length > 0; }
+    function canRedo() { return redoStack.length > 0; }
 
     // =================================================================
     // Initialization
@@ -258,6 +325,7 @@
     function activateProject(id) {
         var projects = loadProjects();
         if (!projects[id]) return false;
+        clearHistory();
         startProjectMode(projects[id]);
         renderPanel();
         renderToggle();
@@ -277,6 +345,7 @@
 
     function createAndActivateProject(name) {
         var proj = createProject(name);
+        clearHistory();
         startProjectMode(proj);
         renderPanel();
         renderToggle();
@@ -288,6 +357,7 @@
     }
 
     function clearActiveState() {
+        clearHistory();
         state.mode = null;
         state.projectId = null;
         state.name = null;
@@ -386,6 +456,7 @@
     function updateItem(instanceId, patch) {
         var idx = indexOfItem(instanceId);
         if (idx < 0 || !patch || typeof patch !== 'object') return;
+        pushUndo();
         var it = state.items[idx];
         Object.keys(patch).forEach(function (k) {
             it[k] = patch[k];
@@ -405,6 +476,7 @@
      */
     function setProjectExtra(productKey, patch) {
         if (!productKey || !patch || typeof patch !== 'object') return;
+        pushUndo();
         if (!state.extra[productKey]) state.extra[productKey] = {};
         Object.keys(patch).forEach(function (k) {
             state.extra[productKey][k] = patch[k];
@@ -454,6 +526,10 @@
 
     function addItem(productKey, selectionId, label) {
         ensureModeChosen(function () {
+            // Snapshot AFTER mode is settled so a brand-new project's
+            // very first add still has a meaningful "before" entry on
+            // the undo stack (the empty project).
+            pushUndo();
             var instanceId = 'item_' + String(state.nextInstanceNum).padStart(4, '0');
             state.nextInstanceNum++;
             state.items.push({
@@ -474,6 +550,7 @@
     function duplicateItem(instanceId) {
         var idx = indexOfItem(instanceId);
         if (idx < 0) return;
+        pushUndo();
         var orig = state.items[idx];
         var newInstanceId = 'item_' + String(state.nextInstanceNum).padStart(4, '0');
         state.nextInstanceNum++;
@@ -502,6 +579,7 @@
     function removeItem(instanceId) {
         var idx = indexOfItem(instanceId);
         if (idx < 0) return;
+        pushUndo();
         state.items.splice(idx, 1);
         saveStateToSession();
         renderPanel();

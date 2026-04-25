@@ -54,8 +54,12 @@
             root.appendChild(HHpro.UI.buildHeader(getActiveName()));
 
             var main = document.createElement('main');
-            main.className = 'project-view-page';
+            // The .project-view-root class is what the global Ctrl+Z/Y
+            // handler keys off to know we're on the project view.
+            main.className = 'project-view-page project-view-root';
             root.appendChild(main);
+
+            bindUndoRedoKeyboard();
 
             var activeState = HHpro.Cart.getActiveState();
 
@@ -172,15 +176,18 @@
 
         header.appendChild(left);
 
-        // Right-side header buttons. In project mode we show both
-        // "Exit Project" (detach the active context so the next item
-        // selection prompts the first-select modal again) and
-        // "All Projects" (navigate to the project list). In cart mode
-        // just show a plain "Back" to main.
+        // Right-side header buttons. In project mode we show undo/redo
+        // (for any in-project mutation), "Exit Project" (detach the
+        // active context so the next item selection prompts the
+        // first-select modal again) and "All Projects" (navigate to
+        // the project list). In cart mode just show a plain "Back".
         var actionsRight = document.createElement('div');
         actionsRight.className = 'project-header-actions';
 
         if (activeState.mode === 'project') {
+            actionsRight.appendChild(buildUndoButton());
+            actionsRight.appendChild(buildRedoButton());
+
             var exitBtn = document.createElement('button');
             exitBtn.type = 'button';
             exitBtn.className = 'projects-btn projects-btn-secondary';
@@ -207,6 +214,87 @@
         header.appendChild(actionsRight);
 
         return header;
+    }
+
+    // -----------------------------------------------------------------
+    // Undo / redo
+    // -----------------------------------------------------------------
+
+    function buildUndoButton() {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'projects-btn projects-btn-secondary project-undo-btn';
+        btn.appendChild(HHpro.UI.icon('undo'));
+        var label = document.createElement('span');
+        label.textContent = 'Undo';
+        btn.appendChild(label);
+        var canUndo = !!(HHpro.Cart && HHpro.Cart.canUndo && HHpro.Cart.canUndo());
+        btn.disabled = !canUndo;
+        btn.title = canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo';
+        btn.addEventListener('click', function () {
+            if (HHpro.Cart.undo()) HHpro.App.showView('project_view');
+        });
+        return btn;
+    }
+
+    function buildRedoButton() {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'projects-btn projects-btn-secondary project-redo-btn';
+        btn.appendChild(HHpro.UI.icon('redo'));
+        var label = document.createElement('span');
+        label.textContent = 'Redo';
+        btn.appendChild(label);
+        var canRedo = !!(HHpro.Cart && HHpro.Cart.canRedo && HHpro.Cart.canRedo());
+        btn.disabled = !canRedo;
+        btn.title = canRedo ? 'Redo (Ctrl+Shift+Z)' : 'Nothing to redo';
+        btn.addEventListener('click', function () {
+            if (HHpro.Cart.redo()) HHpro.App.showView('project_view');
+        });
+        return btn;
+    }
+
+    // Keyboard shortcuts for undo/redo while the project view is showing.
+    // Registered once globally; the handler checks the current view so
+    // shortcuts don't fire when the user is on the products list, etc.
+    // Ignored when focus is in a text input so editing stays normal.
+    var keyboardBound = false;
+    function bindUndoRedoKeyboard() {
+        if (keyboardBound) return;
+        keyboardBound = true;
+        document.addEventListener('keydown', function (e) {
+            if (!isProjectViewActive()) return;
+            if (isTypingInField(e.target)) return;
+            var meta = e.ctrlKey || e.metaKey;
+            if (!meta) return;
+            var key = (e.key || '').toLowerCase();
+            if (key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                if (HHpro.Cart && HHpro.Cart.undo && HHpro.Cart.undo()) {
+                    HHpro.App.showView('project_view');
+                }
+            } else if ((key === 'z' && e.shiftKey) || key === 'y') {
+                e.preventDefault();
+                if (HHpro.Cart && HHpro.Cart.redo && HHpro.Cart.redo()) {
+                    HHpro.App.showView('project_view');
+                }
+            }
+        });
+    }
+
+    function isProjectViewActive() {
+        // The view's root element wraps everything we render. If it's
+        // still in the document we're "on" the project view.
+        var root = document.querySelector('.project-view-root');
+        return !!root && document.body.contains(root);
+    }
+
+    function isTypingInField(target) {
+        if (!target) return false;
+        var tag = (target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+        if (target.isContentEditable) return true;
+        return false;
     }
 
     function groupItemsByProduct(items) {
