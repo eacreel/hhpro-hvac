@@ -8,17 +8,26 @@
    product page.
    ============================================================ */
 
+/* The page is fixed-height (overflow: hidden) so we get exactly one
+   scroll context on the page. The intro/category picker pin to the
+   top, the form caps below them and scrolls internally if it gets
+   tall, and the work area takes the remaining space. The results
+   section inside the work area then flex-grows to fill, with the
+   schedule-wrap inside it owning the only meaningful vertical scroll.
+   This avoids the "two nested scrollbars" UX where the user can't
+   tell which container to scroll to see the data rows. */
 .design-search-page {
     flex: 1;
     display: flex;
     flex-direction: column;
     padding: var(--space-lg) var(--space-xl);
-    gap: var(--space-lg);
-    overflow: auto;
+    gap: var(--space-md);
+    overflow: hidden;
     min-height: 0;
 }
 
-.design-search-intro {
+.design-search-intro,
+.design-search-category {
     flex-shrink: 0;
 }
 
@@ -60,10 +69,12 @@
 /* ---------- Work area (form + results) ---------- */
 
 .design-search-work {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     min-height: 0;
+    overflow: hidden;
 }
 
 .design-search-status {
@@ -87,6 +98,11 @@
     padding: var(--space-lg);
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
+    /* When there's no results yet, the form can be the tallest thing
+       on the page; cap it at half-viewport and let it scroll
+       internally so the page layout stays predictable. */
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
 .design-search-desc {
@@ -204,10 +220,12 @@
 /* ---------- Results ---------- */
 
 .design-search-results {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-sm);
     min-height: 0;
+    overflow: hidden;
 }
 
 .design-search-results-header {
@@ -229,15 +247,16 @@
     margin: 0;
 }
 
-/* Make the results table fill almost the whole viewport so the user
-   sees many rows at once (the multi-tier sticky thead would otherwise
-   eat most of a smaller wrap). The form-row above sets margin-top so
-   we have a small spacer above when the user scrolls the results into
-   view, and the page itself runs the JS-driven scrollIntoView after a
-   search so the user lands here directly instead of having to scroll
-   manually past the form. */
+/* The schedule-wrap takes ALL remaining space in its flex parent and
+   handles its own scroll (overflow: auto inherited from products.css
+   .schedule-wrap). max-height: none overrides any earlier cap. With
+   the rest of the page laid out as flex columns above, the wrap
+   inherits whatever vertical room is left -- typically several
+   hundred pixels of data rows visible at once. */
 .design-search-schedule-wrap {
-    max-height: calc(100vh - 120px);
+    flex: 1;
+    max-height: none;
+    min-height: 0;
 }
 
 /* ---------- Responsive: stack target rows on narrow screens ---------- */

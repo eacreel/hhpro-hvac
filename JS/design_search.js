@@ -469,16 +469,6 @@
             activeTargets: activeTargets
         };
         rerenderWorkArea();
-
-        // Bring the results into view so the user doesn't have to
-        // hunt for them past a tall form. rAF lets the new DOM
-        // commit before we scroll.
-        requestAnimationFrame(function () {
-            var results = document.querySelector('.design-search-results');
-            if (results && results.scrollIntoView) {
-                results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
     }
 
     /**
