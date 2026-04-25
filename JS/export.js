@@ -318,20 +318,10 @@ WHAT'S IN THE GRID
         var dataEndRow = curRow;   // first row NOT in data (i.e. notes start here)
 
         // --- Schedule notes section ----------------------------------
+        // Notes section now embeds the watermark as the bottom row of
+        // the last notes box (it shares the box's border so it reads
+        // as part of the notes section rather than a stray footer).
         appendNotesSection(rows, merges, colCount, productKey, data, curRow);
-
-        // --- Footer watermark ----------------------------------------
-        // A single right-aligned line below the notes box. Marked
-        // watermark: true so the renderers (XLSX styles + print CSS)
-        // pick a no-border italic light-gray style. Spans the full
-        // column count so the text aligns flush with the right edge of
-        // the schedule.
-        var watermarkRow = rows.length;
-        putCell(rows, merges, watermarkRow, 0, {
-            value: 'Created with HHpro-HVAC.com',
-            watermark: true,
-            align: 'right'
-        }, 1, colCount);
 
         // Column width heuristics (Excel character units)
         var colWidths = computeColumnWidths(
@@ -346,7 +336,6 @@ WHAT'S IN THE GRID
             numHeaderRows: numHeaderRows,       // includes title + col headers
             titleRowCount: titleRowCount,
             dataEndRow: dataEndRow,
-            watermarkRow: watermarkRow,
             colCount: colCount,
             colWidths: colWidths
         };
@@ -366,25 +355,19 @@ WHAT'S IN THE GRID
     function appendNotesSection(rows, merges, colCount, productKey, data, startRow) {
         var notes = collectVisibleNotes(productKey, data);
         var r = startRow;
+        // Cell descriptor for the watermark line. Always emitted as the
+        // last row of whatever notes box is last so it sits inside the
+        // section's outer border rather than below it.
+        var watermarkFooter = {
+            value: 'Created with HHpro-HVAC.com',
+            watermark: true,
+            align: 'right'
+        };
 
         if (notes.format === 'marvair') {
-            if (notes.standard.length) {
-                r = emitNotesBox(rows, merges, colCount, r,
-                    'STANDARD OPTIONS/ACCESSORIES:',
-                    notes.standard.map(function (text, i) {
-                        return (i + 1) + '. ' + text;
-                    }));
-            }
-            // CONFIGURATION section used to live here, but it's been
-            // removed now that the "Configuration" column in the
-            // schedule itself captures this information per-item.
-            // The sn.configuration array is still loaded from the
-            // JSON so the Configuration column's dropdown options
-            // continue to come from there.
-
-            // OPTIONAL section: flatten built-in optional notes (with
-            // their sub-notes) and any user-added custom notes into a
-            // single list with continuous numbering.
+            // Build the OPTIONAL list first so we know whether STANDARD
+            // is the last box (and thus whether STANDARD takes the
+            // watermark or OPTIONAL does).
             var optionalLines = [];
             var optNum = 1;
             notes.optional.forEach(function (opt) {
@@ -398,9 +381,22 @@ WHAT'S IN THE GRID
                 optionalLines.push(optNum + '. ' + text);
                 optNum++;
             });
-            if (optionalLines.length) {
+
+            var hasStandard = notes.standard.length > 0;
+            var hasOptional = optionalLines.length > 0;
+
+            if (hasStandard) {
                 r = emitNotesBox(rows, merges, colCount, r,
-                    'OPTIONAL ACCESSORIES:', optionalLines);
+                    'STANDARD OPTIONS/ACCESSORIES:',
+                    notes.standard.map(function (text, i) {
+                        return (i + 1) + '. ' + text;
+                    }),
+                    hasOptional ? null : watermarkFooter);
+            }
+            if (hasOptional) {
+                r = emitNotesBox(rows, merges, colCount, r,
+                    'OPTIONAL ACCESSORIES:', optionalLines,
+                    watermarkFooter);
             }
             return;
         }
@@ -410,7 +406,7 @@ WHAT'S IN THE GRID
             var lines = notes.notes.map(function (text, i) {
                 return (i + 1) + '. ' + text;
             });
-            emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:', lines);
+            emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:', lines, watermarkFooter);
         }
     }
 
@@ -427,8 +423,8 @@ WHAT'S IN THE GRID
      * "STANDARD OPTIONS/ACCESSORIES:"). Pass null to skip it, in which
      * case the first line becomes the top of the box.
      */
-    function emitNotesBox(rows, merges, colCount, r, header, lines) {
-        var totalRows = (header ? 1 : 0) + lines.length;
+    function emitNotesBox(rows, merges, colCount, r, header, lines, footerCell) {
+        var totalRows = (header ? 1 : 0) + lines.length + (footerCell ? 1 : 0);
         if (totalRows === 0) return r;
 
         var firstRow = r;
@@ -456,6 +452,22 @@ WHAT'S IN THE GRID
             }, 1, colCount);
             r++;
         });
+
+        if (footerCell) {
+            // Caller's flags (watermark, align, etc.) plus the
+            // notes-row borders so the footer sits inside the box's
+            // outer frame.
+            var cellData = {};
+            for (var k in footerCell) {
+                if (Object.prototype.hasOwnProperty.call(footerCell, k)) {
+                    cellData[k] = footerCell[k];
+                }
+            }
+            cellData.notesRow = true;
+            cellData.borderPos = posFor(r);
+            putCell(rows, merges, r, 0, cellData, 1, colCount);
+            r++;
+        }
 
         return r;
     }
@@ -732,7 +744,9 @@ WHAT'S IN THE GRID
               //   8  notes-box line (non-bold) with bottom+left+right
               //   9  notes-box section header (bold) with top+left+right -
               //      used for the header row of a multi-row section
-              //  10  watermark footer (italic, light gray, right-aligned, no border)
+              //  10  watermark footer (italic, light gray, right-aligned,
+              //      bottom+left+right border so it sits inside the
+              //      schedule-notes box as the final row of that section)
               '<cellXfs count="11">' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1">' +
@@ -753,7 +767,7 @@ WHAT'S IN THE GRID
                   '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
                 '<xf numFmtId="0" fontId="1" fillId="0" borderId="3" applyFont="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
-                '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" applyFont="1" applyAlignment="1">' +
+                '<xf numFmtId="0" fontId="3" fillId="0" borderId="4" applyFont="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="right" vertical="center"/></xf>' +
               '</cellXfs>' +
               '<cellStyles count="1">' +
@@ -891,6 +905,12 @@ WHAT'S IN THE GRID
         // don't have cell-by-cell stylistic changes across the merge,
         // so we can just look at cell (r, 0).
         var anchor = row[0];
+        // Watermark must be checked before notesRow because the watermark
+        // cell carries both flags (it's the last row of a notes box but
+        // styled italic gray instead of as a regular note line).
+        if (anchor && !anchor.covered && anchor.watermark) {
+            return 10;
+        }
         if (anchor && !anchor.covered && anchor.notesRow) {
             // Match the anchor's border position
             var pos = anchor.borderPos || 'middle';
@@ -901,12 +921,6 @@ WHAT'S IN THE GRID
             if (pos === 'last')  return 8;
             if (pos === 'only')  return 3;
             return 6;
-        }
-        if (anchor && !anchor.covered && anchor.watermark) {
-            // Watermark cells span the full width as a single merge;
-            // covered positions need the same no-border style so they
-            // don't inherit the data-cell border.
-            return 10;
         }
         // Default: full-border data cell
         return 1;
@@ -1077,13 +1091,14 @@ WHAT'S IN THE GRID
                   ' border-bottom: 1px solid #000; }' +
             'tr.notes-row.notes-header td { font-weight: bold; }' +
 
-            // Footer watermark: faint italic line below the notes box,
-            // right-aligned and borderless so it reads as a quiet
-            // attribution rather than another schedule cell.
-            'tr.watermark-row td { border: none !important;' +
-                  ' text-align: right !important;' +
+            // Footer watermark: italic gray line that sits inside the
+            // schedule-notes box as its last row. The notes-row /
+            // notes-last classes (also applied to this row) handle the
+            // box borders; we only need to override text styling here.
+            'tr.notes-row.watermark-row td { text-align: right !important;' +
                   ' font-style: italic; font-size: 7pt;' +
-                  ' color: #999 !important; padding: 4px 6px 0; }' +
+                  ' color: #888 !important; padding: 3px 8px;' +
+                  ' font-weight: normal !important; }' +
 
             // Chrome/Edge: force backgrounds through to the print.
             '@media print {' +
@@ -1108,13 +1123,22 @@ WHAT'S IN THE GRID
         var titleRowCount = grid.titleRowCount || 0;
         var numHeaderRows = grid.numHeaderRows || 0;
         var dataEndRow = (grid.dataEndRow != null) ? grid.dataEndRow : grid.rows.length;
-        var watermarkRow = (grid.watermarkRow != null) ? grid.watermarkRow : -1;
 
         for (var r = 0; r < grid.rows.length; r++) {
             var row = grid.rows[r];
+            var anchor = rowAnchor(row);
             var rowClass;
-            if (r === watermarkRow) {
-                rowClass = 'watermark-row';
+            var extraClasses = '';
+
+            // Watermark rows are notes rows with extra .watermark-row
+            // styling -- they sit inside the same outer border as the
+            // rest of the schedule notes box, just italic + gray + right
+            // aligned. Detection uses the cell flag (not a row index)
+            // since the watermark is always the last row of a notes box.
+            if (anchor && anchor.watermark) {
+                rowClass = 'notes-row watermark-row';
+                if (anchor.borderPos === 'last') extraClasses += ' notes-last';
+                else if (anchor.borderPos === 'only') extraClasses += ' notes-only';
             } else if (r < titleRowCount) {
                 rowClass = 'title-row';
             } else if (r < numHeaderRows) {
@@ -1123,14 +1147,6 @@ WHAT'S IN THE GRID
                 rowClass = 'data-row';
             } else {
                 rowClass = 'notes-row';
-            }
-
-            // For notes rows, find the anchor cell (first non-covered
-            // cell on the row) and read its borderPos so the row's
-            // CSS class matches the section's box position.
-            var extraClasses = '';
-            if (rowClass === 'notes-row') {
-                var anchor = rowAnchor(row);
                 if (anchor) {
                     if (anchor.borderPos === 'first') extraClasses += ' notes-first';
                     else if (anchor.borderPos === 'last')  extraClasses += ' notes-last';
