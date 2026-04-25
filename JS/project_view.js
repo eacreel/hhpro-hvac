@@ -408,17 +408,45 @@
         wrap.appendChild(table);
 
         setTimeout(function () { applyStickyHeaderOffsets(table); }, 0);
-        // Re-measure once layout has settled and once Inter has finished
-        // loading. See base.js refreshSchedule for why both passes matter.
+        // Belt-and-suspenders re-runs after layout/fonts settle, plus a
+        // ResizeObserver as a safety net for any dynamic size change that
+        // would otherwise drift the offsets. See base.js refreshSchedule
+        // for the full rationale.
         requestAnimationFrame(function () {
             if (!table.isConnected) return;
             applyStickyHeaderOffsets(table);
+            requestAnimationFrame(function () {
+                if (!table.isConnected) return;
+                applyStickyHeaderOffsets(table);
+            });
         });
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(function () {
                 if (!table.isConnected) return;
                 applyStickyHeaderOffsets(table);
             });
+        }
+        if (typeof ResizeObserver !== 'undefined') {
+            var thead = table.tHead;
+            if (thead && thead.rows.length) {
+                var rafPending = false;
+                var ro = new ResizeObserver(function () {
+                    if (!table.isConnected) {
+                        ro.disconnect();
+                        return;
+                    }
+                    if (rafPending) return;
+                    rafPending = true;
+                    requestAnimationFrame(function () {
+                        rafPending = false;
+                        if (!table.isConnected) return;
+                        applyStickyHeaderOffsets(table);
+                    });
+                });
+                for (var r = 0; r < thead.rows.length; r++) {
+                    ro.observe(thead.rows[r]);
+                }
+            }
         }
 
         return wrap;

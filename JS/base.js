@@ -289,24 +289,59 @@
             // natural pre-zoom CSS pixels).
             autoFitScheduleWidth(scheduleWrap, table);
             applyStickyHeaderOffsets(table);
-            // Re-measure once the browser has fully painted the new table
-            // (handles cases where async layout settles after our first
-            // pass). Guarded by isConnected so a rapid filter change that
-            // replaced the table doesn't reapply offsets to a detached one.
+            scheduleStickyRecomputes(table);
+        }
+
+        // Schedule belt-and-suspenders re-runs of the sticky offset pass:
+        //   - rAF chain (covers async layout that takes >1 frame to settle)
+        //   - document.fonts.ready (covers Inter swapping in after the
+        //     fallback font, which shifts row heights by a pixel or two)
+        //   - ResizeObserver on each thead row (covers any other dynamic
+        //     change that affects header heights -- the most reliable
+        //     catch-all for "row heights drifted out from under us")
+        // Each callback is guarded by table.isConnected so a filter change
+        // that replaced the table doesn't reapply offsets to a detached one.
+        function scheduleStickyRecomputes(table) {
             requestAnimationFrame(function () {
                 if (!table.isConnected) return;
                 applyStickyHeaderOffsets(table);
+                requestAnimationFrame(function () {
+                    if (!table.isConnected) return;
+                    applyStickyHeaderOffsets(table);
+                });
             });
-            // And once Inter has actually loaded -- with display=swap the
-            // first render uses the fallback font and row heights shift
-            // by a pixel or two when Inter swaps in. Without this re-run,
-            // the offsets baked from the fallback layout no longer match.
+
             if (document.fonts && document.fonts.ready) {
                 document.fonts.ready.then(function () {
                     if (!table.isConnected) return;
                     autoFitScheduleWidth(scheduleWrap, table);
                     applyStickyHeaderOffsets(table);
                 });
+            }
+
+            if (typeof ResizeObserver !== 'undefined') {
+                var thead = table.tHead;
+                if (thead && thead.rows.length) {
+                    var rafPending = false;
+                    var ro = new ResizeObserver(function () {
+                        if (!table.isConnected) {
+                            ro.disconnect();
+                            return;
+                        }
+                        // Coalesce bursts of size events into one rAF so we
+                        // don't trigger nested layout passes.
+                        if (rafPending) return;
+                        rafPending = true;
+                        requestAnimationFrame(function () {
+                            rafPending = false;
+                            if (!table.isConnected) return;
+                            applyStickyHeaderOffsets(table);
+                        });
+                    });
+                    for (var r = 0; r < thead.rows.length; r++) {
+                        ro.observe(thead.rows[r]);
+                    }
+                }
             }
         }
 
