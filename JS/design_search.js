@@ -194,10 +194,17 @@
         if (!state.productData) return;
 
         work.appendChild(buildSearchForm());
+        work.appendChild(state.results ? buildResults() : buildResultsPlaceholder());
+    }
 
-        if (state.results) {
-            work.appendChild(buildResults());
-        }
+    function buildResultsPlaceholder() {
+        var wrap = document.createElement('section');
+        wrap.className = 'design-search-results design-search-results-empty';
+        var msg = document.createElement('div');
+        msg.className = 'design-search-placeholder';
+        msg.textContent = 'Enter design targets and click "Find matches" to see equipment that fits.';
+        wrap.appendChild(msg);
+        return wrap;
     }
 
     // -----------------------------------------------------------------

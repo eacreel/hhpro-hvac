@@ -68,13 +68,25 @@
 
 /* ---------- Work area (form + results) ---------- */
 
+/* Split layout: form sidebar on the left, results on the right.
+   Each side owns its own internal scroll so vertical real estate
+   isn't fought over -- the form can be tall (lots of indoor-unit
+   filters on multi-split) without crushing the results table. */
 .design-search-work {
     flex: 1;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-md);
     min-height: 0;
     overflow: hidden;
+}
+
+@media (max-width: 900px) {
+    /* On narrow viewports the sidebar is too cramped; stack
+       vertically with the form capped at half-height. */
+    .design-search-work {
+        flex-direction: column;
+    }
 }
 
 .design-search-status {
@@ -90,6 +102,9 @@
 /* ---------- Form ---------- */
 
 .design-search-form {
+    width: 420px;
+    flex-shrink: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
@@ -97,12 +112,13 @@
     border-radius: var(--radius-md);
     padding: var(--space-lg);
     box-shadow: var(--shadow-sm);
-    flex-shrink: 0;
-    /* When there's no results yet, the form can be the tallest thing
-       on the page; cap it at half-viewport and let it scroll
-       internally so the page layout stays predictable. */
-    max-height: 50vh;
-    overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+    .design-search-form {
+        width: 100%;
+        max-height: 50vh;
+    }
 }
 
 .design-search-desc {
@@ -132,41 +148,51 @@
 }
 
 /* Target rows: [label] [value] [unit] ± [tol] %
-   Grid keeps the columns aligned across rows so the eye can
-   scan target values vs tolerances as a tidy column. */
+   Each row is a flex line with the label allowed to shrink/wrap so
+   long labels like "Indoor Unit Heating Capacity (Heat Pump)" fit
+   in the narrow sidebar without pushing the inputs off-screen. */
 .design-target-grid {
-    display: grid;
-    grid-template-columns: minmax(200px, 1fr) auto auto auto auto auto;
-    gap: var(--space-sm) var(--space-md);
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
     padding-top: var(--space-xs);
 }
 
 .design-target-row {
-    display: contents;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
 
 .design-target-label {
+    flex: 1;
+    min-width: 0;
     font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--color-text);
     text-align: left;
+    line-height: 1.25;
 }
 
 .design-target-value,
 .design-target-tolerance {
-    padding: 6px 10px;
+    padding: 6px 8px;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
     background-color: var(--color-bg);
     color: var(--color-text);
     font-size: var(--font-size-sm);
-    width: 110px;
     box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.design-target-value {
+    width: 88px;
+    text-align: right;
 }
 
 .design-target-tolerance {
-    width: 70px;
+    width: 56px;
     text-align: right;
 }
 
@@ -178,34 +204,43 @@
 }
 
 .design-target-unit {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    min-width: 60px;
+    width: 44px;
+    flex-shrink: 0;
 }
 
 .design-target-plusminus {
     font-size: var(--font-size-base);
     color: var(--color-text-muted);
     user-select: none;
+    flex-shrink: 0;
 }
 
 .design-target-pct {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     user-select: none;
+    flex-shrink: 0;
 }
 
-/* Filter dropdowns -- reuse .filter-group / .filter-select / .filter-label
-   but lay them out as a wrapping grid like the product-page filter bar. */
+/* Filter dropdowns -- reuse .filter-group / .filter-select / .filter-label.
+   In the sidebar context we stack them in a single column so each
+   dropdown gets full width and the labels (sometimes long, like
+   "COOLING ONLY OR HEAT PUMP") aren't truncated. */
 .design-filter-grid {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
+    flex-direction: column;
+    gap: var(--space-sm);
     padding-top: var(--space-xs);
 }
 
 .design-filter-grid .filter-group {
-    min-width: 160px;
+    min-width: 0;
+}
+
+.design-filter-grid .filter-select {
+    width: 100%;
 }
 
 /* ---------- Action buttons ---------- */
@@ -247,6 +282,26 @@
     margin: 0;
 }
 
+/* Placeholder shown in the right pane before any search has been run.
+   Centered, muted text on the same surface style as the form so the
+   right side of the split layout doesn't look like a black hole. */
+.design-search-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xxl);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+    font-style: italic;
+    text-align: center;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    max-width: 640px;
+    margin: 0 auto;
+}
+
 /* The schedule-wrap takes ALL remaining space in its flex parent and
    handles its own scroll (overflow: auto inherited from products.css
    .schedule-wrap). max-height: none overrides any earlier cap. With
@@ -259,24 +314,6 @@
     min-height: 0;
 }
 
-/* ---------- Responsive: stack target rows on narrow screens ---------- */
-@media (max-width: 720px) {
-    .design-target-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    .design-target-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-xs);
-        align-items: center;
-        padding-bottom: var(--space-sm);
-        border-bottom: 1px solid var(--color-border);
-    }
-    .design-target-label {
-        grid-column: 1 / -1;
-        font-weight: 600;
-    }
-    .design-target-value, .design-target-tolerance {
-        width: 100%;
-    }
-}
+/* (Narrow viewport stacking is handled higher up via the
+   flex-direction: column override on .design-search-work; target
+   rows themselves stay the same compact horizontal line.) */
