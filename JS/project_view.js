@@ -408,6 +408,18 @@
         wrap.appendChild(table);
 
         setTimeout(function () { applyStickyHeaderOffsets(table); }, 0);
+        // Re-measure once layout has settled and once Inter has finished
+        // loading. See base.js refreshSchedule for why both passes matter.
+        requestAnimationFrame(function () {
+            if (!table.isConnected) return;
+            applyStickyHeaderOffsets(table);
+        });
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(function () {
+                if (!table.isConnected) return;
+                applyStickyHeaderOffsets(table);
+            });
+        }
 
         return wrap;
     }
@@ -926,11 +938,13 @@
         var thead = table && table.tHead;
         if (!thead || thead.rows.length === 0) return;
 
-        // See base.js applyStickyHeaderOffsets for the rationale. Briefly:
-        // clear every cell's top so the thead falls out of sticky mode,
-        // measure each row's natural top, then reapply correct offsets.
-        // The browser's layout is the only correct source of row top
-        // positions when rowspan>1 cells wrap to multiple lines.
+        // See base.js applyStickyHeaderOffsets for the rationale. Reset
+        // CSS zoom so measurements happen in natural pre-zoom CSS pixels,
+        // drop cells out of sticky mode by clearing top, measure row
+        // positions, restore zoom, then apply offsets.
+        var savedZoom = table.style.zoom;
+        table.style.zoom = '1';
+
         for (var i = 0; i < thead.rows.length; i++) {
             var tr = thead.rows[i];
             for (var j = 0; j < tr.cells.length; j++) {
@@ -940,11 +954,19 @@
         void thead.offsetHeight;
 
         var headTop = thead.getBoundingClientRect().top;
+        var tops = [];
         for (var i2 = 0; i2 < thead.rows.length; i2++) {
             var row = thead.rows[i2];
-            var topPx = Math.floor(row.getBoundingClientRect().top - headTop) + 'px';
-            for (var k = 0; k < row.cells.length; k++) {
-                row.cells[k].style.top = topPx;
+            tops.push(Math.floor(row.getBoundingClientRect().top - headTop));
+        }
+
+        table.style.zoom = savedZoom;
+
+        for (var i3 = 0; i3 < thead.rows.length; i3++) {
+            var topPx = tops[i3] + 'px';
+            var r = thead.rows[i3];
+            for (var k = 0; k < r.cells.length; k++) {
+                r.cells[k].style.top = topPx;
             }
         }
     }
