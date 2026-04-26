@@ -78,7 +78,16 @@
             var groups = groupItemsByProduct(activeState.items);
             var productKeys = Object.keys(groups);
 
-            if (activeTab !== 'files' && productKeys.indexOf(activeTab) < 0) {
+            // Validate the persisted activeTab against the tabs that
+            // exist for the current project content. If the user's last
+            // tab was removed (e.g. the only mini split was deleted and
+            // they were on the refrigerant tab), fall back to the first
+            // available product tab.
+            var hasRefrig = hasRefrigerantSystems(groups);
+            if (activeTab === 'refrigerant' && !hasRefrig) {
+                activeTab = productKeys[0];
+            } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
+                       productKeys.indexOf(activeTab) < 0) {
                 activeTab = productKeys[0];
             }
 
@@ -330,7 +339,28 @@
         });
 
         nav.appendChild(buildTabButton('files', 'Files'));
+
+        // Refrigerant tab only appears when the project has at least
+        // one item from a product that uses refrigerant calculations
+        // (mini splits or multi position splits today). Sits to the
+        // right of the Files tab.
+        if (hasRefrigerantSystems(groups)) {
+            nav.appendChild(buildTabButton('refrigerant', 'Refrigerant'));
+        }
         return nav;
+    }
+
+    // Product keys whose JSON files include a refrigerantColumns block.
+    // Adding a new product here is the only code change needed when you
+    // start emitting refrigerantColumns for a new product type.
+    var REFRIGERANT_PRODUCT_KEYS = ['mini_splits', 'multi_position_splits'];
+
+    function hasRefrigerantSystems(groups) {
+        for (var i = 0; i < REFRIGERANT_PRODUCT_KEYS.length; i++) {
+            var key = REFRIGERANT_PRODUCT_KEYS[i];
+            if (groups[key] && groups[key].length) return true;
+        }
+        return false;
     }
 
     function buildTabButton(tabKey, label) {
@@ -354,6 +384,10 @@
         container.innerHTML = '';
         if (activeTab === 'files') {
             renderFilesTab(container, activeState);
+            return;
+        }
+        if (activeTab === 'refrigerant') {
+            renderRefrigerantTab(container, activeState);
             return;
         }
         var items = groups[activeTab];
@@ -381,6 +415,580 @@
                     (err && err.message ? err.message : String(err));
                 container.appendChild(errEl);
             });
+    }
+
+    // =================================================================
+    // Refrigerant tab
+    // -----------------------------------------------------------------
+    // One card per mini-split / multi-position-split in the project.
+    // Each card shows the system's spec values, takes the engineer's
+    // actual line-set / vertical-separation measurements, validates
+    // against the system's maxima, and computes the additional + total
+    // refrigerant charge using the manufacturer-standard formula:
+    //
+    //   added_oz = max(0, actual_total - pre_charge) * additional_oz_per_ft
+    //   total_oz = added_oz + factory_oz
+    //
+    // Field inputs are persisted on every change via Cart.updateItem so
+    // they survive page reloads / project reopens.
+    //
+    // Systems whose Excel rows had "-" (no spec data) are still listed,
+    // but show the "Refer to IOM" note in place of the input form.
+    // =================================================================
+
+    // Display labels + unit suffixes for the refrigerant data fields.
+    // Keyed by the JSON column name (which itself comes from the Excel
+    // header); kept here so adding a new field is a one-line change.
+    var REFRIGERANT_LABELS = {
+        'REFRIGERANT':                                 'Refrigerant',
+        'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)':   'Max Vertical Separation (ODU → IDU)',
+        'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)':   'Max Vertical Separation (IDU → IDU)',
+        'MAX TOTAL LINE SET (FT)':                     'Max Total Line-set',
+        'LIQUID LINE CONNECTION (IN)':                 'Liquid Line Connection',
+        'SUCTION LINE CONNECTION (IN)':                'Suction Line Connection',
+        'PRE-CHARGE PIPING LENGTH (FT)':               'Pre-charge Piping Length',
+        'FACTORY CHARGE (LBS)':                        'Factory Charge',
+        'FACTORY CHARGE (OZ)':                         'Factory Charge',
+        'ADDITIONAL CHARGE (OZ/FT)':                   'Additional Charge'
+    };
+    var REFRIGERANT_UNITS = {
+        'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)':   'ft',
+        'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)':   'ft',
+        'MAX TOTAL LINE SET (FT)':                     'ft',
+        'LIQUID LINE CONNECTION (IN)':                 'in',
+        'SUCTION LINE CONNECTION (IN)':                'in',
+        'PRE-CHARGE PIPING LENGTH (FT)':               'ft',
+        'FACTORY CHARGE (LBS)':                        'lbs',
+        'FACTORY CHARGE (OZ)':                         'oz',
+        'ADDITIONAL CHARGE (OZ/FT)':                   'oz/ft'
+    };
+
+    // Per-product mapping that says which schedule column letters hold
+    // the outdoor unit's MAKE + MODEL and the indoor unit's MAKE + MODEL.
+    // This is the only product-specific lookup table the refrigerant tab
+    // needs; everything else is schema-driven from refrigerantColumns.
+    // Adding a new product here is the only change needed when its
+    // refrigerant data lands in JSON.
+    var MODEL_COLS_BY_PRODUCT = {
+        'mini_splits': {
+            indoor:  { make: 'M', model: 'N' },
+            outdoor: { make: 'V', model: 'W' }
+        },
+        'multi_position_splits': {
+            indoor:  { make: 'A', model: 'B' },
+            outdoor: { make: 'R', model: 'S' }
+        }
+    };
+
+    function renderRefrigerantTab(container, activeState) {
+        // Group applicable items by product key so we know which JSON
+        // files we need to fetch.
+        var byProduct = {};
+        activeState.items.forEach(function (it) {
+            if (REFRIGERANT_PRODUCT_KEYS.indexOf(it.productKey) < 0) return;
+            if (!byProduct[it.productKey]) byProduct[it.productKey] = [];
+            byProduct[it.productKey].push(it);
+        });
+
+        var loading = document.createElement('div');
+        loading.className = 'project-loading';
+        loading.textContent = 'Loading...';
+        container.appendChild(loading);
+
+        Promise.all(Object.keys(byProduct).map(function (key) {
+            return HHpro.Data.loadProduct(key).then(function (data) {
+                return { key: key, data: data };
+            });
+        })).then(function (results) {
+            var dataByKey = {};
+            results.forEach(function (r) { dataByKey[r.key] = r.data; });
+            container.innerHTML = '';
+            container.appendChild(renderRefrigerantContent(activeState.items, dataByKey));
+        }).catch(function (err) {
+            container.innerHTML = '';
+            var errEl = document.createElement('div');
+            errEl.className = 'product-message error';
+            errEl.textContent = 'Could not load product data: ' +
+                (err && err.message ? err.message : String(err));
+            container.appendChild(errEl);
+        });
+    }
+
+    function renderRefrigerantContent(allItems, dataByKey) {
+        var wrap = document.createElement('div');
+        wrap.className = 'refrigerant-tab';
+
+        var intro = document.createElement('p');
+        intro.className = 'refrigerant-intro';
+        intro.textContent = 'Enter the actual line-set distances for each split system below. ' +
+            'The site validates against the system’s allowable maximums and computes the ' +
+            'refrigerant charge to add (line-set length minus the factory pre-charge length, ' +
+            'multiplied by the manufacturer’s oz/ft) plus the total system charge.';
+        wrap.appendChild(intro);
+
+        // Project-totals tracker: each card registers a recalc()
+        // function. We sum the returned total-charge oz on every
+        // change so the project total updates live.
+        var trackers = [];
+        var totalsEl = buildProjectTotalsCard();
+
+        function recomputeTotals() {
+            var totalOz = 0;
+            var hasAny = false;
+            trackers.forEach(function (t) {
+                var oz = t.recalc();
+                if (oz !== null && !isNaN(oz)) {
+                    totalOz += oz;
+                    hasAny = true;
+                }
+            });
+            updateTotalsCard(totalsEl, hasAny ? totalOz : null);
+        }
+
+        var systemsList = document.createElement('div');
+        systemsList.className = 'refrigerant-systems';
+
+        // Render in project order so the user sees systems in the same
+        // sequence as on the schedule tabs.
+        allItems.forEach(function (item) {
+            if (REFRIGERANT_PRODUCT_KEYS.indexOf(item.productKey) < 0) return;
+            var data = dataByKey[item.productKey];
+            if (!data) return;
+            var card = buildSystemCard(item, data, recomputeTotals);
+            systemsList.appendChild(card.element);
+            trackers.push(card);
+        });
+
+        wrap.appendChild(systemsList);
+        wrap.appendChild(totalsEl);
+        recomputeTotals();
+        return wrap;
+    }
+
+    function findSelection(data, selectionId) {
+        var sels = (data && data.selections) || [];
+        for (var i = 0; i < sels.length; i++) {
+            if (sels[i].id === selectionId) return sels[i];
+        }
+        return null;
+    }
+
+    function readRefrigerantData(selection) {
+        // Refrigerant data is system-level (outdoor unit), so it's the
+        // same on every row of a multi-row selection. Pull from row 0.
+        if (!selection || !selection.rows || !selection.rows.length) return {};
+        return selection.rows[0].refrigerantData || {};
+    }
+
+    function isNumericRefValue(v) {
+        if (v === null || v === undefined) return false;
+        if (typeof v === 'number') return !isNaN(v);
+        var s = String(v).trim();
+        if (!s || s === '-') return false;
+        return !isNaN(parseFloat(s));
+    }
+
+    function refrigerantHasData(refData) {
+        // System has actionable data only if all the fields needed for
+        // the calc are present and numeric. If any are missing or "-",
+        // we direct the engineer to the IOM instead.
+        if (!refData) return false;
+        return isNumericRefValue(refData['FACTORY CHARGE (OZ)']) &&
+               isNumericRefValue(refData['ADDITIONAL CHARGE (OZ/FT)']) &&
+               isNumericRefValue(refData['PRE-CHARGE PIPING LENGTH (FT)']);
+    }
+
+    function parseFloatOrNull(v) {
+        if (v === null || v === undefined || v === '') return null;
+        var n = parseFloat(v);
+        return isNaN(n) ? null : n;
+    }
+
+    function buildSystemCard(item, data, onChange) {
+        var selection = findSelection(data, item.selectionId);
+        var refData = readRefrigerantData(selection);
+        var hasData = refrigerantHasData(refData);
+        var isMultiSplit = !!(selection && selection.rows && selection.rows.length > 1 &&
+                              item.productKey === 'mini_splits');
+
+        var card = document.createElement('div');
+        card.className = 'refrigerant-card' + (hasData ? '' : ' refrigerant-card-no-data');
+
+        // Header: tag (or em-dash if untagged) + the cart label
+        var header = document.createElement('div');
+        header.className = 'refrigerant-card-header';
+        var tagEl = document.createElement('span');
+        tagEl.className = 'refrigerant-card-tag';
+        tagEl.textContent = (item.tag && String(item.tag).trim()) || '—';
+        header.appendChild(tagEl);
+        var labelEl = document.createElement('span');
+        labelEl.className = 'refrigerant-card-label';
+        labelEl.textContent = item.label || item.selectionId;
+        header.appendChild(labelEl);
+        card.appendChild(header);
+
+        // Outdoor + indoor model breakdown. Shows even when refrigerant
+        // data is missing because identifying the unit by tag + model
+        // is useful regardless of whether the calculator can run.
+        var modelsBlock = buildModelsBlock(item, selection);
+        if (modelsBlock) card.appendChild(modelsBlock);
+
+        if (!hasData) {
+            var note = document.createElement('div');
+            note.className = 'refrigerant-no-data-note';
+            note.textContent = 'Refer to outdoor unit installation manual for refrigerant calculations.';
+            card.appendChild(note);
+            // No-data cards don't contribute to the project total.
+            return { element: card, recalc: function () { return null; } };
+        }
+
+        card.appendChild(buildSpecTable(refData, isMultiSplit));
+
+        var inputState = item.refrigerantInputs || {};
+        var inputs = buildInputSection(refData, inputState, isMultiSplit, onSaveAndChange);
+        card.appendChild(inputs.element);
+
+        var calcDisplay = buildCalcDisplay();
+        card.appendChild(calcDisplay.element);
+
+        function recalc() {
+            var actualTotal = parseFloatOrNull(inputs.values.actualTotal);
+            var preCharge   = parseFloatOrNull(refData['PRE-CHARGE PIPING LENGTH (FT)']);
+            var addCharge   = parseFloatOrNull(refData['ADDITIONAL CHARGE (OZ/FT)']);
+            var factoryOz   = parseFloatOrNull(refData['FACTORY CHARGE (OZ)']);
+
+            if (actualTotal === null || preCharge === null ||
+                addCharge === null || factoryOz === null) {
+                calcDisplay.update(null);
+                return null;
+            }
+
+            // Standard manufacturer formula: factory pre-charge already
+            // covers the first pre-charge-piping-length feet; additional
+            // charge applies only to the run beyond that. Clamp at 0 so
+            // a short line-set never produces a negative "added" value.
+            var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
+            var totalOz = addedOz + factoryOz;
+            calcDisplay.update({
+                addedOz:   addedOz,
+                addedLbs:  addedOz / 16,
+                totalOz:   totalOz,
+                totalLbs:  totalOz / 16
+            });
+            return totalOz;
+        }
+
+        function onSaveAndChange() {
+            // Persist to localStorage via cart, then bubble up so the
+            // project totals card refreshes.
+            HHpro.Cart.updateItem(item.instanceId, {
+                refrigerantInputs: {
+                    actualVertOdu: inputs.values.actualVertOdu,
+                    actualTotal:   inputs.values.actualTotal,
+                    actualVertIdu: inputs.values.actualVertIdu
+                }
+            });
+            onChange();
+        }
+
+        return { element: card, recalc: recalc };
+    }
+
+    function buildModelsBlock(item, selection) {
+        if (!selection) return null;
+        var cols = MODEL_COLS_BY_PRODUCT[item.productKey];
+        if (!cols) return null;
+
+        var rows = (selection.rows || []);
+        if (!rows.length) return null;
+
+        // Outdoor unit info -- system tag + outdoor make/model. Outdoor
+        // data is system-level so we read it from row 0.
+        var outdoorMake  = readCell(rows[0], cols.outdoor.make);
+        var outdoorModel = readCell(rows[0], cols.outdoor.model);
+
+        // Indoor unit info -- one entry per row. Each row's indoorTag
+        // (item.indoorTags[i]) is the per-zone tag, when present.
+        var indoors = rows.map(function (row, idx) {
+            return {
+                tag:   (item.indoorTags && item.indoorTags[idx]) || '',
+                make:  readCell(row, cols.indoor.make),
+                model: readCell(row, cols.indoor.model)
+            };
+        }).filter(function (i) {
+            return i.make || i.model;
+        });
+
+        if (!outdoorModel && !indoors.length) return null;
+
+        var wrap = document.createElement('div');
+        wrap.className = 'refrigerant-models';
+
+        if (outdoorModel || outdoorMake) {
+            wrap.appendChild(buildModelGroup('Outdoor Unit', [{
+                tag:   item.tag || '',
+                make:  outdoorMake,
+                model: outdoorModel
+            }]));
+        }
+        if (indoors.length) {
+            wrap.appendChild(buildModelGroup(
+                indoors.length === 1 ? 'Indoor Unit' : 'Indoor Units (' + indoors.length + ')',
+                indoors
+            ));
+        }
+        return wrap;
+    }
+
+    function buildModelGroup(title, units) {
+        var group = document.createElement('div');
+        group.className = 'refrigerant-models-group';
+
+        var hdr = document.createElement('div');
+        hdr.className = 'refrigerant-models-group-title';
+        hdr.textContent = title;
+        group.appendChild(hdr);
+
+        units.forEach(function (u) {
+            var line = document.createElement('div');
+            line.className = 'refrigerant-models-line';
+
+            var tagEl = document.createElement('span');
+            tagEl.className = 'refrigerant-models-tag';
+            tagEl.textContent = u.tag ? u.tag : '—';
+            line.appendChild(tagEl);
+
+            var modelEl = document.createElement('span');
+            modelEl.className = 'refrigerant-models-name';
+            var parts = [];
+            if (u.make)  parts.push(String(u.make));
+            if (u.model) parts.push(String(u.model));
+            modelEl.textContent = parts.join('  ') || '—';
+            line.appendChild(modelEl);
+
+            group.appendChild(line);
+        });
+        return group;
+    }
+
+    function readCell(row, col) {
+        if (!row || !row.scheduleData) return '';
+        var v = row.scheduleData[col];
+        return (v === null || v === undefined) ? '' : String(v).trim();
+    }
+
+    function buildSpecTable(refData, isMultiSplit) {
+        var SPEC_ORDER = [
+            'REFRIGERANT',
+            'LIQUID LINE CONNECTION (IN)',
+            'SUCTION LINE CONNECTION (IN)',
+            'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)'
+        ];
+        if (isMultiSplit) {
+            SPEC_ORDER.push('MAX VERTICAL SEPARATION (IDU TO IDU) (FT)');
+        }
+        SPEC_ORDER.push(
+            'MAX TOTAL LINE SET (FT)',
+            'PRE-CHARGE PIPING LENGTH (FT)',
+            'FACTORY CHARGE (OZ)',
+            'FACTORY CHARGE (LBS)',
+            'ADDITIONAL CHARGE (OZ/FT)'
+        );
+
+        var grid = document.createElement('div');
+        grid.className = 'refrigerant-spec-grid';
+
+        SPEC_ORDER.forEach(function (key) {
+            var raw = refData[key];
+            if (raw === null || raw === undefined || raw === '' || raw === '-') return;
+            var label = REFRIGERANT_LABELS[key] || key;
+            var unit = REFRIGERANT_UNITS[key] || '';
+            var row = document.createElement('div');
+            row.className = 'refrigerant-spec-row';
+            var lbl = document.createElement('span');
+            lbl.className = 'refrigerant-spec-label';
+            lbl.textContent = label;
+            var val = document.createElement('span');
+            val.className = 'refrigerant-spec-value';
+            val.textContent = String(raw) + (unit ? ' ' + unit : '');
+            row.appendChild(lbl);
+            row.appendChild(val);
+            grid.appendChild(row);
+        });
+        return grid;
+    }
+
+    function buildInputSection(refData, inputState, isMultiSplit, onChange) {
+        var wrap = document.createElement('div');
+        wrap.className = 'refrigerant-inputs';
+
+        var hdr = document.createElement('h4');
+        hdr.className = 'refrigerant-inputs-header';
+        hdr.textContent = 'Field Measurements';
+        wrap.appendChild(hdr);
+
+        var values = {
+            actualVertOdu: (inputState.actualVertOdu != null) ? inputState.actualVertOdu : null,
+            actualTotal:   (inputState.actualTotal   != null) ? inputState.actualTotal   : null,
+            actualVertIdu: (inputState.actualVertIdu != null) ? inputState.actualVertIdu : null
+        };
+
+        function makeInputRow(key, label, max) {
+            var row = document.createElement('div');
+            row.className = 'refrigerant-input-row';
+
+            var lbl = document.createElement('label');
+            lbl.className = 'refrigerant-input-label';
+            lbl.textContent = label;
+            row.appendChild(lbl);
+
+            var inputWrap = document.createElement('span');
+            inputWrap.className = 'refrigerant-input-wrap';
+
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.min = '0';
+            input.className = 'refrigerant-input';
+            input.value = (values[key] !== null && values[key] !== undefined)
+                ? String(values[key]) : '';
+            input.placeholder = '—';
+            inputWrap.appendChild(input);
+
+            var unit = document.createElement('span');
+            unit.className = 'refrigerant-input-unit';
+            unit.textContent = 'ft';
+            inputWrap.appendChild(unit);
+            row.appendChild(inputWrap);
+
+            var warning = document.createElement('div');
+            warning.className = 'refrigerant-input-warning';
+            row.appendChild(warning);
+
+            function check() {
+                var v = parseFloatOrNull(input.value);
+                values[key] = v;
+                if (v !== null && max !== null && v > max) {
+                    warning.textContent = '⚠  Exceeds the system’s maximum of ' + max + ' ft.';
+                    warning.classList.add('refrigerant-input-warning-active');
+                } else {
+                    warning.textContent = '';
+                    warning.classList.remove('refrigerant-input-warning-active');
+                }
+                onChange();
+            }
+            input.addEventListener('input', check);
+            // Initial pass so the warning shows on load if the saved
+            // value already exceeds the spec.
+            check();
+            return row;
+        }
+
+        var maxOdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)']);
+        var maxTotal = parseFloatOrNull(refData['MAX TOTAL LINE SET (FT)']);
+        var maxIdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)']);
+
+        wrap.appendChild(makeInputRow('actualVertOdu',
+            'Actual Vertical Distance (ODU → IDU)', maxOdu));
+        wrap.appendChild(makeInputRow('actualTotal',
+            'Actual Total Line-set (vertical + horizontal)', maxTotal));
+        if (isMultiSplit) {
+            wrap.appendChild(makeInputRow('actualVertIdu',
+                'Actual Vertical Separation (IDU → IDU, highest to lowest)', maxIdu));
+        }
+
+        return { element: wrap, values: values };
+    }
+
+    function buildCalcDisplay() {
+        var wrap = document.createElement('div');
+        wrap.className = 'refrigerant-calc';
+
+        var hdr = document.createElement('h4');
+        hdr.className = 'refrigerant-calc-header';
+        hdr.textContent = 'Calculated Charge';
+        wrap.appendChild(hdr);
+
+        var grid = document.createElement('div');
+        grid.className = 'refrigerant-calc-grid';
+
+        function makeRow(label, emphasize) {
+            var row = document.createElement('div');
+            row.className = 'refrigerant-calc-row' +
+                (emphasize ? ' refrigerant-calc-row-emphasize' : '');
+            var lbl = document.createElement('span');
+            lbl.className = 'refrigerant-calc-label';
+            lbl.textContent = label;
+            var val = document.createElement('span');
+            val.className = 'refrigerant-calc-value';
+            val.textContent = '—';
+            row.appendChild(lbl);
+            row.appendChild(val);
+            grid.appendChild(row);
+            return val;
+        }
+
+        var addedOzEl  = makeRow('Refrigerant to Add (oz)');
+        var addedLbsEl = makeRow('Refrigerant to Add (lbs)');
+        var totalOzEl  = makeRow('Total System Charge (oz)', true);
+        var totalLbsEl = makeRow('Total System Charge (lbs)', true);
+
+        wrap.appendChild(grid);
+
+        function update(values) {
+            if (!values) {
+                addedOzEl.textContent  = '—';
+                addedLbsEl.textContent = '—';
+                totalOzEl.textContent  = '—';
+                totalLbsEl.textContent = '—';
+                return;
+            }
+            addedOzEl.textContent  = values.addedOz.toFixed(2)  + ' oz';
+            addedLbsEl.textContent = values.addedLbs.toFixed(3) + ' lbs';
+            totalOzEl.textContent  = values.totalOz.toFixed(2)  + ' oz';
+            totalLbsEl.textContent = values.totalLbs.toFixed(3) + ' lbs';
+        }
+
+        return { element: wrap, update: update };
+    }
+
+    function buildProjectTotalsCard() {
+        var card = document.createElement('div');
+        card.className = 'refrigerant-totals-card';
+
+        var hdr = document.createElement('h3');
+        hdr.className = 'refrigerant-totals-header';
+        hdr.textContent = 'Project Total Refrigerant';
+        card.appendChild(hdr);
+
+        var ozEl = document.createElement('div');
+        ozEl.className = 'refrigerant-totals-value';
+        ozEl.dataset.unit = 'oz';
+        ozEl.textContent = '—';
+
+        var lbsEl = document.createElement('div');
+        lbsEl.className = 'refrigerant-totals-value';
+        lbsEl.dataset.unit = 'lbs';
+        lbsEl.textContent = 'Enter line-set distances above to calculate.';
+        lbsEl.classList.add('refrigerant-totals-hint');
+
+        card.appendChild(ozEl);
+        card.appendChild(lbsEl);
+        return card;
+    }
+
+    function updateTotalsCard(card, totalOz) {
+        var ozEl = card.querySelector('[data-unit="oz"]');
+        var lbsEl = card.querySelector('[data-unit="lbs"]');
+        if (totalOz === null) {
+            ozEl.textContent = '—';
+            lbsEl.textContent = 'Enter line-set distances above to calculate.';
+            lbsEl.classList.add('refrigerant-totals-hint');
+        } else {
+            ozEl.textContent = totalOz.toFixed(2) + ' oz';
+            lbsEl.textContent = (totalOz / 16).toFixed(3) + ' lbs';
+            lbsEl.classList.remove('refrigerant-totals-hint');
+        }
     }
 
     // =================================================================

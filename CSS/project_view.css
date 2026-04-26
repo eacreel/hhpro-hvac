@@ -1089,3 +1089,324 @@
     min-width: 220px;
     background-color: var(--color-surface) !important;
 }
+
+/* ============================================================
+   Refrigerant tab
+   ------------------------------------------------------------
+   One card per mini-split / multi-position-split. Cards stack
+   vertically inside the tab body (which itself owns its scroll),
+   followed by a full-width project-totals card.
+   ============================================================ */
+
+.refrigerant-tab {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-md) var(--space-md) var(--space-xl);
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.refrigerant-intro {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 920px;
+}
+
+.refrigerant-systems {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* ---------- Per-system card ---------- */
+
+.refrigerant-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.refrigerant-card-no-data {
+    /* Quieter look since these have no actionable inputs. */
+    border-style: dashed;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.refrigerant-card-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.refrigerant-card-tag {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-primary-light);
+    min-width: 56px;
+    letter-spacing: 0.02em;
+}
+
+.refrigerant-card-label {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+/* ---------- "No data" note ---------- */
+
+.refrigerant-no-data-note {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-style: italic;
+    padding: var(--space-sm) 0;
+}
+
+/* ---------- Outdoor / indoor model breakdown ---------- */
+
+.refrigerant-models {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-sm) var(--space-lg);
+}
+
+.refrigerant-models-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.refrigerant-models-group-title {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+}
+
+.refrigerant-models-line {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+}
+
+.refrigerant-models-tag {
+    color: var(--color-primary-light);
+    font-weight: 600;
+    min-width: 56px;
+    font-variant-numeric: tabular-nums;
+}
+
+.refrigerant-models-name {
+    color: var(--color-text);
+    word-break: break-all;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ---------- Spec grid (read-only manufacturer values) ---------- */
+
+.refrigerant-spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-xs) var(--space-lg);
+    background-color: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+}
+
+.refrigerant-spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-sm);
+    padding: 4px 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px dotted var(--color-border);
+}
+
+.refrigerant-spec-row:last-child {
+    border-bottom: none;
+}
+
+.refrigerant-spec-label {
+    color: var(--color-text-muted);
+}
+
+.refrigerant-spec-value {
+    color: var(--color-text);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ---------- Field inputs ---------- */
+
+.refrigerant-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.refrigerant-inputs-header,
+.refrigerant-calc-header {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.refrigerant-input-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: var(--space-sm) var(--space-md);
+    align-items: center;
+}
+
+.refrigerant-input-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}
+
+.refrigerant-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.refrigerant-input {
+    width: 110px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.refrigerant-input:focus {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -1px;
+    border-color: var(--color-primary-light);
+}
+
+.refrigerant-input-unit {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    min-width: 22px;
+}
+
+/* Validation message: empty + invisible until set, so the row's
+   layout doesn't jump when the warning appears. */
+.refrigerant-input-warning {
+    grid-column: 1 / -1;
+    font-size: var(--font-size-xs);
+    color: var(--color-warning);
+    min-height: 0;
+    padding-left: 2px;
+}
+
+.refrigerant-input-warning-active {
+    min-height: 18px;
+}
+
+/* ---------- Calculated charge display ---------- */
+
+.refrigerant-calc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.refrigerant-calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-xs) var(--space-lg);
+    background-color: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+}
+
+.refrigerant-calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-sm);
+    padding: 4px 0;
+    font-size: var(--font-size-sm);
+}
+
+.refrigerant-calc-row-emphasize {
+    font-weight: 600;
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-xs);
+    padding-top: var(--space-sm);
+}
+
+.refrigerant-calc-label {
+    color: var(--color-text-muted);
+}
+
+.refrigerant-calc-row-emphasize .refrigerant-calc-label {
+    color: var(--color-text);
+}
+
+.refrigerant-calc-value {
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ---------- Project totals card ---------- */
+
+.refrigerant-totals-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    box-shadow: var(--shadow-md);
+}
+
+.refrigerant-totals-header {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.refrigerant-totals-value {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.refrigerant-totals-hint {
+    font-size: var(--font-size-sm);
+    font-weight: normal;
+    font-style: italic;
+    color: var(--color-text-muted);
+}

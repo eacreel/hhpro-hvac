@@ -258,19 +258,29 @@ def clean_value(val):
 
 def find_row1_sections(ws):
     """
-    Find the three row-1 merged sections ("SCHEDULE RANGE", "FILTERS",
-    "DOCUMENTATION") and return their column ranges as 1-based
-    (start, end) tuples.
+    Find the row-1 merged sections and return their column ranges as
+    1-based (start, end) tuples.
+
+    Required sections (every product file must have these):
+      SCHEDULE RANGE, FILTERS, DOCUMENTATION
+
+    Optional sections (only on products that need them):
+      REFRIGERANT CALCULATIONS  - mini-splits / multi-position splits
+                                  for the line-set + charge calculator
+                                  on the project view.
     """
+    REQUIRED = ("SCHEDULE RANGE", "FILTERS", "DOCUMENTATION")
+    OPTIONAL = ("REFRIGERANT CALCULATIONS",)
+    KNOWN = REQUIRED + OPTIONAL
+
     sections = {}
     for mr in ws.merged_cells.ranges:
         if mr.min_row == 1 and mr.max_row == 1:
             label = clean_value(ws.cell(row=1, column=mr.min_col).value)
-            if label in ("SCHEDULE RANGE", "FILTERS", "DOCUMENTATION"):
+            if label in KNOWN:
                 sections[label] = (mr.min_col, mr.max_col)
 
-    missing = [k for k in ("SCHEDULE RANGE", "FILTERS", "DOCUMENTATION")
-               if k not in sections]
+    missing = [k for k in REQUIRED if k not in sections]
     if missing:
         raise ValueError(
             "Row 1 is missing required merged section(s): " + ", ".join(missing) +
@@ -361,6 +371,28 @@ def extract_doc_columns(ws, doc_cols):
             "fileExtension": mapping["fileExtension"],
         })
     return docs
+
+
+def extract_refrigerant_columns(ws, refrigerant_cols):
+    """Read the REFRIGERANT CALCULATIONS columns' header names from row 2.
+
+    Headers in this section follow the same row-2 convention used by
+    FILTERS and DOCUMENTATION: each column has a single cell on row 2
+    containing the full label (newlines inside the label are flattened
+    so the JSON name is a single line).
+    """
+    min_col, max_col = refrigerant_cols
+    out = []
+    for c in range(min_col, max_col + 1):
+        name = clean_value(ws.cell(row=2, column=c).value)
+        if not name:
+            continue
+        # Excel cells can hold a soft-wrapped label like "MAX VERTICAL\nSEPARATION\n(ODU TO IDU)\n(FT)";
+        # squash any embedded newlines + collapse whitespace so the JSON name
+        # reads cleanly in the site UI.
+        flat = re.sub(r"\s+", " ", str(name)).strip()
+        out.append({"name": flat, "col": get_column_letter(c)})
+    return out
 
 
 def find_last_data_row(ws, data_start_row, schedule_cols):
@@ -492,8 +524,15 @@ def row_horizontal_spans(cell_to_merge, row, col_start, col_end):
 
 
 def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
-                       filter_columns_meta, doc_columns_meta, cell_to_merge):
-    """Build the selections list from the grouped row ranges."""
+                       filter_columns_meta, doc_columns_meta, cell_to_merge,
+                       refrigerant_columns_meta=None):
+    """Build the selections list from the grouped row ranges.
+
+    `refrigerant_columns_meta` is optional (only present on Mini Splits
+    and Multi Position Splits today). When provided, each row gets a
+    `refrigerantData` field keyed by the column's display name -- same
+    shape as filterData / documentationData.
+    """
     selections = []
     for i, (lo, hi) in enumerate(groups, start=1):
         sel_id = f"sel_{i:04d}"
@@ -504,6 +543,10 @@ def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
                 "filterData":        row_data_for_range_by_name(ws, r, filter_columns_meta),
                 "documentationData": row_data_for_range_by_name(ws, r, doc_columns_meta),
             }
+            if refrigerant_columns_meta:
+                row_entry["refrigerantData"] = row_data_for_range_by_name(
+                    ws, r, refrigerant_columns_meta
+                )
             spans = row_horizontal_spans(cell_to_merge, r, schedule_cols[0], schedule_cols[1])
             if spans:
                 row_entry["scheduleCellSpans"] = spans
@@ -670,6 +713,7 @@ def convert_file(input_path, config, output_path):
     schedule_cols = sections["SCHEDULE RANGE"]
     filter_cols = sections["FILTERS"]
     doc_cols = sections["DOCUMENTATION"]
+    refrigerant_cols = sections.get("REFRIGERANT CALCULATIONS")  # optional
 
     cell_to_merge, anchors = merge_lookup(ws)
 
@@ -680,6 +724,10 @@ def convert_file(input_path, config, output_path):
     )
     filter_columns = extract_filter_columns(ws, filter_cols)
     doc_columns = extract_doc_columns(ws, doc_cols)
+    refrigerant_columns = (
+        extract_refrigerant_columns(ws, refrigerant_cols)
+        if refrigerant_cols else []
+    )
 
     data_end_row = find_last_data_row(ws, config["dataStartRow"], schedule_cols)
     groups = build_groups(
@@ -689,6 +737,7 @@ def convert_file(input_path, config, output_path):
     selections = extract_selections(
         ws, groups, schedule_cols, filter_cols, doc_cols,
         filter_columns, doc_columns, cell_to_merge,
+        refrigerant_columns_meta=refrigerant_columns or None,
     )
 
     schedule_notes = extract_schedule_notes(wb)
@@ -713,6 +762,12 @@ def convert_file(input_path, config, output_path):
         },
         "filterColumns":        filter_columns,
         "documentationColumns": doc_columns,
+        # refrigerantColumns is the schema (display name + Excel column
+        # letter) for every column in the optional REFRIGERANT
+        # CALCULATIONS section. The site reads it on the project view's
+        # "Refrigerant" tab to drive the line-set + charge calculator.
+        # Empty list when the product file doesn't have that section.
+        "refrigerantColumns":   refrigerant_columns,
         "selections":           selections,
         "scheduleNotes":        schedule_notes,
         "_meta": {
