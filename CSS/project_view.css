@@ -1276,6 +1276,16 @@
     font-size: var(--font-size-sm);
     font-variant-numeric: tabular-nums;
     text-align: right;
+    /* Hide the native number-input spinner. Engineers type the value;
+       the up/down buttons just shrink the usable text area. */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.refrigerant-row-input::-webkit-outer-spin-button,
+.refrigerant-row-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .refrigerant-row-input:focus {

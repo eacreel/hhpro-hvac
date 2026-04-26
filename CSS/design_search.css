@@ -184,6 +184,18 @@
     font-size: var(--font-size-sm);
     box-sizing: border-box;
     flex-shrink: 0;
+    /* Hide the native number-input spinner; engineers type the value
+       and the up/down buttons just shrink the usable text area. */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.design-target-value::-webkit-outer-spin-button,
+.design-target-value::-webkit-inner-spin-button,
+.design-target-tolerance::-webkit-outer-spin-button,
+.design-target-tolerance::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .design-target-value {
