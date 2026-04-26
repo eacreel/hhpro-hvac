@@ -342,13 +342,26 @@
         // one item from a product that uses refrigerant calculations
         // (mini splits or multi position splits today). Sits between
         // the product tabs and Files so it stays grouped with the
-        // schedule-data views.
+        // schedule-data views. Label style mirrors the product tabs:
+        // UPPERCASE with a parenthesized count (system count for
+        // Refrigerant).
         if (hasRefrigerantSystems(groups)) {
-            nav.appendChild(buildTabButton('refrigerant', 'Refrigerant'));
+            var refCount = countRefrigerantSystems(groups);
+            nav.appendChild(buildTabButton('refrigerant',
+                'REFRIGERANT (' + refCount + ')'));
         }
 
-        nav.appendChild(buildTabButton('files', 'Files'));
+        nav.appendChild(buildTabButton('files', 'FILES'));
         return nav;
+    }
+
+    function countRefrigerantSystems(groups) {
+        var n = 0;
+        for (var i = 0; i < REFRIGERANT_PRODUCT_KEYS.length; i++) {
+            var key = REFRIGERANT_PRODUCT_KEYS[i];
+            if (groups[key]) n += groups[key].length;
+        }
+        return n;
     }
 
     // Product keys whose JSON files include a refrigerantColumns block.
