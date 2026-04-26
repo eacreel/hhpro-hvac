@@ -488,8 +488,9 @@
     }
 
     // Total non-identification columns in the refrigerant table:
-    //   factory values (10) + field measurements (3) + calculated (4) = 17
-    var REFRIGERANT_NON_ID_COLSPAN = 17;
+    //   factory values (8) + field measurements (3) + calculated (2) = 13
+    // Used for the colspan of the "Refer to IOM" cell on no-data rows.
+    var REFRIGERANT_NON_ID_COLSPAN = 13;
 
     function renderRefrigerantContent(allItems, dataByKey) {
         var wrap = document.createElement('div');
@@ -553,30 +554,29 @@
     function buildRefrigerantTableHeader() {
         var thead = document.createElement('thead');
 
-        // Tier 1: column groups
+        // Tier 1: column groups (2 / 8 / 3 / 2 = 15 cols)
         var tier1 = document.createElement('tr');
-        appendGroupHeader(tier1, 'System',             4);
-        appendGroupHeader(tier1, 'Factory Values',     10);
+        appendGroupHeader(tier1, 'System',             2);
+        appendGroupHeader(tier1, 'Factory Values',     8);
         appendGroupHeader(tier1, 'Field Measurements', 3);
-        appendGroupHeader(tier1, 'Calculated Charge',  4);
+        appendGroupHeader(tier1, 'Calculated Charge',  2);
         thead.appendChild(tier1);
 
-        // Tier 2: individual column labels
+        // Tier 2: individual column labels. Units live in the cell
+        // values (e.g. "66 ft") not the headers, so the headers stay
+        // narrow.
         var tier2 = document.createElement('tr');
         [
-            // System (4)
-            'Outdoor Tag', 'Outdoor Model', 'Indoor Tag(s)', 'Indoor Model(s)',
-            // Factory values (10)
-            'Refrigerant',
-            'Liquid Line (in)', 'Suction Line (in)',
-            'Max Vert ODU→IDU (ft)', 'Max Vert IDU→IDU (ft)',
-            'Max Total Line-set (ft)', 'Pre-charge Piping (ft)',
-            'Factory Charge (oz)', 'Factory Charge (lbs)', 'Additional Charge (oz/ft)',
+            // System (2)
+            'Outdoor', 'Indoor(s)',
+            // Factory values (8)
+            'Refrigerant', 'Line Sizes',
+            'Max Vert ODU→IDU', 'Max Vert IDU→IDU', 'Max Total',
+            'Pre-charge', 'Factory Charge', 'Additional',
             // Field measurements (3)
-            'Actual Vert ODU→IDU (ft)', 'Actual Total Line-set (ft)', 'Actual Vert IDU→IDU (ft)',
-            // Calculated (4)
-            'Refrigerant to Add (oz)', 'Refrigerant to Add (lbs)',
-            'Total System Charge (oz)', 'Total System Charge (lbs)'
+            'Actual Vert ODU→IDU', 'Actual Total', 'Actual Vert IDU→IDU',
+            // Calculated (2)
+            'To Add', 'Total Charge'
         ].forEach(function (label) {
             var th = document.createElement('th');
             th.textContent = label;
@@ -632,15 +632,11 @@
         tr.appendChild(inTotal.cell);
         tr.appendChild(inIdu.cell);
 
-        // Calculated cells (4)
-        var calcAddOz   = makeCalcCell();
-        var calcAddLbs  = makeCalcCell();
-        var calcTotalOz = makeCalcCell('refrigerant-calc-cell-emphasize');
-        var calcTotalLbs = makeCalcCell('refrigerant-calc-cell-emphasize');
-        tr.appendChild(calcAddOz);
-        tr.appendChild(calcAddLbs);
-        tr.appendChild(calcTotalOz);
-        tr.appendChild(calcTotalLbs);
+        // Calculated cells (2): combined oz/lbs each, stacked.
+        var calcAdd = makeCalcStackedCell();
+        var calcTotal = makeCalcStackedCell('refrigerant-calc-cell-emphasize');
+        tr.appendChild(calcAdd.cell);
+        tr.appendChild(calcTotal.cell);
 
         function recalc() {
             var actualTotal = parseFloatOrNull(inTotal.input.value);
@@ -650,19 +646,15 @@
 
             if (actualTotal === null || preCharge === null ||
                 addCharge === null || factoryOz === null) {
-                calcAddOz.textContent    = '—';
-                calcAddLbs.textContent   = '—';
-                calcTotalOz.textContent  = '—';
-                calcTotalLbs.textContent = '—';
+                calcAdd.update(null, null);
+                calcTotal.update(null, null);
                 return null;
             }
 
             var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
             var totalOz = addedOz + factoryOz;
-            calcAddOz.textContent    = addedOz.toFixed(2);
-            calcAddLbs.textContent   = (addedOz / 16).toFixed(3);
-            calcTotalOz.textContent  = totalOz.toFixed(2);
-            calcTotalLbs.textContent = (totalOz / 16).toFixed(3);
+            calcAdd.update(addedOz, addedOz / 16);
+            calcTotal.update(totalOz, totalOz / 16);
             return totalOz;
         }
 
@@ -699,93 +691,140 @@
         var cols = MODEL_COLS_BY_PRODUCT[item.productKey];
         var rows = (selection && selection.rows) || [];
 
-        // Outdoor tag (system tag) and outdoor model -- system-level data,
-        // pulled from row 0 since it's the same on every row.
+        // Outdoor cell -- system tag stacked over outdoor model.
+        // Outdoor data is system-level so we read from row 0.
         var outdoorTag   = (item.tag && String(item.tag).trim()) || '';
         var outdoorModel = cols && rows.length ? readCell(rows[0], cols.outdoor.model) : '';
+        tr.appendChild(makeUnitIdCell([{ tag: outdoorTag, model: outdoorModel }]));
 
-        var indoorTags = [];
-        var indoorModels = [];
-        rows.forEach(function (row, idx) {
-            var t = (item.indoorTags && item.indoorTags[idx]) || '';
-            var m = cols ? readCell(row, cols.indoor.model) : '';
-            // Only push entries where at least one of tag/model has
-            // content so empty rows don't generate blank lines.
-            if (t || m) {
-                indoorTags.push(t);
-                indoorModels.push(m);
-            }
+        // Indoor cell -- one tag/model pair per row of the selection.
+        // For 1:1 systems this is one pair; for multi-zone mini splits
+        // it's one pair per zone, stacked vertically inside the cell.
+        var indoorPairs = rows.map(function (row, idx) {
+            return {
+                tag:   (item.indoorTags && item.indoorTags[idx]) || '',
+                model: cols ? readCell(row, cols.indoor.model) : ''
+            };
+        }).filter(function (p) {
+            return p.tag || p.model;
         });
-        if (!indoorTags.length) {
-            indoorTags.push('');
-            indoorModels.push('');
-        }
-
-        tr.appendChild(makeTextCell(outdoorTag, 'refrigerant-id-cell refrigerant-tag-cell'));
-        tr.appendChild(makeTextCell(outdoorModel, 'refrigerant-id-cell'));
-        tr.appendChild(makeStackedCell(indoorTags, 'refrigerant-id-cell refrigerant-tag-cell'));
-        tr.appendChild(makeStackedCell(indoorModels, 'refrigerant-id-cell'));
+        if (!indoorPairs.length) indoorPairs.push({ tag: '', model: '' });
+        tr.appendChild(makeUnitIdCell(indoorPairs));
     }
 
-    function makeTextCell(text, className) {
+    /**
+     * Build a "unit identification" cell -- one or more {tag, model}
+     * pairs stacked vertically. Tag renders bold/blue on its own line;
+     * the model sits beneath it. Multiple pairs (multi-zone indoor
+     * units) get a small visual gap between them.
+     */
+    function makeUnitIdCell(pairs) {
         var td = document.createElement('td');
-        if (className) td.className = className;
-        td.textContent = (text === null || text === undefined || text === '') ? '—' : String(text);
-        return td;
-    }
-
-    function makeStackedCell(values, className) {
-        // Multi-value cell: each entry on its own line within the cell.
-        // Used for indoor tags and indoor models on multi-split systems
-        // where the cell needs to show one entry per indoor unit.
-        var td = document.createElement('td');
-        if (className) td.className = className;
-        var nonEmpty = values.filter(function (v) { return v !== null && v !== undefined && v !== ''; });
-        if (!nonEmpty.length) {
+        td.className = 'refrigerant-id-cell';
+        if (!pairs.length) {
             td.textContent = '—';
             return td;
         }
-        nonEmpty.forEach(function (v) {
-            var line = document.createElement('span');
-            line.className = 'refrigerant-stacked-line';
-            line.textContent = String(v);
-            td.appendChild(line);
+        pairs.forEach(function (p, idx) {
+            var block = document.createElement('div');
+            block.className = 'refrigerant-id-block';
+            if (idx > 0) block.classList.add('refrigerant-id-block-divider');
+
+            var tagEl = document.createElement('div');
+            tagEl.className = 'refrigerant-id-tag';
+            tagEl.textContent = p.tag || '—';
+            block.appendChild(tagEl);
+
+            var modelEl = document.createElement('div');
+            modelEl.className = 'refrigerant-id-model';
+            modelEl.textContent = p.model || '—';
+            block.appendChild(modelEl);
+
+            td.appendChild(block);
         });
         return td;
     }
 
     function appendFactoryCells(tr, refData, isMultiSplit) {
-        // Order matches the tier-2 table headers exactly.
-        var ORDER = [
-            'REFRIGERANT',
-            'LIQUID LINE CONNECTION (IN)',
-            'SUCTION LINE CONNECTION (IN)',
-            'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)',
-            'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)',
-            'MAX TOTAL LINE SET (FT)',
-            'PRE-CHARGE PIPING LENGTH (FT)',
-            'FACTORY CHARGE (OZ)',
-            'FACTORY CHARGE (LBS)',
-            'ADDITIONAL CHARGE (OZ/FT)'
-        ];
-        ORDER.forEach(function (key) {
-            var raw = refData[key];
-            // The IDU-to-IDU column always renders -- even on 1:1
-            // systems where it's not applicable -- so the table stays
-            // rectangular. Show "N/A" rather than the raw value when
-            // the system isn't multi-zone.
-            var td = document.createElement('td');
-            td.className = 'refrigerant-factory-cell';
-            if (key === 'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)' && !isMultiSplit) {
-                td.textContent = 'N/A';
-                td.classList.add('refrigerant-cell-na');
-            } else if (raw === null || raw === undefined || raw === '' || raw === '-') {
-                td.textContent = '—';
-            } else {
-                td.textContent = String(raw);
-            }
-            tr.appendChild(td);
+        // 1. Refrigerant
+        tr.appendChild(makeFactoryCell(refData['REFRIGERANT']));
+
+        // 2. Line Sizes -- combined liquid + suction, stacked.
+        tr.appendChild(makeStackedFactoryCell([
+            { label: 'L:', value: refData['LIQUID LINE CONNECTION (IN)'], unit: '"' },
+            { label: 'S:', value: refData['SUCTION LINE CONNECTION (IN)'], unit: '"' }
+        ]));
+
+        // 3. Max Vert ODU→IDU
+        tr.appendChild(makeFactoryCell(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)'], 'ft'));
+
+        // 4. Max Vert IDU→IDU (N/A on 1:1 systems so the table stays
+        //    rectangular but the cell reads as not-applicable).
+        if (isMultiSplit) {
+            tr.appendChild(makeFactoryCell(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)'], 'ft'));
+        } else {
+            tr.appendChild(makeNaCell());
+        }
+
+        // 5. Max Total Line-set
+        tr.appendChild(makeFactoryCell(refData['MAX TOTAL LINE SET (FT)'], 'ft'));
+
+        // 6. Pre-charge Piping
+        tr.appendChild(makeFactoryCell(refData['PRE-CHARGE PIPING LENGTH (FT)'], 'ft'));
+
+        // 7. Factory Charge -- combined oz + lbs, stacked.
+        tr.appendChild(makeStackedFactoryCell([
+            { value: refData['FACTORY CHARGE (OZ)'],  unit: 'oz' },
+            { value: refData['FACTORY CHARGE (LBS)'], unit: 'lbs' }
+        ]));
+
+        // 8. Additional Charge
+        tr.appendChild(makeFactoryCell(refData['ADDITIONAL CHARGE (OZ/FT)'], 'oz/ft'));
+    }
+
+    function makeFactoryCell(raw, unit) {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-factory-cell';
+        if (raw === null || raw === undefined || raw === '' || raw === '-') {
+            td.textContent = '—';
+        } else {
+            td.textContent = unit ? String(raw) + ' ' + unit : String(raw);
+        }
+        return td;
+    }
+
+    function makeNaCell() {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-factory-cell refrigerant-cell-na';
+        td.textContent = 'N/A';
+        return td;
+    }
+
+    /**
+     * Cell with multiple stacked lines, each line being either a
+     * "value unit" pair (e.g. "39.2 oz") or a "label value unit"
+     * triple (e.g. "L: 0.25\""). Used for combined oz/lbs cells and
+     * the combined Line Sizes cell. Lines whose value is missing or
+     * "-" render as a single-line em-dash to keep the cell compact.
+     */
+    function makeStackedFactoryCell(lines) {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-factory-cell refrigerant-stacked-cell';
+        var hasAny = false;
+        lines.forEach(function (l) {
+            var v = l.value;
+            if (v === null || v === undefined || v === '' || v === '-') return;
+            hasAny = true;
+            var line = document.createElement('span');
+            line.className = 'refrigerant-stacked-line';
+            var parts = [];
+            if (l.label) parts.push(l.label);
+            parts.push(String(v) + (l.unit ? (l.unit === '"' ? l.unit : ' ' + l.unit) : ''));
+            line.textContent = parts.join(' ');
+            td.appendChild(line);
         });
+        if (!hasAny) td.textContent = '—';
+        return td;
     }
 
     function makeInputCell(key, max, disabled, savedValue) {
@@ -822,11 +861,36 @@
         return { cell: td, input: input, checkWarning: checkWarning };
     }
 
-    function makeCalcCell(extraClass) {
+    /**
+     * Calc cell with two stacked lines: oz on top, lbs below. Returns
+     * the cell + an `update(oz, lbs)` function that fills both lines
+     * (or shows "—" when null is passed for either).
+     */
+    function makeCalcStackedCell(extraClass) {
         var td = document.createElement('td');
-        td.className = 'refrigerant-calc-cell' + (extraClass ? ' ' + extraClass : '');
-        td.textContent = '—';
-        return td;
+        td.className = 'refrigerant-calc-cell refrigerant-stacked-cell' +
+            (extraClass ? ' ' + extraClass : '');
+
+        var ozLine  = document.createElement('span');
+        ozLine.className = 'refrigerant-stacked-line';
+        ozLine.textContent = '—';
+        td.appendChild(ozLine);
+
+        var lbsLine = document.createElement('span');
+        lbsLine.className = 'refrigerant-stacked-line';
+        lbsLine.textContent = '';
+        td.appendChild(lbsLine);
+
+        function update(oz, lbs) {
+            if (oz === null || oz === undefined || isNaN(oz)) {
+                ozLine.textContent  = '—';
+                lbsLine.textContent = '';
+                return;
+            }
+            ozLine.textContent  = oz.toFixed(2)  + ' oz';
+            lbsLine.textContent = lbs.toFixed(3) + ' lbs';
+        }
+        return { cell: td, update: update };
     }
 
     function findSelection(data, selectionId) {

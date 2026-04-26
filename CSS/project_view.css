@@ -1147,7 +1147,7 @@
     color: var(--color-text);
     font-weight: 600;
     text-align: center;
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     white-space: normal;
@@ -1160,10 +1160,8 @@
 }
 
 .refrigerant-table thead tr:nth-child(2) th {
-    /* JS sets this dynamically would be ideal; we approximate with
-       a fixed offset that matches the typical tier-1 row height of
-       ~36px. If the tier-1 header ever wraps, bump this value. */
-    top: 36px;
+    /* Approximate tier-1 row height; bump if a group label ever wraps. */
+    top: 32px;
     font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
@@ -1183,7 +1181,7 @@
 /* ---------- Body cells ---------- */
 
 .refrigerant-table tbody td {
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     text-align: center;
@@ -1197,25 +1195,48 @@
     background-color: rgba(255, 255, 255, 0.025);
 }
 
+/* ---------- Stacked-content cells ----------
+   Used for combined ID cells (tag stacked over model), combined
+   factory cells (oz stacked over lbs, line sizes stacked, etc.),
+   and combined calc cells. Each line sits on its own row inside
+   the cell with tight line-height so two lines don't make the
+   row enormously tall. */
+.refrigerant-stacked-cell {
+    line-height: 1.25;
+}
+
+.refrigerant-stacked-line {
+    display: block;
+    padding: 1px 0;
+}
+
 /* ---------- Identification (left-most) cells ---------- */
 
 .refrigerant-id-cell {
     text-align: left !important;
-    font-weight: 500;
     white-space: normal !important;
-    min-width: 110px;
+    min-width: 130px;
+    line-height: 1.25;
 }
 
-.refrigerant-tag-cell {
+.refrigerant-id-block + .refrigerant-id-block-divider {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dotted var(--color-border);
+}
+
+.refrigerant-id-tag {
     color: var(--color-primary-light);
     font-weight: 700;
     letter-spacing: 0.02em;
+    font-size: var(--font-size-sm);
 }
 
-/* Each indoor unit on its own line within the cell. */
-.refrigerant-stacked-line {
-    display: block;
-    padding: 1px 0;
+.refrigerant-id-model {
+    color: var(--color-text);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    word-break: break-all;
 }
 
 /* ---------- "No data" cell ---------- */
@@ -1229,10 +1250,6 @@
 
 /* ---------- Factory value cells ---------- */
 
-.refrigerant-factory-cell {
-    /* Inherits from tbody td -- no extra rules needed. */
-}
-
 .refrigerant-cell-na {
     color: var(--color-text-muted);
     font-style: italic;
@@ -1242,13 +1259,13 @@
 /* ---------- Field input cells ---------- */
 
 .refrigerant-input-cell {
-    padding: 4px 6px !important;
+    padding: 3px 5px !important;
     background-color: var(--color-bg) !important;
 }
 
 .refrigerant-row-input {
-    width: 90px;
-    padding: 5px 8px;
+    width: 80px;
+    padding: 4px 6px;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
     background-color: var(--color-surface);
