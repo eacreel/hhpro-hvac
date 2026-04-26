@@ -38,13 +38,6 @@
                 box-shadow var(--transition-fast);
 }
 
-/* Design Search tile uses the brand blue gradient so it reads as
-   "the engineer's tool" -- distinct from the dark navy Projects
-   tile while sharing the same compact layout. */
-.tile.tile-design-search.tile-projects-compact {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-}
-
 .tile.tile-projects-compact:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md), 0 0 0 1px var(--color-primary-light);
