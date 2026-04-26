@@ -367,6 +367,16 @@
     font-size: var(--font-size-base);
     width: 100%;
     box-sizing: border-box;
+    /* Hide native number-input spinner when this class is used on
+       <input type="number"> (e.g. Auto Tag's "Start at" fields). On
+       text inputs these properties are no-ops. */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+.modal-input::-webkit-outer-spin-button,
+.modal-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 .modal-input:focus {
     outline: 2px solid var(--color-primary-light);
