@@ -27,7 +27,7 @@ How to add a new product type:
     1. Drop the new .xlsx file into HHpro\DATA\DATA FILES\.
     2. Add one entry to PRODUCT_CONFIGS below (filename, productType,
        outputFileName, headerRows, dataStartRow, supportsMultiRow,
-       assetsFolder).
+       assetsFolder, searchSchema).
     3. Run this script.
 
 How to add a new DOCUMENTATION column:
@@ -68,6 +68,19 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #   assetsFolder       Name of this product's folder under HHpro/ASSETS/.
 #                      Used by validate_files.py to check filenames against
 #                      real files on disk.
+#   searchSchema       Drives the Design Search page on the site. Two parts:
+#                        displayName  - shown in the category picker
+#                        description  - one-line blurb shown above the form
+#                        targets      - list of numeric columns the engineer
+#                                       can search by (target value +/- a
+#                                       tolerance %). Each target = dict with
+#                                       label, col (Excel column letter),
+#                                       unit (display string), and
+#                                       defaultTolerance (percent prefilled
+#                                       in the form). Pass an empty list for
+#                                       products where filter dropdowns alone
+#                                       are enough (e.g. VFDs - engineers
+#                                       size them to an exact HP).
 # -----------------------------------------------------------------------------
 
 PRODUCT_CONFIGS = {
@@ -78,6 +91,17 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 5,
         "supportsMultiRow": False,
         "assetsFolder": "GAS PACKS",
+        "searchSchema": {
+            "displayName": "Gas Pack RTUs",
+            "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Nominal Tons",             "col": "C", "unit": "tons",  "defaultTolerance": 10},
+                {"label": "Total Cooling Capacity",   "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Sensible Cooling Capacity","col": "H", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heating Output",           "col": "O", "unit": "MBH",   "defaultTolerance": 10},
+                {"label": "Airflow",                  "col": "D", "unit": "CFM",   "defaultTolerance": 10},
+            ],
+        },
     },
     "MARVAIR DATA.xlsx": {
         "productType": "MARVAIR VERTICAL WALL MOUNT",
@@ -86,6 +110,17 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 4,
         "supportsMultiRow": False,
         "assetsFolder": "MARVAIR",
+        "searchSchema": {
+            "displayName": "Marvair Vertical Wall Mount",
+            "description": "Vertical wall-mount packaged air handling units. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Nominal Size",             "col": "C", "unit": "tons",  "defaultTolerance": 10},
+                {"label": "Total Cooling Capacity",   "col": "E", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Sensible Cooling Capacity","col": "F", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Electric Heat",            "col": "I", "unit": "kW",    "defaultTolerance": 10},
+                {"label": "Airflow",                  "col": "D", "unit": "CFM",   "defaultTolerance": 10},
+            ],
+        },
     },
     "MINI SPLIT DATA.xlsx": {
         "productType": "MINI SPLITS",
@@ -94,6 +129,16 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 7,
         "supportsMultiRow": True,
         "assetsFolder": "MINI SPLITS",
+        "searchSchema": {
+            "displayName": "Mini Splits",
+            "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
+            "targets": [
+                {"label": "Indoor Unit Cooling Capacity",             "col": "D", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Sensible Capacity",            "col": "E", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Airflow",                      "col": "A", "unit": "CFM",   "defaultTolerance": 15},
+            ],
+        },
     },
     "MULTI POSITION SPLIT DATA.xlsx": {
         "productType": "MULTI POSITION SPLITS",
@@ -102,6 +147,17 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 6,
         "supportsMultiRow": False,
         "assetsFolder": "MULTI POSITION SPLITS",
+        "searchSchema": {
+            "displayName": "Multi Position Splits",
+            "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Indoor Cooling Capacity",    "col": "I", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Sensible Capacity",   "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heat Pump Heating Capacity", "col": "U", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Aux. Electric Heat",         "col": "L", "unit": "kW",    "defaultTolerance": 10},
+                {"label": "Indoor Airflow",             "col": "C", "unit": "CFM",   "defaultTolerance": 10},
+            ],
+        },
     },
     "VFD DATA.xlsx": {
         "productType": "VFDs",
@@ -110,6 +166,11 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 5,
         "supportsMultiRow": False,
         "assetsFolder": "VFDs",
+        "searchSchema": {
+            "displayName": "VFDs",
+            "description": "Variable frequency drives. Engineers typically size VFDs to an exact motor HP and electrical service, so this category uses filters only -- no tolerance-based targets apply.",
+            "targets": [],
+        },
     },
 }
 
@@ -641,6 +702,11 @@ def convert_file(input_path, config, output_path):
         "assetsFolder":              config.get("assetsFolder"),
         "scheduleTitle":             schedule_title,
         "supportsMultiRowSelections": config["supportsMultiRow"],
+        # searchSchema feeds the Design Search page on the site
+        # (numeric "design target" inputs + filter dropdowns derived
+        # from filterColumns). Required by every product config; pass
+        # an empty targets list for products that need filters only.
+        "searchSchema":              config["searchSchema"],
         "scheduleHeader": {
             "columnLetters": schedule_col_letters,
             "rows":          schedule_header_rows,
