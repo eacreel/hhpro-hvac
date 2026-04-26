@@ -1371,6 +1371,77 @@
     flex-shrink: 0;
 }
 
+/* ---------- Header help "?" icons + tooltip ---------- */
+
+.refrigerant-help {
+    position: relative;
+    display: inline-block;
+    margin-left: 4px;
+    vertical-align: middle;
+    cursor: help;
+    outline: none;
+}
+
+.refrigerant-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--color-text-muted);
+    color: var(--color-text-muted);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    /* Reset the uppercase/letter-spacing inherited from the th style
+       so the "?" renders cleanly. */
+    text-transform: none;
+    letter-spacing: 0;
+    transition: color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.refrigerant-help:hover .refrigerant-help-icon,
+.refrigerant-help:focus .refrigerant-help-icon,
+.refrigerant-help:focus-visible .refrigerant-help-icon {
+    color: var(--color-primary-light);
+    border-color: var(--color-primary-light);
+}
+
+.refrigerant-help-tooltip {
+    /* Hidden until hover/focus reveals it. */
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    padding: 10px 12px;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text);
+    /* Override the th's uppercase / centered / muted styling so the
+       tooltip text reads as normal prose. */
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+    line-height: 1.45;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: normal;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.refrigerant-help:hover .refrigerant-help-tooltip,
+.refrigerant-help:focus .refrigerant-help-tooltip,
+.refrigerant-help:focus-visible .refrigerant-help-tooltip {
+    display: block;
+}
+
 /* ---------- Reference column ---------- */
 
 .refrigerant-reference-cell {

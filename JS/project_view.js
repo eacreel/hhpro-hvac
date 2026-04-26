@@ -510,6 +510,49 @@
         return 7 + (showActualVertIdu ? 3 : 2) + 2;
     }
 
+    // Tooltip copy for the field-measurement column headers. Keyed by
+    // the joined label so the header builder can look them up after
+    // creating the th -- adding a key here is the only change needed
+    // to add help to a new column.
+    var REFRIGERANT_COLUMN_HELP = {
+        'Actual Vert ODU→IDU':
+            'This is the vertical height difference (in feet) between the ' +
+            'outdoor unit and the indoor unit. For multi-splits, use the ' +
+            'largest value out of each of the indoor units.',
+        'Actual Total':
+            'This is the total line-set length (in feet) for the system ' +
+            'including the vertical line set lengths.',
+        'Actual Vert IDU→IDU':
+            'This is the vertical height difference (in feet) from one ' +
+            'indoor unit to another. Applies to multi-split systems only. ' +
+            'If more than 2 indoor units on a system, use the largest value.'
+    };
+
+    function buildHelpIcon(text) {
+        var wrap = document.createElement('span');
+        wrap.className = 'refrigerant-help';
+        // tabindex makes the icon keyboard-focusable so the tooltip can
+        // be reached without a pointing device.
+        wrap.tabIndex = 0;
+        wrap.setAttribute('role', 'button');
+        wrap.setAttribute('aria-label', 'Help: ' + text);
+
+        var icon = document.createElement('span');
+        icon.className = 'refrigerant-help-icon';
+        icon.textContent = '?';
+        // Hidden from assistive tech -- the wrap's aria-label already
+        // names the element. The icon is purely visual.
+        icon.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(icon);
+
+        var tip = document.createElement('span');
+        tip.className = 'refrigerant-help-tooltip';
+        tip.textContent = text;
+        wrap.appendChild(tip);
+
+        return wrap;
+    }
+
     function hasAnyMultiSplit(allItems, dataByKey) {
         for (var i = 0; i < allItems.length; i++) {
             var item = allItems[i];
@@ -652,6 +695,10 @@
                 if (idx > 0) th.appendChild(document.createElement('br'));
                 th.appendChild(document.createTextNode(line));
             });
+            var helpText = REFRIGERANT_COLUMN_HELP[lines.join(' ')];
+            if (helpText) {
+                th.appendChild(buildHelpIcon(helpText));
+            }
             tier2.appendChild(th);
         });
         thead.appendChild(tier2);
