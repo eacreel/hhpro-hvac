@@ -488,9 +488,9 @@
     }
 
     // Total non-identification columns in the refrigerant table:
-    //   factory values (8) + field measurements (3) + calculated (2) = 13
+    //   factory values (7) + field measurements (3) + calculated (2) = 12
     // Used for the colspan of the "Refer to IOM" cell on no-data rows.
-    var REFRIGERANT_NON_ID_COLSPAN = 13;
+    var REFRIGERANT_NON_ID_COLSPAN = 12;
 
     function renderRefrigerantContent(allItems, dataByKey) {
         var wrap = document.createElement('div');
@@ -554,10 +554,12 @@
     function buildRefrigerantTableHeader() {
         var thead = document.createElement('thead');
 
-        // Tier 1: column groups (2 / 8 / 3 / 2 = 15 cols)
+        // Tier 1: column groups (2 / 7 / 3 / 2 = 14 cols). Factory
+        // Charge cell now also shows the pre-charge piping length as
+        // its third line, so the standalone Pre-charge column is gone.
         var tier1 = document.createElement('tr');
         appendGroupHeader(tier1, 'System',             2);
-        appendGroupHeader(tier1, 'Factory Values',     8);
+        appendGroupHeader(tier1, 'Factory Values',     7);
         appendGroupHeader(tier1, 'Field Measurements', 3);
         appendGroupHeader(tier1, 'Calculated Charge',  2);
         thead.appendChild(tier1);
@@ -572,10 +574,12 @@
         [
             // System (2)
             ['Outdoor'], ['Indoor(s)'],
-            // Factory values (8)
+            // Factory values (7) -- Factory Charge cell now also shows
+            // the pre-charge piping length as a third line, so the
+            // standalone Pre-charge column has been removed.
             ['Refrigerant'], ['Line Sizes'],
             ['Max Vert', 'ODU→IDU'], ['Max Vert', 'IDU→IDU'], ['Max Total'],
-            ['Pre-charge'], ['Factory', 'Charge'], ['Additional'],
+            ['Factory', 'Charge'], ['Additional'],
             // Field measurements (3)
             ['Actual Vert', 'ODU→IDU'], ['Actual Total'], ['Actual Vert', 'IDU→IDU'],
             // Calculated (2)
@@ -775,16 +779,17 @@
         // 5. Max Total Line-set
         tr.appendChild(makeFactoryCell(refData['MAX TOTAL LINE SET (FT)'], 'ft'));
 
-        // 6. Pre-charge Piping
-        tr.appendChild(makeFactoryCell(refData['PRE-CHARGE PIPING LENGTH (FT)'], 'ft'));
-
-        // 7. Factory Charge -- combined oz + lbs, stacked.
+        // 6. Factory Charge -- combined oz / lbs / pre-charge length,
+        //    stacked. The third line is the pre-charge piping length
+        //    (the line-set length the factory charge already covers),
+        //    which used to live in its own column.
         tr.appendChild(makeStackedFactoryCell([
-            { value: refData['FACTORY CHARGE (OZ)'],  unit: 'oz' },
-            { value: refData['FACTORY CHARGE (LBS)'], unit: 'lbs' }
+            { value: refData['FACTORY CHARGE (OZ)'],         unit: 'oz' },
+            { value: refData['FACTORY CHARGE (LBS)'],        unit: 'lbs' },
+            { value: refData['PRE-CHARGE PIPING LENGTH (FT)'], unit: 'ft' }
         ]));
 
-        // 8. Additional Charge
+        // 7. Additional Charge
         tr.appendChild(makeFactoryCell(refData['ADDITIONAL CHARGE (OZ/FT)'], 'oz/ft'));
     }
 
