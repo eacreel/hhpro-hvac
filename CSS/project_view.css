@@ -549,7 +549,7 @@
 }
 
 .files-item-header:hover {
-    background-color: var(--color-bg-hover, #e8ecef);
+    background-color: var(--color-row-hover);
 }
 
 .files-item-cb {
