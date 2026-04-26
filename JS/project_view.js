@@ -436,33 +436,6 @@
     // but show the "Refer to IOM" note in place of the input form.
     // =================================================================
 
-    // Display labels + unit suffixes for the refrigerant data fields.
-    // Keyed by the JSON column name (which itself comes from the Excel
-    // header); kept here so adding a new field is a one-line change.
-    var REFRIGERANT_LABELS = {
-        'REFRIGERANT':                                 'Refrigerant',
-        'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)':   'Max Vertical Separation (ODU → IDU)',
-        'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)':   'Max Vertical Separation (IDU → IDU)',
-        'MAX TOTAL LINE SET (FT)':                     'Max Total Line-set',
-        'LIQUID LINE CONNECTION (IN)':                 'Liquid Line Connection',
-        'SUCTION LINE CONNECTION (IN)':                'Suction Line Connection',
-        'PRE-CHARGE PIPING LENGTH (FT)':               'Pre-charge Piping Length',
-        'FACTORY CHARGE (LBS)':                        'Factory Charge',
-        'FACTORY CHARGE (OZ)':                         'Factory Charge',
-        'ADDITIONAL CHARGE (OZ/FT)':                   'Additional Charge'
-    };
-    var REFRIGERANT_UNITS = {
-        'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)':   'ft',
-        'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)':   'ft',
-        'MAX TOTAL LINE SET (FT)':                     'ft',
-        'LIQUID LINE CONNECTION (IN)':                 'in',
-        'SUCTION LINE CONNECTION (IN)':                'in',
-        'PRE-CHARGE PIPING LENGTH (FT)':               'ft',
-        'FACTORY CHARGE (LBS)':                        'lbs',
-        'FACTORY CHARGE (OZ)':                         'oz',
-        'ADDITIONAL CHARGE (OZ/FT)':                   'oz/ft'
-    };
-
     // Per-product mapping that says which schedule column letters hold
     // the outdoor unit's MAKE + MODEL and the indoor unit's MAKE + MODEL.
     // This is the only product-specific lookup table the refrigerant tab
@@ -514,19 +487,24 @@
         });
     }
 
+    // Total non-identification columns in the refrigerant table:
+    //   factory values (10) + field measurements (3) + calculated (4) = 17
+    var REFRIGERANT_NON_ID_COLSPAN = 17;
+
     function renderRefrigerantContent(allItems, dataByKey) {
         var wrap = document.createElement('div');
         wrap.className = 'refrigerant-tab';
 
         var intro = document.createElement('p');
         intro.className = 'refrigerant-intro';
-        intro.textContent = 'Enter the actual line-set distances for each split system below. ' +
-            'The site validates against the system’s allowable maximums and computes the ' +
-            'refrigerant charge to add (line-set length minus the factory pre-charge length, ' +
-            'multiplied by the manufacturer’s oz/ft) plus the total system charge.';
+        intro.textContent = 'Enter the actual line-set distances for each split system in the ' +
+            '"Field Measurements" columns. The site validates against each system’s allowable ' +
+            'maximums and computes the refrigerant charge to add (line-set length minus the ' +
+            'factory pre-charge length, multiplied by the manufacturer’s oz/ft) plus the total ' +
+            'system charge.';
         wrap.appendChild(intro);
 
-        // Project-totals tracker: each card registers a recalc()
+        // Project-totals tracker: each row registers a recalc()
         // function. We sum the returned total-charge oz on every
         // change so the project total updates live.
         var trackers = [];
@@ -545,24 +523,310 @@
             updateTotalsCard(totalsEl, hasAny ? totalOz : null);
         }
 
-        var systemsList = document.createElement('div');
-        systemsList.className = 'refrigerant-systems';
+        var tableWrap = document.createElement('div');
+        tableWrap.className = 'refrigerant-table-wrap';
 
-        // Render in project order so the user sees systems in the same
-        // sequence as on the schedule tabs.
+        var table = document.createElement('table');
+        table.className = 'refrigerant-table';
+        table.appendChild(buildRefrigerantTableHeader());
+
+        var tbody = document.createElement('tbody');
+        // Render rows in project order so the user sees systems in
+        // the same sequence as on the schedule tabs.
         allItems.forEach(function (item) {
             if (REFRIGERANT_PRODUCT_KEYS.indexOf(item.productKey) < 0) return;
             var data = dataByKey[item.productKey];
             if (!data) return;
-            var card = buildSystemCard(item, data, recomputeTotals);
-            systemsList.appendChild(card.element);
-            trackers.push(card);
+            var row = buildSystemRow(item, data, recomputeTotals);
+            tbody.appendChild(row.element);
+            trackers.push(row);
         });
+        table.appendChild(tbody);
 
-        wrap.appendChild(systemsList);
+        tableWrap.appendChild(table);
+        wrap.appendChild(tableWrap);
         wrap.appendChild(totalsEl);
         recomputeTotals();
         return wrap;
+    }
+
+    function buildRefrigerantTableHeader() {
+        var thead = document.createElement('thead');
+
+        // Tier 1: column groups
+        var tier1 = document.createElement('tr');
+        appendGroupHeader(tier1, 'System',             4);
+        appendGroupHeader(tier1, 'Factory Values',     10);
+        appendGroupHeader(tier1, 'Field Measurements', 3);
+        appendGroupHeader(tier1, 'Calculated Charge',  4);
+        thead.appendChild(tier1);
+
+        // Tier 2: individual column labels
+        var tier2 = document.createElement('tr');
+        [
+            // System (4)
+            'Outdoor Tag', 'Outdoor Model', 'Indoor Tag(s)', 'Indoor Model(s)',
+            // Factory values (10)
+            'Refrigerant',
+            'Liquid Line (in)', 'Suction Line (in)',
+            'Max Vert ODU→IDU (ft)', 'Max Vert IDU→IDU (ft)',
+            'Max Total Line-set (ft)', 'Pre-charge Piping (ft)',
+            'Factory Charge (oz)', 'Factory Charge (lbs)', 'Additional Charge (oz/ft)',
+            // Field measurements (3)
+            'Actual Vert ODU→IDU (ft)', 'Actual Total Line-set (ft)', 'Actual Vert IDU→IDU (ft)',
+            // Calculated (4)
+            'Refrigerant to Add (oz)', 'Refrigerant to Add (lbs)',
+            'Total System Charge (oz)', 'Total System Charge (lbs)'
+        ].forEach(function (label) {
+            var th = document.createElement('th');
+            th.textContent = label;
+            tier2.appendChild(th);
+        });
+        thead.appendChild(tier2);
+        return thead;
+    }
+
+    function appendGroupHeader(tr, label, span) {
+        var th = document.createElement('th');
+        th.colSpan = span;
+        th.className = 'refrigerant-table-group';
+        th.textContent = label;
+        tr.appendChild(th);
+    }
+
+    function buildSystemRow(item, data, onRecalc) {
+        var selection = findSelection(data, item.selectionId);
+        var refData = readRefrigerantData(selection);
+        var hasData = refrigerantHasData(refData);
+        var isMultiSplit = !!(selection && selection.rows && selection.rows.length > 1 &&
+                              item.productKey === 'mini_splits');
+
+        var tr = document.createElement('tr');
+        tr.className = 'refrigerant-row' + (hasData ? '' : ' refrigerant-row-no-data');
+
+        // Identification cells (always rendered)
+        appendIdCells(tr, item, selection);
+
+        if (!hasData) {
+            // Single message cell spans every non-identification column.
+            var noDataTd = document.createElement('td');
+            noDataTd.className = 'refrigerant-no-data-cell';
+            noDataTd.colSpan = REFRIGERANT_NON_ID_COLSPAN;
+            noDataTd.textContent = 'Refer to outdoor unit installation manual for refrigerant calculations.';
+            tr.appendChild(noDataTd);
+            return { element: tr, recalc: function () { return null; } };
+        }
+
+        // Factory value cells (10 in fixed order)
+        appendFactoryCells(tr, refData, isMultiSplit);
+
+        // Field measurement input cells (3)
+        var savedInputs = item.refrigerantInputs || {};
+        var maxOdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)']);
+        var maxTotal = parseFloatOrNull(refData['MAX TOTAL LINE SET (FT)']);
+        var maxIdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)']);
+        var inOdu   = makeInputCell('actualVertOdu', maxOdu,   false,         savedInputs.actualVertOdu);
+        var inTotal = makeInputCell('actualTotal',   maxTotal, false,         savedInputs.actualTotal);
+        var inIdu   = makeInputCell('actualVertIdu', maxIdu,   !isMultiSplit, savedInputs.actualVertIdu);
+        tr.appendChild(inOdu.cell);
+        tr.appendChild(inTotal.cell);
+        tr.appendChild(inIdu.cell);
+
+        // Calculated cells (4)
+        var calcAddOz   = makeCalcCell();
+        var calcAddLbs  = makeCalcCell();
+        var calcTotalOz = makeCalcCell('refrigerant-calc-cell-emphasize');
+        var calcTotalLbs = makeCalcCell('refrigerant-calc-cell-emphasize');
+        tr.appendChild(calcAddOz);
+        tr.appendChild(calcAddLbs);
+        tr.appendChild(calcTotalOz);
+        tr.appendChild(calcTotalLbs);
+
+        function recalc() {
+            var actualTotal = parseFloatOrNull(inTotal.input.value);
+            var preCharge   = parseFloatOrNull(refData['PRE-CHARGE PIPING LENGTH (FT)']);
+            var addCharge   = parseFloatOrNull(refData['ADDITIONAL CHARGE (OZ/FT)']);
+            var factoryOz   = parseFloatOrNull(refData['FACTORY CHARGE (OZ)']);
+
+            if (actualTotal === null || preCharge === null ||
+                addCharge === null || factoryOz === null) {
+                calcAddOz.textContent    = '—';
+                calcAddLbs.textContent   = '—';
+                calcTotalOz.textContent  = '—';
+                calcTotalLbs.textContent = '—';
+                return null;
+            }
+
+            var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
+            var totalOz = addedOz + factoryOz;
+            calcAddOz.textContent    = addedOz.toFixed(2);
+            calcAddLbs.textContent   = (addedOz / 16).toFixed(3);
+            calcTotalOz.textContent  = totalOz.toFixed(2);
+            calcTotalLbs.textContent = (totalOz / 16).toFixed(3);
+            return totalOz;
+        }
+
+        function persistAndBubble() {
+            HHpro.Cart.updateItem(item.instanceId, {
+                refrigerantInputs: {
+                    actualVertOdu: parseFloatOrNull(inOdu.input.value),
+                    actualTotal:   parseFloatOrNull(inTotal.input.value),
+                    actualVertIdu: parseFloatOrNull(inIdu.input.value)
+                }
+            });
+            onRecalc();
+        }
+
+        [inOdu, inTotal, inIdu].forEach(function (ic) {
+            if (ic.input.disabled) return;
+            ic.input.addEventListener('input', function () {
+                ic.checkWarning();
+                persistAndBubble();
+            });
+        });
+
+        // Initial pass: warning state only -- no persist (no user input
+        // has happened) and no recalc (the explicit recomputeTotals at
+        // the end of renderRefrigerantContent handles the first pass).
+        inOdu.checkWarning();
+        inTotal.checkWarning();
+        inIdu.checkWarning();
+
+        return { element: tr, recalc: recalc };
+    }
+
+    function appendIdCells(tr, item, selection) {
+        var cols = MODEL_COLS_BY_PRODUCT[item.productKey];
+        var rows = (selection && selection.rows) || [];
+
+        // Outdoor tag (system tag) and outdoor model -- system-level data,
+        // pulled from row 0 since it's the same on every row.
+        var outdoorTag   = (item.tag && String(item.tag).trim()) || '';
+        var outdoorModel = cols && rows.length ? readCell(rows[0], cols.outdoor.model) : '';
+
+        var indoorTags = [];
+        var indoorModels = [];
+        rows.forEach(function (row, idx) {
+            var t = (item.indoorTags && item.indoorTags[idx]) || '';
+            var m = cols ? readCell(row, cols.indoor.model) : '';
+            // Only push entries where at least one of tag/model has
+            // content so empty rows don't generate blank lines.
+            if (t || m) {
+                indoorTags.push(t);
+                indoorModels.push(m);
+            }
+        });
+        if (!indoorTags.length) {
+            indoorTags.push('');
+            indoorModels.push('');
+        }
+
+        tr.appendChild(makeTextCell(outdoorTag, 'refrigerant-id-cell refrigerant-tag-cell'));
+        tr.appendChild(makeTextCell(outdoorModel, 'refrigerant-id-cell'));
+        tr.appendChild(makeStackedCell(indoorTags, 'refrigerant-id-cell refrigerant-tag-cell'));
+        tr.appendChild(makeStackedCell(indoorModels, 'refrigerant-id-cell'));
+    }
+
+    function makeTextCell(text, className) {
+        var td = document.createElement('td');
+        if (className) td.className = className;
+        td.textContent = (text === null || text === undefined || text === '') ? '—' : String(text);
+        return td;
+    }
+
+    function makeStackedCell(values, className) {
+        // Multi-value cell: each entry on its own line within the cell.
+        // Used for indoor tags and indoor models on multi-split systems
+        // where the cell needs to show one entry per indoor unit.
+        var td = document.createElement('td');
+        if (className) td.className = className;
+        var nonEmpty = values.filter(function (v) { return v !== null && v !== undefined && v !== ''; });
+        if (!nonEmpty.length) {
+            td.textContent = '—';
+            return td;
+        }
+        nonEmpty.forEach(function (v) {
+            var line = document.createElement('span');
+            line.className = 'refrigerant-stacked-line';
+            line.textContent = String(v);
+            td.appendChild(line);
+        });
+        return td;
+    }
+
+    function appendFactoryCells(tr, refData, isMultiSplit) {
+        // Order matches the tier-2 table headers exactly.
+        var ORDER = [
+            'REFRIGERANT',
+            'LIQUID LINE CONNECTION (IN)',
+            'SUCTION LINE CONNECTION (IN)',
+            'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)',
+            'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)',
+            'MAX TOTAL LINE SET (FT)',
+            'PRE-CHARGE PIPING LENGTH (FT)',
+            'FACTORY CHARGE (OZ)',
+            'FACTORY CHARGE (LBS)',
+            'ADDITIONAL CHARGE (OZ/FT)'
+        ];
+        ORDER.forEach(function (key) {
+            var raw = refData[key];
+            // The IDU-to-IDU column always renders -- even on 1:1
+            // systems where it's not applicable -- so the table stays
+            // rectangular. Show "N/A" rather than the raw value when
+            // the system isn't multi-zone.
+            var td = document.createElement('td');
+            td.className = 'refrigerant-factory-cell';
+            if (key === 'MAX VERTICAL SEPARATION (IDU TO IDU) (FT)' && !isMultiSplit) {
+                td.textContent = 'N/A';
+                td.classList.add('refrigerant-cell-na');
+            } else if (raw === null || raw === undefined || raw === '' || raw === '-') {
+                td.textContent = '—';
+            } else {
+                td.textContent = String(raw);
+            }
+            tr.appendChild(td);
+        });
+    }
+
+    function makeInputCell(key, max, disabled, savedValue) {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-input-cell';
+
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.step = 'any';
+        input.min = '0';
+        input.className = 'refrigerant-row-input';
+        input.placeholder = disabled ? 'N/A' : '—';
+        if (disabled) {
+            input.disabled = true;
+            td.classList.add('refrigerant-cell-na');
+        }
+        if (savedValue !== null && savedValue !== undefined && savedValue !== '') {
+            input.value = String(savedValue);
+        }
+        td.appendChild(input);
+
+        function checkWarning() {
+            if (disabled) return;
+            var v = parseFloatOrNull(input.value);
+            if (v !== null && max !== null && v > max) {
+                td.classList.add('refrigerant-input-cell-warn');
+                td.title = '⚠  Exceeds the system’s maximum of ' + max + ' ft.';
+            } else {
+                td.classList.remove('refrigerant-input-cell-warn');
+                td.title = '';
+            }
+        }
+
+        return { cell: td, input: input, checkWarning: checkWarning };
+    }
+
+    function makeCalcCell(extraClass) {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-calc-cell' + (extraClass ? ' ' + extraClass : '');
+        td.textContent = '—';
+        return td;
     }
 
     function findSelection(data, selectionId) {
@@ -604,362 +868,10 @@
         return isNaN(n) ? null : n;
     }
 
-    function buildSystemCard(item, data, onChange) {
-        var selection = findSelection(data, item.selectionId);
-        var refData = readRefrigerantData(selection);
-        var hasData = refrigerantHasData(refData);
-        var isMultiSplit = !!(selection && selection.rows && selection.rows.length > 1 &&
-                              item.productKey === 'mini_splits');
-
-        var card = document.createElement('div');
-        card.className = 'refrigerant-card' + (hasData ? '' : ' refrigerant-card-no-data');
-
-        // Header: tag (or em-dash if untagged) + the cart label
-        var header = document.createElement('div');
-        header.className = 'refrigerant-card-header';
-        var tagEl = document.createElement('span');
-        tagEl.className = 'refrigerant-card-tag';
-        tagEl.textContent = (item.tag && String(item.tag).trim()) || '—';
-        header.appendChild(tagEl);
-        var labelEl = document.createElement('span');
-        labelEl.className = 'refrigerant-card-label';
-        labelEl.textContent = item.label || item.selectionId;
-        header.appendChild(labelEl);
-        card.appendChild(header);
-
-        // Outdoor + indoor model breakdown. Shows even when refrigerant
-        // data is missing because identifying the unit by tag + model
-        // is useful regardless of whether the calculator can run.
-        var modelsBlock = buildModelsBlock(item, selection);
-        if (modelsBlock) card.appendChild(modelsBlock);
-
-        if (!hasData) {
-            var note = document.createElement('div');
-            note.className = 'refrigerant-no-data-note';
-            note.textContent = 'Refer to outdoor unit installation manual for refrigerant calculations.';
-            card.appendChild(note);
-            // No-data cards don't contribute to the project total.
-            return { element: card, recalc: function () { return null; } };
-        }
-
-        card.appendChild(buildSpecTable(refData, isMultiSplit));
-
-        var inputState = item.refrigerantInputs || {};
-        var inputs = buildInputSection(refData, inputState, isMultiSplit, onSaveAndChange);
-        card.appendChild(inputs.element);
-
-        var calcDisplay = buildCalcDisplay();
-        card.appendChild(calcDisplay.element);
-
-        function recalc() {
-            var actualTotal = parseFloatOrNull(inputs.values.actualTotal);
-            var preCharge   = parseFloatOrNull(refData['PRE-CHARGE PIPING LENGTH (FT)']);
-            var addCharge   = parseFloatOrNull(refData['ADDITIONAL CHARGE (OZ/FT)']);
-            var factoryOz   = parseFloatOrNull(refData['FACTORY CHARGE (OZ)']);
-
-            if (actualTotal === null || preCharge === null ||
-                addCharge === null || factoryOz === null) {
-                calcDisplay.update(null);
-                return null;
-            }
-
-            // Standard manufacturer formula: factory pre-charge already
-            // covers the first pre-charge-piping-length feet; additional
-            // charge applies only to the run beyond that. Clamp at 0 so
-            // a short line-set never produces a negative "added" value.
-            var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
-            var totalOz = addedOz + factoryOz;
-            calcDisplay.update({
-                addedOz:   addedOz,
-                addedLbs:  addedOz / 16,
-                totalOz:   totalOz,
-                totalLbs:  totalOz / 16
-            });
-            return totalOz;
-        }
-
-        function onSaveAndChange() {
-            // Persist to localStorage via cart, then bubble up so the
-            // project totals card refreshes.
-            HHpro.Cart.updateItem(item.instanceId, {
-                refrigerantInputs: {
-                    actualVertOdu: inputs.values.actualVertOdu,
-                    actualTotal:   inputs.values.actualTotal,
-                    actualVertIdu: inputs.values.actualVertIdu
-                }
-            });
-            onChange();
-        }
-
-        return { element: card, recalc: recalc };
-    }
-
-    function buildModelsBlock(item, selection) {
-        if (!selection) return null;
-        var cols = MODEL_COLS_BY_PRODUCT[item.productKey];
-        if (!cols) return null;
-
-        var rows = (selection.rows || []);
-        if (!rows.length) return null;
-
-        // Outdoor unit info -- system tag + outdoor make/model. Outdoor
-        // data is system-level so we read it from row 0.
-        var outdoorMake  = readCell(rows[0], cols.outdoor.make);
-        var outdoorModel = readCell(rows[0], cols.outdoor.model);
-
-        // Indoor unit info -- one entry per row. Each row's indoorTag
-        // (item.indoorTags[i]) is the per-zone tag, when present.
-        var indoors = rows.map(function (row, idx) {
-            return {
-                tag:   (item.indoorTags && item.indoorTags[idx]) || '',
-                make:  readCell(row, cols.indoor.make),
-                model: readCell(row, cols.indoor.model)
-            };
-        }).filter(function (i) {
-            return i.make || i.model;
-        });
-
-        if (!outdoorModel && !indoors.length) return null;
-
-        var wrap = document.createElement('div');
-        wrap.className = 'refrigerant-models';
-
-        if (outdoorModel || outdoorMake) {
-            wrap.appendChild(buildModelGroup('Outdoor Unit', [{
-                tag:   item.tag || '',
-                make:  outdoorMake,
-                model: outdoorModel
-            }]));
-        }
-        if (indoors.length) {
-            wrap.appendChild(buildModelGroup(
-                indoors.length === 1 ? 'Indoor Unit' : 'Indoor Units (' + indoors.length + ')',
-                indoors
-            ));
-        }
-        return wrap;
-    }
-
-    function buildModelGroup(title, units) {
-        var group = document.createElement('div');
-        group.className = 'refrigerant-models-group';
-
-        var hdr = document.createElement('div');
-        hdr.className = 'refrigerant-models-group-title';
-        hdr.textContent = title;
-        group.appendChild(hdr);
-
-        units.forEach(function (u) {
-            var line = document.createElement('div');
-            line.className = 'refrigerant-models-line';
-
-            var tagEl = document.createElement('span');
-            tagEl.className = 'refrigerant-models-tag';
-            tagEl.textContent = u.tag ? u.tag : '—';
-            line.appendChild(tagEl);
-
-            var modelEl = document.createElement('span');
-            modelEl.className = 'refrigerant-models-name';
-            var parts = [];
-            if (u.make)  parts.push(String(u.make));
-            if (u.model) parts.push(String(u.model));
-            modelEl.textContent = parts.join('  ') || '—';
-            line.appendChild(modelEl);
-
-            group.appendChild(line);
-        });
-        return group;
-    }
-
     function readCell(row, col) {
         if (!row || !row.scheduleData) return '';
         var v = row.scheduleData[col];
         return (v === null || v === undefined) ? '' : String(v).trim();
-    }
-
-    function buildSpecTable(refData, isMultiSplit) {
-        var SPEC_ORDER = [
-            'REFRIGERANT',
-            'LIQUID LINE CONNECTION (IN)',
-            'SUCTION LINE CONNECTION (IN)',
-            'MAX VERTICAL SEPARATION (ODU TO IDU) (FT)'
-        ];
-        if (isMultiSplit) {
-            SPEC_ORDER.push('MAX VERTICAL SEPARATION (IDU TO IDU) (FT)');
-        }
-        SPEC_ORDER.push(
-            'MAX TOTAL LINE SET (FT)',
-            'PRE-CHARGE PIPING LENGTH (FT)',
-            'FACTORY CHARGE (OZ)',
-            'FACTORY CHARGE (LBS)',
-            'ADDITIONAL CHARGE (OZ/FT)'
-        );
-
-        var grid = document.createElement('div');
-        grid.className = 'refrigerant-spec-grid';
-
-        SPEC_ORDER.forEach(function (key) {
-            var raw = refData[key];
-            if (raw === null || raw === undefined || raw === '' || raw === '-') return;
-            var label = REFRIGERANT_LABELS[key] || key;
-            var unit = REFRIGERANT_UNITS[key] || '';
-            var row = document.createElement('div');
-            row.className = 'refrigerant-spec-row';
-            var lbl = document.createElement('span');
-            lbl.className = 'refrigerant-spec-label';
-            lbl.textContent = label;
-            var val = document.createElement('span');
-            val.className = 'refrigerant-spec-value';
-            val.textContent = String(raw) + (unit ? ' ' + unit : '');
-            row.appendChild(lbl);
-            row.appendChild(val);
-            grid.appendChild(row);
-        });
-        return grid;
-    }
-
-    function buildInputSection(refData, inputState, isMultiSplit, onChange) {
-        var wrap = document.createElement('div');
-        wrap.className = 'refrigerant-inputs';
-
-        var hdr = document.createElement('h4');
-        hdr.className = 'refrigerant-inputs-header';
-        hdr.textContent = 'Field Measurements';
-        wrap.appendChild(hdr);
-
-        var values = {
-            actualVertOdu: (inputState.actualVertOdu != null) ? inputState.actualVertOdu : null,
-            actualTotal:   (inputState.actualTotal   != null) ? inputState.actualTotal   : null,
-            actualVertIdu: (inputState.actualVertIdu != null) ? inputState.actualVertIdu : null
-        };
-
-        function makeInputRow(key, label, max) {
-            var row = document.createElement('div');
-            row.className = 'refrigerant-input-row';
-
-            var lbl = document.createElement('label');
-            lbl.className = 'refrigerant-input-label';
-            lbl.textContent = label;
-            row.appendChild(lbl);
-
-            var inputWrap = document.createElement('span');
-            inputWrap.className = 'refrigerant-input-wrap';
-
-            var input = document.createElement('input');
-            input.type = 'number';
-            input.step = 'any';
-            input.min = '0';
-            input.className = 'refrigerant-input';
-            input.value = (values[key] !== null && values[key] !== undefined)
-                ? String(values[key]) : '';
-            input.placeholder = '—';
-            inputWrap.appendChild(input);
-
-            var unit = document.createElement('span');
-            unit.className = 'refrigerant-input-unit';
-            unit.textContent = 'ft';
-            inputWrap.appendChild(unit);
-            row.appendChild(inputWrap);
-
-            var warning = document.createElement('div');
-            warning.className = 'refrigerant-input-warning';
-            row.appendChild(warning);
-
-            function updateWarning() {
-                var v = parseFloatOrNull(input.value);
-                values[key] = v;
-                if (v !== null && max !== null && v > max) {
-                    warning.textContent = '⚠  Exceeds the system’s maximum of ' + max + ' ft.';
-                    warning.classList.add('refrigerant-input-warning-active');
-                } else {
-                    warning.textContent = '';
-                    warning.classList.remove('refrigerant-input-warning-active');
-                }
-            }
-            // The input event ALSO bubbles up via onChange so the card's
-            // recalc + project totals refresh + persistence all run.
-            input.addEventListener('input', function () {
-                updateWarning();
-                onChange();
-            });
-            // Initial pass: populate `values` and show the warning if the
-            // saved value already exceeds the spec. We deliberately do
-            // NOT call onChange() here -- it dereferences `inputs.values`
-            // through the buildSystemCard closure, but `inputs` is still
-            // being assigned when this initial pass runs (we're inside
-            // the buildInputSection call that returns it). Project-level
-            // totals get their initial computation from the explicit
-            // recomputeTotals() at the end of renderRefrigerantContent.
-            updateWarning();
-            return row;
-        }
-
-        var maxOdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)']);
-        var maxTotal = parseFloatOrNull(refData['MAX TOTAL LINE SET (FT)']);
-        var maxIdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)']);
-
-        wrap.appendChild(makeInputRow('actualVertOdu',
-            'Actual Vertical Distance (ODU → IDU)', maxOdu));
-        wrap.appendChild(makeInputRow('actualTotal',
-            'Actual Total Line-set (vertical + horizontal)', maxTotal));
-        if (isMultiSplit) {
-            wrap.appendChild(makeInputRow('actualVertIdu',
-                'Actual Vertical Separation (IDU → IDU, highest to lowest)', maxIdu));
-        }
-
-        return { element: wrap, values: values };
-    }
-
-    function buildCalcDisplay() {
-        var wrap = document.createElement('div');
-        wrap.className = 'refrigerant-calc';
-
-        var hdr = document.createElement('h4');
-        hdr.className = 'refrigerant-calc-header';
-        hdr.textContent = 'Calculated Charge';
-        wrap.appendChild(hdr);
-
-        var grid = document.createElement('div');
-        grid.className = 'refrigerant-calc-grid';
-
-        function makeRow(label, emphasize) {
-            var row = document.createElement('div');
-            row.className = 'refrigerant-calc-row' +
-                (emphasize ? ' refrigerant-calc-row-emphasize' : '');
-            var lbl = document.createElement('span');
-            lbl.className = 'refrigerant-calc-label';
-            lbl.textContent = label;
-            var val = document.createElement('span');
-            val.className = 'refrigerant-calc-value';
-            val.textContent = '—';
-            row.appendChild(lbl);
-            row.appendChild(val);
-            grid.appendChild(row);
-            return val;
-        }
-
-        var addedOzEl  = makeRow('Refrigerant to Add (oz)');
-        var addedLbsEl = makeRow('Refrigerant to Add (lbs)');
-        var totalOzEl  = makeRow('Total System Charge (oz)', true);
-        var totalLbsEl = makeRow('Total System Charge (lbs)', true);
-
-        wrap.appendChild(grid);
-
-        function update(values) {
-            if (!values) {
-                addedOzEl.textContent  = '—';
-                addedLbsEl.textContent = '—';
-                totalOzEl.textContent  = '—';
-                totalLbsEl.textContent = '—';
-                return;
-            }
-            addedOzEl.textContent  = values.addedOz.toFixed(2)  + ' oz';
-            addedLbsEl.textContent = values.addedLbs.toFixed(3) + ' lbs';
-            totalOzEl.textContent  = values.totalOz.toFixed(2)  + ' oz';
-            totalLbsEl.textContent = values.totalLbs.toFixed(3) + ' lbs';
-        }
-
-        return { element: wrap, update: update };
     }
 
     function buildProjectTotalsCard() {

@@ -1093,17 +1093,19 @@
 /* ============================================================
    Refrigerant tab
    ------------------------------------------------------------
-   One card per mini-split / multi-position-split. Cards stack
-   vertically inside the tab body (which itself owns its scroll),
-   followed by a full-width project-totals card.
+   Single wide table -- one row per mini-split / multi-position-
+   split system. Columns are grouped in a tier-1 header (System /
+   Factory Values / Field Measurements / Calculated Charge) with
+   the individual column labels on tier 2. Followed by a project-
+   totals card spanning the tab.
    ============================================================ */
 
 .refrigerant-tab {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     padding: var(--space-md) var(--space-md) var(--space-xl);
-    overflow-y: auto;
+    overflow: hidden;
     flex: 1;
     min-height: 0;
 }
@@ -1114,265 +1116,184 @@
     line-height: 1.5;
     margin: 0;
     max-width: 920px;
+    flex-shrink: 0;
 }
 
-.refrigerant-systems {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-}
+/* ---------- Table wrapper (owns the scroll) ---------- */
 
-/* ---------- Per-system card ---------- */
-
-.refrigerant-card {
+.refrigerant-table-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
     box-shadow: var(--shadow-sm);
 }
 
-.refrigerant-card-no-data {
-    /* Quieter look since these have no actionable inputs. */
-    border-style: dashed;
-    background-color: transparent;
-    box-shadow: none;
+.refrigerant-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--font-size-sm);
+    width: max-content;
+    min-width: 100%;
+    color: var(--color-text);
 }
 
-.refrigerant-card-header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    padding-bottom: var(--space-sm);
+/* ---------- Headers ---------- */
+
+.refrigerant-table thead th {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 10px;
+    border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
+    white-space: normal;
+    position: sticky;
+    z-index: 2;
 }
 
-.refrigerant-card-tag {
-    font-size: var(--font-size-lg);
+.refrigerant-table thead tr:first-child th {
+    top: 0;
+}
+
+.refrigerant-table thead tr:nth-child(2) th {
+    /* JS sets this dynamically would be ideal; we approximate with
+       a fixed offset that matches the typical tier-1 row height of
+       ~36px. If the tier-1 header ever wraps, bump this value. */
+    top: 36px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+}
+
+.refrigerant-table-group {
+    background-color: var(--color-bg-dark) !important;
+    color: var(--color-text-inverse) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     font-weight: 700;
+    font-size: var(--font-size-xs);
+}
+
+/* ---------- Body cells ---------- */
+
+.refrigerant-table tbody td {
+    padding: 8px 10px;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+    vertical-align: middle;
+    background-color: var(--color-surface);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.refrigerant-table tbody tr:nth-child(even) > td {
+    background-color: rgba(255, 255, 255, 0.025);
+}
+
+/* ---------- Identification (left-most) cells ---------- */
+
+.refrigerant-id-cell {
+    text-align: left !important;
+    font-weight: 500;
+    white-space: normal !important;
+    min-width: 110px;
+}
+
+.refrigerant-tag-cell {
     color: var(--color-primary-light);
-    min-width: 56px;
+    font-weight: 700;
     letter-spacing: 0.02em;
 }
 
-.refrigerant-card-label {
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    word-break: break-word;
+/* Each indoor unit on its own line within the cell. */
+.refrigerant-stacked-line {
+    display: block;
+    padding: 1px 0;
 }
 
-/* ---------- "No data" note ---------- */
+/* ---------- "No data" cell ---------- */
 
-.refrigerant-no-data-note {
+.refrigerant-no-data-cell {
+    text-align: left !important;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
     font-style: italic;
-    padding: var(--space-sm) 0;
+    background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
-/* ---------- Outdoor / indoor model breakdown ---------- */
+/* ---------- Factory value cells ---------- */
 
-.refrigerant-models {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-sm) var(--space-lg);
+.refrigerant-factory-cell {
+    /* Inherits from tbody td -- no extra rules needed. */
 }
 
-.refrigerant-models-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.refrigerant-models-group-title {
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+.refrigerant-cell-na {
     color: var(--color-text-muted);
+    font-style: italic;
+    opacity: 0.6;
 }
 
-.refrigerant-models-line {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-sm);
-    font-size: var(--font-size-sm);
+/* ---------- Field input cells ---------- */
+
+.refrigerant-input-cell {
+    padding: 4px 6px !important;
+    background-color: var(--color-bg) !important;
 }
 
-.refrigerant-models-tag {
-    color: var(--color-primary-light);
-    font-weight: 600;
-    min-width: 56px;
-    font-variant-numeric: tabular-nums;
-}
-
-.refrigerant-models-name {
-    color: var(--color-text);
-    word-break: break-all;
-    font-family: 'Inter', sans-serif;
-}
-
-/* ---------- Spec grid (read-only manufacturer values) ---------- */
-
-.refrigerant-spec-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-xs) var(--space-lg);
-    background-color: var(--color-bg);
-    border-radius: var(--radius-sm);
-    padding: var(--space-sm) var(--space-md);
-}
-
-.refrigerant-spec-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-sm);
-    padding: 4px 0;
-    font-size: var(--font-size-sm);
-    border-bottom: 1px dotted var(--color-border);
-}
-
-.refrigerant-spec-row:last-child {
-    border-bottom: none;
-}
-
-.refrigerant-spec-label {
-    color: var(--color-text-muted);
-}
-
-.refrigerant-spec-value {
-    color: var(--color-text);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-}
-
-/* ---------- Field inputs ---------- */
-
-.refrigerant-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-}
-
-.refrigerant-inputs-header,
-.refrigerant-calc-header {
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin: 0;
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--color-border);
-}
-
-.refrigerant-input-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) auto;
-    gap: var(--space-sm) var(--space-md);
-    align-items: center;
-}
-
-.refrigerant-input-label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-}
-
-.refrigerant-input-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.refrigerant-input {
-    width: 110px;
-    padding: 6px 10px;
+.refrigerant-row-input {
+    width: 90px;
+    padding: 5px 8px;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
-    background-color: var(--color-bg);
+    background-color: var(--color-surface);
     color: var(--color-text);
     font-size: var(--font-size-sm);
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
 
-.refrigerant-input:focus {
+.refrigerant-row-input:focus {
     outline: 2px solid var(--color-primary-light);
     outline-offset: -1px;
     border-color: var(--color-primary-light);
 }
 
-.refrigerant-input-unit {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    min-width: 22px;
+.refrigerant-row-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background-color: transparent;
 }
 
-/* Validation message: empty + invisible until set, so the row's
-   layout doesn't jump when the warning appears. */
-.refrigerant-input-warning {
-    grid-column: 1 / -1;
-    font-size: var(--font-size-xs);
-    color: var(--color-warning);
-    min-height: 0;
-    padding-left: 2px;
+/* Cell-level highlight when the entered value exceeds the system's
+   maximum. The full cell glows red so it's noticeable in a wide
+   table; hovering it shows the threshold via the title attribute. */
+.refrigerant-input-cell-warn {
+    background-color: rgba(239, 68, 68, 0.18) !important;
 }
 
-.refrigerant-input-warning-active {
-    min-height: 18px;
+.refrigerant-input-cell-warn .refrigerant-row-input {
+    border-color: var(--color-error);
+    color: var(--color-error);
 }
 
-/* ---------- Calculated charge display ---------- */
+/* ---------- Calculated cells ---------- */
 
-.refrigerant-calc {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-}
-
-.refrigerant-calc-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-xs) var(--space-lg);
-    background-color: var(--color-bg);
-    border-radius: var(--radius-sm);
-    padding: var(--space-sm) var(--space-md);
-}
-
-.refrigerant-calc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-sm);
-    padding: 4px 0;
-    font-size: var(--font-size-sm);
-}
-
-.refrigerant-calc-row-emphasize {
-    font-weight: 600;
-    border-top: 1px solid var(--color-border);
-    margin-top: var(--space-xs);
-    padding-top: var(--space-sm);
-}
-
-.refrigerant-calc-label {
-    color: var(--color-text-muted);
-}
-
-.refrigerant-calc-row-emphasize .refrigerant-calc-label {
-    color: var(--color-text);
-}
-
-.refrigerant-calc-value {
+.refrigerant-calc-cell {
+    background-color: var(--color-bg) !important;
     color: var(--color-text);
     font-variant-numeric: tabular-nums;
-    text-align: right;
+    font-weight: 500;
+}
+
+.refrigerant-calc-cell-emphasize {
+    color: var(--color-primary-light);
+    font-weight: 700;
 }
 
 /* ---------- Project totals card ---------- */
