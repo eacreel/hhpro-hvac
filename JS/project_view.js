@@ -865,7 +865,7 @@
             warning.className = 'refrigerant-input-warning';
             row.appendChild(warning);
 
-            function check() {
+            function updateWarning() {
                 var v = parseFloatOrNull(input.value);
                 values[key] = v;
                 if (v !== null && max !== null && v > max) {
@@ -875,12 +875,22 @@
                     warning.textContent = '';
                     warning.classList.remove('refrigerant-input-warning-active');
                 }
-                onChange();
             }
-            input.addEventListener('input', check);
-            // Initial pass so the warning shows on load if the saved
-            // value already exceeds the spec.
-            check();
+            // The input event ALSO bubbles up via onChange so the card's
+            // recalc + project totals refresh + persistence all run.
+            input.addEventListener('input', function () {
+                updateWarning();
+                onChange();
+            });
+            // Initial pass: populate `values` and show the warning if the
+            // saved value already exceeds the spec. We deliberately do
+            // NOT call onChange() here -- it dereferences `inputs.values`
+            // through the buildSystemCard closure, but `inputs` is still
+            // being assigned when this initial pass runs (we're inside
+            // the buildInputSection call that returns it). Project-level
+            // totals get their initial computation from the explicit
+            // recomputeTotals() at the end of renderRefrigerantContent.
+            updateWarning();
             return row;
         }
 
