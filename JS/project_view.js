@@ -564,22 +564,28 @@
 
         // Tier 2: individual column labels. Units live in the cell
         // values (e.g. "66 ft") not the headers, so the headers stay
-        // narrow.
+        // narrow. Multi-element arrays force a line break -- used on
+        // headers whose body content is much shorter than the header
+        // text (e.g. "Max Vert ODU→IDU" over a "66 ft" body) so the
+        // column shrinks to fit the body width.
         var tier2 = document.createElement('tr');
         [
             // System (2)
-            'Outdoor', 'Indoor(s)',
+            ['Outdoor'], ['Indoor(s)'],
             // Factory values (8)
-            'Refrigerant', 'Line Sizes',
-            'Max Vert ODU→IDU', 'Max Vert IDU→IDU', 'Max Total',
-            'Pre-charge', 'Factory Charge', 'Additional',
+            ['Refrigerant'], ['Line Sizes'],
+            ['Max Vert', 'ODU→IDU'], ['Max Vert', 'IDU→IDU'], ['Max Total'],
+            ['Pre-charge'], ['Factory', 'Charge'], ['Additional'],
             // Field measurements (3)
-            'Actual Vert ODU→IDU', 'Actual Total', 'Actual Vert IDU→IDU',
+            ['Actual Vert', 'ODU→IDU'], ['Actual Total'], ['Actual Vert', 'IDU→IDU'],
             // Calculated (2)
-            'To Add', 'Total Charge'
-        ].forEach(function (label) {
+            ['To Add'], ['Total', 'Charge']
+        ].forEach(function (lines) {
             var th = document.createElement('th');
-            th.textContent = label;
+            lines.forEach(function (line, idx) {
+                if (idx > 0) th.appendChild(document.createElement('br'));
+                th.appendChild(document.createTextNode(line));
+            });
             tier2.appendChild(th);
         });
         thead.appendChild(tier2);
@@ -751,8 +757,8 @@
 
         // 2. Line Sizes -- combined liquid + suction, stacked.
         tr.appendChild(makeStackedFactoryCell([
-            { label: 'L:', value: refData['LIQUID LINE CONNECTION (IN)'], unit: '"' },
-            { label: 'S:', value: refData['SUCTION LINE CONNECTION (IN)'], unit: '"' }
+            { label: 'Liquid:',  value: refData['LIQUID LINE CONNECTION (IN)'],  unit: '"' },
+            { label: 'Suction:', value: refData['SUCTION LINE CONNECTION (IN)'], unit: '"' }
         ]));
 
         // 3. Max Vert ODU→IDU

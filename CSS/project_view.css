@@ -1167,6 +1167,9 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
+    /* Tight line-height so multi-line wrapped labels (e.g. "Max Vert
+       / ODU→IDU") don't balloon the header row. */
+    line-height: 1.2;
 }
 
 .refrigerant-table-group {
