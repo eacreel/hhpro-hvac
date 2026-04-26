@@ -7,11 +7,36 @@
     "displayName": "Marvair Vertical Wall Mount",
     "description": "Vertical wall-mount packaged air handling units. Enter design loads and the page returns models that meet the targets within your tolerance.",
     "targets": [
-      { "label": "Nominal Size", "col": "C", "unit": "tons", "defaultTolerance": 10 },
-      { "label": "Total Cooling Capacity", "col": "E", "unit": "BTU/h", "defaultTolerance": 10 },
-      { "label": "Sensible Cooling Capacity", "col": "F", "unit": "BTU/h", "defaultTolerance": 10 },
-      { "label": "Electric Heat", "col": "I", "unit": "kW", "defaultTolerance": 10 },
-      { "label": "Airflow", "col": "D", "unit": "CFM", "defaultTolerance": 10 }
+      {
+        "label": "Nominal Size",
+        "col": "C",
+        "unit": "tons",
+        "defaultTolerance": 10
+      },
+      {
+        "label": "Total Cooling Capacity",
+        "col": "E",
+        "unit": "BTU/h",
+        "defaultTolerance": 10
+      },
+      {
+        "label": "Sensible Cooling Capacity",
+        "col": "F",
+        "unit": "BTU/h",
+        "defaultTolerance": 10
+      },
+      {
+        "label": "Electric Heat",
+        "col": "I",
+        "unit": "kW",
+        "defaultTolerance": 10
+      },
+      {
+        "label": "Airflow",
+        "col": "D",
+        "unit": "CFM",
+        "defaultTolerance": 10
+      }
     ]
   },
   "scheduleHeader": {
@@ -259,6 +284,7 @@
       "fileExtension": "pdf"
     }
   ],
+  "refrigerantColumns": [],
   "selections": [
     {
       "id": "sel_0001",
@@ -1671,7 +1697,7 @@
   },
   "_meta": {
     "sourceFile": "MARVAIR DATA.xlsx",
-    "generatedAt": "2026-04-23T06:56:52",
+    "generatedAt": "2026-04-26T12:45:42",
     "dataRowCount": 40,
     "selectionCount": 40
   }

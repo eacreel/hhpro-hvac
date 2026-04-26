@@ -1351,3 +1351,31 @@
     font-style: italic;
     color: var(--color-text-muted);
 }
+
+/* ---------- Toolbar (Refrigerant Report button) ---------- */
+
+.refrigerant-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+/* ---------- Reference column ---------- */
+
+.refrigerant-reference-cell {
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+.refrigerant-reference-link {
+    color: var(--color-primary-light);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--font-size-xs);
+}
+
+.refrigerant-reference-link:hover,
+.refrigerant-reference-link:focus {
+    text-decoration: underline;
+}

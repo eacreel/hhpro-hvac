@@ -338,15 +338,16 @@
             ));
         });
 
-        nav.appendChild(buildTabButton('files', 'Files'));
-
         // Refrigerant tab only appears when the project has at least
         // one item from a product that uses refrigerant calculations
-        // (mini splits or multi position splits today). Sits to the
-        // right of the Files tab.
+        // (mini splits or multi position splits today). Sits between
+        // the product tabs and Files so it stays grouped with the
+        // schedule-data views.
         if (hasRefrigerantSystems(groups)) {
             nav.appendChild(buildTabButton('refrigerant', 'Refrigerant'));
         }
+
+        nav.appendChild(buildTabButton('files', 'Files'));
         return nav;
     }
 
@@ -476,7 +477,8 @@
             var dataByKey = {};
             results.forEach(function (r) { dataByKey[r.key] = r.data; });
             container.innerHTML = '';
-            container.appendChild(renderRefrigerantContent(activeState.items, dataByKey));
+            container.appendChild(renderRefrigerantContent(
+                activeState.items, dataByKey, activeState.name || ''));
         }).catch(function (err) {
             container.innerHTML = '';
             var errEl = document.createElement('div');
@@ -487,12 +489,27 @@
         });
     }
 
-    // Total non-identification columns in the refrigerant table:
-    //   factory values (7) + field measurements (3) + calculated (2) = 12
+    // Non-identification columns in the refrigerant table when the
+    // optional "Actual Vert IDU→IDU" field is hidden vs. shown:
+    //   factory values (7) + field measurements (2 or 3) + calc (2)
     // Used for the colspan of the "Refer to IOM" cell on no-data rows.
-    var REFRIGERANT_NON_ID_COLSPAN = 12;
+    function refrigerantNonIdColspan(showActualVertIdu) {
+        return 7 + (showActualVertIdu ? 3 : 2) + 2;
+    }
 
-    function renderRefrigerantContent(allItems, dataByKey) {
+    function hasAnyMultiSplit(allItems, dataByKey) {
+        for (var i = 0; i < allItems.length; i++) {
+            var item = allItems[i];
+            if (item.productKey !== 'mini_splits') continue;
+            var data = dataByKey[item.productKey];
+            if (!data) continue;
+            var sel = findSelection(data, item.selectionId);
+            if (sel && sel.rows && sel.rows.length > 1) return true;
+        }
+        return false;
+    }
+
+    function renderRefrigerantContent(allItems, dataByKey, projectName) {
         var wrap = document.createElement('div');
         wrap.className = 'refrigerant-tab';
 
@@ -504,6 +521,28 @@
             'factory pre-charge length, multiplied by the manufacturer’s oz/ft) plus the total ' +
             'system charge.';
         wrap.appendChild(intro);
+
+        // Toolbar (Refrigerant Report download). Sits above the table so
+        // the engineer can pull the PDF without scrolling past the data.
+        var toolbar = document.createElement('div');
+        toolbar.className = 'refrigerant-toolbar';
+
+        var reportBtn = document.createElement('button');
+        reportBtn.type = 'button';
+        reportBtn.className = 'projects-btn projects-btn-secondary';
+        reportBtn.textContent = 'PDF Report';
+        reportBtn.title = 'Open a printable refrigerant report for this project';
+        reportBtn.addEventListener('click', function () {
+            openRefrigerantReport(allItems, dataByKey, projectName);
+        });
+        toolbar.appendChild(reportBtn);
+        wrap.appendChild(toolbar);
+
+        // Whether to render the optional "Actual Vert IDU→IDU" field
+        // measurement column. Only meaningful for multi-zone mini split
+        // systems (1:N indoor units), so when no such system is in the
+        // project we hide the column entirely.
+        var showActualVertIdu = hasAnyMultiSplit(allItems, dataByKey);
 
         // Project-totals tracker: each row registers a recalc()
         // function. We sum the returned total-charge oz on every
@@ -529,7 +568,7 @@
 
         var table = document.createElement('table');
         table.className = 'refrigerant-table';
-        table.appendChild(buildRefrigerantTableHeader());
+        table.appendChild(buildRefrigerantTableHeader(showActualVertIdu));
 
         var tbody = document.createElement('tbody');
         // Render rows in project order so the user sees systems in
@@ -538,7 +577,7 @@
             if (REFRIGERANT_PRODUCT_KEYS.indexOf(item.productKey) < 0) return;
             var data = dataByKey[item.productKey];
             if (!data) return;
-            var row = buildSystemRow(item, data, recomputeTotals);
+            var row = buildSystemRow(item, data, recomputeTotals, showActualVertIdu);
             tbody.appendChild(row.element);
             trackers.push(row);
         });
@@ -551,17 +590,20 @@
         return wrap;
     }
 
-    function buildRefrigerantTableHeader() {
+    function buildRefrigerantTableHeader(showActualVertIdu) {
         var thead = document.createElement('thead');
 
-        // Tier 1: column groups (2 / 7 / 3 / 2 = 14 cols). Factory
-        // Charge cell now also shows the pre-charge piping length as
-        // its third line, so the standalone Pre-charge column is gone.
+        // Tier 1: column groups. Field Measurements is 3 columns when
+        // the project includes a multi-zone mini-split (so the
+        // Actual Vert IDU→IDU input is shown), otherwise 2. The trailing
+        // Reference group always adds 1 column (link to the long-line-
+        // set application guide or outdoor-unit IOM).
         var tier1 = document.createElement('tr');
         appendGroupHeader(tier1, 'System',             2);
         appendGroupHeader(tier1, 'Factory Values',     7);
-        appendGroupHeader(tier1, 'Field Measurements', 3);
+        appendGroupHeader(tier1, 'Field Measurements', showActualVertIdu ? 3 : 2);
         appendGroupHeader(tier1, 'Calculated Charge',  2);
+        appendGroupHeader(tier1, 'Reference',          1);
         thead.appendChild(tier1);
 
         // Tier 2: individual column labels. Units live in the cell
@@ -570,8 +612,7 @@
         // headers whose body content is much shorter than the header
         // text (e.g. "Max Vert ODU→IDU" over a "66 ft" body) so the
         // column shrinks to fit the body width.
-        var tier2 = document.createElement('tr');
-        [
+        var labels = [
             // System (2)
             ['Outdoor'], ['Indoor(s)'],
             // Factory values (7) -- Factory Charge cell now also shows
@@ -580,11 +621,19 @@
             ['Refrigerant'], ['Line Sizes'],
             ['Max Vert', 'ODU→IDU'], ['Max Vert', 'IDU→IDU'], ['Max Total'],
             ['Factory', 'Charge'], ['Additional'],
-            // Field measurements (3)
-            ['Actual Vert', 'ODU→IDU'], ['Actual Total'], ['Actual Vert', 'IDU→IDU'],
-            // Calculated (2)
-            ['To Add'], ['Total', 'Charge']
-        ].forEach(function (lines) {
+            // Field measurements (2 or 3)
+            ['Actual Vert', 'ODU→IDU'], ['Actual Total']
+        ];
+        if (showActualVertIdu) {
+            labels.push(['Actual Vert', 'IDU→IDU']);
+        }
+        // Calculated (2) + Reference (1)
+        labels.push(['To Add']);
+        labels.push(['Total', 'Charge']);
+        labels.push(['Application', 'Guide']);
+
+        var tier2 = document.createElement('tr');
+        labels.forEach(function (lines) {
             var th = document.createElement('th');
             lines.forEach(function (line, idx) {
                 if (idx > 0) th.appendChild(document.createElement('br'));
@@ -604,7 +653,7 @@
         tr.appendChild(th);
     }
 
-    function buildSystemRow(item, data, onRecalc) {
+    function buildSystemRow(item, data, onRecalc, showActualVertIdu) {
         var selection = findSelection(data, item.selectionId);
         var refData = readRefrigerantData(selection);
         var hasData = refrigerantHasData(refData);
@@ -617,36 +666,49 @@
         // Identification cells (always rendered)
         appendIdCells(tr, item, selection);
 
+        // The Reference column always renders, even on no-data rows
+        // (where the link to the IOM is exactly what the "Refer to IOM"
+        // message is pointing at).
+        var refCell = buildReferenceCell(item, selection, data);
+
         if (!hasData) {
-            // Single message cell spans every non-identification column.
+            // Single message cell spans every non-identification column
+            // EXCEPT the Reference column, which still shows its link.
             var noDataTd = document.createElement('td');
             noDataTd.className = 'refrigerant-no-data-cell';
-            noDataTd.colSpan = REFRIGERANT_NON_ID_COLSPAN;
+            noDataTd.colSpan = refrigerantNonIdColspan(showActualVertIdu);
             noDataTd.textContent = 'Refer to outdoor unit installation manual for refrigerant calculations.';
             tr.appendChild(noDataTd);
+            tr.appendChild(refCell);
             return { element: tr, recalc: function () { return null; } };
         }
 
-        // Factory value cells (10 in fixed order)
+        // Factory value cells (7 in fixed order)
         appendFactoryCells(tr, refData, isMultiSplit);
 
-        // Field measurement input cells (3)
+        // Field measurement input cells (2 or 3 depending on showActualVertIdu)
         var savedInputs = item.refrigerantInputs || {};
         var maxOdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)']);
         var maxTotal = parseFloatOrNull(refData['MAX TOTAL LINE SET (FT)']);
         var maxIdu   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)']);
         var inOdu   = makeInputCell('actualVertOdu', maxOdu,   false,         savedInputs.actualVertOdu);
         var inTotal = makeInputCell('actualTotal',   maxTotal, false,         savedInputs.actualTotal);
-        var inIdu   = makeInputCell('actualVertIdu', maxIdu,   !isMultiSplit, savedInputs.actualVertIdu);
+        var inIdu   = null;
+        if (showActualVertIdu) {
+            inIdu = makeInputCell('actualVertIdu', maxIdu, !isMultiSplit, savedInputs.actualVertIdu);
+        }
         tr.appendChild(inOdu.cell);
         tr.appendChild(inTotal.cell);
-        tr.appendChild(inIdu.cell);
+        if (inIdu) tr.appendChild(inIdu.cell);
 
         // Calculated cells (2): combined oz/lbs each, stacked.
         var calcAdd = makeCalcStackedCell();
         var calcTotal = makeCalcStackedCell('refrigerant-calc-cell-emphasize');
         tr.appendChild(calcAdd.cell);
         tr.appendChild(calcTotal.cell);
+
+        // Reference cell (always last)
+        tr.appendChild(refCell);
 
         function recalc() {
             var actualTotal = parseFloatOrNull(inTotal.input.value);
@@ -669,17 +731,25 @@
         }
 
         function persistAndBubble() {
+            // When the IDU column is hidden we still preserve any
+            // previously-saved value so the user can re-enable the
+            // column (by adding a multi-zone system) without losing data.
+            var actualVertIdu = inIdu
+                ? parseFloatOrNull(inIdu.input.value)
+                : (savedInputs.actualVertIdu == null ? null : savedInputs.actualVertIdu);
             HHpro.Cart.updateItem(item.instanceId, {
                 refrigerantInputs: {
                     actualVertOdu: parseFloatOrNull(inOdu.input.value),
                     actualTotal:   parseFloatOrNull(inTotal.input.value),
-                    actualVertIdu: parseFloatOrNull(inIdu.input.value)
+                    actualVertIdu: actualVertIdu
                 }
             });
             onRecalc();
         }
 
-        [inOdu, inTotal, inIdu].forEach(function (ic) {
+        var inputs = [inOdu, inTotal];
+        if (inIdu) inputs.push(inIdu);
+        inputs.forEach(function (ic) {
             if (ic.input.disabled) return;
             ic.input.addEventListener('input', function () {
                 ic.checkWarning();
@@ -692,7 +762,7 @@
         // the end of renderRefrigerantContent handles the first pass).
         inOdu.checkWarning();
         inTotal.checkWarning();
-        inIdu.checkWarning();
+        if (inIdu) inIdu.checkWarning();
 
         return { element: tr, recalc: recalc };
     }
@@ -791,6 +861,114 @@
 
         // 7. Additional Charge
         tr.appendChild(makeFactoryCell(refData['ADDITIONAL CHARGE (OZ/FT)'], 'oz/ft'));
+    }
+
+    // -----------------------------------------------------------------
+    // Reference column
+    // -----------------------------------------------------------------
+    // Last cell in each refrigerant row -- a link to the most relevant
+    // PDF for the selected system:
+    //
+    //   Multi Position Splits:
+    //     - Long Line Set Guide (Light Commercial Three Phase) when the
+    //       outdoor unit is 208/3 or 460/3.
+    //     - Long Line Set Guide (Unitary Single Phase) when the outdoor
+    //       unit is 208/1, the system is 1.5-5 ton, AND the compressor
+    //       is NOT an inverter (the guide doesn't apply to inverter-
+    //       driven systems).
+    //     - Otherwise: outdoor unit Installation Manual.
+    //
+    //   Mini Splits:
+    //     The long-line-set guides don't apply -- always link to the
+    //     outdoor unit's installation manual.
+    // -----------------------------------------------------------------
+
+    function buildReferenceCell(item, selection, data) {
+        var td = document.createElement('td');
+        td.className = 'refrigerant-reference-cell';
+
+        var ref = resolveReferencePdf(item, selection, data);
+        if (!ref) {
+            td.textContent = '—';
+            return td;
+        }
+
+        var link = document.createElement('a');
+        link.href = ref.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.className = 'refrigerant-reference-link';
+        link.textContent = ref.label;
+        if (ref.title) link.title = ref.title;
+        td.appendChild(link);
+        return td;
+    }
+
+    function resolveReferencePdf(item, selection, data) {
+        var product = (HHpro.Data && HHpro.Data.getProduct)
+            ? HHpro.Data.getProduct(item.productKey) : null;
+        var assetsFolder = (product && product.assetsFolder) || '';
+
+        if (item.productKey === 'multi_position_splits') {
+            var rows = (selection && selection.rows) || [];
+            var firstRow = rows[0] || {};
+            var sched = firstRow.scheduleData || {};
+            var filterData = firstRow.filterData || {};
+            var outdoorElectrical = String(sched['W'] || '').trim();
+            var stages = String(sched['AD'] || '').trim().toLowerCase();
+            var size = parseFloat(filterData['SIZE']);
+
+            var isThreePhase = (outdoorElectrical === '208/3' ||
+                                outdoorElectrical === '460/3');
+            var isUnitarySinglePhase = (outdoorElectrical === '208/1' &&
+                                        !isNaN(size) && size >= 1.5 && size <= 5 &&
+                                        stages !== 'inverter');
+
+            if (isThreePhase) {
+                return {
+                    url: encodeURI(assetsFolder +
+                        '/Long Line Set Application Guide - Light Commercial Three Phase.pdf'),
+                    label: 'Long Line Set Guide',
+                    title: 'Long Line Set Application Guide — Light Commercial Three Phase'
+                };
+            }
+            if (isUnitarySinglePhase) {
+                return {
+                    url: encodeURI(assetsFolder +
+                        '/Long Line Set Application Guide - Unitary Sinigle Phase.pdf'),
+                    label: 'Long Line Set Guide',
+                    title: 'Long Line Set Application Guide — Unitary Single Phase'
+                };
+            }
+        }
+
+        return resolveOutdoorIomLink(assetsFolder, selection, data);
+    }
+
+    function resolveOutdoorIomLink(assetsFolder, selection, data) {
+        var docColumns = (data && data.documentationColumns) || [];
+        var iomColumn = null;
+        for (var i = 0; i < docColumns.length; i++) {
+            if (docColumns[i].name === 'INSTALLATION MANUAL (OUTDOOR)') {
+                iomColumn = docColumns[i];
+                break;
+            }
+        }
+        if (!iomColumn) return null;
+
+        var rows = (selection && selection.rows) || [];
+        var firstRow = rows[0] || {};
+        var docData = firstRow.documentationData || {};
+        var filename = docData[iomColumn.name];
+        if (!filename) return null;
+
+        var url = (assetsFolder || '') + '/' + (iomColumn.folder || '') +
+                  '/' + filename + '.' + iomColumn.fileExtension;
+        return {
+            url: encodeURI(url),
+            label: 'Outdoor Unit IOM',
+            title: filename + '.' + iomColumn.fileExtension
+        };
     }
 
     function makeFactoryCell(raw, unit) {
@@ -987,6 +1165,367 @@
             lbsEl.classList.remove('refrigerant-totals-hint');
         }
     }
+
+    // =================================================================
+    // Refrigerant Report PDF
+    // -----------------------------------------------------------------
+    // Opens a clean, printable HTML document in a new window showing
+    // every refrigerant system, its factory specs, the engineer's
+    // entered field measurements, and the calculated charge to add /
+    // total charge. Uses the browser's "Save as PDF" print option.
+    // =================================================================
+
+    /**
+     * Public entry point for the Refrigerant Report PDF. Loads the
+     * product JSONs as needed (gracefully handles the Files tab where
+     * the data is not pre-loaded) and pops up the report window.
+     */
+    function openRefrigerantReport(allItems, dataByKey, projectName) {
+        var refItems = (allItems || []).filter(function (it) {
+            return REFRIGERANT_PRODUCT_KEYS.indexOf(it.productKey) >= 0;
+        });
+        if (!refItems.length) {
+            alert('No refrigerant systems in this project.');
+            return;
+        }
+
+        if (dataByKey) {
+            renderRefrigerantReportWindow(refItems, dataByKey, projectName);
+            return;
+        }
+
+        // Fallback: load product data ourselves (Files-tab entry point).
+        var keys = {};
+        refItems.forEach(function (it) { keys[it.productKey] = true; });
+        var keyList = Object.keys(keys);
+        Promise.all(keyList.map(function (k) {
+            return HHpro.Data.loadProduct(k).then(function (d) {
+                return { key: k, data: d };
+            });
+        })).then(function (results) {
+            var loaded = {};
+            results.forEach(function (r) { loaded[r.key] = r.data; });
+            renderRefrigerantReportWindow(refItems, loaded, projectName);
+        }).catch(function (err) {
+            alert('Could not build refrigerant report: ' +
+                  (err && err.message ? err.message : String(err)));
+        });
+    }
+
+    function renderRefrigerantReportWindow(refItems, dataByKey, projectName) {
+        var w = window.open('', '_blank');
+        if (!w) {
+            alert('Please allow popups from this site to use the PDF report.');
+            return;
+        }
+
+        var docTitle = (projectName ? projectName + ' - ' : '') + 'Refrigerant Report';
+        w.document.open();
+        w.document.write(buildRefrigerantReportHtml(docTitle, projectName,
+                                                    refItems, dataByKey));
+        w.document.close();
+        w.focus();
+        setTimeout(function () {
+            try { w.print(); } catch (e) { /* window may have closed */ }
+        }, 300);
+    }
+
+    function buildRefrigerantReportHtml(docTitle, projectName, refItems, dataByKey) {
+        var showActualVertIdu = hasAnyMultiSplit(refItems, dataByKey);
+        var rowsHtml = [];
+        var totalOz = 0;
+        var totalHasAny = false;
+
+        refItems.forEach(function (item) {
+            var data = dataByKey[item.productKey];
+            if (!data) return;
+            var built = buildReportRow(item, data, showActualVertIdu);
+            rowsHtml.push(built.html);
+            if (built.totalOz !== null && !isNaN(built.totalOz)) {
+                totalOz += built.totalOz;
+                totalHasAny = true;
+            }
+        });
+
+        var dateStr = (function () {
+            var d = new Date();
+            return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        })();
+
+        var totalsLine = totalHasAny
+            ? totalOz.toFixed(2) + ' oz / ' + (totalOz / 16).toFixed(3) + ' lbs'
+            : 'Enter line-set distances on the Refrigerant tab to calculate.';
+
+        return '<!DOCTYPE html>\n<html><head>' +
+            '<meta charset="UTF-8">' +
+            '<title>' + reportEscape(docTitle) + '</title>' +
+            '<style>' + refrigerantReportCss() + '</style>' +
+          '</head><body>' +
+            '<header class="rep-header">' +
+              '<div class="rep-title">REFRIGERANT REPORT</div>' +
+              '<div class="rep-meta">' +
+                (projectName ? '<span><strong>Project:</strong> ' +
+                    reportEscape(projectName) + '</span>' : '') +
+                '<span><strong>Date:</strong> ' + reportEscape(dateStr) + '</span>' +
+              '</div>' +
+            '</header>' +
+            buildRefrigerantReportTable(rowsHtml, showActualVertIdu) +
+            '<div class="rep-totals">' +
+              '<span class="rep-totals-label">Project Total Refrigerant:</span> ' +
+              '<span class="rep-totals-value">' + reportEscape(totalsLine) + '</span>' +
+            '</div>' +
+            '<footer class="rep-footer">Created with HHpro-HVAC.com</footer>' +
+          '</body></html>';
+    }
+
+    function buildRefrigerantReportTable(rowsHtml, showActualVertIdu) {
+        var fieldSpan = showActualVertIdu ? 3 : 2;
+        var head =
+            '<table class="rep-table">' +
+              '<colgroup>' +
+                '<col><col>' +                                   // System (2)
+                '<col><col><col><col><col><col><col>' +          // Factory (7)
+                (showActualVertIdu
+                    ? '<col><col><col>'                           // Field (3)
+                    : '<col><col>') +                             // Field (2)
+                '<col><col>' +                                   // Calc (2)
+                '<col>' +                                        // Reference (1)
+              '</colgroup>' +
+              '<thead>' +
+                '<tr class="rep-tier1">' +
+                  '<th colspan="2">System</th>' +
+                  '<th colspan="7">Factory Values</th>' +
+                  '<th colspan="' + fieldSpan + '">Field Measurements</th>' +
+                  '<th colspan="2">Calculated Charge</th>' +
+                  '<th>Reference</th>' +
+                '</tr>' +
+                '<tr class="rep-tier2">' +
+                  '<th>Outdoor</th><th>Indoor(s)</th>' +
+                  '<th>Refrigerant</th><th>Line Sizes</th>' +
+                  '<th>Max Vert<br>ODU→IDU</th>' +
+                  '<th>Max Vert<br>IDU→IDU</th>' +
+                  '<th>Max Total</th>' +
+                  '<th>Factory<br>Charge</th><th>Additional</th>' +
+                  '<th>Actual Vert<br>ODU→IDU</th>' +
+                  '<th>Actual Total</th>' +
+                  (showActualVertIdu ? '<th>Actual Vert<br>IDU→IDU</th>' : '') +
+                  '<th>To Add</th>' +
+                  '<th>Total<br>Charge</th>' +
+                  '<th>Application<br>Guide</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>' + rowsHtml.join('') + '</tbody>' +
+            '</table>';
+        return head;
+    }
+
+    /**
+     * Build one <tr> for the report: identification cells, then either
+     * a "no data" message cell or the full set of factory / field /
+     * calc cells. Field measurement values come from the saved cart
+     * item, so any inputs the engineer entered on the Refrigerant tab
+     * are reflected. Returns { html, totalOz } so the caller can add
+     * the row to the project total.
+     */
+    function buildReportRow(item, data, showActualVertIdu) {
+        var selection = findSelection(data, item.selectionId);
+        var refData = readRefrigerantData(selection);
+        var hasData = refrigerantHasData(refData);
+        var isMultiSplit = !!(selection && selection.rows && selection.rows.length > 1 &&
+                              item.productKey === 'mini_splits');
+        var inputs = item.refrigerantInputs || {};
+
+        var idHtml = reportIdCell(item, selection, 'outdoor') +
+                     reportIdCell(item, selection, 'indoor');
+
+        var ref = resolveReferencePdf(item, selection, data);
+        var refHtml = ref
+            ? '<td class="rep-ref"><a href="' + reportEscape(ref.url) +
+              '" target="_blank" rel="noopener">' + reportEscape(ref.label) + '</a></td>'
+            : '<td class="rep-ref">—</td>';
+
+        if (!hasData) {
+            var noDataSpan = refrigerantNonIdColspan(showActualVertIdu);
+            var html = '<tr>' + idHtml +
+                '<td class="rep-no-data" colspan="' + noDataSpan + '">' +
+                  'Refer to outdoor unit installation manual for refrigerant calculations.' +
+                '</td>' + refHtml + '</tr>';
+            return { html: html, totalOz: null };
+        }
+
+        var refCells = '';
+        // Factory values (7)
+        refCells += '<td>' + reportFactoryValue(refData['REFRIGERANT']) + '</td>';
+        refCells += '<td>' + reportLineSizesValue(refData) + '</td>';
+        refCells += '<td>' + reportFactoryValue(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)'], 'ft') + '</td>';
+        refCells += '<td' + (isMultiSplit ? '' : ' class="rep-na"') + '>' +
+                    (isMultiSplit
+                        ? reportFactoryValue(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)'], 'ft')
+                        : 'N/A') + '</td>';
+        refCells += '<td>' + reportFactoryValue(refData['MAX TOTAL LINE SET (FT)'], 'ft') + '</td>';
+        refCells += '<td>' + reportFactoryChargeStack(refData) + '</td>';
+        refCells += '<td>' + reportFactoryValue(refData['ADDITIONAL CHARGE (OZ/FT)'], 'oz/ft') + '</td>';
+
+        // Field measurements (2 or 3)
+        refCells += '<td>' + reportFieldValue(inputs.actualVertOdu) + '</td>';
+        refCells += '<td>' + reportFieldValue(inputs.actualTotal) + '</td>';
+        if (showActualVertIdu) {
+            refCells += '<td' + (isMultiSplit ? '' : ' class="rep-na"') + '>' +
+                        (isMultiSplit ? reportFieldValue(inputs.actualVertIdu) : 'N/A') + '</td>';
+        }
+
+        // Calculated charge (2)
+        var actualTotal = parseFloatOrNull(inputs.actualTotal);
+        var preCharge   = parseFloatOrNull(refData['PRE-CHARGE PIPING LENGTH (FT)']);
+        var addCharge   = parseFloatOrNull(refData['ADDITIONAL CHARGE (OZ/FT)']);
+        var factoryOz   = parseFloatOrNull(refData['FACTORY CHARGE (OZ)']);
+
+        var totalOz = null;
+        if (actualTotal !== null && preCharge !== null &&
+            addCharge !== null && factoryOz !== null) {
+            var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
+            totalOz = addedOz + factoryOz;
+            refCells += '<td>' + reportOzLbsStack(addedOz) + '</td>';
+            refCells += '<td class="rep-emph">' + reportOzLbsStack(totalOz) + '</td>';
+        } else {
+            refCells += '<td>—</td><td class="rep-emph">—</td>';
+        }
+
+        return {
+            html: '<tr>' + idHtml + refCells + refHtml + '</tr>',
+            totalOz: totalOz
+        };
+    }
+
+    function reportIdCell(item, selection, which) {
+        var cols = MODEL_COLS_BY_PRODUCT[item.productKey];
+        var rows = (selection && selection.rows) || [];
+        if (!cols || !rows.length) return '<td class="rep-id">—</td>';
+
+        if (which === 'outdoor') {
+            var oTag = (item.tag && String(item.tag).trim()) || '';
+            var oModel = readCell(rows[0], cols.outdoor.model) || '';
+            return '<td class="rep-id">' +
+                   '<div class="rep-id-tag">' + reportEscape(oTag || '—') + '</div>' +
+                   '<div class="rep-id-model">' + reportEscape(oModel || '—') + '</div>' +
+                   '</td>';
+        }
+
+        // Indoor cell: one tag/model pair per row of the selection.
+        var pairs = rows.map(function (row, idx) {
+            return {
+                tag:   (item.indoorTags && item.indoorTags[idx]) || '',
+                model: readCell(row, cols.indoor.model) || ''
+            };
+        }).filter(function (p) { return p.tag || p.model; });
+        if (!pairs.length) pairs.push({ tag: '', model: '' });
+
+        return '<td class="rep-id">' +
+               pairs.map(function (p, idx) {
+                   return '<div class="rep-id-block' +
+                          (idx > 0 ? ' rep-id-block-divider' : '') + '">' +
+                          '<div class="rep-id-tag">' + reportEscape(p.tag || '—') + '</div>' +
+                          '<div class="rep-id-model">' + reportEscape(p.model || '—') + '</div>' +
+                          '</div>';
+               }).join('') +
+               '</td>';
+    }
+
+    function reportFactoryValue(raw, unit) {
+        if (raw === null || raw === undefined || raw === '' || raw === '-') return '—';
+        return reportEscape(unit ? (String(raw) + ' ' + unit) : String(raw));
+    }
+
+    function reportLineSizesValue(refData) {
+        var liquid  = refData['LIQUID LINE CONNECTION (IN)'];
+        var suction = refData['SUCTION LINE CONNECTION (IN)'];
+        var lines = [];
+        if (liquid && liquid !== '-') lines.push('Liquid: ' + liquid + '"');
+        if (suction && suction !== '-') lines.push('Suction: ' + suction + '"');
+        if (!lines.length) return '—';
+        return lines.map(reportEscape).join('<br>');
+    }
+
+    function reportFactoryChargeStack(refData) {
+        var oz  = refData['FACTORY CHARGE (OZ)'];
+        var lbs = refData['FACTORY CHARGE (LBS)'];
+        var ft  = refData['PRE-CHARGE PIPING LENGTH (FT)'];
+        var lines = [];
+        if (oz != null && oz !== '' && oz !== '-') lines.push(oz + ' oz');
+        if (lbs != null && lbs !== '' && lbs !== '-') lines.push(lbs + ' lbs');
+        if (ft != null && ft !== '' && ft !== '-') lines.push(ft + ' ft');
+        if (!lines.length) return '—';
+        return lines.map(reportEscape).join('<br>');
+    }
+
+    function reportFieldValue(v) {
+        if (v === null || v === undefined || v === '') return '—';
+        return reportEscape(String(v) + ' ft');
+    }
+
+    function reportOzLbsStack(oz) {
+        if (oz === null || oz === undefined || isNaN(oz)) return '—';
+        return reportEscape(oz.toFixed(2) + ' oz') + '<br>' +
+               reportEscape((oz / 16).toFixed(3) + ' lbs');
+    }
+
+    function reportEscape(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function refrigerantReportCss() {
+        return '' +
+            '@page { size: letter landscape; margin: 0.4in; }' +
+            'html, body { margin: 0; padding: 0; background: #fff; color: #000;' +
+                  ' font-family: Calibri, Arial, sans-serif; font-size: 9pt; }' +
+            '.rep-header { display: flex; justify-content: space-between;' +
+                  ' align-items: flex-end; margin-bottom: 8px;' +
+                  ' border-bottom: 2px solid #000; padding-bottom: 4px; }' +
+            '.rep-title { font-size: 16pt; font-weight: 700;' +
+                  ' letter-spacing: 0.04em; }' +
+            '.rep-meta { font-size: 9pt; }' +
+            '.rep-meta span { margin-left: 16px; }' +
+            'table.rep-table { border-collapse: collapse; width: 100%;' +
+                  ' table-layout: auto; font-size: 8pt; }' +
+            '.rep-table th, .rep-table td { border: 1px solid #000;' +
+                  ' padding: 4px 6px; text-align: center; vertical-align: middle;' +
+                  ' background: #fff; color: #000; }' +
+            '.rep-table thead th { font-weight: 700; }' +
+            '.rep-tier1 th { background: #222 !important; color: #fff !important;' +
+                  ' text-transform: uppercase; letter-spacing: 0.05em;' +
+                  ' font-size: 8pt; }' +
+            '.rep-tier2 th { background: #f0f0f0 !important; font-size: 7.5pt;' +
+                  ' text-transform: uppercase; letter-spacing: 0.03em;' +
+                  ' line-height: 1.2; }' +
+            '.rep-table td.rep-id { text-align: left; min-width: 110px; }' +
+            '.rep-id-tag { font-weight: 700; font-size: 8.5pt; }' +
+            '.rep-id-model { font-size: 7.5pt; word-break: break-all; }' +
+            '.rep-id-block + .rep-id-block-divider { margin-top: 3px;' +
+                  ' padding-top: 3px; border-top: 1px dotted #888; }' +
+            '.rep-na { color: #888; font-style: italic; }' +
+            '.rep-no-data { text-align: left; font-style: italic; color: #555; }' +
+            '.rep-emph { font-weight: 700; }' +
+            '.rep-ref a { color: #0a4a8a; text-decoration: underline; }' +
+            '.rep-totals { margin-top: 12px; padding: 8px 12px;' +
+                  ' border: 1.5px solid #000; font-size: 11pt; }' +
+            '.rep-totals-label { font-weight: 700; text-transform: uppercase;' +
+                  ' letter-spacing: 0.04em; }' +
+            '.rep-totals-value { font-weight: 700; margin-left: 6px; }' +
+            '.rep-footer { margin-top: 14px; text-align: right;' +
+                  ' font-size: 7pt; color: #888; font-style: italic; }' +
+            '@media print {' +
+                ' * { -webkit-print-color-adjust: exact !important;' +
+                '     print-color-adjust: exact !important; } }';
+    }
+
+    // Expose so the Files-tab toolbar (which renders independently of
+    // the refrigerant data load) can launch the report.
+    HHpro.Views.project_view.openRefrigerantReport = openRefrigerantReport;
 
     // =================================================================
     // Product tab body: toolbar + schedule
@@ -2297,6 +2836,26 @@
         var countLabel = document.createElement('div');
         countLabel.className = 'files-count-label';
         toolbar.appendChild(countLabel);
+
+        // Refrigerant Report PDF -- only relevant when the project
+        // contains at least one refrigerant-bearing system. The button
+        // lives next to Download ZIP so the engineer can grab the
+        // report without switching tabs.
+        var hasRefrig = (activeState.items || []).some(function (it) {
+            return REFRIGERANT_PRODUCT_KEYS.indexOf(it.productKey) >= 0;
+        });
+        if (hasRefrig) {
+            var refReportBtn = document.createElement('button');
+            refReportBtn.type = 'button';
+            refReportBtn.className = 'projects-btn projects-btn-secondary';
+            refReportBtn.textContent = 'Refrigerant Report PDF';
+            refReportBtn.title = 'Open a printable refrigerant report for this project';
+            refReportBtn.addEventListener('click', function () {
+                openRefrigerantReport(activeState.items, null,
+                                      activeState.name || '');
+            });
+            toolbar.appendChild(refReportBtn);
+        }
 
         var downloadBtn = document.createElement('button');
         downloadBtn.type = 'button';
