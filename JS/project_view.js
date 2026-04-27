@@ -771,6 +771,18 @@
         tr.appendChild(refCell);
 
         function recalc() {
+            // If any field measurement exceeds its system maximum, the
+            // entered length is invalid for this unit -- show "—" for
+            // To Add / Total Charge instead of a misleading number, and
+            // exclude this row from the project total.
+            var anyOverMax = inOdu.isOverMax() || inTotal.isOverMax() ||
+                             (inIdu && inIdu.isOverMax());
+            if (anyOverMax) {
+                calcAdd.update(null, null);
+                calcTotal.update(null, null);
+                return null;
+            }
+
             var actualTotal = parseFloatOrNull(inTotal.input.value);
             var preCharge   = parseFloatOrNull(refData['PRE-CHARGE PIPING LENGTH (FT)']);
             var addCharge   = parseFloatOrNull(refData['ADDITIONAL CHARGE (OZ/FT)']);
@@ -1095,10 +1107,15 @@
         }
         td.appendChild(input);
 
+        function isOverMax() {
+            if (disabled) return false;
+            var v = parseFloatOrNull(input.value);
+            return v !== null && max !== null && v > max;
+        }
+
         function checkWarning() {
             if (disabled) return;
-            var v = parseFloatOrNull(input.value);
-            if (v !== null && max !== null && v > max) {
+            if (isOverMax()) {
                 td.classList.add('refrigerant-input-cell-warn');
                 td.title = '⚠  Exceeds the system’s maximum of ' + max + ' ft.';
             } else {
@@ -1107,7 +1124,7 @@
             }
         }
 
-        return { cell: td, input: input, checkWarning: checkWarning };
+        return { cell: td, input: input, checkWarning: checkWarning, isOverMax: isOverMax };
     }
 
     /**
@@ -1426,12 +1443,31 @@
         refCells += '<td>' + reportFactoryChargeStack(refData) + '</td>';
         refCells += '<td>' + reportFactoryValue(refData['ADDITIONAL CHARGE (OZ/FT)'], 'oz/ft') + '</td>';
 
-        // Field measurements (2 or 3)
-        refCells += '<td>' + reportFieldValue(inputs.actualVertOdu) + '</td>';
-        refCells += '<td>' + reportFieldValue(inputs.actualTotal) + '</td>';
+        // Field measurements (2 or 3) -- match the on-screen behavior:
+        // any value above the system's maximum highlights the cell red
+        // and suppresses the calculated charge for the row.
+        var maxOduFt   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (ODU TO IDU) (FT)']);
+        var maxTotalFt = parseFloatOrNull(refData['MAX TOTAL LINE SET (FT)']);
+        var maxIduFt   = parseFloatOrNull(refData['MAX VERTICAL SEPARATION (IDU TO IDU) (FT)']);
+        var oduFt      = parseFloatOrNull(inputs.actualVertOdu);
+        var totalFt    = parseFloatOrNull(inputs.actualTotal);
+        var iduFt      = parseFloatOrNull(inputs.actualVertIdu);
+        var oduOver    = oduFt   !== null && maxOduFt   !== null && oduFt   > maxOduFt;
+        var totalOver  = totalFt !== null && maxTotalFt !== null && totalFt > maxTotalFt;
+        var iduOver    = isMultiSplit && iduFt !== null && maxIduFt !== null && iduFt > maxIduFt;
+        var anyOverMax = oduOver || totalOver || iduOver;
+
+        refCells += '<td' + (oduOver ? ' class="rep-warn"' : '') + '>' +
+                    reportFieldValue(inputs.actualVertOdu) + '</td>';
+        refCells += '<td' + (totalOver ? ' class="rep-warn"' : '') + '>' +
+                    reportFieldValue(inputs.actualTotal) + '</td>';
         if (showActualVertIdu) {
-            refCells += '<td' + (isMultiSplit ? '' : ' class="rep-na"') + '>' +
-                        (isMultiSplit ? reportFieldValue(inputs.actualVertIdu) : 'N/A') + '</td>';
+            if (isMultiSplit) {
+                refCells += '<td' + (iduOver ? ' class="rep-warn"' : '') + '>' +
+                            reportFieldValue(inputs.actualVertIdu) + '</td>';
+            } else {
+                refCells += '<td class="rep-na">N/A</td>';
+            }
         }
 
         // Calculated charge (2)
@@ -1441,7 +1477,7 @@
         var factoryOz   = parseFloatOrNull(refData['FACTORY CHARGE (OZ)']);
 
         var totalOz = null;
-        if (actualTotal !== null && preCharge !== null &&
+        if (!anyOverMax && actualTotal !== null && preCharge !== null &&
             addCharge !== null && factoryOz !== null) {
             var addedOz = Math.max(0, actualTotal - preCharge) * addCharge;
             totalOz = addedOz + factoryOz;
@@ -1569,6 +1605,11 @@
                   ' padding-top: 3px; border-top: 1px dotted #888; }' +
             '.rep-na { color: #888; font-style: italic; }' +
             '.rep-no-data { text-align: left; font-style: italic; color: #555; }' +
+            // Field-measurement cell whose value exceeds the system\'s
+            // maximum -- mirrors the on-screen red highlight so the
+            // engineer can see the same flag on the printed report.
+            '.rep-warn { background: #fde2e2 !important;' +
+                  ' color: #b91c1c !important; font-weight: 700; }' +
             '.rep-emph { font-weight: 700; }' +
             '.rep-ref a { color: #0a4a8a; text-decoration: underline; }' +
             '.rep-totals { margin-top: 12px; padding: 8px 12px;' +
@@ -1942,7 +1983,7 @@
                     var cell = layout[rowIndex][colLetter];
                     if (cell === null) return;
                     var td = document.createElement('td');
-                    td.textContent = formatCellValue(cell.value);
+                    td.textContent = formatCellValue(cell.value, colLetter, productKey);
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
                     tr.appendChild(td);
@@ -2248,7 +2289,12 @@
         return layout;
     }
 
-    function formatCellValue(val) {
+    function formatCellValue(val, colLetter, productKey) {
+        var ext = productKey && HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
+        if (ext && typeof ext.formatScheduleCellValue === 'function') {
+            var override = ext.formatScheduleCellValue(colLetter, val);
+            if (override !== undefined) return override;
+        }
         if (val === null || val === undefined) return '';
         return String(val);
     }

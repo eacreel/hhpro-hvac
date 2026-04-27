@@ -15,6 +15,13 @@
          can be added/removed dynamically (used by mini_splits to
          reveal per-indoor-unit filters once the user picks a value
          for NUMBER OF INDOOR UNITS).
+     formatScheduleCellValue(colLetter, value)
+         Per-column override for how a schedule data cell is
+         rendered. Return a string to use that string verbatim, or
+         undefined to fall through to the default String(value)
+         formatting. Applied identically on the browse schedule,
+         the project view schedule, and the XLSX/PDF export so the
+         displayed value is consistent everywhere.
 
    Filter behavior:
      - Cascading dropdowns: each dropdown's options reflect what's
@@ -715,7 +722,7 @@
                     var cell = layout[rowIndex][colLetter];
                     if (cell === null) return; // covered by rowSpan/colSpan from earlier
                     var td = document.createElement('td');
-                    td.textContent = formatCellValue(cell.value);
+                    td.textContent = formatCellValue(cell.value, colLetter, product && product.productKey);
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
                     tr.appendChild(td);
@@ -813,7 +820,12 @@
         return layout;
     }
 
-    function formatCellValue(val) {
+    function formatCellValue(val, colLetter, productKey) {
+        var ext = productKey && HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
+        if (ext && typeof ext.formatScheduleCellValue === 'function') {
+            var override = ext.formatScheduleCellValue(colLetter, val);
+            if (override !== undefined) return override;
+        }
         if (val === null || val === undefined) return '';
         return String(val);
     }

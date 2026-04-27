@@ -291,7 +291,7 @@ WHAT'S IN THE GRID
                     var targetCol = letterToCol[letter];
                     putCell(rows, merges,
                             curRow + rIdx, targetCol,
-                            { value: formatCellValue(cell.value), dataRow: true },
+                            { value: formatCellValue(cell.value, letter, productKey), dataRow: true },
                             cell.rowSpan || 1,
                             cell.colSpan || 1);
                 });
@@ -1231,7 +1231,12 @@ WHAT'S IN THE GRID
         return null;
     }
 
-    function formatCellValue(val) {
+    function formatCellValue(val, colLetter, productKey) {
+        var ext = productKey && HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
+        if (ext && typeof ext.formatScheduleCellValue === 'function') {
+            var override = ext.formatScheduleCellValue(colLetter, val);
+            if (override !== undefined) return override;
+        }
         if (val === null || val === undefined) return '';
         if (typeof val === 'number') {
             // Strip trailing .0 from whole numbers, keep decimals otherwise
