@@ -1007,7 +1007,7 @@
             if (isUnitarySinglePhase) {
                 return {
                     url: encodeURI(assetsFolder +
-                        '/Long Line Set Application Guide - Unitary Sinigle Phase.pdf'),
+                        '/Long Line Set Application Guide - Unitary Single Phase.pdf'),
                     label: 'Long Line Set Guide',
                     title: 'Long Line Set Application Guide — Unitary Single Phase'
                 };
