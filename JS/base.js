@@ -88,6 +88,18 @@
         findModelColumns: function (data) { return findModelColumns(data); },
         applyModelFilter: function (selections, query, data) {
             return applyModelFilter(selections, query, data);
+        },
+        // kW-variant family helpers. A "family" is a set of selections
+        // that differ only in the variant column (kW) + its dependent
+        // columns (e.g. Temperature Rise, MCA, MOP). The browse page
+        // and the project-view schedule both render one row per
+        // family with a kW dropdown.
+        getKwVariants: function (productKey) { return getKwVariantsConfig(productKey); },
+        groupKwFamilies: function (selections, kwVariants) {
+            return groupKwFamilies(selections, kwVariants);
+        },
+        findKwFamilyForSelection: function (data, productKey, selectionId) {
+            return findKwFamilyForSelection(data, productKey, selectionId);
         }
     };
 
@@ -483,6 +495,18 @@
 
     function getVisibleFilters(productKey, data, currentFilters) {
         var allFilters = (data.filterColumns || []).slice();
+
+        // Drop the kW filter on products that merge kW variants into
+        // a single row -- the dropdown in the kW cell takes over the
+        // role of "pick a kW," and the per-row choice is independent
+        // for each line in the schedule.
+        var kw = getKwVariantsConfig(productKey);
+        if (kw && kw.filterName) {
+            allFilters = allFilters.filter(function (fc) {
+                return fc.name !== kw.filterName;
+            });
+        }
+
         var ext = HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
         if (ext && typeof ext.getVisibleFilters === 'function') {
             var result = ext.getVisibleFilters(allFilters, currentFilters);
@@ -700,6 +724,17 @@
         var colIndexMap = {}; // letter -> index in colLetters
         colLetters.forEach(function (l, i) { colIndexMap[l] = i; });
 
+        // kW-merging products collapse same-system / different-kW
+        // selections into one row with a kW dropdown.
+        var kwVariants = product && product.kwVariants;
+        if (kwVariants) {
+            var families = groupKwFamilies(selections, kwVariants);
+            families.forEach(function (fam) {
+                tbody.appendChild(buildKwFamilyRow(fam, kwVariants, product, data, colLetters));
+            });
+            return tbody;
+        }
+
         selections.forEach(function (sel) {
             if (!sel.rows || !sel.rows.length) return;
             var layout = computeCellLayout(sel, colLetters, colIndexMap);
@@ -714,7 +749,7 @@
                     var td = document.createElement('td');
                     td.className = 'actions-cell';
                     if (sel.rows.length > 1) td.rowSpan = sel.rows.length;
-                    td.appendChild(buildActionButtons(sel, product, data));
+                    td.appendChild(buildActionButtons(function () { return sel; }, product, data));
                     tr.appendChild(td);
                 }
 
@@ -865,9 +900,13 @@
 
     // ---------------------------------------------------------------
     // Per-row action buttons
+    //
+    // Takes a `getSel` function rather than a fixed selection so
+    // kW-variant rows can swap which variant the buttons act on
+    // when the user changes the dropdown.
     // ---------------------------------------------------------------
 
-    function buildActionButtons(sel, product, data) {
+    function buildActionButtons(getSel, product, data) {
         var row = document.createElement('div');
         row.className = 'actions-row';
 
@@ -878,6 +917,7 @@
         selectBtn.textContent = 'Select';
         selectBtn.addEventListener('click', function () {
             if (!HHpro.Cart || typeof HHpro.Cart.addItem !== 'function') return;
+            var sel = getSel();
             // Compute a human-readable label for the cart now (so the cart
             // doesn't need access to product data later just to display items).
             var label = HHpro.Cart.computeLabel
@@ -893,7 +933,7 @@
         subBtn.textContent = 'Submittal';
         subBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openSubmittal === 'function') {
-                HHpro.Docs.openSubmittal(product, sel, data);
+                HHpro.Docs.openSubmittal(product, getSel(), data);
             }
         });
 
@@ -904,7 +944,7 @@
         docsBtn.textContent = 'Docs';
         docsBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openDocsModal === 'function') {
-                HHpro.Docs.openDocsModal(product, sel, data);
+                HHpro.Docs.openDocsModal(product, getSel(), data);
             }
         });
 
@@ -912,5 +952,239 @@
         row.appendChild(subBtn);
         row.appendChild(docsBtn);
         return row;
+    }
+
+    // ---------------------------------------------------------------
+    // kW-family row (used by buildScheduleBody for products that
+    // merge kW variants -- see HHpro.Schedule.groupKwFamilies).
+    // ---------------------------------------------------------------
+
+    function buildKwFamilyRow(fam, kwVariants, product, data, colLetters) {
+        var tr = document.createElement('tr');
+        tr.className = 'selection-boundary';
+
+        var currentIdx = fam.defaultIdx;
+        function getCurrentSel() { return fam.variants[currentIdx].sel; }
+
+        // Actions cell -- buttons read the live variant via getSel.
+        var actionsTd = document.createElement('td');
+        actionsTd.className = 'actions-cell';
+        actionsTd.appendChild(buildActionButtons(getCurrentSel, product, data));
+        tr.appendChild(actionsTd);
+
+        // Track tds for the variant column + dependent columns so we
+        // can re-render them when the dropdown changes.
+        var depCells = {};
+        var variantCol = kwVariants.variantColumn;
+        var depCols = kwVariants.dependentColumns || [];
+        var depColSet = {};
+        depCols.forEach(function (c) { depColSet[c] = true; });
+
+        colLetters.forEach(function (colLetter) {
+            var td = document.createElement('td');
+
+            if (colLetter === variantCol) {
+                td.classList.add('kw-variant-cell');
+                td.appendChild(buildKwSelect(fam, currentIdx, function (newIdx) {
+                    currentIdx = newIdx;
+                    refreshDependents();
+                }));
+            } else {
+                var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
+                td.textContent = formatCellValue(sd[colLetter], colLetter, product && product.productKey);
+                if (depColSet[colLetter]) depCells[colLetter] = td;
+            }
+
+            tr.appendChild(td);
+        });
+
+        function refreshDependents() {
+            var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
+            depCols.forEach(function (col) {
+                var td = depCells[col];
+                if (td) td.textContent = formatCellValue(sd[col], col, product && product.productKey);
+            });
+        }
+
+        return tr;
+    }
+
+    /**
+     * Build the kW <select> + chevron icon for the variant cell.
+     * Calls onChange(newIdx) whenever the user picks a different kW.
+     */
+    function buildKwSelect(fam, initialIdx, onChange) {
+        var wrap = document.createElement('span');
+        wrap.className = 'kw-variant-control';
+
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', 'Aux electric heat (kW)');
+
+        fam.variants.forEach(function (v, idx) {
+            var opt = document.createElement('option');
+            opt.value = String(idx);
+            opt.textContent = formatKwLabel(v.kw);
+            if (idx === initialIdx) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', function () {
+            var idx = parseInt(select.value, 10);
+            if (isNaN(idx)) idx = 0;
+            onChange(idx);
+        });
+
+        var chevron = document.createElement('span');
+        chevron.className = 'kw-variant-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '▾'; // ▾
+
+        wrap.appendChild(select);
+        wrap.appendChild(chevron);
+        return wrap;
+    }
+
+    function formatKwLabel(kw) {
+        if (kw === null || kw === undefined || kw === '') return '';
+        return String(kw);
+    }
+
+    // ---------------------------------------------------------------
+    // kW-variant family helpers
+    // ---------------------------------------------------------------
+
+    function getKwVariantsConfig(productKey) {
+        if (!productKey || !HHpro.Data || !HHpro.Data.getProduct) return null;
+        var product = HHpro.Data.getProduct(productKey);
+        return (product && product.kwVariants) || null;
+    }
+
+    /**
+     * Group a flat selection list into "kW families." Two selections
+     * are in the same family iff they agree on every scheduleData
+     * column EXCEPT the variant column and its dependent columns.
+     *
+     * Returns an array of:
+     *   { defaultSel, defaultIdx, variants: [{kw, sel}, ...] }
+     * with variants sorted so the configured defaultValue (e.g. "-"
+     * or 0) comes first, then the rest numerically ascending.
+     */
+    function groupKwFamilies(selections, kwVariants) {
+        if (!Array.isArray(selections) || !selections.length) return [];
+        if (!kwVariants) {
+            return selections.map(function (sel) {
+                return {
+                    defaultSel: sel,
+                    defaultIdx: 0,
+                    variants: [{ kw: null, sel: sel }]
+                };
+            });
+        }
+
+        var variantCol = kwVariants.variantColumn;
+        var dependents = kwVariants.dependentColumns || [];
+        var ignored = {};
+        ignored[variantCol] = true;
+        dependents.forEach(function (c) { ignored[c] = true; });
+
+        var families = [];
+        var byKey = {};
+
+        selections.forEach(function (sel) {
+            // Multi-row selections aren't expected for kW-merging
+            // products, but if one shows up just treat it as its
+            // own family rather than mis-merging.
+            if (!sel.rows || sel.rows.length !== 1) {
+                families.push({
+                    defaultSel: sel,
+                    defaultIdx: 0,
+                    variants: [{ kw: readVariantKw(sel, variantCol), sel: sel }]
+                });
+                return;
+            }
+            var key = familyKey(sel.rows[0].scheduleData || {}, ignored);
+            var fam = byKey[key];
+            if (!fam) {
+                fam = { defaultSel: null, defaultIdx: 0, variants: [] };
+                byKey[key] = fam;
+                families.push(fam);
+            }
+            fam.variants.push({ kw: readVariantKw(sel, variantCol), sel: sel });
+        });
+
+        var defaultValue = kwVariants.defaultValue;
+        families.forEach(function (fam) {
+            fam.variants.sort(function (a, b) { return compareKw(a.kw, b.kw, defaultValue); });
+            fam.defaultIdx = 0;
+            for (var i = 0; i < fam.variants.length; i++) {
+                if (sameKw(fam.variants[i].kw, defaultValue)) {
+                    fam.defaultIdx = i;
+                    break;
+                }
+            }
+            fam.defaultSel = fam.variants[fam.defaultIdx].sel;
+        });
+
+        return families;
+    }
+
+    function readVariantKw(sel, variantCol) {
+        var sd = (sel.rows && sel.rows[0] && sel.rows[0].scheduleData) || {};
+        return sd[variantCol];
+    }
+
+    function familyKey(scheduleData, ignored) {
+        var keys = Object.keys(scheduleData).filter(function (k) { return !ignored[k]; });
+        keys.sort();
+        var parts = keys.map(function (k) {
+            var v = scheduleData[k];
+            return k + '=' + (v === null || v === undefined ? '' : String(v));
+        });
+        return parts.join('|');
+    }
+
+    function sameKw(a, b) {
+        if (a === b) return true;
+        // Numeric equality across "5" and 5
+        var an = parseFloat(a);
+        var bn = parseFloat(b);
+        if (!isNaN(an) && !isNaN(bn)) return an === bn;
+        return String(a) === String(b);
+    }
+
+    function compareKw(a, b, defaultValue) {
+        if (defaultValue !== undefined) {
+            if (sameKw(a, defaultValue)) return -1;
+            if (sameKw(b, defaultValue)) return 1;
+        }
+        var an = parseFloat(a);
+        var bn = parseFloat(b);
+        var aNum = !isNaN(an);
+        var bNum = !isNaN(bn);
+        if (aNum && bNum) return an - bn;
+        if (aNum) return -1;
+        if (bNum) return 1;
+        return String(a).localeCompare(String(b));
+    }
+
+    /**
+     * Find the family that contains a given selection id, scoped to
+     * the full product data (not a filtered subset). Used by the
+     * project-view schedule to look up the dropdown options for a
+     * cart item's chosen variant.
+     */
+    function findKwFamilyForSelection(data, productKey, selectionId) {
+        var kw = getKwVariantsConfig(productKey);
+        if (!kw || !data || !Array.isArray(data.selections)) return null;
+        var families = groupKwFamilies(data.selections, kw);
+        for (var i = 0; i < families.length; i++) {
+            for (var j = 0; j < families[i].variants.length; j++) {
+                if (families[i].variants[j].sel.id === selectionId) {
+                    return { family: families[i], variantIdx: j };
+                }
+            }
+        }
+        return null;
     }
 })();

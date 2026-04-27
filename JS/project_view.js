@@ -1810,6 +1810,20 @@
         return null;
     }
 
+    /** Look up the live cart item by instanceId. Used by per-row
+     *  click handlers (Docs, etc.) so they read the latest
+     *  selectionId after a kW dropdown change rather than the
+     *  closure-captured one from build time. */
+    function findLiveItem(instanceId) {
+        if (!HHpro.Cart || typeof HHpro.Cart.getActiveState !== 'function') return null;
+        var st = HHpro.Cart.getActiveState();
+        var items = (st && st.items) || [];
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].instanceId === instanceId) return items[i];
+        }
+        return null;
+    }
+
     function buildProjectScheduleHead(productKey, data, visibleLetters) {
         var thead = document.createElement('thead');
         var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
@@ -1907,11 +1921,26 @@
     function buildProjectScheduleBody(productKey, selections, visibleLetters, data) {
         var tbody = document.createElement('tbody');
 
+        // kW-variant family lookup is needed for the dropdown -- one
+        // call per render covers the whole tab. Null when the product
+        // doesn't merge kW variants.
+        var kwVariants = (HHpro.Schedule && HHpro.Schedule.getKwVariants)
+            ? HHpro.Schedule.getKwVariants(productKey) : null;
+
         selections.forEach(function (entry) {
             var item = entry.item;
             var sel = entry.selection;
             var numRows = sel.rows.length;
             var layout = computeCellLayout(sel, visibleLetters);
+
+            // For kW-merging products, find the family + variant index
+            // for this cart item so the dropdown starts on the saved
+            // variant and the dependent cells render its values.
+            var kwFamilyInfo = null;
+            if (kwVariants && HHpro.Schedule && HHpro.Schedule.findKwFamilyForSelection) {
+                kwFamilyInfo = HHpro.Schedule.findKwFamilyForSelection(
+                    data, productKey, item.selectionId);
+            }
 
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
@@ -1946,6 +1975,11 @@
                     // popup the main product pages use, so people can
                     // grab a submittal/install/etc. for an item that's
                     // already in the schedule without navigating away.
+                    // Look up the selection at click time -- for
+                    // kW-merging products the cart item's selectionId
+                    // changes when the engineer picks a different kW
+                    // from the row's dropdown, and the documentation
+                    // varies per variant (different submittal per kW).
                     var docsBtn = document.createElement('button');
                     docsBtn.type = 'button';
                     docsBtn.className = 'project-sched-docs-btn';
@@ -1954,7 +1988,9 @@
                     docsBtn.addEventListener('click', function () {
                         if (HHpro.Docs && typeof HHpro.Docs.openDocsModal === 'function') {
                             var product = HHpro.Data.getProduct(productKey);
-                            HHpro.Docs.openDocsModal(product, sel, data);
+                            var liveItem = findLiveItem(item.instanceId) || item;
+                            var liveSel = findSelectionById(data, liveItem.selectionId) || sel;
+                            HHpro.Docs.openDocsModal(product, liveSel, data);
                         }
                     });
                     actionsWrap.appendChild(docsBtn);
@@ -1979,11 +2015,30 @@
                 }
 
                 // Schedule data cells
+                var depCells = {};
+                var depColSet = {};
+                if (kwVariants && rowIndex === 0) {
+                    (kwVariants.dependentColumns || []).forEach(function (c) {
+                        depColSet[c] = true;
+                    });
+                }
+
                 visibleLetters.forEach(function (colLetter) {
                     var cell = layout[rowIndex][colLetter];
                     if (cell === null) return;
                     var td = document.createElement('td');
-                    td.textContent = formatCellValue(cell.value, colLetter, productKey);
+
+                    if (kwVariants && rowIndex === 0 && kwFamilyInfo &&
+                        colLetter === kwVariants.variantColumn) {
+                        td.classList.add('kw-variant-cell');
+                        td.appendChild(buildProjectKwSelect(
+                            kwFamilyInfo, item, productKey, data,
+                            depCells, kwVariants));
+                    } else {
+                        td.textContent = formatCellValue(cell.value, colLetter, productKey);
+                        if (depColSet[colLetter]) depCells[colLetter] = td;
+                    }
+
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
                     tr.appendChild(td);
@@ -2061,6 +2116,71 @@
             onSave: function (val) { setIndoorTag(item, rowIndex, val); }
         }));
         return td;
+    }
+
+    /**
+     * kW dropdown for the project schedule. Same shape as the browse
+     * page (select + chevron) but on change the new variant's
+     * selection.id is persisted to the cart item, the dependent
+     * cells (Temp Rise / MCA / MOP / etc.) update in place, and the
+     * cart-panel label is recomputed.
+     */
+    function buildProjectKwSelect(familyInfo, item, productKey, data, depCells, kwVariants) {
+        var family = familyInfo.family;
+        var variants = family.variants;
+        var currentIdx = familyInfo.variantIdx;
+
+        var wrap = document.createElement('span');
+        wrap.className = 'kw-variant-control';
+
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', 'Aux electric heat (kW)');
+
+        variants.forEach(function (v, idx) {
+            var opt = document.createElement('option');
+            opt.value = String(idx);
+            var kw = v.kw;
+            opt.textContent = (kw === null || kw === undefined || kw === '') ? '' : String(kw);
+            if (idx === currentIdx) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', function () {
+            var idx = parseInt(select.value, 10);
+            if (isNaN(idx) || idx < 0 || idx >= variants.length) return;
+            currentIdx = idx;
+            var newSel = variants[idx].sel;
+
+            // Update dependent cell text in place using the new
+            // variant's scheduleData (so the user sees the change
+            // immediately without re-rendering the whole table).
+            var sd = (newSel.rows[0] && newSel.rows[0].scheduleData) || {};
+            (kwVariants.dependentColumns || []).forEach(function (col) {
+                var td = depCells[col];
+                if (td) td.textContent = formatCellValue(sd[col], col, productKey);
+            });
+
+            // Persist the new variant on the cart item. Recompute the
+            // label so the cart panel stays in sync.
+            var product = HHpro.Data.getProduct(productKey);
+            var label = (HHpro.Cart && HHpro.Cart.computeLabel)
+                ? HHpro.Cart.computeLabel(product, newSel, data)
+                : (item.label || newSel.id);
+            HHpro.Cart.updateItem(item.instanceId, {
+                selectionId: newSel.id,
+                label: label
+            });
+        });
+
+        var chevron = document.createElement('span');
+        chevron.className = 'kw-variant-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '▾';
+
+        wrap.appendChild(select);
+        wrap.appendChild(chevron);
+        return wrap;
     }
 
     function buildAccessoriesCell(item, numRows) {

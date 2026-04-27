@@ -52,7 +52,19 @@
             jsonFile: 'DATA/JSON/multi_position_splits.json',
             pictureFile: 'DATA/PICTURES/MULTI POSITION SPLITS.jpg',
             assetsFolder: 'ASSETS/MULTI POSITION SPLITS',
-            tileClass: 'tile-multi-position-splits'
+            tileClass: 'tile-multi-position-splits',
+            // Collapse selections that differ only in AUX. ELECTRIC HEAT
+            // kW into a single row with a kW dropdown. The dropdown
+            // swaps the dependent columns (TEMPERATURE RISE, MCA, MOP)
+            // to the chosen variant's values; Select / Submittal / Docs
+            // and the project-view schedule all act on whichever variant
+            // is currently selected.
+            kwVariants: {
+                variantColumn: 'L',
+                dependentColumns: ['M', 'O', 'P'],
+                filterName: 'KW',
+                defaultValue: '-'
+            }
         },
         {
             productKey: 'marvair',
@@ -60,7 +72,17 @@
             jsonFile: 'DATA/JSON/marvair.json',
             pictureFile: 'DATA/PICTURES/MARVAIR VERTICAL WALL MOUNT.jpg',
             assetsFolder: 'ASSETS/MARVAIR',
-            tileClass: 'tile-marvair'
+            tileClass: 'tile-marvair',
+            // Collapse selections that differ only in ELECTRIC HEAT (KW)
+            // into a single row with a kW dropdown. The dropdown swaps
+            // the dependent columns (MCA, MOCP) to the chosen variant's
+            // values. See multi_position_splits above for details.
+            kwVariants: {
+                variantColumn: 'I',
+                dependentColumns: ['K', 'L'],
+                filterName: 'ELECTRIC HEAT',
+                defaultValue: 0
+            }
         },
         {
             productKey: 'vfds',

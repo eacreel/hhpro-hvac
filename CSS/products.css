@@ -316,6 +316,55 @@
     border-color: var(--color-primary-light);
 }
 
+/* ---------- kW variant cell (dropdown + chevron) ----------
+   Used on products that merge same-system / different-kW rows into
+   one row with a dropdown (multi_position_splits, marvair). The
+   chevron is just a visual hint that the cell is interactive; the
+   real <select> is invisible-styled on top of the cell so the
+   underlying td value still reads naturally to engineers used to
+   the original layout. */
+.kw-variant-control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.kw-variant-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: transparent;
+    color: inherit;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 2px 4px;
+    padding-right: 16px;
+    font: inherit;
+    text-align: center;
+    text-align-last: center;
+    cursor: pointer;
+    min-width: 38px;
+}
+
+.kw-variant-select:hover,
+.kw-variant-select:focus {
+    border-color: var(--color-primary-light);
+    background-color: var(--color-row-hover);
+    outline: none;
+}
+
+.kw-variant-chevron {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.75em;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
 /* ---------- Loading / error / empty states ---------- */
 .product-message {
     flex: 1;
