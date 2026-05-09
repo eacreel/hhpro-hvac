@@ -41,13 +41,9 @@
     --color-warning: #f59e0b;
     --color-row-hover: #2a3b54;
 
-    /* Product tile placeholder colors (used until real JPGs are added) */
+    /* Projects compact tile gradient (the colored action card on the
+       overview page; product tiles use their JPG, no background color). */
     --tile-projects: #2c3e50;
-    --tile-gas-packs: #c0392b;
-    --tile-marvair: #27ae60;
-    --tile-mini-splits: #2980b9;
-    --tile-multi-position-splits: #8e44ad;
-    --tile-vfds: #e67e22;
 
     /* Typography */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;

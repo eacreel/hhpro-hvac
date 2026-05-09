@@ -67,6 +67,14 @@
             }
         },
         {
+            productKey: 'gas_splits',
+            displayName: 'GAS SPLITS',
+            jsonFile: 'DATA/JSON/gas_splits.json',
+            pictureFile: 'DATA/PICTURES/GAS SPLITS.jpg',
+            assetsFolder: 'ASSETS/GAS SPLITS',
+            tileClass: 'tile-gas-splits'
+        },
+        {
             productKey: 'marvair',
             displayName: 'MARVAIR VERTICAL WALL MOUNT',
             jsonFile: 'DATA/JSON/marvair.json',

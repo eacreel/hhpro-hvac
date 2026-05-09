@@ -134,11 +134,3 @@
     margin-top: var(--space-xs);
 }
 
-/* Per-tile placeholder colors. When a real JPG loads, the image covers
-   the colored block so these colors only show while the picture is missing. */
-.tile-projects .tile-image { background-color: var(--tile-projects); }
-.tile-gas-packs .tile-image { background-color: var(--tile-gas-packs); }
-.tile-marvair .tile-image { background-color: var(--tile-marvair); }
-.tile-mini-splits .tile-image { background-color: var(--tile-mini-splits); }
-.tile-multi-position-splits .tile-image { background-color: var(--tile-multi-position-splits); }
-.tile-vfds .tile-image { background-color: var(--tile-vfds); }

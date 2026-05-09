@@ -538,6 +538,7 @@ WHAT'S IN THE GRID
             'marvair':                'VERTICAL WALL MOUNTED PACKAGED SCHEDULE',
             'mini_splits':            'MINI SPLIT SCHEDULE',
             'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE',
+            'gas_splits':             'GAS SPLIT SCHEDULE',
             'vfds':                   'VFD SCHEDULE'
         };
         return titles[productKey] || 'SCHEDULE';
@@ -1194,7 +1195,8 @@ WHAT'S IN THE GRID
 
     function hasIndoorTagColumn(productKey) {
         return productKey === 'mini_splits' ||
-               productKey === 'multi_position_splits';
+               productKey === 'multi_position_splits' ||
+               productKey === 'gas_splits';
     }
 
     function hasConfigurationColumn(productKey) {
@@ -1217,7 +1219,8 @@ WHAT'S IN THE GRID
 
     function getPrimaryTagLabel(productKey) {
         if (productKey === 'mini_splits' ||
-            productKey === 'multi_position_splits') {
+            productKey === 'multi_position_splits' ||
+            productKey === 'gas_splits') {
             return 'Outdoor Tag';
         }
         return 'Tag';
@@ -1332,7 +1335,8 @@ WHAT'S IN THE GRID
             'gas_packs': 'Gas Pack RTUs',
             'marvair': 'Marvair Vertical Wall Mount',
             'mini_splits': 'Mini Splits',
-            'multi_position_splits': 'Multi Position Splits'
+            'multi_position_splits': 'Multi Position Splits',
+            'gas_splits': 'Gas Splits'
         };
         return fallback[productKey] || productKey;
     }

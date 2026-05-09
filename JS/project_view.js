@@ -367,7 +367,7 @@
     // Product keys whose JSON files include a refrigerantColumns block.
     // Adding a new product here is the only code change needed when you
     // start emitting refrigerantColumns for a new product type.
-    var REFRIGERANT_PRODUCT_KEYS = ['mini_splits', 'multi_position_splits'];
+    var REFRIGERANT_PRODUCT_KEYS = ['mini_splits', 'multi_position_splits', 'gas_splits'];
 
     function hasRefrigerantSystems(groups) {
         for (var i = 0; i < REFRIGERANT_PRODUCT_KEYS.length; i++) {
@@ -464,6 +464,10 @@
         'multi_position_splits': {
             indoor:  { make: 'A', model: 'B' },
             outdoor: { make: 'R', model: 'S' }
+        },
+        'gas_splits': {
+            indoor:  { make: 'A', model: 'B' },
+            outdoor: { make: 'Q', model: 'R' }
         }
     };
 
@@ -2296,7 +2300,8 @@
 
     function hasIndoorTagColumn(productKey) {
         return productKey === 'mini_splits' ||
-               productKey === 'multi_position_splits';
+               productKey === 'multi_position_splits' ||
+               productKey === 'gas_splits';
     }
 
     function hasConfigurationColumn(productKey) {
@@ -2330,7 +2335,8 @@
 
     function getPrimaryTagLabel(productKey) {
         return (productKey === 'mini_splits' ||
-                productKey === 'multi_position_splits')
+                productKey === 'multi_position_splits' ||
+                productKey === 'gas_splits')
             ? 'Outdoor Tag' : 'Tag';
     }
 
@@ -2689,6 +2695,7 @@
             case 'marvair':                return 'AC-';
             case 'mini_splits':            return 'ODU-';
             case 'multi_position_splits':  return 'CU-';
+            case 'gas_splits':             return 'CU-';
             default:                       return 'EQ-';
         }
     }
@@ -2702,6 +2709,7 @@
         switch (productKey) {
             case 'mini_splits':            return 'IDU-';
             case 'multi_position_splits':  return 'AHU-';
+            case 'gas_splits':             return 'AHU-';
             default:                       return null;
         }
     }
