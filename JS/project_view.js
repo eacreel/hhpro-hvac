@@ -954,6 +954,13 @@
     //       driven systems).
     //     - Otherwise: outdoor unit Installation Manual.
     //
+    //   Gas Splits:
+    //     Same rules as Multi Position Splits, but the outdoor electrical
+    //     column is S (vs W) and includes a frequency segment in the
+    //     middle of the string (e.g. "208/60/1" vs "208/1"); compressor
+    //     stages are in column Z (vs AD). Phase is matched off the last
+    //     "/N" segment so both formats are handled consistently.
+    //
     //   Mini Splits:
     //     The long-line-set guides don't apply -- always link to the
     //     outdoor unit's installation manual.
@@ -985,20 +992,34 @@
             ? HHpro.Data.getProduct(item.productKey) : null;
         var assetsFolder = (product && product.assetsFolder) || '';
 
-        if (item.productKey === 'multi_position_splits') {
+        if (item.productKey === 'multi_position_splits' ||
+            item.productKey === 'gas_splits') {
             var rows = (selection && selection.rows) || [];
             var firstRow = rows[0] || {};
             var sched = firstRow.scheduleData || {};
             var filterData = firstRow.filterData || {};
-            var outdoorElectrical = String(sched['W'] || '').trim();
-            var stages = String(sched['AD'] || '').trim().toLowerCase();
+
+            // Per-product source columns. Multi Position writes voltage
+            // as "208/1" in W and stages in AD; Gas Splits writes
+            // "208/60/1" in S and stages in Z.
+            var elecCol = item.productKey === 'gas_splits' ? 'S' : 'W';
+            var stagesCol = item.productKey === 'gas_splits' ? 'Z' : 'AD';
+
+            var outdoorElectrical = String(sched[elecCol] || '').trim();
+            var stages = String(sched[stagesCol] || '').trim().toLowerCase();
             var size = parseFloat(filterData['SIZE']);
 
-            var isThreePhase = (outdoorElectrical === '208/3' ||
-                                outdoorElectrical === '460/3');
-            var isUnitarySinglePhase = (outdoorElectrical === '208/1' &&
+            // Voltage = first "/" segment; phase = last "/" segment. This
+            // handles both "208/1" (Multi Position) and "208/60/1" (Gas
+            // Splits) without product-specific string equality checks.
+            var parts = outdoorElectrical.split('/');
+            var voltage = parts[0] || '';
+            var phase = parts.length > 1 ? parts[parts.length - 1] : '';
+
+            var isThreePhase = phase === '3' && (voltage === '208' || voltage === '460');
+            var isUnitarySinglePhase = phase === '1' && voltage === '208' &&
                                         !isNaN(size) && size >= 1.5 && size <= 5 &&
-                                        stages !== 'inverter');
+                                        stages !== 'inverter';
 
             if (isThreePhase) {
                 return {
