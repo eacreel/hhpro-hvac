@@ -159,6 +159,25 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    "GAS SPLIT DATA.xlsx": {
+        "productType": "GAS SPLITS",
+        "outputFileName": "gas_splits.json",
+        "headerRows": 4,
+        "dataStartRow": 6,
+        "supportsMultiRow": False,
+        "assetsFolder": "GAS SPLITS",
+        "searchSchema": {
+            "displayName": "Gas Splits",
+            "description": "Three-component split systems with a gas furnace, indoor coil, and outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Total Cooling Capacity", "col": "H", "unit": "BTU/h",  "defaultTolerance": 10},
+                {"label": "Gas Heating Output",     "col": "J", "unit": "BTU/h",  "defaultTolerance": 10},
+                {"label": "Indoor Airflow",         "col": "C", "unit": "CFM",    "defaultTolerance": 10},
+                {"label": "AFUE",                   "col": "L", "unit": "%",      "defaultTolerance": 5},
+                {"label": "Compressor Stages",      "col": "Z", "unit": "stages", "defaultTolerance": 0},
+            ],
+        },
+    },
     "VFD DATA.xlsx": {
         "productType": "VFDs",
         "outputFileName": "vfds.json",
