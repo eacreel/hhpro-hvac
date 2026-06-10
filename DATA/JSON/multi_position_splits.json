@@ -39335,12 +39335,12 @@
       "Provide with 7-day programmable thermostat",
       "Provide with 7-day programmable BACnet thermostat",
       "Provide with field installed disconnect. Disconnect shall be provided and installed by electrical contractor",
-      "Electric heat, if scheduled, shall be single point power.  kW listed is at 240V & temperature rise has 0.75 multiplier applied for 230V"
+      "Electric heat, if scheduled, shall be single point power.  kW listed is at 240V"
     ]
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-06-09T11:10:17",
+    "generatedAt": "2026-06-10T16:55:42",
     "dataRowCount": 562,
     "selectionCount": 562
   }

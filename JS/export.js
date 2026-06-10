@@ -1447,13 +1447,23 @@ WHAT'S IN THE GRID
     }
 
     // =================================================================
-    // DXF generation (AutoCAD R12 ASCII)
+    // DXF generation (AutoCAD 2000 / AC1015 ASCII)
     // -----------------------------------------------------------------
-    // Output is intentionally simple so the file is easy to edit after
-    // import: every cell border is a separate LINE entity, every cell
-    // value is a separate TEXT entity. Two layers - SCHEDULE_GRID for
-    // borders, SCHEDULE_TEXT for text - so the engineer can isolate or
-    // freeze whichever they need.
+    // Two design choices make this file friendly to edit after import:
+    //
+    // 1. Shared borders. A column boundary is a single LINE that spans
+    //    the entire table height (one LINE per row boundary, similarly
+    //    spanning the table width). Stretching one column-edge line
+    //    widens the column for every row at once.
+    //
+    // 2. MTEXT cells. Each cell value is an MTEXT entity with the cell
+    //    width baked into its reference rectangle (group code 41).
+    //    Long headers like "HEAT PUMP TOTAL CAPACITY" wrap automatically
+    //    to multiple lines inside the cell. Double-clicking the MTEXT
+    //    in AutoCAD or LibreCAD opens an inline editor.
+    //
+    // Two layers - SCHEDULE_GRID for borders, SCHEDULE_TEXT for text -
+    // so the engineer can isolate / freeze whichever they need.
     //
     // The grid sits at the origin going +X to the right and -Y down so
     // the first row reads top-to-bottom in any CAD viewer. Drawing
@@ -1464,13 +1474,20 @@ WHAT'S IN THE GRID
     // Tuning constants (drawing units, ~ mm)
     var DXF_CHAR_W       = 2.5;   // approx mm per Excel character-width unit
     var DXF_TITLE_H      = 8;     // title row height
-    var DXF_HEADER_H     = 6;     // header / column-header row height
+    var DXF_HEADER_H     = 9;     // header / column-header row height (taller so wrapped MTEXT fits)
     var DXF_DATA_H       = 5;     // data + notes row height
     var DXF_TXT_TITLE    = 4;     // text height for title row
     var DXF_TXT_HEADER   = 2.5;   // text height for header cells
     var DXF_TXT_BODY     = 2.5;   // text height for body cells
-    var DXF_TXT_PAD      = 1.5;   // left padding for left-aligned cells
+    var DXF_TXT_PAD      = 1.0;   // padding inside cell for MTEXT box
     var DXF_GAP          = 12;    // vertical gap between stacked tables
+
+    // Fixed handles for the file's required boilerplate. Entity handles
+    // (lines + MTEXTs we emit) start at DXF_ENTITY_HANDLE_BASE and
+    // increment from there - all chosen to never collide with the
+    // boilerplate range below.
+    var DXF_MODEL_SPACE_RECORD = '1F'; // BLOCK_RECORD for *Model_Space
+    var DXF_ENTITY_HANDLE_BASE = 0x100;
 
     function dxfBlobFromSections(sections) {
         try {
@@ -1483,58 +1500,76 @@ WHAT'S IN THE GRID
     }
 
     function buildDxfText(sections) {
-        var entities = [];
-        var yCursor = 0;  // top of next table (we go downward as we emit)
+        var ctx = {
+            nextHandle: DXF_ENTITY_HANDLE_BASE,
+            entities: [],
+            hSegments: [],   // pending horizontal border segments: {y, x1, x2}
+            vSegments: []    // pending vertical border segments:   {x, y1, y2}
+        };
+        var yCursor = 0;     // top of next table (we go downward as we emit)
         var maxX = 0;
 
         sections.forEach(function (sec, idx) {
             if (!sec || !sec.grid || !sec.grid.rows.length) return;
-            var info = emitGridToDxf(sec.grid, -yCursor, entities);
+            var info = emitGridToDxf(sec.grid, -yCursor, ctx);
             if (info.width > maxX) maxX = info.width;
             yCursor += info.height;
             if (idx < sections.length - 1) yCursor += DXF_GAP;
         });
 
-        // Pad EXTMIN/EXTMAX a bit so AutoCAD's zoom-extents shows a
-        // small margin around the drawing.
+        // Now that every cell has registered which edges it wants, merge
+        // co-linear and overlapping segments and turn them into LINE
+        // entities. This is what produces the "single line per column
+        // boundary" behaviour described at the top of the section.
+        flushBorderSegments(ctx);
+
         var minX = -5;
         var maxXp = maxX + 5;
         var maxYp = 5;
         var minYp = -yCursor - 5;
 
-        return dxfHeader(minX, minYp, maxXp, maxYp) +
+        var handleSeed = ctx.nextHandle.toString(16).toUpperCase();
+
+        return dxfHeader(minX, minYp, maxXp, maxYp, handleSeed) +
                dxfTables() +
-               dxfBlocks() +
-               dxfEntities(entities) +
+               dxfBlocksSection() +
+               dxfEntitiesSection(ctx.entities) +
+               dxfObjects() +
                '  0\nEOF\n';
     }
 
-    // Emit one schedule grid's worth of LINE + TEXT entities, with the
-    // top of the table at world Y = topY. Returns the table's overall
-    // width and height in drawing units.
-    function emitGridToDxf(grid, topY, entities) {
+    function nextHandle(ctx) {
+        return (ctx.nextHandle++).toString(16).toUpperCase();
+    }
+
+    // Emit one schedule grid's worth of border segments + MTEXT entities,
+    // with the top of the table at world Y = topY. Returns the table's
+    // overall width and height in drawing units.
+    function emitGridToDxf(grid, topY, ctx) {
         var rows = grid.rows;
         var colWidths = (grid.colWidths || []).slice();
         var colCount = grid.colCount || (rows[0] ? rows[0].length : 0);
-        // Make sure colWidths has an entry for every column
         while (colWidths.length < colCount) colWidths.push(10);
 
-        // Column X edges (left edges + one extra for the right edge)
+        // Column X edges
         var colXs = [0];
         for (var c = 0; c < colCount; c++) {
             colXs.push(colXs[c] + colWidths[c] * DXF_CHAR_W);
         }
         var tableWidth = colXs[colCount];
 
-        // Row Y edges (top edges + one extra for the bottom edge).
-        // Y values are absolute; topY is the top of row 0.
+        // Row Y edges (Y decreases as r increases). Heights are
+        // adjusted upward for any row whose widest cell would need
+        // multiple wrapped MTEXT lines - so a long header in a narrow
+        // column gets enough vertical room without spilling.
+        var rowHeights = computeRowHeights(grid, colXs);
         var rowYs = [topY];
         for (var r = 0; r < rows.length; r++) {
-            rowYs.push(rowYs[r] - rowHeightFor(grid, r));
+            rowYs.push(rowYs[r] - rowHeights[r]);
         }
         var tableHeight = topY - rowYs[rows.length];
 
-        // For each non-covered anchor cell: emit its border + text.
+        // For each non-covered anchor cell: register border segments + emit MTEXT.
         for (var rr = 0; rr < rows.length; rr++) {
             var row = rows[rr];
             if (!row) continue;
@@ -1548,8 +1583,8 @@ WHAT'S IN THE GRID
                 var y1 = rowYs[rr];
                 var y2 = rowYs[Math.min(rr + rowSpan, rows.length)];
 
-                emitCellBordersDxf(cell, x1, y1, x2, y2, entities);
-                emitCellTextDxf(cell, x1, y1, x2, y2, entities);
+                registerCellBorders(cell, x1, y1, x2, y2, ctx);
+                emitCellMText(cell, x1, y1, x2, y2, ctx);
             }
         }
 
@@ -1564,59 +1599,178 @@ WHAT'S IN THE GRID
         return DXF_DATA_H;
     }
 
-    // Push 4 border LINEs (or a subset, for notes rows whose borderPos
-    // says some sides are open) for a cell that spans (x1,y1) to (x2,y2),
-    // where (x1,y1) is the top-left in DXF coords (y2 < y1).
-    function emitCellBordersDxf(cell, x1, y1, x2, y2, entities) {
-        var pos = cell.notesRow ? (cell.borderPos || 'middle') : 'only';
-        // sides we draw: left + right always, top/bottom depend on pos
-        var drawTop = (pos === 'only' || pos === 'first');
-        var drawBot = (pos === 'only' || pos === 'last');
-        var drawLeft = true;
-        var drawRight = true;
-
-        if (drawTop)   entities.push(dxfLine('SCHEDULE_GRID', x1, y1, x2, y1));
-        if (drawBot)   entities.push(dxfLine('SCHEDULE_GRID', x1, y2, x2, y2));
-        if (drawLeft)  entities.push(dxfLine('SCHEDULE_GRID', x1, y1, x1, y2));
-        if (drawRight) entities.push(dxfLine('SCHEDULE_GRID', x2, y1, x2, y2));
+    // Per-row height = max(default, tallest required wrapped-MTEXT cell
+    // anchored in this row). Multi-row cells get their height
+    // distributed across the rows they cover rather than forcing a
+    // single row to absorb it all.
+    function computeRowHeights(grid, colXs) {
+        var rows = grid.rows;
+        var colCount = grid.colCount || 0;
+        var heights = [];
+        for (var r = 0; r < rows.length; r++) {
+            heights.push(rowHeightFor(grid, r));
+        }
+        for (var r2 = 0; r2 < rows.length; r2++) {
+            var row = rows[r2];
+            if (!row) continue;
+            for (var c = 0; c < colCount; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+                var span = cell.colSpan || 1;
+                var rspan = cell.rowSpan || 1;
+                var cellW = colXs[Math.min(c + span, colCount)] - colXs[c];
+                var needed = estimateMTextHeight(cell, cellW);
+                if (rspan <= 1) {
+                    if (needed > heights[r2]) heights[r2] = needed;
+                } else {
+                    // Distribute across the rowSpan: only push up if
+                    // the sum of default heights for those rows is
+                    // smaller than what the cell needs.
+                    var sum = 0;
+                    for (var k = 0; k < rspan && (r2 + k) < heights.length; k++) sum += heights[r2 + k];
+                    if (needed > sum) {
+                        var add = (needed - sum) / rspan;
+                        for (var k2 = 0; k2 < rspan && (r2 + k2) < heights.length; k2++) heights[r2 + k2] += add;
+                    }
+                }
+            }
+        }
+        return heights;
     }
 
-    function emitCellTextDxf(cell, x1, y1, x2, y2, entities) {
+    function estimateMTextHeight(cell, cellWidthUnits) {
+        var value = (cell.value === null || cell.value === undefined) ? '' : String(cell.value);
+        if (!value) return 0;
+        var textH = cell.title ? DXF_TXT_TITLE
+                    : cell.bold ? DXF_TXT_HEADER
+                    : DXF_TXT_BODY;
+        // AutoCAD's default txt.shx renders glyphs at roughly 0.6 *
+        // height wide. Knock 15% off the available width to leave a
+        // little slack for word-wrap (so a too-long word doesn't push
+        // the cell exactly to the edge).
+        var charW = textH * 0.6;
+        var availW = Math.max(1, cellWidthUnits - 2 * DXF_TXT_PAD) * 0.85;
+        var charsPerLine = Math.max(1, Math.floor(availW / charW));
+        var lines = Math.max(1, Math.ceil(value.length / charsPerLine));
+        // Total cell height = lines * (height * 1.4 line-spacing) + pad
+        return lines * textH * 1.4 + 2 * DXF_TXT_PAD;
+    }
+
+    // Record this cell's border segments. They're merged into shared
+    // LINEs later. For notes rows, borderPos controls which sides count.
+    function registerCellBorders(cell, x1, y1, x2, y2, ctx) {
+        var pos = cell.notesRow ? (cell.borderPos || 'middle') : 'only';
+        var drawTop = (pos === 'only' || pos === 'first');
+        var drawBot = (pos === 'only' || pos === 'last');
+
+        if (drawTop) ctx.hSegments.push({ y: y1, x1: x1, x2: x2 });
+        if (drawBot) ctx.hSegments.push({ y: y2, x1: x1, x2: x2 });
+        // Left + right are always drawn (notes rows still have outer
+        // box sides, even on the 'middle' position)
+        ctx.vSegments.push({ x: x1, y1: y2, y2: y1 });
+        ctx.vSegments.push({ x: x2, y1: y2, y2: y1 });
+    }
+
+    function flushBorderSegments(ctx) {
+        // Group H segments by their Y coordinate, merge overlapping /
+        // touching X ranges, emit one LINE per merged range.
+        groupAndMerge(ctx.hSegments, 'y', 'x1', 'x2').forEach(function (m) {
+            var h = nextHandle(ctx);
+            ctx.entities.push(dxfLineEntity(h, 'SCHEDULE_GRID',
+                m.start, m.coord, m.end, m.coord));
+        });
+        groupAndMerge(ctx.vSegments, 'x', 'y1', 'y2').forEach(function (m) {
+            var h = nextHandle(ctx);
+            ctx.entities.push(dxfLineEntity(h, 'SCHEDULE_GRID',
+                m.coord, m.start, m.coord, m.end));
+        });
+    }
+
+    // Group segments by their primary coord (quantized to 4 decimals so
+    // tiny float drift doesn't keep them apart), sort each group by
+    // start, then merge any overlapping or touching ranges. Output is a
+    // flat array of {coord, start, end}.
+    function groupAndMerge(segments, coordKey, startKey, endKey) {
+        var byCoord = {};
+        segments.forEach(function (s) {
+            var k = (+s[coordKey]).toFixed(4);
+            if (!byCoord[k]) byCoord[k] = { coord: +s[coordKey], ranges: [] };
+            var a = +s[startKey];
+            var b = +s[endKey];
+            byCoord[k].ranges.push([Math.min(a, b), Math.max(a, b)]);
+        });
+
+        var out = [];
+        Object.keys(byCoord).forEach(function (k) {
+            var grp = byCoord[k];
+            grp.ranges.sort(function (a, b) { return a[0] - b[0]; });
+            var cur = null;
+            grp.ranges.forEach(function (rng) {
+                if (!cur) { cur = [rng[0], rng[1]]; return; }
+                if (rng[0] <= cur[1] + 1e-4) {
+                    cur[1] = Math.max(cur[1], rng[1]);
+                } else {
+                    out.push({ coord: grp.coord, start: cur[0], end: cur[1] });
+                    cur = [rng[0], rng[1]];
+                }
+            });
+            if (cur) out.push({ coord: grp.coord, start: cur[0], end: cur[1] });
+        });
+        return out;
+    }
+
+    function emitCellMText(cell, x1, y1, x2, y2, ctx) {
         var value = (cell.value === null || cell.value === undefined) ? '' : String(cell.value);
         if (!value) return;
-        // Strip a few control chars that R12 doesn't like
-        var clean = value.replace(/[\r\n\t]+/g, ' ').replace(/[\x00-\x1f\x7f]/g, '');
+        var clean = value.replace(/[\r\n\t]+/g, ' ')
+                         .replace(/[\x00-\x1f\x7f]/g, '');
         if (!clean) return;
 
         var height = DXF_TXT_BODY;
         if (cell.title) height = DXF_TXT_TITLE;
-        else if (cell.bold && !cell.notesRow) height = DXF_TXT_HEADER + 0.3; // visually
-        else if (cell.bold) height = DXF_TXT_BODY;
+        else if (cell.bold) height = DXF_TXT_HEADER;
 
         var leftAlign = (cell.align === 'left') || (cell.notesRow && !cell.watermark);
-        var rightAlign = (cell.watermark);
+        var rightAlign = !!cell.watermark;
 
+        // MTEXT reference-rectangle width controls auto-wrapping. Make
+        // it the cell width minus a small inner padding so the text
+        // doesn't touch the borders.
+        var boxWidth = Math.max(1, (x2 - x1) - 2 * DXF_TXT_PAD);
         var midY = (y1 + y2) / 2;
+        var insX, insY, attachment;
+
         if (leftAlign) {
-            // 72=0 left, 73=2 middle -> alignment point at (x, midY)
-            entities.push(dxfText('SCHEDULE_TEXT', x1 + DXF_TXT_PAD, midY, height, clean, 0, 2));
+            attachment = 4;          // middle-left
+            insX = x1 + DXF_TXT_PAD;
+            insY = midY;
         } else if (rightAlign) {
-            // 72=2 right, 73=2 middle
-            entities.push(dxfText('SCHEDULE_TEXT', x2 - DXF_TXT_PAD, midY, height, clean, 2, 2));
+            attachment = 6;          // middle-right
+            insX = x2 - DXF_TXT_PAD;
+            insY = midY;
         } else {
-            // 72=1 center, 73=2 middle
-            var midX = (x1 + x2) / 2;
-            entities.push(dxfText('SCHEDULE_TEXT', midX, midY, height, clean, 1, 2));
+            attachment = 5;          // middle-center
+            insX = (x1 + x2) / 2;
+            insY = midY;
         }
+
+        var handle = nextHandle(ctx);
+        ctx.entities.push(dxfMTextEntity(handle, 'SCHEDULE_TEXT',
+            insX, insY, height, boxWidth, attachment, clean));
     }
 
     // -----------------------------------------------------------------
-    // DXF group-code primitives. R12 ASCII expects each pair on two
-    // lines: <group code>\n<value>\n. AutoCAD also tolerates leading
-    // whitespace on the group-code line, which we use for readability.
+    // AC1015 entity formatting helpers. Every entity needs a unique
+    // handle (group code 5) and an owner pointer to the *Model_Space
+    // block record (group code 330). Subclass markers (group code 100)
+    // are required for the AC1015 reader.
     // -----------------------------------------------------------------
-    function dxfLine(layer, x1, y1, x2, y2) {
-        return '  0\nLINE\n  8\n' + layer +
+    function dxfLineEntity(handle, layer, x1, y1, x2, y2) {
+        return '  0\nLINE\n  5\n' + handle +
+               '\n330\n' + DXF_MODEL_SPACE_RECORD +
+               '\n100\nAcDbEntity' +
+               '\n  8\n' + layer +
+               '\n100\nAcDbLine' +
                '\n 10\n' + fmt(x1) +
                '\n 20\n' + fmt(y1) +
                '\n 30\n0.0' +
@@ -1625,79 +1779,194 @@ WHAT'S IN THE GRID
                '\n 31\n0.0\n';
     }
 
-    function dxfText(layer, x, y, height, text, hAlign, vAlign) {
-        // R12 TEXT: insertion at (10,20). When 72 or 73 is non-zero,
-        // the alignment point (11,21) is used; we set both to the same
-        // value (cell anchor) and the renderer aligns from there.
-        var safe = dxfEscape(text);
-        return '  0\nTEXT\n  8\n' + layer +
+    function dxfMTextEntity(handle, layer, x, y, height, width, attachment, text) {
+        return '  0\nMTEXT\n  5\n' + handle +
+               '\n330\n' + DXF_MODEL_SPACE_RECORD +
+               '\n100\nAcDbEntity' +
+               '\n  8\n' + layer +
+               '\n100\nAcDbMText' +
                '\n 10\n' + fmt(x) +
                '\n 20\n' + fmt(y) +
                '\n 30\n0.0' +
                '\n 40\n' + fmt(height) +
-               '\n  1\n' + safe +
-               '\n 50\n0.0' +
-               '\n 72\n' + hAlign +
-               '\n 11\n' + fmt(x) +
-               '\n 21\n' + fmt(y) +
-               '\n 31\n0.0' +
-               '\n  7\nSTANDARD' +
-               '\n 73\n' + vAlign + '\n';
+               '\n 41\n' + fmt(width) +
+               '\n 71\n' + attachment +
+               '\n 72\n5' +                          // drawing direction: by style
+               '\n  1\n' + mtextEscape(text) +
+               '\n  7\nStandard' +
+               '\n 73\n1' +                          // line spacing style: at-least
+               '\n 44\n1.0' +                       // line spacing factor
+               '\n';
     }
 
     function fmt(n) {
         if (!isFinite(n)) return '0.0';
-        // 4 decimal places is plenty for table layout and keeps the
-        // file from getting ridiculously large with floating crud.
         var s = Number(n).toFixed(4);
-        // Trim trailing zeros but keep at least one decimal digit
         return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
     }
 
-    function dxfEscape(s) {
-        // R12 TEXT control codes: ^ starts a code, ~ degree, etc. We
-        // don't need any of them - just keep the string ASCII-clean
-        // and replace anything outside printable ASCII with '?'.
-        return String(s).replace(/[^\x20-\x7e]/g, '?');
+    function mtextEscape(s) {
+        // MTEXT treats { } \ as control characters. Escape them.
+        // Replace anything outside printable ASCII with '?' so the
+        // file stays single-byte-safe.
+        return String(s)
+            .replace(/[^\x20-\x7e]/g, '?')
+            .replace(/\\/g, '\\\\')
+            .replace(/\{/g, '\\{')
+            .replace(/\}/g, '\\}');
     }
 
-    function dxfHeader(minX, minY, maxX, maxY) {
+    function dxfHeader(minX, minY, maxX, maxY, handleSeed) {
         return '  0\nSECTION\n  2\nHEADER\n' +
-               '  9\n$ACADVER\n  1\nAC1009\n' +
+               '  9\n$ACADVER\n  1\nAC1015\n' +
+               '  9\n$HANDSEED\n  5\n' + handleSeed + '\n' +
                '  9\n$INSBASE\n 10\n0.0\n 20\n0.0\n 30\n0.0\n' +
                '  9\n$EXTMIN\n 10\n' + fmt(minX) + '\n 20\n' + fmt(minY) + '\n 30\n0.0\n' +
                '  9\n$EXTMAX\n 10\n' + fmt(maxX) + '\n 20\n' + fmt(maxY) + '\n 30\n0.0\n' +
                '  0\nENDSEC\n';
     }
 
+    // -----------------------------------------------------------------
+    // The AC1015 TABLES section is much more verbose than R12's was.
+    // AutoCAD-compatible readers expect VPORT, LTYPE, LAYER, STYLE,
+    // VIEW, UCS, APPID, DIMSTYLE, and BLOCK_RECORD tables, each with
+    // standard built-in entries. Handles in this section come from a
+    // fixed pool (well below DXF_ENTITY_HANDLE_BASE) so they never
+    // collide with the entity handles we generate.
+    // -----------------------------------------------------------------
     function dxfTables() {
-        // LAYER table only. Layer 0 is required; SCHEDULE_GRID +
-        // SCHEDULE_TEXT are the two layers all our entities live on.
-        var layers = [
-            { name: '0', color: 7 },
-            { name: 'SCHEDULE_GRID', color: 7 },
-            { name: 'SCHEDULE_TEXT', color: 7 }
-        ];
-        var out = '  0\nSECTION\n  2\nTABLES\n' +
-                  '  0\nTABLE\n  2\nLAYER\n 70\n' + layers.length + '\n';
-        layers.forEach(function (l) {
-            out += '  0\nLAYER\n  2\n' + l.name +
-                   '\n 70\n0\n 62\n' + l.color +
-                   '\n  6\nCONTINUOUS\n';
-        });
-        out += '  0\nENDTAB\n  0\nENDSEC\n';
-        return out;
+        return '  0\nSECTION\n  2\nTABLES\n' +
+               dxfVportTable() +
+               dxfLtypeTable() +
+               dxfLayerTable() +
+               dxfStyleTable() +
+               dxfViewTable() +
+               dxfUcsTable() +
+               dxfAppidTable() +
+               dxfDimstyleTable() +
+               dxfBlockRecordTable() +
+               '  0\nENDSEC\n';
     }
 
-    function dxfBlocks() {
-        // Empty blocks section; required by some readers even though
-        // we don't insert any blocks.
-        return '  0\nSECTION\n  2\nBLOCKS\n  0\nENDSEC\n';
+    function dxfVportTable() {
+        return '  0\nTABLE\n  2\nVPORT\n  5\n8\n100\nAcDbSymbolTable\n 70\n1\n' +
+               '  0\nVPORT\n  5\n80\n330\n8\n100\nAcDbSymbolTableRecord\n100\nAcDbViewportTableRecord\n' +
+               '  2\n*Active\n 70\n0\n' +
+               ' 10\n0.0\n 20\n0.0\n' +
+               ' 11\n1.0\n 21\n1.0\n' +
+               ' 12\n50.0\n 22\n50.0\n' +
+               ' 13\n0.0\n 23\n0.0\n' +
+               ' 14\n10.0\n 24\n10.0\n' +
+               ' 15\n10.0\n 25\n10.0\n' +
+               ' 16\n0.0\n 26\n0.0\n 36\n1.0\n' +
+               ' 17\n0.0\n 27\n0.0\n 37\n0.0\n' +
+               ' 40\n200.0\n 41\n2.0\n 42\n50.0\n 43\n0.0\n 44\n0.0\n' +
+               ' 50\n0.0\n 51\n0.0\n' +
+               ' 71\n0\n 72\n100\n 73\n1\n 74\n3\n 75\n0\n 76\n0\n 77\n0\n 78\n0\n' +
+               '  0\nENDTAB\n';
     }
 
-    function dxfEntities(entityStrings) {
+    function dxfLtypeTable() {
+        return '  0\nTABLE\n  2\nLTYPE\n  5\n5\n100\nAcDbSymbolTable\n 70\n3\n' +
+               '  0\nLTYPE\n  5\n14\n330\n5\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n' +
+               '  2\nByBlock\n 70\n0\n  3\n\n 72\n65\n 73\n0\n 40\n0.0\n' +
+               '  0\nLTYPE\n  5\n15\n330\n5\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n' +
+               '  2\nByLayer\n 70\n0\n  3\n\n 72\n65\n 73\n0\n 40\n0.0\n' +
+               '  0\nLTYPE\n  5\n16\n330\n5\n100\nAcDbSymbolTableRecord\n100\nAcDbLinetypeTableRecord\n' +
+               '  2\nContinuous\n 70\n0\n  3\nSolid line\n 72\n65\n 73\n0\n 40\n0.0\n' +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfLayerTable() {
+        return '  0\nTABLE\n  2\nLAYER\n  5\n2\n100\nAcDbSymbolTable\n 70\n3\n' +
+               dxfLayerRecord('50', '0') +
+               dxfLayerRecord('51', 'SCHEDULE_GRID') +
+               dxfLayerRecord('52', 'SCHEDULE_TEXT') +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfLayerRecord(handle, name) {
+        return '  0\nLAYER\n  5\n' + handle +
+               '\n330\n2' +
+               '\n100\nAcDbSymbolTableRecord' +
+               '\n100\nAcDbLayerTableRecord' +
+               '\n  2\n' + name +
+               '\n 70\n0' +
+               '\n 62\n7' +
+               '\n  6\nContinuous' +
+               '\n370\n-3' +
+               '\n390\nF\n';
+    }
+
+    function dxfStyleTable() {
+        return '  0\nTABLE\n  2\nSTYLE\n  5\n3\n100\nAcDbSymbolTable\n 70\n1\n' +
+               '  0\nSTYLE\n  5\n13\n330\n3\n100\nAcDbSymbolTableRecord\n100\nAcDbTextStyleTableRecord\n' +
+               '  2\nStandard\n 70\n0\n 40\n0.0\n 41\n1.0\n 50\n0.0\n 71\n0\n 42\n2.5\n  3\ntxt\n  4\n\n' +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfViewTable() {
+        return '  0\nTABLE\n  2\nVIEW\n  5\n6\n100\nAcDbSymbolTable\n 70\n0\n  0\nENDTAB\n';
+    }
+
+    function dxfUcsTable() {
+        return '  0\nTABLE\n  2\nUCS\n  5\n7\n100\nAcDbSymbolTable\n 70\n0\n  0\nENDTAB\n';
+    }
+
+    function dxfAppidTable() {
+        return '  0\nTABLE\n  2\nAPPID\n  5\n9\n100\nAcDbSymbolTable\n 70\n1\n' +
+               '  0\nAPPID\n  5\n12\n330\n9\n100\nAcDbSymbolTableRecord\n100\nAcDbRegAppTableRecord\n' +
+               '  2\nACAD\n 70\n0\n' +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfDimstyleTable() {
+        return '  0\nTABLE\n  2\nDIMSTYLE\n  5\nA\n100\nAcDbSymbolTable\n 70\n0\n' +
+               '100\nAcDbDimStyleTable\n 71\n0\n' +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfBlockRecordTable() {
+        return '  0\nTABLE\n  2\nBLOCK_RECORD\n  5\n1\n100\nAcDbSymbolTable\n 70\n2\n' +
+               '  0\nBLOCK_RECORD\n  5\n' + DXF_MODEL_SPACE_RECORD +
+               '\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n' +
+               '  2\n*Model_Space\n340\n0\n' +
+               '  0\nBLOCK_RECORD\n  5\n1E\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n' +
+               '  2\n*Paper_Space\n340\n0\n' +
+               '  0\nENDTAB\n';
+    }
+
+    function dxfBlocksSection() {
+        // *Model_Space and *Paper_Space block definitions. Our actual
+        // entities live in the ENTITIES section but model space still
+        // needs an empty BLOCK / ENDBLK declaration here.
+        return '  0\nSECTION\n  2\nBLOCKS\n' +
+               '  0\nBLOCK\n  5\n20\n330\n' + DXF_MODEL_SPACE_RECORD +
+               '\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n' +
+               '  2\n*Model_Space\n 70\n0\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n*Model_Space\n  1\n\n' +
+               '  0\nENDBLK\n  5\n21\n330\n' + DXF_MODEL_SPACE_RECORD +
+               '\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n' +
+               '  0\nBLOCK\n  5\n1C\n330\n1E\n100\nAcDbEntity\n 67\n1\n  8\n0\n100\nAcDbBlockBegin\n' +
+               '  2\n*Paper_Space\n 70\n0\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n*Paper_Space\n  1\n\n' +
+               '  0\nENDBLK\n  5\n1D\n330\n1E\n100\nAcDbEntity\n 67\n1\n  8\n0\n100\nAcDbBlockEnd\n' +
+               '  0\nENDSEC\n';
+    }
+
+    function dxfEntitiesSection(entityStrings) {
         return '  0\nSECTION\n  2\nENTITIES\n' +
                entityStrings.join('') +
+               '  0\nENDSEC\n';
+    }
+
+    function dxfObjects() {
+        // Minimal but required for AC1015: a root dictionary that
+        // points at ACAD_GROUP and ACAD_MLINESTYLE child dictionaries.
+        return '  0\nSECTION\n  2\nOBJECTS\n' +
+               '  0\nDICTIONARY\n  5\nC\n330\n0\n100\nAcDbDictionary\n281\n1\n' +
+               '  3\nACAD_GROUP\n350\nD\n' +
+               '  3\nACAD_MLINESTYLE\n350\n17\n' +
+               '  0\nDICTIONARY\n  5\nD\n330\nC\n100\nAcDbDictionary\n281\n1\n' +
+               '  0\nDICTIONARY\n  5\n17\n330\nC\n100\nAcDbDictionary\n281\n1\n' +
                '  0\nENDSEC\n';
     }
 
