@@ -1694,9 +1694,7 @@
         });
         bar.appendChild(colsBtn);
 
-        // Excel / CAD / PDF export buttons. Excel and PDF route through
-        // HHpro.Export (new module); CAD stays disabled until we have
-        // the schedule-to-DXF pipeline worked out.
+        // Excel / CAD / PDF export buttons - all route through HHpro.Export.
         var activeState = HHpro.Cart.getActiveState ? HHpro.Cart.getActiveState() : {};
         var projectName = activeState.name || '';
 
@@ -1715,8 +1713,11 @@
         cadBtn.type = 'button';
         cadBtn.className = 'projects-btn projects-btn-secondary';
         cadBtn.textContent = 'CAD';
-        cadBtn.disabled = true;
-        cadBtn.title = 'CAD export coming in a later step';
+        cadBtn.addEventListener('click', function () {
+            if (HHpro.Export && typeof HHpro.Export.toCAD === 'function') {
+                HHpro.Export.toCAD(productKey, items, data, projectName);
+            }
+        });
         bar.appendChild(cadBtn);
 
         var pdfBtn = document.createElement('button');
@@ -2974,6 +2975,7 @@
                 (data.selections || []).forEach(function (sel) { byId[sel.id] = sel; });
 
                 var itemsOut = [];
+                var rawItemsForProduct = [];
                 byProduct[productKey].forEach(function (item) {
                     var sel = byId[item.selectionId];
                     if (!sel) return;
@@ -3003,6 +3005,12 @@
                         });
                     });
 
+                    // Synthetic per-unit schedule files - generated client-side
+                    // at download time. One xlsx / dxf / pdf per unit. Folder
+                    // is "Schedules" so they group together in the zip
+                    // separately from submittals / manuals.
+                    appendScheduleFiles(files, item, productKey, data, allTypeNames);
+
                     itemsOut.push({
                         instanceId: item.instanceId,
                         tag: item.tag || '',
@@ -3010,6 +3018,7 @@
                         selectionId: item.selectionId,
                         files: files
                     });
+                    rawItemsForProduct.push(item);
                 });
 
                 if (itemsOut.length > 0) {
@@ -3017,12 +3026,19 @@
                         productKey: productKey,
                         displayName: displayName,
                         assetsFolder: assetsFolder,
-                        items: itemsOut
+                        items: itemsOut,
+                        // Captured for the combined-schedule generator; not
+                        // used by the UI rendering path.
+                        _data: data,
+                        _rawItems: rawItemsForProduct
                     });
                 }
             });
 
-            // Preserve doc-type order as it appears across product JSONs
+            // Preserve doc-type order as it appears across product JSONs;
+            // schedule types are appended at the end so the natural
+            // documentation column order stays intact at the top of the
+            // sidebar.
             var orderedNames = [];
             var seenOrdered = {};
             dataList.forEach(function (data) {
@@ -3032,6 +3048,24 @@
                         orderedNames.push(dc.name);
                     }
                 });
+            });
+            SCHEDULE_DOC_TYPES.forEach(function (name) {
+                if (allTypeNames[name] && !seenOrdered[name]) {
+                    seenOrdered[name] = true;
+                    orderedNames.push(name);
+                }
+            });
+
+            // Combined schedules - one project-level file per format. Built
+            // only when at least one product has items; otherwise the FILES
+            // tab is empty anyway and there's nothing to combine.
+            var projectFiles = buildProjectScheduleFiles(products);
+            projectFiles.forEach(function (f) {
+                if (!seenOrdered[f.docTypeName]) {
+                    seenOrdered[f.docTypeName] = true;
+                    orderedNames.push(f.docTypeName);
+                }
+                allTypeNames[f.docTypeName] = true;
             });
 
             // Signature: changes when items or their file set changes, so
@@ -3043,10 +3077,124 @@
                     sigBits.push(it.instanceId + ':' + it.files.length);
                 });
             });
+            sigBits.push('proj:' + projectFiles.length);
             var signature = sigBits.join(',');
 
-            return { products: products, docTypeNames: orderedNames, signature: signature };
+            return {
+                products: products,
+                projectFiles: projectFiles,
+                docTypeNames: orderedNames,
+                signature: signature
+            };
         });
+    }
+
+    // -------- Synthetic schedule files (per-unit + combined) --------
+
+    var SCHEDULE_DOC_TYPES = [
+        'SCHEDULE (EXCEL)',
+        'SCHEDULE (CAD)',
+        'SCHEDULE (PDF)',
+        'FULL SCHEDULE (EXCEL)',
+        'FULL SCHEDULE (CAD)',
+        'FULL SCHEDULE (PDF)'
+    ];
+
+    var SCHEDULE_FOLDER = 'Schedules';
+
+    // Format descriptor: extension + the HHpro.Export blob factory name
+    // we'll route to at download time.
+    var SCHEDULE_FORMATS = [
+        { docType: 'SCHEDULE (EXCEL)', ext: 'xlsx', blobFn: 'xlsxBlobFromSections' },
+        { docType: 'SCHEDULE (CAD)',   ext: 'dxf',  blobFn: 'dxfBlobFromSections' },
+        { docType: 'SCHEDULE (PDF)',   ext: 'pdf',  blobFn: 'pdfBlobFromSections' }
+    ];
+
+    var FULL_SCHEDULE_FORMATS = [
+        { docType: 'FULL SCHEDULE (EXCEL)', ext: 'xlsx', blobFn: 'xlsxBlobFromSections' },
+        { docType: 'FULL SCHEDULE (CAD)',   ext: 'dxf',  blobFn: 'dxfBlobFromSections' },
+        { docType: 'FULL SCHEDULE (PDF)',   ext: 'pdf',  blobFn: 'pdfBlobFromSections' }
+    ];
+
+    function appendScheduleFiles(files, item, productKey, data, allTypeNames) {
+        if (!window.HHpro || !window.HHpro.Export) return;
+        var tag = String(item.tag || item.instanceId || 'unit').trim() || 'unit';
+        var baseName = safeFilename(tag) + ' - Schedule';
+
+        SCHEDULE_FORMATS.forEach(function (fmt) {
+            var filenameWithExt = baseName + '.' + fmt.ext;
+            files.push({
+                key: fileKey(item.instanceId, fmt.docType, baseName),
+                docColumn: {
+                    name: fmt.docType,
+                    folder: SCHEDULE_FOLDER,
+                    fileExtension: fmt.ext
+                },
+                filename: baseName,
+                filenameWithExt: filenameWithExt,
+                url: null,
+                generator: makePerUnitGenerator(productKey, item, data, fmt.blobFn),
+                docTypeName: fmt.docType,
+                isZip: false
+            });
+            allTypeNames[fmt.docType] = true;
+        });
+    }
+
+    function buildProjectScheduleFiles(products) {
+        if (!window.HHpro || !window.HHpro.Export || !products.length) return [];
+
+        // Sections = the per-product full schedules, built lazily so the
+        // generator captures the latest state at download time rather
+        // than what was current when the FILES tab was opened.
+        function buildAllSections() {
+            var sections = [];
+            products.forEach(function (p) {
+                var grid = HHpro.Export.buildScheduleGrid(p.productKey, p._rawItems, p._data);
+                if (grid && grid.rows.length) {
+                    sections.push({
+                        // Short tab label for xlsx sheet names; the
+                        // bigger "MINI SPLIT SCHEDULE" title still
+                        // renders inside the grid itself.
+                        title: HHpro.Export.productTabLabel(p.productKey),
+                        grid: grid
+                    });
+                }
+            });
+            return sections;
+        }
+
+        return FULL_SCHEDULE_FORMATS.map(function (fmt) {
+            var baseName = 'Full Schedule';
+            var filenameWithExt = baseName + '.' + fmt.ext;
+            return {
+                key: 'project||' + fmt.docType,
+                docColumn: { name: fmt.docType, folder: '', fileExtension: fmt.ext },
+                filename: baseName,
+                filenameWithExt: filenameWithExt,
+                url: null,
+                generator: function () {
+                    var sections = buildAllSections();
+                    if (!sections.length) {
+                        return Promise.reject(new Error('No schedule data to combine.'));
+                    }
+                    return HHpro.Export[fmt.blobFn](sections);
+                },
+                docTypeName: fmt.docType,
+                isZip: false
+            };
+        });
+    }
+
+    function makePerUnitGenerator(productKey, item, data, blobFnName) {
+        return function () {
+            var grid = HHpro.Export.buildScheduleGridForItem(productKey, item, data);
+            if (!grid || !grid.rows.length) {
+                return Promise.reject(new Error('No schedule data for ' + (item.tag || 'unit') + '.'));
+            }
+            var title = HHpro.Export.getExportScheduleTitle(productKey);
+            return HHpro.Export[blobFnName]([{ title: title, grid: grid }]);
+        };
     }
 
     function fileKey(instanceId, docName, filename) {
@@ -3066,6 +3214,7 @@
                 it.files.forEach(function (f) { set[f.key] = true; });
             });
         });
+        (filesData.projectFiles || []).forEach(function (f) { set[f.key] = true; });
         return set;
     }
 
@@ -3194,6 +3343,13 @@
         var tree = document.createElement('div');
         tree.className = 'files-tree';
 
+        // Project-level synthetic files (combined schedules) live at the
+        // top of the tree as their own section, since they aren't tied
+        // to any one product or unit.
+        if (filesData.projectFiles && filesData.projectFiles.length) {
+            tree.appendChild(buildProjectFilesSection(filesData, handles));
+        }
+
         filesData.products.forEach(function (product) {
             var productNode = document.createElement('div');
             productNode.className = 'files-product';
@@ -3226,6 +3382,47 @@
         });
 
         return tree;
+    }
+
+    // Project-level synthetic files (combined schedules). Renders as a
+    // single "Project Schedules" group at the top of the tree, mirroring
+    // the per-product / per-item visual hierarchy so the checkbox states
+    // and aggregate roll-ups read the same way.
+    function buildProjectFilesSection(filesData, handles) {
+        var node = document.createElement('div');
+        node.className = 'files-product';
+
+        var header = document.createElement('label');
+        header.className = 'files-product-header';
+
+        var headerCb = document.createElement('input');
+        headerCb.type = 'checkbox';
+        headerCb.className = 'files-product-cb';
+        headerCb.addEventListener('change', function () {
+            filesData.projectFiles.forEach(function (f) {
+                if (headerCb.checked) filesSelection[f.key] = true;
+                else delete filesSelection[f.key];
+            });
+            refreshAllGroupStates(filesData, handles);
+        });
+        handles.projectFilesHeaderCb = headerCb;
+
+        var name = document.createElement('span');
+        name.className = 'files-product-name';
+        name.textContent = 'Project Schedules';
+
+        header.appendChild(headerCb);
+        header.appendChild(name);
+        node.appendChild(header);
+
+        var list = document.createElement('div');
+        list.className = 'files-list';
+        filesData.projectFiles.forEach(function (file) {
+            list.appendChild(buildFileRow(file, handles, filesData));
+        });
+        node.appendChild(list);
+
+        return node;
     }
 
     function buildFilesItem(item, handles, filesData) {
@@ -3295,8 +3492,9 @@
         fname.textContent = file.filenameWithExt;
 
         var badge = document.createElement('span');
+        var ext = String((file.docColumn && file.docColumn.fileExtension) || 'PDF').toUpperCase();
         badge.className = 'files-file-badge' + (file.isZip ? ' files-file-badge-zip' : '');
-        badge.textContent = file.isZip ? 'ZIP' : 'PDF';
+        badge.textContent = file.isZip ? 'ZIP' : ext;
 
         row.appendChild(cb);
         row.appendChild(name);
@@ -3316,6 +3514,9 @@
                 });
             });
         });
+        (filesData.projectFiles || []).forEach(function (f) {
+            if (f.docTypeName === docName) n++;
+        });
         return n;
     }
 
@@ -3328,6 +3529,11 @@
                     else delete filesSelection[f.key];
                 });
             });
+        });
+        (filesData.projectFiles || []).forEach(function (f) {
+            if (f.docTypeName !== docName) return;
+            if (on) filesSelection[f.key] = true;
+            else delete filesSelection[f.key];
         });
     }
 
@@ -3391,10 +3597,25 @@
                     });
                 });
             });
+            (filesData.projectFiles || []).forEach(function (f) {
+                if (f.docTypeName !== name) return;
+                total++;
+                if (filesSelection[f.key]) on++;
+            });
             var cb = handles.typeCheckboxes[name];
             if (!cb) return;
             setAggregateState(cb, total, on);
         });
+
+        // Project-schedules group header (the "Project Schedules" row
+        // at the top of the tree). Roll up just the projectFiles.
+        if (handles.projectFilesHeaderCb && filesData.projectFiles) {
+            var pTotal = filesData.projectFiles.length, pOn = 0;
+            filesData.projectFiles.forEach(function (f) {
+                if (filesSelection[f.key]) pOn++;
+            });
+            setAggregateState(handles.projectFilesHeaderCb, pTotal, pOn);
+        }
 
         // Count label + download enablement
         var total = 0, selected = 0;
@@ -3405,6 +3626,10 @@
                     if (filesSelection[f.key]) selected++;
                 });
             });
+        });
+        (filesData.projectFiles || []).forEach(function (f) {
+            total++;
+            if (filesSelection[f.key]) selected++;
         });
         if (handles.countLabel) {
             handles.countLabel.textContent = selected + ' of ' + total +
@@ -3445,18 +3670,31 @@
                 });
             });
         });
+        // Project-level synthetic files live at the zip root (no product
+        // folder prefix), so they get their own entry shape.
+        (filesData.projectFiles || []).forEach(function (f) {
+            if (filesSelection[f.key]) {
+                selectedFiles.push({ file: f, product: null });
+            }
+        });
         if (!selectedFiles.length) {
             alert('Select at least one file to download.');
             return;
         }
 
-        // Deduplicate by (product, folder, filenameWithExt) so identical
-        // files referenced by multiple items only appear once in the zip
+        // Deduplicate by full zip path so identical files referenced by
+        // multiple items only appear once in the archive.
         var dedupMap = {};
         var dedupedList = [];
         selectedFiles.forEach(function (entry) {
-            var path = entry.product.displayName + '/' + entry.file.docColumn.folder +
+            var path;
+            if (entry.product) {
+                path = entry.product.displayName + '/' + entry.file.docColumn.folder +
                        '/' + entry.file.filenameWithExt;
+            } else {
+                // Project-root file (combined schedules, etc.)
+                path = entry.file.filenameWithExt;
+            }
             if (dedupMap[path]) return;
             dedupMap[path] = true;
             dedupedList.push({ entry: entry, path: path });
@@ -3473,16 +3711,19 @@
         var missing = [];
         var completed = 0;
 
-        // Fetch sequentially - keeps the UX predictable and avoids
-        // hammering the dev server with dozens of parallel requests
+        // Fetch / generate sequentially - keeps the UX predictable and
+        // avoids hammering the dev server with dozens of parallel requests
         var chain = Promise.resolve();
         dedupedList.forEach(function (d) {
             chain = chain.then(function () {
-                return fetch(d.entry.file.url)
-                    .then(function (resp) {
-                        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                        return resp.blob();
-                    })
+                var file = d.entry.file;
+                var source = (typeof file.generator === 'function')
+                    ? file.generator()
+                    : fetch(file.url).then(function (resp) {
+                          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                          return resp.blob();
+                      });
+                return Promise.resolve(source)
                     .then(function (blob) {
                         rootFolder.file(d.path, blob);
                     })

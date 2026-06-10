@@ -53,8 +53,23 @@ WHAT'S IN THE GRID
     var HHpro = window.HHpro = window.HHpro || {};
 
     HHpro.Export = {
+        // Toolbar entry points (download/print directly)
         toExcel: exportToExcel,
-        toPDF:   exportToPDF
+        toPDF:   exportToPDF,
+        toCAD:   exportToCAD,
+
+        // Grid + blob factories - used by the Files-tab zip pipeline,
+        // which needs schedule files as blobs rather than direct
+        // downloads. Each blob factory takes an array of {title, grid}
+        // entries so the same path serves a single per-unit schedule
+        // and a multi-section combined schedule.
+        buildScheduleGrid:        buildScheduleGrid,
+        buildScheduleGridForItem: buildScheduleGridForItem,
+        getExportScheduleTitle:   getExportScheduleTitle,
+        productTabLabel:          productTabLabel,
+        xlsxBlobFromSections:     xlsxBlobFromSections,
+        dxfBlobFromSections:      dxfBlobFromSections,
+        pdfBlobFromSections:      pdfBlobFromSections
     };
 
     // =================================================================
@@ -89,6 +104,28 @@ WHAT'S IN THE GRID
             return;
         }
         openPrintWindow(productTabLabel(productKey), projectName, grid);
+    }
+
+    function exportToCAD(productKey, items, data, projectName) {
+        var grid = buildScheduleGrid(productKey, items, data);
+        if (!grid || !grid.rows.length) {
+            alert('Nothing to export - this tab has no items yet.');
+            return;
+        }
+        var sections = [{ title: getExportScheduleTitle(productKey), grid: grid }];
+        dxfBlobFromSections(sections).then(function (blob) {
+            var safeName = safeFilename(projectName) + ' - ' +
+                           safeFilename(productTabLabel(productKey)) + '.dxf';
+            downloadBlob(blob, safeName);
+        }).catch(function (err) {
+            alert('CAD export failed: ' + (err && err.message ? err.message : err));
+        });
+    }
+
+    // Build a schedule grid containing only a single cart item. Used
+    // by the Files tab to produce per-unit schedules.
+    function buildScheduleGridForItem(productKey, item, data) {
+        return buildScheduleGrid(productKey, [item], data);
     }
 
     // =================================================================
@@ -628,13 +665,27 @@ WHAT'S IN THE GRID
     // =================================================================
 
     function generateXlsxBlob(sheetTitle, grid) {
+        return generateXlsxBlobMulti([{ title: sheetTitle, grid: grid }]);
+    }
+
+    /**
+     * Build a multi-sheet xlsx blob. sheets = [{title, grid}, ...].
+     * Each section becomes its own worksheet in the workbook.
+     */
+    function generateXlsxBlobMulti(sheets) {
         var zip = new window.JSZip();
-        zip.file('[Content_Types].xml', contentTypesXml());
+        var safeSheets = dedupeSheetNames(sheets.map(function (s) {
+            return { title: sanitizeSheetName(s.title || 'Schedule'), grid: s.grid };
+        }));
+
+        zip.file('[Content_Types].xml', contentTypesXmlMulti(safeSheets.length));
         zip.file('_rels/.rels', rootRelsXml());
-        zip.file('xl/workbook.xml', workbookXml(sanitizeSheetName(sheetTitle)));
-        zip.file('xl/_rels/workbook.xml.rels', workbookRelsXml());
+        zip.file('xl/workbook.xml', workbookXmlMulti(safeSheets));
+        zip.file('xl/_rels/workbook.xml.rels', workbookRelsXmlMulti(safeSheets.length));
         zip.file('xl/styles.xml', stylesXml());
-        zip.file('xl/worksheets/sheet1.xml', sheetXml(grid));
+        safeSheets.forEach(function (s, i) {
+            zip.file('xl/worksheets/sheet' + (i + 1) + '.xml', sheetXml(s.grid));
+        });
         return zip.generateAsync({
             type: 'blob',
             mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -642,39 +693,78 @@ WHAT'S IN THE GRID
         });
     }
 
-    function contentTypesXml() {
+    /** Public blob factory for the Files-tab zip pipeline. */
+    function xlsxBlobFromSections(sections) {
+        return generateXlsxBlobMulti(sections);
+    }
+
+    // Excel disallows duplicate sheet names; append " (2)", " (3)" etc.
+    function dedupeSheetNames(sheets) {
+        var seen = {};
+        return sheets.map(function (s) {
+            var base = s.title;
+            var name = base;
+            var n = 2;
+            while (seen[name.toLowerCase()]) {
+                var suffix = ' (' + n + ')';
+                var room = 31 - suffix.length;
+                name = (base.length > room ? base.slice(0, room) : base) + suffix;
+                n++;
+            }
+            seen[name.toLowerCase()] = true;
+            return { title: name, grid: s.grid };
+        });
+    }
+
+    function contentTypesXmlMulti(sheetCount) {
+        var overrides = '';
+        for (var i = 1; i <= sheetCount; i++) {
+            overrides += '<Override PartName="/xl/worksheets/sheet' + i +
+                '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+        }
         return XML_HEADER +
             '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
               '<Default Extension="xml" ContentType="application/xml"/>' +
               '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
               '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
-              '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+              overrides +
               '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
             '</Types>';
+    }
+
+    function workbookXmlMulti(sheets) {
+        var sheetTags = sheets.map(function (s, i) {
+            return '<sheet name="' + xmlEscape(s.title) + '" sheetId="' + (i + 1) +
+                   '" r:id="rId' + (i + 1) + '"/>';
+        }).join('');
+        return XML_HEADER +
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
+                     ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+              '<sheets>' + sheetTags + '</sheets>' +
+            '</workbook>';
+    }
+
+    function workbookRelsXmlMulti(sheetCount) {
+        var rels = '';
+        for (var i = 1; i <= sheetCount; i++) {
+            rels += '<Relationship Id="rId' + i +
+                '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"' +
+                ' Target="worksheets/sheet' + i + '.xml"/>';
+        }
+        // Styles relationship id is one past the last sheet relationship
+        var stylesId = sheetCount + 1;
+        rels += '<Relationship Id="rId' + stylesId +
+            '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
+        return XML_HEADER +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+              rels +
+            '</Relationships>';
     }
 
     function rootRelsXml() {
         return XML_HEADER +
             '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
               '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
-            '</Relationships>';
-    }
-
-    function workbookXml(sheetName) {
-        return XML_HEADER +
-            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
-                     ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-              '<sheets>' +
-                '<sheet name="' + xmlEscape(sheetName) + '" sheetId="1" r:id="rId1"/>' +
-              '</sheets>' +
-            '</workbook>';
-    }
-
-    function workbookRelsXml() {
-        return XML_HEADER +
-            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-              '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
-              '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
             '</Relationships>';
     }
 
@@ -1354,5 +1444,585 @@ WHAT'S IN THE GRID
         a.click();
         document.body.removeChild(a);
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    // =================================================================
+    // DXF generation (AutoCAD R12 ASCII)
+    // -----------------------------------------------------------------
+    // Output is intentionally simple so the file is easy to edit after
+    // import: every cell border is a separate LINE entity, every cell
+    // value is a separate TEXT entity. Two layers - SCHEDULE_GRID for
+    // borders, SCHEDULE_TEXT for text - so the engineer can isolate or
+    // freeze whichever they need.
+    //
+    // The grid sits at the origin going +X to the right and -Y down so
+    // the first row reads top-to-bottom in any CAD viewer. Drawing
+    // units are nominal "mm" but the file has no $INSUNITS so users
+    // can rescale freely on import.
+    // =================================================================
+
+    // Tuning constants (drawing units, ~ mm)
+    var DXF_CHAR_W       = 2.5;   // approx mm per Excel character-width unit
+    var DXF_TITLE_H      = 8;     // title row height
+    var DXF_HEADER_H     = 6;     // header / column-header row height
+    var DXF_DATA_H       = 5;     // data + notes row height
+    var DXF_TXT_TITLE    = 4;     // text height for title row
+    var DXF_TXT_HEADER   = 2.5;   // text height for header cells
+    var DXF_TXT_BODY     = 2.5;   // text height for body cells
+    var DXF_TXT_PAD      = 1.5;   // left padding for left-aligned cells
+    var DXF_GAP          = 12;    // vertical gap between stacked tables
+
+    function dxfBlobFromSections(sections) {
+        try {
+            var text = buildDxfText(sections);
+            var blob = new Blob([text], { type: 'application/dxf' });
+            return Promise.resolve(blob);
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+
+    function buildDxfText(sections) {
+        var entities = [];
+        var yCursor = 0;  // top of next table (we go downward as we emit)
+        var maxX = 0;
+
+        sections.forEach(function (sec, idx) {
+            if (!sec || !sec.grid || !sec.grid.rows.length) return;
+            var info = emitGridToDxf(sec.grid, -yCursor, entities);
+            if (info.width > maxX) maxX = info.width;
+            yCursor += info.height;
+            if (idx < sections.length - 1) yCursor += DXF_GAP;
+        });
+
+        // Pad EXTMIN/EXTMAX a bit so AutoCAD's zoom-extents shows a
+        // small margin around the drawing.
+        var minX = -5;
+        var maxXp = maxX + 5;
+        var maxYp = 5;
+        var minYp = -yCursor - 5;
+
+        return dxfHeader(minX, minYp, maxXp, maxYp) +
+               dxfTables() +
+               dxfBlocks() +
+               dxfEntities(entities) +
+               '  0\nEOF\n';
+    }
+
+    // Emit one schedule grid's worth of LINE + TEXT entities, with the
+    // top of the table at world Y = topY. Returns the table's overall
+    // width and height in drawing units.
+    function emitGridToDxf(grid, topY, entities) {
+        var rows = grid.rows;
+        var colWidths = (grid.colWidths || []).slice();
+        var colCount = grid.colCount || (rows[0] ? rows[0].length : 0);
+        // Make sure colWidths has an entry for every column
+        while (colWidths.length < colCount) colWidths.push(10);
+
+        // Column X edges (left edges + one extra for the right edge)
+        var colXs = [0];
+        for (var c = 0; c < colCount; c++) {
+            colXs.push(colXs[c] + colWidths[c] * DXF_CHAR_W);
+        }
+        var tableWidth = colXs[colCount];
+
+        // Row Y edges (top edges + one extra for the bottom edge).
+        // Y values are absolute; topY is the top of row 0.
+        var rowYs = [topY];
+        for (var r = 0; r < rows.length; r++) {
+            rowYs.push(rowYs[r] - rowHeightFor(grid, r));
+        }
+        var tableHeight = topY - rowYs[rows.length];
+
+        // For each non-covered anchor cell: emit its border + text.
+        for (var rr = 0; rr < rows.length; rr++) {
+            var row = rows[rr];
+            if (!row) continue;
+            for (var cc = 0; cc < colCount; cc++) {
+                var cell = row[cc];
+                if (!cell || cell.covered) continue;
+                var rowSpan = cell.rowSpan || 1;
+                var colSpan = cell.colSpan || 1;
+                var x1 = colXs[cc];
+                var x2 = colXs[Math.min(cc + colSpan, colCount)];
+                var y1 = rowYs[rr];
+                var y2 = rowYs[Math.min(rr + rowSpan, rows.length)];
+
+                emitCellBordersDxf(cell, x1, y1, x2, y2, entities);
+                emitCellTextDxf(cell, x1, y1, x2, y2, entities);
+            }
+        }
+
+        return { width: tableWidth, height: tableHeight };
+    }
+
+    function rowHeightFor(grid, r) {
+        var titleRows = grid.titleRowCount || 0;
+        var headerRows = grid.numHeaderRows || 0;
+        if (r < titleRows) return DXF_TITLE_H;
+        if (r < headerRows) return DXF_HEADER_H;
+        return DXF_DATA_H;
+    }
+
+    // Push 4 border LINEs (or a subset, for notes rows whose borderPos
+    // says some sides are open) for a cell that spans (x1,y1) to (x2,y2),
+    // where (x1,y1) is the top-left in DXF coords (y2 < y1).
+    function emitCellBordersDxf(cell, x1, y1, x2, y2, entities) {
+        var pos = cell.notesRow ? (cell.borderPos || 'middle') : 'only';
+        // sides we draw: left + right always, top/bottom depend on pos
+        var drawTop = (pos === 'only' || pos === 'first');
+        var drawBot = (pos === 'only' || pos === 'last');
+        var drawLeft = true;
+        var drawRight = true;
+
+        if (drawTop)   entities.push(dxfLine('SCHEDULE_GRID', x1, y1, x2, y1));
+        if (drawBot)   entities.push(dxfLine('SCHEDULE_GRID', x1, y2, x2, y2));
+        if (drawLeft)  entities.push(dxfLine('SCHEDULE_GRID', x1, y1, x1, y2));
+        if (drawRight) entities.push(dxfLine('SCHEDULE_GRID', x2, y1, x2, y2));
+    }
+
+    function emitCellTextDxf(cell, x1, y1, x2, y2, entities) {
+        var value = (cell.value === null || cell.value === undefined) ? '' : String(cell.value);
+        if (!value) return;
+        // Strip a few control chars that R12 doesn't like
+        var clean = value.replace(/[\r\n\t]+/g, ' ').replace(/[\x00-\x1f\x7f]/g, '');
+        if (!clean) return;
+
+        var height = DXF_TXT_BODY;
+        if (cell.title) height = DXF_TXT_TITLE;
+        else if (cell.bold && !cell.notesRow) height = DXF_TXT_HEADER + 0.3; // visually
+        else if (cell.bold) height = DXF_TXT_BODY;
+
+        var leftAlign = (cell.align === 'left') || (cell.notesRow && !cell.watermark);
+        var rightAlign = (cell.watermark);
+
+        var midY = (y1 + y2) / 2;
+        if (leftAlign) {
+            // 72=0 left, 73=2 middle -> alignment point at (x, midY)
+            entities.push(dxfText('SCHEDULE_TEXT', x1 + DXF_TXT_PAD, midY, height, clean, 0, 2));
+        } else if (rightAlign) {
+            // 72=2 right, 73=2 middle
+            entities.push(dxfText('SCHEDULE_TEXT', x2 - DXF_TXT_PAD, midY, height, clean, 2, 2));
+        } else {
+            // 72=1 center, 73=2 middle
+            var midX = (x1 + x2) / 2;
+            entities.push(dxfText('SCHEDULE_TEXT', midX, midY, height, clean, 1, 2));
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // DXF group-code primitives. R12 ASCII expects each pair on two
+    // lines: <group code>\n<value>\n. AutoCAD also tolerates leading
+    // whitespace on the group-code line, which we use for readability.
+    // -----------------------------------------------------------------
+    function dxfLine(layer, x1, y1, x2, y2) {
+        return '  0\nLINE\n  8\n' + layer +
+               '\n 10\n' + fmt(x1) +
+               '\n 20\n' + fmt(y1) +
+               '\n 30\n0.0' +
+               '\n 11\n' + fmt(x2) +
+               '\n 21\n' + fmt(y2) +
+               '\n 31\n0.0\n';
+    }
+
+    function dxfText(layer, x, y, height, text, hAlign, vAlign) {
+        // R12 TEXT: insertion at (10,20). When 72 or 73 is non-zero,
+        // the alignment point (11,21) is used; we set both to the same
+        // value (cell anchor) and the renderer aligns from there.
+        var safe = dxfEscape(text);
+        return '  0\nTEXT\n  8\n' + layer +
+               '\n 10\n' + fmt(x) +
+               '\n 20\n' + fmt(y) +
+               '\n 30\n0.0' +
+               '\n 40\n' + fmt(height) +
+               '\n  1\n' + safe +
+               '\n 50\n0.0' +
+               '\n 72\n' + hAlign +
+               '\n 11\n' + fmt(x) +
+               '\n 21\n' + fmt(y) +
+               '\n 31\n0.0' +
+               '\n  7\nSTANDARD' +
+               '\n 73\n' + vAlign + '\n';
+    }
+
+    function fmt(n) {
+        if (!isFinite(n)) return '0.0';
+        // 4 decimal places is plenty for table layout and keeps the
+        // file from getting ridiculously large with floating crud.
+        var s = Number(n).toFixed(4);
+        // Trim trailing zeros but keep at least one decimal digit
+        return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
+    }
+
+    function dxfEscape(s) {
+        // R12 TEXT control codes: ^ starts a code, ~ degree, etc. We
+        // don't need any of them - just keep the string ASCII-clean
+        // and replace anything outside printable ASCII with '?'.
+        return String(s).replace(/[^\x20-\x7e]/g, '?');
+    }
+
+    function dxfHeader(minX, minY, maxX, maxY) {
+        return '  0\nSECTION\n  2\nHEADER\n' +
+               '  9\n$ACADVER\n  1\nAC1009\n' +
+               '  9\n$INSBASE\n 10\n0.0\n 20\n0.0\n 30\n0.0\n' +
+               '  9\n$EXTMIN\n 10\n' + fmt(minX) + '\n 20\n' + fmt(minY) + '\n 30\n0.0\n' +
+               '  9\n$EXTMAX\n 10\n' + fmt(maxX) + '\n 20\n' + fmt(maxY) + '\n 30\n0.0\n' +
+               '  0\nENDSEC\n';
+    }
+
+    function dxfTables() {
+        // LAYER table only. Layer 0 is required; SCHEDULE_GRID +
+        // SCHEDULE_TEXT are the two layers all our entities live on.
+        var layers = [
+            { name: '0', color: 7 },
+            { name: 'SCHEDULE_GRID', color: 7 },
+            { name: 'SCHEDULE_TEXT', color: 7 }
+        ];
+        var out = '  0\nSECTION\n  2\nTABLES\n' +
+                  '  0\nTABLE\n  2\nLAYER\n 70\n' + layers.length + '\n';
+        layers.forEach(function (l) {
+            out += '  0\nLAYER\n  2\n' + l.name +
+                   '\n 70\n0\n 62\n' + l.color +
+                   '\n  6\nCONTINUOUS\n';
+        });
+        out += '  0\nENDTAB\n  0\nENDSEC\n';
+        return out;
+    }
+
+    function dxfBlocks() {
+        // Empty blocks section; required by some readers even though
+        // we don't insert any blocks.
+        return '  0\nSECTION\n  2\nBLOCKS\n  0\nENDSEC\n';
+    }
+
+    function dxfEntities(entityStrings) {
+        return '  0\nSECTION\n  2\nENTITIES\n' +
+               entityStrings.join('') +
+               '  0\nENDSEC\n';
+    }
+
+    // =================================================================
+    // PDF generation (hand-rolled, no external deps)
+    // -----------------------------------------------------------------
+    // Builds a minimal PDF 1.4 file directly: one page per section,
+    // landscape letter, Helvetica (a built-in font so we don't have to
+    // embed anything). Tables are drawn with PDF "re" rectangles for
+    // borders and "Tj" text-show operators for cell values.
+    //
+    // Layout scales the natural table width down to the printable
+    // page width when needed, the same idea as the print-window
+    // exporter's fitToPageWidth(). Long content overflows visually
+    // rather than wrapping - matches the toolbar PDF's nowrap rule
+    // on data rows.
+    // =================================================================
+
+    var PDF_PAGE_W = 792;    // landscape letter, points
+    var PDF_PAGE_H = 612;
+    var PDF_MARGIN = 30;
+    var PDF_CHAR_W = 6.5;    // approx pt per Excel character-width unit
+    var PDF_TITLE_H_PT = 24;
+    var PDF_HEADER_H_PT = 18;
+    var PDF_DATA_H_PT = 16;
+    var PDF_TXT_TITLE = 14;
+    var PDF_TXT_HEADER = 9;
+    var PDF_TXT_BODY = 8.5;
+    var PDF_TXT_NOTES = 8.5;
+    var PDF_GAP = 14;        // gap between stacked sections on the same page
+
+    function pdfBlobFromSections(sections) {
+        try {
+            var bytes = buildPdfBytes(sections);
+            var blob = new Blob([bytes], { type: 'application/pdf' });
+            return Promise.resolve(blob);
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+
+    // Build the entire PDF as a Uint8Array. Object byte offsets are
+    // tracked so we can write a correct xref table at the end.
+    function buildPdfBytes(sections) {
+        // Strategy: each section becomes its own page. If a section is
+        // taller than one page at natural size it gets a uniform scale
+        // until it fits.
+        var pageStreams = sections
+            .filter(function (s) { return s && s.grid && s.grid.rows.length; })
+            .map(function (s) { return buildPdfPageStream(s.grid); });
+
+        if (!pageStreams.length) {
+            // Empty PDF still needs to be valid; emit a single blank page
+            pageStreams = [''];
+        }
+
+        // Object plan:
+        //   1 - Catalog
+        //   2 - Pages (parent)
+        //   3..(3+N-1) - one Page per section
+        //   3+N         - Font /Helvetica
+        //   3+N+1..     - one content stream per page
+        var pageCount = pageStreams.length;
+        var fontId = 3 + pageCount;
+        var firstContentId = fontId + 1;
+        var pageIds = [];
+        for (var i = 0; i < pageCount; i++) pageIds.push(3 + i);
+
+        var objects = [];
+        objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
+
+        var kids = pageIds.map(function (id) { return id + ' 0 R'; }).join(' ');
+        objects[2] = '<< /Type /Pages /Kids [' + kids + '] /Count ' + pageCount + ' >>';
+
+        for (var p = 0; p < pageCount; p++) {
+            var contentId = firstContentId + p;
+            objects[pageIds[p]] =
+                '<< /Type /Page /Parent 2 0 R ' +
+                '/MediaBox [0 0 ' + PDF_PAGE_W + ' ' + PDF_PAGE_H + '] ' +
+                '/Resources << /Font << /F1 ' + fontId + ' 0 R >> >> ' +
+                '/Contents ' + contentId + ' 0 R >>';
+        }
+
+        // Helvetica (and Helvetica-Bold) are standard built-in PDF
+        // fonts - no font data needs to be embedded.
+        objects[fontId] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+
+        for (var s = 0; s < pageCount; s++) {
+            var stream = pageStreams[s];
+            objects[firstContentId + s] =
+                '<< /Length ' + stream.length + ' >>\nstream\n' + stream + '\nendstream';
+        }
+
+        return assemblePdf(objects);
+    }
+
+    // Convert the objects-by-id map into a final PDF byte sequence with
+    // an xref table and trailer. Objects are indexed from 1.
+    function assemblePdf(objects) {
+        var header = '%PDF-1.4\n%\xff\xff\xff\xff\n';
+        var bodyParts = [];
+        var offsets = [];
+        var pos = header.length;
+        // Build each object's serialized form and record its offset.
+        for (var id = 1; id < objects.length; id++) {
+            var body = objects[id];
+            if (body === undefined) continue;
+            var serial = id + ' 0 obj\n' + body + '\nendobj\n';
+            offsets[id] = pos;
+            bodyParts.push(serial);
+            pos += serial.length;
+        }
+
+        var xrefOffset = pos;
+        var xref = 'xref\n0 ' + objects.length + '\n' +
+                   '0000000000 65535 f \n';
+        for (var id2 = 1; id2 < objects.length; id2++) {
+            var off = offsets[id2] || 0;
+            xref += zeroPad(off, 10) + ' 00000 n \n';
+        }
+        var trailer = 'trailer\n<< /Size ' + objects.length +
+                      ' /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF\n';
+
+        var all = header + bodyParts.join('') + xref + trailer;
+        return stringToUint8(all);
+    }
+
+    function zeroPad(n, w) {
+        var s = String(n);
+        while (s.length < w) s = '0' + s;
+        return s;
+    }
+
+    function stringToUint8(s) {
+        // Every char we write is either ASCII (after pdfEscapeText) or
+        // a single 0x80+ byte from the file's binary marker. .length
+        // therefore equals the on-disk byte count, which is also the
+        // basis for the xref offsets the trailer points at.
+        var bytes = new Uint8Array(s.length);
+        for (var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i) & 0xff;
+        return bytes;
+    }
+
+    // Build the PDF content stream for one grid. Mirrors the DXF
+    // emitter conceptually: walk anchor cells, draw a rectangle for
+    // the border (subset for notes rows), draw text inside.
+    function buildPdfPageStream(grid) {
+        var rows = grid.rows;
+        var colWidths = (grid.colWidths || []).slice();
+        var colCount = grid.colCount || (rows[0] ? rows[0].length : 0);
+        while (colWidths.length < colCount) colWidths.push(10);
+
+        // Natural column edges (no scaling yet)
+        var natColXs = [0];
+        for (var c = 0; c < colCount; c++) {
+            natColXs.push(natColXs[c] + colWidths[c] * PDF_CHAR_W);
+        }
+        var natWidth = natColXs[colCount];
+
+        // Natural row edges
+        var natRowYs = [0];
+        for (var r = 0; r < rows.length; r++) {
+            natRowYs.push(natRowYs[r] + pdfRowHeightFor(grid, r));
+        }
+        var natHeight = natRowYs[rows.length];
+
+        // Compute scale to fit both width and height into the printable
+        // area. Don't scale up past 1.0 - we want a comfortable size
+        // for short tables, only shrinking when needed.
+        var maxW = PDF_PAGE_W - 2 * PDF_MARGIN;
+        var maxH = PDF_PAGE_H - 2 * PDF_MARGIN;
+        var scale = Math.min(1, maxW / natWidth, maxH / natHeight);
+        if (!isFinite(scale) || scale <= 0) scale = 1;
+
+        var width = natWidth * scale;
+        var height = natHeight * scale;
+
+        // Anchor table at top-left of the printable area (with a small
+        // horizontal centering nudge so narrow tables look tidy).
+        var leftPad = (maxW - width) / 2;
+        var x0 = PDF_MARGIN + Math.max(0, leftPad);
+        var topY = PDF_PAGE_H - PDF_MARGIN;
+
+        var colXs = natColXs.map(function (v) { return x0 + v * scale; });
+        // PDF Y goes up; rows grow downward so subtract scaled offsets.
+        var rowYs = natRowYs.map(function (v) { return topY - v * scale; });
+
+        var parts = [];
+        // Set up basic graphics state: thin black borders + black text
+        parts.push('q');
+        parts.push('0 0 0 RG');         // stroke color = black
+        parts.push('0 0 0 rg');         // fill color = black
+        parts.push('0.5 w');            // line width 0.5 pt
+
+        // Borders pass
+        for (var rr = 0; rr < rows.length; rr++) {
+            var row = rows[rr];
+            if (!row) continue;
+            for (var cc = 0; cc < colCount; cc++) {
+                var cell = row[cc];
+                if (!cell || cell.covered) continue;
+                var rowSpan = cell.rowSpan || 1;
+                var colSpan = cell.colSpan || 1;
+                var x1 = colXs[cc];
+                var x2 = colXs[Math.min(cc + colSpan, colCount)];
+                var y1 = rowYs[rr];                // top
+                var y2 = rowYs[Math.min(rr + rowSpan, rows.length)]; // bottom
+
+                pushPdfBorder(parts, cell, x1, y2, x2 - x1, y1 - y2);
+            }
+        }
+
+        // Text pass (separate so all text shares one BT/ET block)
+        parts.push('BT');
+        var curFontSize = -1;
+        var curFontKey = null;
+        for (var rr2 = 0; rr2 < rows.length; rr2++) {
+            var row2 = rows[rr2];
+            if (!row2) continue;
+            for (var cc2 = 0; cc2 < colCount; cc2++) {
+                var cell2 = row2[cc2];
+                if (!cell2 || cell2.covered) continue;
+                var value = (cell2.value === null || cell2.value === undefined)
+                    ? '' : String(cell2.value);
+                if (!value) continue;
+                var rowSpan2 = cell2.rowSpan || 1;
+                var colSpan2 = cell2.colSpan || 1;
+
+                var bx1 = colXs[cc2];
+                var bx2 = colXs[Math.min(cc2 + colSpan2, colCount)];
+                var by1 = rowYs[rr2];
+                var by2 = rowYs[Math.min(rr2 + rowSpan2, rows.length)];
+
+                var size = pdfFontSizeForCell(cell2, grid, rr2) * scale;
+                // PDF font: /F1 = Helvetica (we only registered one font;
+                // bold is approximated with the same font - it still
+                // reads as a distinct row thanks to size + layout).
+                if (size !== curFontSize || curFontKey !== '/F1') {
+                    parts.push('/F1 ' + size.toFixed(2) + ' Tf');
+                    curFontSize = size;
+                    curFontKey = '/F1';
+                }
+
+                var leftAlign = (cell2.align === 'left') || (cell2.notesRow && !cell2.watermark);
+                var rightAlign = !!cell2.watermark;
+                var cellW = bx2 - bx1;
+                var textW = approxPdfTextWidth(value, size);
+                var tx, ty;
+                if (leftAlign) {
+                    tx = bx1 + 4;
+                } else if (rightAlign) {
+                    tx = bx2 - 4 - textW;
+                } else {
+                    tx = bx1 + (cellW - textW) / 2;
+                }
+                // Vertical center: PDF Y is the text baseline, so put it
+                // just below cell midline by ~30% of font size.
+                ty = (by1 + by2) / 2 - size * 0.3;
+
+                parts.push(tx.toFixed(2) + ' ' + ty.toFixed(2) + ' Td');
+                parts.push('(' + pdfEscapeText(value) + ') Tj');
+                // Reset text position so next absolute Td works correctly
+                parts.push((-tx).toFixed(2) + ' ' + (-ty).toFixed(2) + ' Td');
+            }
+        }
+        parts.push('ET');
+        parts.push('Q');
+
+        return parts.join('\n');
+    }
+
+    function pdfRowHeightFor(grid, r) {
+        var titleRows = grid.titleRowCount || 0;
+        var headerRows = grid.numHeaderRows || 0;
+        if (r < titleRows) return PDF_TITLE_H_PT;
+        if (r < headerRows) return PDF_HEADER_H_PT;
+        return PDF_DATA_H_PT;
+    }
+
+    function pdfFontSizeForCell(cell, grid, r) {
+        if (cell.title) return PDF_TXT_TITLE;
+        if (r < (grid.numHeaderRows || 0)) return PDF_TXT_HEADER;
+        if (cell.notesRow) return PDF_TXT_NOTES;
+        return PDF_TXT_BODY;
+    }
+
+    // Push PDF operators for the cell's border (with notes-row exceptions
+    // matching the on-screen layout: only outer perimeter is drawn).
+    function pushPdfBorder(parts, cell, x, y, w, h) {
+        var pos = cell.notesRow ? (cell.borderPos || 'middle') : 'only';
+        var drawTop = (pos === 'only' || pos === 'first');
+        var drawBot = (pos === 'only' || pos === 'last');
+
+        // Four explicit line segments give us fine-grained control over
+        // which sides draw. PDF's "re" rectangle is all-or-nothing.
+        if (drawTop) {
+            parts.push(x.toFixed(2) + ' ' + (y + h).toFixed(2) + ' m');
+            parts.push((x + w).toFixed(2) + ' ' + (y + h).toFixed(2) + ' l S');
+        }
+        if (drawBot) {
+            parts.push(x.toFixed(2) + ' ' + y.toFixed(2) + ' m');
+            parts.push((x + w).toFixed(2) + ' ' + y.toFixed(2) + ' l S');
+        }
+        // Left + right always drawn
+        parts.push(x.toFixed(2) + ' ' + y.toFixed(2) + ' m');
+        parts.push(x.toFixed(2) + ' ' + (y + h).toFixed(2) + ' l S');
+        parts.push((x + w).toFixed(2) + ' ' + y.toFixed(2) + ' m');
+        parts.push((x + w).toFixed(2) + ' ' + (y + h).toFixed(2) + ' l S');
+    }
+
+    // PDF string literals need backslash escaping for (, ), and \. We
+    // also strip non-ASCII characters since we're using the built-in
+    // WinAnsiEncoding Helvetica without any extra encoding setup.
+    function pdfEscapeText(s) {
+        return String(s)
+            .replace(/[^\x20-\x7e]/g, '?')
+            .replace(/\\/g, '\\\\')
+            .replace(/\(/g, '\\(')
+            .replace(/\)/g, '\\)');
+    }
+
+    // Approx Helvetica width: 0.5 em per character is a workable
+    // average across the full character set. Good enough for centering
+    // a single-line cell value within a few points.
+    function approxPdfTextWidth(text, size) {
+        return text.length * size * 0.5;
     }
 })();
