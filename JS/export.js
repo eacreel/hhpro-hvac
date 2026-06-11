@@ -2167,11 +2167,22 @@ WHAT'S IN THE GRID
         return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
     }
 
+    // Circled digits ①-⑳ (U+2460-U+2473) -> "(1)".."(20)". The DXF and
+    // hand-rolled PDF are single-byte (ASCII/WinAnsi) only, so without
+    // this they'd become "?". Engineer templates use circled note refs;
+    // this degrades them gracefully in CAD/PDF while screen/Excel/print
+    // keep the true glyphs.
+    function asciiizeCircledDigits(s) {
+        return String(s).replace(/[①-⑳]/g, function (ch) {
+            return '(' + (ch.charCodeAt(0) - 0x2460 + 1) + ')';
+        });
+    }
+
     function mtextEscape(s) {
         // MTEXT treats { } \ as control characters. Escape them.
         // Replace anything outside printable ASCII with '?' so the
         // file stays single-byte-safe.
-        return String(s)
+        return asciiizeCircledDigits(s)
             .replace(/[^\x20-\x7e]/g, '?')
             .replace(/\\/g, '\\\\')
             .replace(/\{/g, '\\{')
@@ -2643,7 +2654,7 @@ WHAT'S IN THE GRID
     // also strip non-ASCII characters since we're using the built-in
     // WinAnsiEncoding Helvetica without any extra encoding setup.
     function pdfEscapeText(s) {
-        return String(s)
+        return asciiizeCircledDigits(s)
             .replace(/[^\x20-\x7e]/g, '?')
             .replace(/\\/g, '\\\\')
             .replace(/\(/g, '\\(')

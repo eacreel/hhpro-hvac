@@ -5,6 +5,7 @@
    templates that login may use:
      - "Mellon"    -> standard (Hoffman & Hoffman) schedules only
      - "Refresco1" -> standard + Refresco engineer templates
+     - "BW&A1"     -> standard + Barrett Woodyard & Associates templates
    Every password always includes the standard layout. Adding a
    new firm = add its password here plus a template in
    schedule_templates.js.
@@ -19,7 +20,8 @@
     // password -> allowed engineer-template keys
     var PASSWORDS = {
         'Mellon':    ['hoffman'],
-        'Refresco1': ['hoffman', 'refresco']
+        'Refresco1': ['hoffman', 'refresco'],
+        'BW&A1':     ['hoffman', 'barrett_woodyard']
     };
 
     HHpro.Views.login = {
