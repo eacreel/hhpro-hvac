@@ -658,15 +658,15 @@ WHAT'S IN THE GRID
                 if (cell.title || cell.notesRow) continue;
                 if ((cell.colSpan || 1) > 1) continue;
                 var text = String(cell.value == null ? '' : cell.value);
-                // Circled digits (note refs) render wider than a plain
-                // character, so count them double - otherwise a REMARKS
-                // cell like "① ② ... ⑨" gets too narrow a column.
+                // Each circled note ref renders as "(1)" (~3 chars) in the
+                // exports, so count it as 3 here - otherwise a REMARKS cell
+                // like "① ② ... ⑨" gets too narrow a column for "(1) ... (9)".
                 var len = text.length;
                 for (var k = 0; k < text.length; k++) {
                     var cc = text.charCodeAt(k);
-                    if (cc >= 0x2460 && cc <= 0x2473) len++;
+                    if (cc >= 0x2460 && cc <= 0x2473) len += 2;
                 }
-                if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 30);
+                if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 40);
             }
         }
         return widths;
@@ -2175,11 +2175,11 @@ WHAT'S IN THE GRID
         return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
     }
 
-    // Circled digits ①-⑳ (U+2460-U+2473) -> "(1)".."(20)". Used by the
-    // hand-rolled PDF (Helvetica/WinAnsi, single-byte) which can't embed
-    // the glyphs. The DXF instead renders true circled digits via an
-    // inline Arial run (see mtextEscape); screen/xlsx/print-PDF keep the
-    // real glyphs.
+    // Circled digits ①-⑳ (U+2460-U+2473) -> "(1)".."(20)" for the
+    // single-byte exports (DXF + hand-rolled PDF). The on-screen view,
+    // xlsx, and browser print-PDF keep the real circled glyphs; only
+    // these two outputs fall back to parentheses (CAD viewers like
+    // LibreCAD wouldn't render an embedded Unicode/Arial glyph).
     function asciiizeCircledDigits(s) {
         return String(s).replace(/[①-⑳]/g, function (ch) {
             return '(' + (ch.charCodeAt(0) - 0x2460 + 1) + ')';
@@ -2187,31 +2187,17 @@ WHAT'S IN THE GRID
     }
 
     function mtextEscape(s) {
-        // Built char-by-char so we can: escape MTEXT control chars
-        // ({ } \), render circled digits ①-⑳ via an inline Arial font
-        // run + \U+ codepoint (the default txt.shx has no circled-digit
-        // glyph, so this is what makes AutoCAD draw the actual circle),
-        // and drop any other non-ASCII to '?'.
-        var str = String(s);
-        var out = '';
-        for (var i = 0; i < str.length; i++) {
-            var ch = str.charAt(i);
-            var cp = str.charCodeAt(i);
-            if (cp >= 0x2460 && cp <= 0x2473) {
-                out += '{\\fArial|b0|i0|c0|p0;\\U+' + cp.toString(16).toUpperCase() + '}';
-            } else if (ch === '\\') {
-                out += '\\\\';
-            } else if (ch === '{') {
-                out += '\\{';
-            } else if (ch === '}') {
-                out += '\\}';
-            } else if (cp < 0x20 || cp > 0x7e) {
-                out += '?';
-            } else {
-                out += ch;
-            }
-        }
-        return out;
+        // Circled note refs -> "(1)" (the inline-Arial \U+ approach
+        // didn't render in all CAD viewers - LibreCAD showed empty
+        // boxes). Degree sign -> the %%d code that txt.shx renders in
+        // AutoCAD and LibreCAD (a raw ° would drop to '?'). Then escape
+        // MTEXT control chars and drop any remaining non-ASCII.
+        return asciiizeCircledDigits(s)
+            .replace(/°/g, '%%d')
+            .replace(/[^\x20-\x7e]/g, '?')
+            .replace(/\\/g, '\\\\')
+            .replace(/\{/g, '\\{')
+            .replace(/\}/g, '\\}');
     }
 
     function dxfHeader(minX, minY, maxX, maxY, handleSeed) {
@@ -2448,9 +2434,10 @@ WHAT'S IN THE GRID
                 '/Contents ' + contentId + ' 0 R >>';
         }
 
-        // Helvetica (and Helvetica-Bold) are standard built-in PDF
-        // fonts - no font data needs to be embedded.
-        objects[fontId] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+        // Helvetica is a standard built-in PDF font - no font data needs
+        // to be embedded. WinAnsiEncoding maps byte 0xB0 to the degree
+        // sign (and the rest of Latin-1), so "°F" renders instead of "?".
+        objects[fontId] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
 
         for (var s = 0; s < pageCount; s++) {
             var stream = pageStreams[s];
@@ -2675,12 +2662,14 @@ WHAT'S IN THE GRID
         parts.push((x + w).toFixed(2) + ' ' + (y + h).toFixed(2) + ' l S');
     }
 
-    // PDF string literals need backslash escaping for (, ), and \. We
-    // also strip non-ASCII characters since we're using the built-in
-    // WinAnsiEncoding Helvetica without any extra encoding setup.
+    // PDF string literals need backslash escaping for (, ), and \. The
+    // font is WinAnsiEncoding Helvetica, so the degree sign (byte 0xB0)
+    // renders directly - keep it; circled refs become "(1)"; any other
+    // non-ASCII drops to '?'. Each surviving char is written as one byte
+    // (charCodeAt & 0xff), so 0xB0 lands correctly.
     function pdfEscapeText(s) {
         return asciiizeCircledDigits(s)
-            .replace(/[^\x20-\x7e]/g, '?')
+            .replace(/[^\x20-\x7e°]/g, '?')
             .replace(/\\/g, '\\\\')
             .replace(/\(/g, '\\(')
             .replace(/\)/g, '\\)');

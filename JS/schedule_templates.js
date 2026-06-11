@@ -152,7 +152,7 @@
             columns: [
                 { scope: 'row', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[g.rowIndex]); } },
                 { scope: 'row', derive: function (g) { return combine(g.cell('M'), g.cell('N')); } },
-                { scope: 'item', derive: function (g) { return s(g.item.serves); } },
+                { scope: 'item', editable: true, fieldKey: 'refresco_ms_serves' },
                 { scope: 'row', derive: function (g) { return g.cell('A'); } },
                 { scope: 'row', editable: true, fieldKey: 'refresco_ms_min_oa_cfm' },
                 { scope: 'row', derive: function (g) { return g.cell('D'); } },
@@ -162,15 +162,16 @@
                 { scope: 'row', derive: function (g) { return g.cell('P'); } },
                 { scope: 'item', derive: function (g) { return firstNumber(g.cell('R')); } },
                 // Indoor units are powered from the outdoor single-point
-                // feed, so the indoor electrical reported here is that
-                // feed's voltage / MCA / MOP (HHpro cols S/T/U).
+                // feed, so the indoor section has the feed voltage but NO
+                // separate MCA/MOP - that belongs in the SINGLE POINT
+                // POWER column (cols 16/17), and the indoor MCA/MOCP is "-".
                 { scope: 'item', derive: function (g) { return voltPh(g.cell('S')); } },
-                { scope: 'item', derive: function (g) { return slash(g.cell('T'), g.cell('U')); } },
+                { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function (g) { return s(g.item.tag); } },
                 { scope: 'item', derive: function (g) { return combine(g.cell('V'), g.cell('W')); } },
                 { scope: 'item', derive: function (g) { return g.cell('Q'); } },
                 { scope: 'item', derive: function (g) { return voltPh(g.cell('S')); } },
-                { scope: 'item', editable: true, fieldKey: 'refresco_ms_single_point_mca_mop' }
+                { scope: 'item', derive: function (g) { return slash(g.cell('T'), g.cell('U')); } }
             ],
             notesTitle: '',
             // One bordered note box, text on multiple rows (matches the
