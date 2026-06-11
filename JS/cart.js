@@ -161,10 +161,16 @@
     }
 
     function applyHistorySnapshot(snap) {
+        // The engineer (schedule-layout) selection is intentionally NOT
+        // part of undo/redo - it's a view preference, not project data -
+        // so carry the live value across instead of restoring the
+        // snapshot's. (setProjectEngineer also skips pushUndo.)
+        var liveEngineer = state.engineer;
         // Reassigning `state` (rather than mutating it in place) is fine
         // because every other function in this module looks up `state`
         // through the closure each call -- they all see the new object.
         state = snap;
+        state.engineer = liveEngineer;
         saveStateToSession();
         renderPanel();
         renderToggle();
@@ -476,7 +482,8 @@
     function setProjectEngineer(key) {
         var next = key || DEFAULT_ENGINEER;
         if (next === state.engineer) return;
-        pushUndo();
+        // Layout selection is excluded from undo/redo (see
+        // applyHistorySnapshot) - no pushUndo here.
         state.engineer = next;
         saveStateToSession();
     }

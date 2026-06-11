@@ -1547,3 +1547,29 @@
     border-color: var(--color-primary-light);
     background-color: var(--color-surface);
 }
+
+/* ---------- Edit Schedule mode ---------- */
+.tpl-edit-hint {
+    margin: 0 0 var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* Inputs in edit mode inherit each cell's alignment; keep title/header
+   inputs readable on the dark header background. */
+.tpl-editing .tpl-left .tpl-field-input,
+.tpl-editing .tpl-notes .tpl-field-input,
+.tpl-editing .tpl-rowhead .tpl-field-input {
+    text-align: left;
+}
+
+.tpl-editing .tpl-title .tpl-field-input,
+.tpl-editing .tpl-header .tpl-field-input {
+    color: var(--color-text-inverse);
+    border-color: var(--color-text-muted);
+    font-weight: 700;
+}

@@ -37,6 +37,11 @@
     // Which tab is active. Reset when the view is entered fresh.
     var activeTab = null;
 
+    // "Edit Schedule" mode, per product key. When on, that product's
+    // schedule renders every cell as an editable input (see
+    // buildEditableSchedule). Lives for the view session.
+    var editModeByProduct = {};
+
     // Files tab state - persisted only within the view session.
     //   filesSelection: map of file keys to true for every checked file
     //   filesCache:     the resolved data we built on first load, kept
@@ -1729,8 +1734,16 @@
         // Engineer templates carry their own fixed columns + notes, so
         // the native column-hiding and notes-editor controls don't apply.
         var tplActive = !!activeTemplate(productKey);
+        var editing = !!editModeByProduct[productKey];
 
-        wrap.appendChild(buildProductToolbar(productKey, items, data, tplActive));
+        wrap.appendChild(buildProductToolbar(productKey, items, data, tplActive, editing));
+
+        if (editing) {
+            // Edit mode replaces the normal schedule with a fully
+            // editable grid (every cell). Notes live inside that grid.
+            wrap.appendChild(buildEditableSchedule(productKey, items, data));
+            return wrap;
+        }
 
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
         var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
@@ -1743,7 +1756,7 @@
         return wrap;
     }
 
-    function buildProductToolbar(productKey, items, data, tplActive) {
+    function buildProductToolbar(productKey, items, data, tplActive, editing) {
         var bar = document.createElement('div');
         bar.className = 'project-toolbar';
 
@@ -1806,7 +1819,106 @@
         });
         bar.appendChild(pdfBtn);
 
+        // Edit Schedule: toggle a fully-editable grid where any cell's
+        // text can be overridden. Edits flow to the Excel/CAD/PDF output.
+        var editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'projects-btn ' +
+            (editing ? 'projects-btn-primary' : 'projects-btn-secondary');
+        editBtn.textContent = editing ? 'Done Editing' : 'Edit Schedule';
+        editBtn.addEventListener('click', function () {
+            editModeByProduct[productKey] = !editing;
+            HHpro.App.showView('project_view');
+        });
+        bar.appendChild(editBtn);
+
         return bar;
+    }
+
+    // Fully-editable schedule grid. Renders the same grid the exports
+    // use (so structure/labels match) with every non-merged cell as an
+    // input. Edits persist as per-cell overrides and are re-applied by
+    // HHpro.Export.buildScheduleGrid to both this view and the downloads.
+    function buildEditableSchedule(productKey, items, data) {
+        var wrap = document.createElement('div');
+        wrap.className = 'schedule-wrap project-schedule-wrap';
+
+        var grid = (HHpro.Export && HHpro.Export.buildScheduleGrid)
+            ? HHpro.Export.buildScheduleGrid(productKey, items, data) : null;
+        if (!grid || !grid.rows.length) {
+            var msg = document.createElement('div');
+            msg.className = 'zero-results';
+            msg.textContent = 'No schedule data found for the items in this tab.';
+            wrap.appendChild(msg);
+            return wrap;
+        }
+
+        var hint = document.createElement('div');
+        hint.className = 'tpl-edit-hint';
+        hint.textContent = 'Editing every cell — changes save automatically and appear in the '
+            + 'Excel/CAD/PDF downloads. Click "Done Editing" when finished.';
+        wrap.appendChild(hint);
+
+        wrap.appendChild(renderEditableGridToDom(grid, productKey));
+        return wrap;
+    }
+
+    function renderEditableGridToDom(grid, productKey) {
+        var table = document.createElement('table');
+        table.className = 'schedule-table project-schedule-table template-schedule tpl-editing';
+        var numHeaderRows = grid.numHeaderRows || 0;
+
+        for (var r = 0; r < grid.rows.length; r++) {
+            var row = grid.rows[r];
+            if (!row) continue;
+            var tr = document.createElement('tr');
+            for (var c = 0; c < grid.colCount; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+
+                var isHeader = cell.title || (r < numHeaderRows && cell.bold);
+                var el = document.createElement(isHeader ? 'th' : 'td');
+                if (cell.rowSpan > 1) el.rowSpan = cell.rowSpan;
+                if (cell.colSpan > 1) el.colSpan = cell.colSpan;
+
+                var cls = [];
+                if (cell.title) cls.push('tpl-title');
+                else if (isHeader) cls.push('tpl-header');
+                if (cell.notesRow) cls.push('tpl-notes');
+                if (cell.watermark) cls.push('tpl-watermark');
+                if (cell.bold && !isHeader && !cell.notesRow) cls.push('tpl-rowhead');
+                if (cell.align === 'left') cls.push('tpl-left');
+                if (cls.length) el.className = cls.join(' ');
+
+                el.appendChild(buildCellOverrideInput(productKey, r, c, cell.value));
+                tr.appendChild(el);
+            }
+            table.appendChild(tr);
+        }
+        return table;
+    }
+
+    function buildCellOverrideInput(productKey, r, c, value) {
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'tpl-field-input';
+        input.value = (value == null) ? '' : String(value);
+        input.addEventListener('change', function () {
+            updateCellOverride(productKey, r, c, input.value);
+        });
+        return input;
+    }
+
+    // Persist a single cell override under the current engineer layout.
+    function updateCellOverride(productKey, r, c, value) {
+        var engineer = (HHpro.Cart && HHpro.Cart.getProjectEngineer)
+            ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+        var extra = HHpro.Cart.getProjectExtra(productKey) || {};
+        var all = extra.cellOverrides || {};
+        var map = all[engineer] || {};
+        map[r + ',' + c] = value;
+        all[engineer] = map;
+        HHpro.Cart.setProjectExtra(productKey, { cellOverrides: all });
     }
 
     // =================================================================
@@ -2520,79 +2632,11 @@
             ? 'Outdoor Tag' : 'Tag';
     }
 
+    // Delegates to the single implementation in export.js so the
+    // on-screen schedule and the xlsx/dxf/pdf exports share one
+    // grid/merge layout routine.
     function computeCellLayout(sel, visibleLetters) {
-        var numRows = sel.rows.length;
-        var layout = [];
-        for (var i = 0; i < numRows; i++) layout.push({});
-
-        visibleLetters.forEach(function (colLetter) {
-            var rowsWithValue = [];
-            sel.rows.forEach(function (row, i) {
-                var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
-                if (v !== undefined) rowsWithValue.push(i);
-            });
-
-            if (rowsWithValue.length === 0) {
-                for (var r = 0; r < numRows; r++) {
-                    layout[r][colLetter] = { value: '', rowSpan: 1, colSpan: 1 };
-                }
-            } else if (rowsWithValue.length === 1 && rowsWithValue[0] === 0 && numRows > 1) {
-                layout[0][colLetter] = {
-                    value: sel.rows[0].scheduleData[colLetter],
-                    rowSpan: numRows,
-                    colSpan: 1
-                };
-                for (var r2 = 1; r2 < numRows; r2++) {
-                    layout[r2][colLetter] = null;
-                }
-            } else {
-                sel.rows.forEach(function (row, i) {
-                    var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
-                    layout[i][colLetter] = {
-                        value: (v !== undefined ? v : ''),
-                        rowSpan: 1,
-                        colSpan: 1
-                    };
-                });
-            }
-        });
-
-        var visibleIdx = {};
-        visibleLetters.forEach(function (l, i) { visibleIdx[l] = i; });
-
-        sel.rows.forEach(function (row, rowIndex) {
-            var spans = row.scheduleCellSpans;
-            if (!spans) return;
-            Object.keys(spans).forEach(function (startCol) {
-                var colspan = parseInt(spans[startCol], 10);
-                if (!colspan || colspan <= 1) return;
-                if (!visibleIdx.hasOwnProperty(startCol)) return;
-                var anchor = layout[rowIndex][startCol];
-                if (anchor === null || anchor === undefined) return;
-
-                var startVisibleIdx = visibleIdx[startCol];
-                var reach = 1;
-                for (var k = 1; k < colspan; k++) {
-                    var nextVisibleLetter = visibleLetters[startVisibleIdx + k];
-                    if (!nextVisibleLetter) break;
-                    reach++;
-                }
-                if (reach <= 1) return;
-                anchor.colSpan = reach;
-
-                for (var j = 1; j < reach; j++) {
-                    var coveredLetter = visibleLetters[startVisibleIdx + j];
-                    var rowsCovered = anchor.rowSpan || 1;
-                    for (var rr = 0; rr < rowsCovered; rr++) {
-                        if (layout[rowIndex + rr]) {
-                            layout[rowIndex + rr][coveredLetter] = null;
-                        }
-                    }
-                }
-            });
-        });
-
-        return layout;
+        return HHpro.Export.computeCellLayout(sel, visibleLetters);
     }
 
     function formatCellValue(val, colLetter, productKey) {

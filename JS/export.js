@@ -64,7 +64,10 @@ WHAT'S IN THE GRID
         // entries so the same path serves a single per-unit schedule
         // and a multi-section combined schedule.
         buildScheduleGrid:        buildScheduleGrid,
-        buildScheduleGridForItem: buildScheduleGridForItem,
+        // Shared grid/merge helper - the on-screen schedule renderer in
+        // project_view.js delegates to this so the layout logic has a
+        // single source of truth.
+        computeCellLayout:        computeCellLayout,
         getExportScheduleTitle:   getExportScheduleTitle,
         productTabLabel:          productTabLabel,
         xlsxBlobFromSections:     xlsxBlobFromSections,
@@ -122,12 +125,6 @@ WHAT'S IN THE GRID
         });
     }
 
-    // Build a schedule grid containing only a single cart item. Used
-    // by the Files tab to produce per-unit schedules.
-    function buildScheduleGridForItem(productKey, item, data) {
-        return buildScheduleGrid(productKey, [item], data);
-    }
-
     // =================================================================
     // Schedule grid builder
     // -----------------------------------------------------------------
@@ -145,7 +142,17 @@ WHAT'S IN THE GRID
     //   }
     // =================================================================
 
+    // Public entry: build the schedule grid for a product, then apply
+    // any per-cell text overrides from "Edit Schedule" mode so the same
+    // edits flow to the on-screen template view and the xlsx/dxf/pdf
+    // downloads.
     function buildScheduleGrid(productKey, items, data) {
+        var grid = buildScheduleGridRaw(productKey, items, data);
+        applyCellOverrides(grid, productKey);
+        return grid;
+    }
+
+    function buildScheduleGridRaw(productKey, items, data) {
         // Engineer-specific layout override. When the active project's
         // selected firm has a template for this product, build the grid
         // from that template instead of the native scheduleHeader. The
@@ -410,6 +417,32 @@ WHAT'S IN THE GRID
         return HHpro.Templates.getTemplate(currentEngineer(), productKey);
     }
 
+    // "Edit Schedule" per-cell text overrides, keyed by grid "row,col"
+    // and scoped to the current engineer layout (the grid differs by
+    // layout). Stored in project extra: extra[productKey].cellOverrides.
+    function cellOverridesFor(productKey) {
+        if (!(window.HHpro && HHpro.Cart && HHpro.Cart.getProjectExtra)) return null;
+        var extra = HHpro.Cart.getProjectExtra(productKey) || {};
+        var all = extra.cellOverrides || {};
+        return all[currentEngineer()] || null;
+    }
+
+    function applyCellOverrides(grid, productKey) {
+        if (!grid || !grid.rows) return;
+        var map = cellOverridesFor(productKey);
+        if (!map) return;
+        Object.keys(map).forEach(function (key) {
+            var parts = key.split(',');
+            var r = parseInt(parts[0], 10);
+            var c = parseInt(parts[1], 10);
+            var row = grid.rows[r];
+            if (!row) return;
+            var cell = row[c];
+            if (!cell || cell.covered) return;
+            cell.value = map[key];
+        });
+    }
+
     function resolveTemplateEntries(items, data) {
         var entries = [];
         (items || []).forEach(function (it) {
@@ -576,6 +609,12 @@ WHAT'S IN THE GRID
 
         appendTemplateNotes(rows, merges, colCount, template, r);
 
+        var colWidths = computeTemplateColWidths(rows, colCount);
+        // The leftmost column is just the empty vertical divider band -
+        // keep it thin to match the engineer sheet rather than the
+        // default content width.
+        colWidths[0] = 2;
+
         return {
             rows: rows,
             merges: merges,
@@ -583,7 +622,7 @@ WHAT'S IN THE GRID
             titleRowCount: titleRowCount,
             dataEndRow: dataEndRow,
             colCount: colCount,
-            colWidths: computeTemplateColWidths(rows, colCount)
+            colWidths: colWidths
         };
     }
 

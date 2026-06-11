@@ -243,13 +243,6 @@
             return ENGINEERS.filter(function (e) { return isAllowed(e.key); });
         },
 
-        engineerLabel: function (key) {
-            for (var i = 0; i < ENGINEERS.length; i++) {
-                if (ENGINEERS[i].key === key) return ENGINEERS[i].label;
-            }
-            return key;
-        },
-
         /**
          * Returns a template object for (engineerKey, productKey), or
          * null to fall back to the native scheduleHeader layout. Returns
