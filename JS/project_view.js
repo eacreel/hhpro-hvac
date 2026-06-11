@@ -3005,12 +3005,6 @@
                         });
                     });
 
-                    // Synthetic per-unit schedule files - generated client-side
-                    // at download time. One xlsx / dxf / pdf per unit. Folder
-                    // is "Schedules" so they group together in the zip
-                    // separately from submittals / manuals.
-                    appendScheduleFiles(files, item, productKey, data, allTypeNames);
-
                     itemsOut.push({
                         instanceId: item.instanceId,
                         tag: item.tag || '',
@@ -3091,23 +3085,13 @@
 
     // -------- Synthetic schedule files (per-unit + combined) --------
 
+    // Only project-level "full" schedules are offered in the FILES
+    // section; per-unit schedule files were removed at the user's
+    // request (the full schedule covers every unit already).
     var SCHEDULE_DOC_TYPES = [
-        'SCHEDULE (EXCEL)',
-        'SCHEDULE (CAD)',
-        'SCHEDULE (PDF)',
         'FULL SCHEDULE (EXCEL)',
         'FULL SCHEDULE (CAD)',
         'FULL SCHEDULE (PDF)'
-    ];
-
-    var SCHEDULE_FOLDER = 'Schedules';
-
-    // Format descriptor: extension + the HHpro.Export blob factory name
-    // we'll route to at download time.
-    var SCHEDULE_FORMATS = [
-        { docType: 'SCHEDULE (EXCEL)', ext: 'xlsx', blobFn: 'xlsxBlobFromSections' },
-        { docType: 'SCHEDULE (CAD)',   ext: 'dxf',  blobFn: 'dxfBlobFromSections' },
-        { docType: 'SCHEDULE (PDF)',   ext: 'pdf',  blobFn: 'pdfBlobFromSections' }
     ];
 
     var FULL_SCHEDULE_FORMATS = [
@@ -3115,31 +3099,6 @@
         { docType: 'FULL SCHEDULE (CAD)',   ext: 'dxf',  blobFn: 'dxfBlobFromSections' },
         { docType: 'FULL SCHEDULE (PDF)',   ext: 'pdf',  blobFn: 'pdfBlobFromSections' }
     ];
-
-    function appendScheduleFiles(files, item, productKey, data, allTypeNames) {
-        if (!window.HHpro || !window.HHpro.Export) return;
-        var tag = String(item.tag || item.instanceId || 'unit').trim() || 'unit';
-        var baseName = safeFilename(tag) + ' - Schedule';
-
-        SCHEDULE_FORMATS.forEach(function (fmt) {
-            var filenameWithExt = baseName + '.' + fmt.ext;
-            files.push({
-                key: fileKey(item.instanceId, fmt.docType, baseName),
-                docColumn: {
-                    name: fmt.docType,
-                    folder: SCHEDULE_FOLDER,
-                    fileExtension: fmt.ext
-                },
-                filename: baseName,
-                filenameWithExt: filenameWithExt,
-                url: null,
-                generator: makePerUnitGenerator(productKey, item, data, fmt.blobFn),
-                docTypeName: fmt.docType,
-                isZip: false
-            });
-            allTypeNames[fmt.docType] = true;
-        });
-    }
 
     function buildProjectScheduleFiles(products) {
         if (!window.HHpro || !window.HHpro.Export || !products.length) return [];
@@ -3184,17 +3143,6 @@
                 isZip: false
             };
         });
-    }
-
-    function makePerUnitGenerator(productKey, item, data, blobFnName) {
-        return function () {
-            var grid = HHpro.Export.buildScheduleGridForItem(productKey, item, data);
-            if (!grid || !grid.rows.length) {
-                return Promise.reject(new Error('No schedule data for ' + (item.tag || 'unit') + '.'));
-            }
-            var title = HHpro.Export.getExportScheduleTitle(productKey);
-            return HHpro.Export[blobFnName]([{ title: title, grid: grid }]);
-        };
     }
 
     function fileKey(instanceId, docName, filename) {

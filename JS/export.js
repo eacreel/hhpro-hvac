@@ -657,6 +657,30 @@ WHAT'S IN THE GRID
             // numbers don't blow out the whole sheet.
             widths[c] = Math.min(Math.max(maxLen + 1, 7), 22);
         }
+
+        // Ensure each column is at least as wide as the longest single
+        // word of any colspan-1 header anchored in it. A word can't
+        // wrap, so a column narrower than its header word would force an
+        // ugly mid-word break (e.g. "Refrigerant" over a 3-char "R32"
+        // data column). Multi-column headers already have their whole
+        // span to wrap into, so they're left alone here.
+        for (var hr = 0; hr < rows.length; hr++) {
+            var hrow = rows[hr];
+            if (!hrow) continue;
+            for (var hc = 0; hc < colCount; hc++) {
+                var hcell = hrow[hc];
+                if (!hcell || hcell.covered) continue;
+                if (!hcell.bold || hcell.title || hcell.notesRow) continue;
+                if ((hcell.colSpan || 1) !== 1) continue;
+                var longest = 0;
+                String(hcell.value || '').split(/\s+/).forEach(function (w) {
+                    if (w.length > longest) longest = w.length;
+                });
+                if (longest + 1 > widths[hc]) {
+                    widths[hc] = Math.min(longest + 1, 22);
+                }
+            }
+        }
         return widths;
     }
 
@@ -1644,16 +1668,44 @@ WHAT'S IN THE GRID
         var textH = cell.title ? DXF_TXT_TITLE
                     : cell.bold ? DXF_TXT_HEADER
                     : DXF_TXT_BODY;
-        // AutoCAD's default txt.shx renders glyphs at roughly 0.6 *
-        // height wide. Knock 15% off the available width to leave a
-        // little slack for word-wrap (so a too-long word doesn't push
-        // the cell exactly to the edge).
-        var charW = textH * 0.6;
-        var availW = Math.max(1, cellWidthUnits - 2 * DXF_TXT_PAD) * 0.85;
-        var charsPerLine = Math.max(1, Math.floor(availW / charW));
-        var lines = Math.max(1, Math.ceil(value.length / charsPerLine));
+        var availW = Math.max(1, cellWidthUnits - 2 * DXF_TXT_PAD);
+        var lines = wrapTextToWidth(value, availW).length;
         // Total cell height = lines * (height * 1.4 line-spacing) + pad
         return lines * textH * 1.4 + 2 * DXF_TXT_PAD;
+    }
+
+    // Greedy word-wrap to fit a given box width (drawing units). Column
+    // widths are themselves expressed in DXF_CHAR_W units, so deriving
+    // characters-per-line from the same constant makes the wrap point
+    // line up with the column's character capacity - i.e. a header in a
+    // 22-char-wide column wraps at ~22 characters, exactly like the
+    // on-screen / Excel layout. A single word longer than the budget is
+    // hard-broken so it can never spill past the cell border.
+    //
+    // Returns an array of line strings (always at least one entry).
+    function wrapTextToWidth(text, boxWidthUnits) {
+        var perLine = Math.max(1, Math.floor(boxWidthUnits / DXF_CHAR_W));
+        var words = String(text).split(/\s+/).filter(Boolean);
+        var lines = [];
+        var cur = '';
+        words.forEach(function (w) {
+            while (w.length > perLine) {
+                if (cur) { lines.push(cur); cur = ''; }
+                lines.push(w.slice(0, perLine));
+                w = w.slice(perLine);
+            }
+            if (!cur) {
+                cur = w;
+            } else if ((cur.length + 1 + w.length) <= perLine) {
+                cur += ' ' + w;
+            } else {
+                lines.push(cur);
+                cur = w;
+            }
+        });
+        if (cur) lines.push(cur);
+        if (!lines.length) lines.push('');
+        return lines;
     }
 
     // Record this cell's border segments. They're merged into shared
@@ -1754,9 +1806,23 @@ WHAT'S IN THE GRID
             insY = midY;
         }
 
+        // Column headers are hard-wrapped here (explicit MTEXT \P line
+        // breaks) rather than left to the CAD renderer's own width-based
+        // word-wrap, which varies between viewers and let long labels
+        // like "MAX ALLOWABLE LINE-SET LENGTHS" spill outside the cell.
+        // Data/title/notes cells stay as a single logical run.
+        var isHeader = cell.bold && !cell.title && !cell.notesRow;
+        var content;
+        if (isHeader) {
+            content = wrapTextToWidth(clean, boxWidth)
+                          .map(mtextEscape).join('\\P');
+        } else {
+            content = mtextEscape(clean);
+        }
+
         var handle = nextHandle(ctx);
         ctx.entities.push(dxfMTextEntity(handle, 'SCHEDULE_TEXT',
-            insX, insY, height, boxWidth, attachment, clean));
+            insX, insY, height, boxWidth, attachment, content));
     }
 
     // -----------------------------------------------------------------
@@ -1792,7 +1858,7 @@ WHAT'S IN THE GRID
                '\n 41\n' + fmt(width) +
                '\n 71\n' + attachment +
                '\n 72\n5' +                          // drawing direction: by style
-               '\n  1\n' + mtextEscape(text) +
+               '\n  1\n' + text +                     // pre-escaped by caller
                '\n  7\nStandard' +
                '\n 73\n1' +                          // line spacing style: at-least
                '\n 44\n1.0' +                       // line spacing factor
