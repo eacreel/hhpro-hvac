@@ -1559,17 +1559,35 @@
     font-size: var(--font-size-sm);
 }
 
+/* In edit mode every cell is an input. Size them to their content (via
+   the `size` attribute) instead of filling the cell, so the existing
+   text stays readable and the table grows/scrolls like the normal
+   schedule rather than collapsing every column to nothing. */
+.tpl-editing .tpl-edit-input {
+    width: auto;
+    min-width: 2.5ch;
+    background-color: var(--color-bg);
+}
+
 /* Inputs in edit mode inherit each cell's alignment; keep title/header
    inputs readable on the dark header background. */
-.tpl-editing .tpl-left .tpl-field-input,
-.tpl-editing .tpl-notes .tpl-field-input,
-.tpl-editing .tpl-rowhead .tpl-field-input {
+.tpl-editing .tpl-left .tpl-edit-input,
+.tpl-editing .tpl-notes .tpl-edit-input,
+.tpl-editing .tpl-rowhead .tpl-edit-input {
     text-align: left;
 }
 
-.tpl-editing .tpl-title .tpl-field-input,
-.tpl-editing .tpl-header .tpl-field-input {
+.tpl-editing .tpl-title .tpl-edit-input,
+.tpl-editing .tpl-header .tpl-edit-input {
     color: var(--color-text-inverse);
     border-color: var(--color-text-muted);
     font-weight: 700;
+}
+
+/* Title and notes span the full table width - let their inputs fill the
+   cell so long text (e.g. the single-point-power note) stays fully
+   visible and editable rather than clipped to the sized width. */
+.tpl-editing .tpl-title .tpl-edit-input,
+.tpl-editing .tpl-notes .tpl-edit-input {
+    width: 100%;
 }

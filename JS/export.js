@@ -630,22 +630,16 @@ WHAT'S IN THE GRID
     // optional "acceptable manufacturers" box, with the HHpro watermark
     // tucked inside the last box (matches the native notes section).
     function appendTemplateNotes(rows, merges, colCount, template, startRow) {
+        // Engineer schedules intentionally omit the "Created with
+        // HHpro-HVAC.com" watermark - they reproduce the firm's own sheet.
         var r = startRow;
-        var watermark = { value: 'Created with HHpro-HVAC.com', watermark: true, align: 'right' };
-        var hasNotes = !!(template.notes && template.notes.length);
-        var hasMfr = !!template.manufacturers;
-
-        if (hasNotes) {
+        if (template.notes && template.notes.length) {
             r = emitNotesBox(rows, merges, colCount, r,
-                template.notesTitle || null, template.notes.slice(),
-                hasMfr ? null : watermark);
+                template.notesTitle || null, template.notes.slice(), null);
         }
-        if (hasMfr) {
+        if (template.manufacturers) {
             r = emitNotesBox(rows, merges, colCount, r, null,
-                String(template.manufacturers).split('\n'), watermark);
-        }
-        if (!hasNotes && !hasMfr) {
-            r = emitNotesBox(rows, merges, colCount, r, null, [], watermark);
+                String(template.manufacturers).split('\n'), null);
         }
         return r;
     }
@@ -2107,14 +2101,15 @@ WHAT'S IN THE GRID
             insY = midY;
         }
 
-        // Column headers are hard-wrapped here (explicit MTEXT \P line
-        // breaks) rather than left to the CAD renderer's own width-based
-        // word-wrap, which varies between viewers and let long labels
-        // like "MAX ALLOWABLE LINE-SET LENGTHS" spill outside the cell.
-        // Data/title/notes cells stay as a single logical run.
-        var isHeader = cell.bold && !cell.title && !cell.notesRow;
+        // Hard-wrap headers AND notes here (explicit MTEXT \P line breaks)
+        // rather than relying on the CAD renderer's own width-based
+        // word-wrap, which varies between viewers and let long text -
+        // headers like "MAX ALLOWABLE LINE-SET LENGTHS" and long schedule
+        // notes - spill outside the cell. Data cells and the short
+        // single-line title / watermark stay as one run.
+        var doWrap = (cell.bold || cell.notesRow) && !cell.title && !cell.watermark;
         var content;
-        if (isHeader) {
+        if (doWrap) {
             content = wrapTextToWidth(clean, boxWidth)
                           .map(mtextEscape).join('\\P');
         } else {

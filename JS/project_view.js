@@ -1901,8 +1901,14 @@
     function buildCellOverrideInput(productKey, r, c, value) {
         var input = document.createElement('input');
         input.type = 'text';
-        input.className = 'tpl-field-input';
-        input.value = (value == null) ? '' : String(value);
+        input.className = 'tpl-field-input tpl-edit-input';
+        var str = (value == null) ? '' : String(value);
+        input.value = str;
+        // Size the input to its current text so the existing value stays
+        // readable (the schedule has many narrow columns; a fixed-width
+        // input would clip everything). The table then grows/scrolls
+        // horizontally like the normal schedule view.
+        input.size = Math.min(Math.max(str.length, 3), 30);
         input.addEventListener('change', function () {
             updateCellOverride(productKey, r, c, input.value);
         });

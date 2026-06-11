@@ -154,12 +154,15 @@
                 { scope: 'item', editable: true, fieldKey: 'refresco_ms_single_point_mca_mop' }
             ],
             notesTitle: '',
+            // One bordered note box, text on multiple rows (matches the
+            // wrapped merged note cell in the Refresco Excel template).
             notes: [
-                '* POWER IS SINGLE POINT CONNECTION TO BE MADE TO OUTDOOR CONDENSING UNIT. ' +
-                'POWER FROM CONDENSING UNIT SHALL BE PROVIDED TO INDOOR UNIT. FOLLOW ' +
-                "MANUFACTURER'S INSTALLATION INSTRUCTIONS. PROVIDE DISCONNECT AT INDOOR AND " +
-                'OUTDOOR LOCATION. UNIT SHALL BE SUPPLIED WITH ALL PROVISIONS NECESSARY FOR ' +
-                'LOW AMBIENT COOLING. PROVIDE INTEGRAL CONDENSATE PUMP.'
+                '* POWER IS SINGLE POINT CONNECTION TO BE MADE TO OUTDOOR CONDENSING UNIT.',
+                'POWER FROM CONDENSING UNIT SHALL BE PROVIDED TO INDOOR UNIT.',
+                "FOLLOW MANUFACTURER'S INSTALLATION INSTRUCTIONS.",
+                'PROVIDE DISCONNECT AT INDOOR AND OUTDOOR LOCATION.',
+                'UNIT SHALL BE SUPPLIED WITH ALL PROVISIONS NECESSARY FOR LOW AMBIENT COOLING.',
+                'PROVIDE INTEGRAL CONDENSATE PUMP.'
             ],
             manufacturers: null
         };
@@ -197,8 +200,8 @@
                 '3. PROVIDE TWO POSITION OUTSIDE AIR DAMPER, POWERED CLOSED WHEN UNIT IS OFF',
                 '4. PROVIDE 2" PLEATED FILTERS',
                 '5. PROVIDE PROGRAMMABLE THERMOSTAT',
-                '6. PROVIDE A WATER LEVEL DETECTION DEVICE CONFORMING TO UL508 TO SHUT OFF ' +
-                'THE EQUIPMENT IN THE EVENT THAT THE PRIMARY DRAIN IS BLOCKED',
+                '6. PROVIDE A WATER LEVEL DETECTION DEVICE CONFORMING TO UL508 TO SHUT OFF',
+                '     THE EQUIPMENT IN THE EVENT THAT THE PRIMARY DRAIN IS BLOCKED',
                 '7. PROVIDE DRY BULB ECONOMIZER, POWERED CLOSED WHEN UNIT IS OFF.',
                 '8. PROVIDE HOT GAS REHEAT DEHUMIDIFICATION'
             ],
