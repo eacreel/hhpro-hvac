@@ -183,6 +183,8 @@
         meta.textContent = modeLabel + ' \u00b7 ' + count + ' item' + (count === 1 ? '' : 's');
         left.appendChild(meta);
 
+        left.appendChild(buildEngineerSelector());
+
         header.appendChild(left);
 
         // Right-side header buttons. Undo/redo always appear so the
@@ -222,6 +224,58 @@
         header.appendChild(actionsRight);
 
         return header;
+    }
+
+    // Project-level engineer schedule-layout selector. Switching it
+    // re-renders the whole project view so every product tab's schedule
+    // (and the Excel/CAD/PDF exports) pick up the chosen firm's layout.
+    function buildEngineerSelector() {
+        var wrap = document.createElement('div');
+        wrap.className = 'project-engineer-select';
+
+        var sel = document.createElement('select');
+        sel.className = 'project-engineer-dropdown';
+        var selId = 'engineer-select';
+        sel.id = selId;
+
+        var label = document.createElement('label');
+        label.className = 'project-engineer-label';
+        label.htmlFor = selId;
+        label.textContent = 'Schedule layout:';
+
+        var current = (HHpro.Cart && HHpro.Cart.getProjectEngineer)
+            ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+        var engineers = (HHpro.Templates && HHpro.Templates.listEngineers)
+            ? HHpro.Templates.listEngineers()
+            : [{ key: 'hoffman', label: 'Hoffman & Hoffman' }];
+
+        engineers.forEach(function (e) {
+            var opt = document.createElement('option');
+            opt.value = e.key;
+            opt.textContent = e.label;
+            if (e.key === current) opt.selected = true;
+            sel.appendChild(opt);
+        });
+
+        sel.addEventListener('change', function () {
+            if (HHpro.Cart && HHpro.Cart.setProjectEngineer) {
+                HHpro.Cart.setProjectEngineer(sel.value);
+            }
+            HHpro.App.showView('project_view');
+        });
+
+        wrap.appendChild(label);
+        wrap.appendChild(sel);
+        return wrap;
+    }
+
+    // Resolve the engineer template for a product under the active
+    // project's selected firm. Null -> native scheduleHeader layout.
+    function activeTemplate(productKey) {
+        if (!(HHpro.Templates && HHpro.Templates.getTemplate)) return null;
+        var eng = (HHpro.Cart && HHpro.Cart.getProjectEngineer)
+            ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+        return HHpro.Templates.getTemplate(eng, productKey);
     }
 
     // -----------------------------------------------------------------
@@ -1661,18 +1715,24 @@
         var wrap = document.createElement('div');
         wrap.className = 'project-product-tab';
 
-        wrap.appendChild(buildProductToolbar(productKey, items, data));
+        // Engineer templates carry their own fixed columns + notes, so
+        // the native column-hiding and notes-editor controls don't apply.
+        var tplActive = !!activeTemplate(productKey);
+
+        wrap.appendChild(buildProductToolbar(productKey, items, data, tplActive));
 
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
         var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
 
         wrap.appendChild(buildProjectSchedule(productKey, items, data, hidden));
-        wrap.appendChild(buildScheduleNotesSection(productKey, data));
+        if (!tplActive) {
+            wrap.appendChild(buildScheduleNotesSection(productKey, data));
+        }
 
         return wrap;
     }
 
-    function buildProductToolbar(productKey, items, data) {
+    function buildProductToolbar(productKey, items, data, tplActive) {
         var bar = document.createElement('div');
         bar.className = 'project-toolbar';
 
@@ -1685,14 +1745,18 @@
         });
         bar.appendChild(autoTagBtn);
 
-        var colsBtn = document.createElement('button');
-        colsBtn.type = 'button';
-        colsBtn.className = 'projects-btn projects-btn-secondary';
-        colsBtn.textContent = 'Add / Remove Columns';
-        colsBtn.addEventListener('click', function () {
-            openColumnsModal(productKey, data);
-        });
-        bar.appendChild(colsBtn);
+        // Column hiding only applies to the native layout; an engineer
+        // template defines a fixed column set.
+        if (!tplActive) {
+            var colsBtn = document.createElement('button');
+            colsBtn.type = 'button';
+            colsBtn.className = 'projects-btn projects-btn-secondary';
+            colsBtn.textContent = 'Add / Remove Columns';
+            colsBtn.addEventListener('click', function () {
+                openColumnsModal(productKey, data);
+            });
+            bar.appendChild(colsBtn);
+        }
 
         // Excel / CAD / PDF export buttons - all route through HHpro.Export.
         var activeState = HHpro.Cart.getActiveState ? HHpro.Cart.getActiveState() : {};
@@ -1738,6 +1802,80 @@
     // Project-schedule table rendering
     // =================================================================
 
+    // Render a generic export grid (from HHpro.Export.buildScheduleGrid
+    // under an engineer template) into a DOM table. Mirrors the grid
+    // shape used by the xlsx/dxf/pdf emitters so the screen matches the
+    // downloads; cells flagged `editable` become in-place inputs whose
+    // values persist on the item as templateFields.
+    function renderTemplateGridToDom(grid) {
+        var table = document.createElement('table');
+        table.className = 'schedule-table project-schedule-table template-schedule';
+        var numHeaderRows = grid.numHeaderRows || 0;
+
+        for (var r = 0; r < grid.rows.length; r++) {
+            var row = grid.rows[r];
+            if (!row) continue;
+            var tr = document.createElement('tr');
+            for (var c = 0; c < grid.colCount; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+
+                var isHeader = cell.title || (r < numHeaderRows && cell.bold);
+                var el = document.createElement(isHeader ? 'th' : 'td');
+                if (cell.rowSpan > 1) el.rowSpan = cell.rowSpan;
+                if (cell.colSpan > 1) el.colSpan = cell.colSpan;
+
+                var cls = [];
+                if (cell.title) cls.push('tpl-title');
+                else if (isHeader) cls.push('tpl-header');
+                if (cell.notesRow) cls.push('tpl-notes');
+                if (cell.watermark) cls.push('tpl-watermark');
+                // Bold non-header cells = transposed attribute row labels.
+                if (cell.bold && !isHeader && !cell.notesRow) cls.push('tpl-rowhead');
+                if (cell.align === 'left') cls.push('tpl-left');
+                if (cls.length) el.className = cls.join(' ');
+
+                if (cell.editable) {
+                    el.appendChild(buildTemplateFieldInput(cell));
+                } else {
+                    el.textContent = (cell.value == null) ? '' : String(cell.value);
+                }
+                tr.appendChild(el);
+            }
+            table.appendChild(tr);
+        }
+        return table;
+    }
+
+    function buildTemplateFieldInput(cell) {
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'tpl-field-input';
+        input.value = cell.editValue || '';
+        input.placeholder = '-';
+        input.addEventListener('change', function () {
+            updateTemplateField(cell.instanceId, cell.fieldKey, input.value);
+        });
+        return input;
+    }
+
+    // Merge one template field value into the item's templateFields bag
+    // and persist via the standard item-patch path.
+    function updateTemplateField(instanceId, fieldKey, value) {
+        if (!instanceId || !fieldKey) return;
+        var item = findLiveItem(instanceId);
+        var tf = {};
+        if (item && item.templateFields) {
+            Object.keys(item.templateFields).forEach(function (k) {
+                tf[k] = item.templateFields[k];
+            });
+        }
+        tf[fieldKey] = value;
+        if (HHpro.Cart && HHpro.Cart.updateItem) {
+            HHpro.Cart.updateItem(instanceId, { templateFields: tf });
+        }
+    }
+
     function buildProjectSchedule(productKey, items, data, hiddenColumns) {
         var wrap = document.createElement('div');
         wrap.className = 'schedule-wrap project-schedule-wrap';
@@ -1748,6 +1886,15 @@
             msg.className = 'zero-results';
             msg.textContent = 'No schedule data found for the items in this tab.';
             wrap.appendChild(msg);
+            return wrap;
+        }
+
+        // Engineer template active: render the exact grid the exports
+        // use (built by HHpro.Export from the template) so the on-screen
+        // schedule matches the downloaded Excel/CAD/PDF byte-for-intent.
+        if (activeTemplate(productKey) && HHpro.Export && HHpro.Export.buildScheduleGrid) {
+            var tplGrid = HHpro.Export.buildScheduleGrid(productKey, items, data);
+            wrap.appendChild(renderTemplateGridToDom(tplGrid));
             return wrap;
         }
 

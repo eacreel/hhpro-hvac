@@ -308,7 +308,11 @@
         var headers = [
             'ProjectName', 'CreatedAt', 'UpdatedAt',
             'instanceId', 'productKey', 'selectionId', 'label', 'addedAt',
-            'tag', 'indoorTags', 'configuration', 'accessories', 'ExtraJSON'
+            'tag', 'indoorTags', 'configuration', 'accessories', 'ExtraJSON',
+            // Engineer (project-level, first row only) carries the chosen
+            // schedule-layout firm. serves + TemplateFieldsJSON carry the
+            // per-item free-text / engineer-template override values.
+            'serves', 'TemplateFieldsJSON', 'Engineer'
         ];
         var rows = [headers];
 
@@ -317,12 +321,14 @@
             if (proj.extra && Object.keys(proj.extra).length) {
                 try { extraJson = JSON.stringify(proj.extra); } catch (e) { extraJson = ''; }
             }
+            var engineer = proj.engineer || 'hoffman';
             var items = proj.items || [];
 
             if (items.length === 0) {
                 rows.push([
                     proj.name || '', proj.createdAt || '', proj.updatedAt || '',
-                    '', '', '', '', '', '', '', '', '', extraJson
+                    '', '', '', '', '', '', '', '', '', extraJson,
+                    '', '', engineer
                 ]);
                 return;
             }
@@ -332,6 +338,10 @@
                     indoorSerialized = it.indoorTags
                         .map(function (t) { return String(t || ''); })
                         .join('|');
+                }
+                var tfJson = '';
+                if (it.templateFields && Object.keys(it.templateFields).length) {
+                    try { tfJson = JSON.stringify(it.templateFields); } catch (e) { tfJson = ''; }
                 }
                 rows.push([
                     proj.name || '', proj.createdAt || '', proj.updatedAt || '',
@@ -344,7 +354,10 @@
                     indoorSerialized,
                     it.configuration || '',
                     it.accessories || '',
-                    idx === 0 ? extraJson : ''
+                    idx === 0 ? extraJson : '',
+                    it.serves || '',
+                    tfJson,
+                    idx === 0 ? engineer : ''
                 ]);
             });
         });
@@ -490,10 +503,17 @@
                     createdAt: get('CreatedAt') || undefined,
                     updatedAt: get('UpdatedAt') || undefined,
                     items: [],
-                    extra: {}
+                    extra: {},
+                    engineer: 'hoffman'
                 };
                 projectsByName[name] = proj;
             }
+
+            // Engineer (project-level) - export writes it on the first
+            // row; accept it from any row to be tolerant. Missing column
+            // (older exports) leaves the default 'hoffman'.
+            var engineerVal = (get('Engineer') || '').trim();
+            if (engineerVal) proj.engineer = engineerVal;
 
             // Parse ExtraJSON if present on this row (only first row of
             // each project carries it during export, but we accept it on
@@ -533,6 +553,17 @@
             if (configVal) item.configuration = configVal;
             var accVal = (get('accessories') || '').trim();
             if (accVal) item.accessories = accVal;
+            var servesVal = (get('serves') || '').trim();
+            if (servesVal) item.serves = servesVal;
+            var tfJson = (get('TemplateFieldsJSON') || '').trim();
+            if (tfJson) {
+                try {
+                    var tfParsed = JSON.parse(tfJson);
+                    if (tfParsed && typeof tfParsed === 'object') item.templateFields = tfParsed;
+                } catch (e) {
+                    console.warn('Could not parse TemplateFieldsJSON for', name);
+                }
+            }
 
             proj.items.push(item);
         });

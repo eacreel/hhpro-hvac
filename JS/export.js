@@ -146,6 +146,15 @@ WHAT'S IN THE GRID
     // =================================================================
 
     function buildScheduleGrid(productKey, items, data) {
+        // Engineer-specific layout override. When the active project's
+        // selected firm has a template for this product, build the grid
+        // from that template instead of the native scheduleHeader. The
+        // default firm (Hoffman & Hoffman) returns null -> native path.
+        var template = templateFor(productKey);
+        if (template) {
+            return buildTemplateGrid(productKey, template, items, data);
+        }
+
         var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
             ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
         var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
@@ -379,6 +388,250 @@ WHAT'S IN THE GRID
     }
 
     // =================================================================
+    // Engineer-template grid builder
+    // -----------------------------------------------------------------
+    // Produces the SAME generic grid shape as buildScheduleGrid from a
+    // template object (see schedule_templates.js), so the xlsx / dxf /
+    // pdf emitters and the on-screen renderer consume it unchanged. Two
+    // orientations:
+    //   'rows'    - units are rows (one row per indoor sub-row), the
+    //               template's `columns` are the grid columns.
+    //   'columns' - transposed: units are columns, the template's
+    //               `attributes` are the grid rows.
+    // =================================================================
+
+    function currentEngineer() {
+        return (window.HHpro && HHpro.Cart && HHpro.Cart.getProjectEngineer)
+            ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+    }
+
+    function templateFor(productKey) {
+        if (!(window.HHpro && HHpro.Templates && HHpro.Templates.getTemplate)) return null;
+        return HHpro.Templates.getTemplate(currentEngineer(), productKey);
+    }
+
+    function resolveTemplateEntries(items, data) {
+        var entries = [];
+        (items || []).forEach(function (it) {
+            var sel = findSelectionById(data, it.selectionId);
+            if (sel) entries.push({ item: it, selection: sel });
+        });
+        return entries;
+    }
+
+    // Per-(item, sub-row) data-access object handed to a template field's
+    // derive() function. Native cell values are read by HHpro column
+    // letter and formatted the same way the native path formats them.
+    function makeTemplateApi(productKey, item, selection, rowIndex) {
+        var srows = (selection && selection.rows) || [];
+        function valAt(letter, i) {
+            var row = srows[i];
+            var raw = (row && row.scheduleData) ? row.scheduleData[letter] : undefined;
+            return formatCellValue(raw, letter, productKey);
+        }
+        return {
+            item: item,
+            rowIndex: rowIndex,
+            numRows: srows.length || 1,
+            cell: function (letter) { return valAt(letter, rowIndex); },
+            cellAt: function (letter, i) { return valAt(letter, i); },
+            tf: function (key) {
+                var tfs = (item && item.templateFields) || {};
+                var v = tfs[key];
+                return (v === null || v === undefined) ? '' : String(v);
+            }
+        };
+    }
+
+    // Resolve one template field to { display, editable, editValue } for
+    // a given api. Editable fields show the stored override or the "-"
+    // placeholder; derived fields run their derive().
+    function resolveTemplateField(field, g) {
+        if (field.editable) {
+            var override = g.tf(field.fieldKey);
+            return { display: override || '-', editable: true, editValue: override };
+        }
+        var val = field.derive ? field.derive(g) : '';
+        return { display: (val === null || val === undefined) ? '' : String(val) };
+    }
+
+    function templateCellData(field, resolved, item) {
+        var d = { value: resolved.display, dataRow: true, align: 'center' };
+        if (resolved.editable) {
+            d.editable = true;
+            d.fieldKey = field.fieldKey;
+            d.instanceId = item.instanceId;
+            d.editValue = resolved.editValue || '';
+        }
+        return d;
+    }
+
+    function buildTemplateGrid(productKey, template, items, data) {
+        return (template.orientation === 'columns')
+            ? buildTransposedTemplateGrid(productKey, template, items, data)
+            : buildRowsTemplateGrid(productKey, template, items, data);
+    }
+
+    function buildRowsTemplateGrid(productKey, template, items, data) {
+        var entries = resolveTemplateEntries(items, data);
+        var cols = template.columns;
+        var colCount = cols.length;
+        var rows = [];
+        var merges = [];
+
+        // Title row
+        putCell(rows, merges, 0, 0,
+                { value: template.title, bold: true, title: true }, 1, colCount);
+        var titleRowCount = 1;
+
+        // Header bands (positioned over the leaf columns)
+        var headerRowSpan = 0;
+        (template.header || []).forEach(function (h) {
+            headerRowSpan = Math.max(headerRowSpan, h.r + (h.rowspan || 1));
+            putCell(rows, merges, titleRowCount + h.r, h.c,
+                    { value: h.label, bold: true }, h.rowspan || 1, h.colspan || 1);
+        });
+        var numHeaderRows = titleRowCount + headerRowSpan;
+
+        // Data rows - one block per unit, item-scope columns row-spanned
+        var curRow = numHeaderRows;
+        entries.forEach(function (entry) {
+            var item = entry.item;
+            var sel = entry.selection;
+            var numRows = (sel && sel.rows && sel.rows.length) ? sel.rows.length : 1;
+            cols.forEach(function (col, ci) {
+                if (col.scope === 'item') {
+                    var g = makeTemplateApi(productKey, item, sel, 0);
+                    var resolved = resolveTemplateField(col, g);
+                    putCell(rows, merges, curRow, ci,
+                            templateCellData(col, resolved, item), numRows, 1);
+                } else {
+                    for (var ri = 0; ri < numRows; ri++) {
+                        var g2 = makeTemplateApi(productKey, item, sel, ri);
+                        var resolved2 = resolveTemplateField(col, g2);
+                        putCell(rows, merges, curRow + ri, ci,
+                                templateCellData(col, resolved2, item), 1, 1);
+                    }
+                }
+            });
+            curRow += numRows;
+        });
+        var dataEndRow = curRow;
+
+        appendTemplateNotes(rows, merges, colCount, template, curRow);
+
+        return {
+            rows: rows,
+            merges: merges,
+            numHeaderRows: numHeaderRows,
+            titleRowCount: titleRowCount,
+            dataEndRow: dataEndRow,
+            colCount: colCount,
+            colWidths: computeTemplateColWidths(rows, colCount)
+        };
+    }
+
+    function buildTransposedTemplateGrid(productKey, template, items, data) {
+        var entries = resolveTemplateEntries(items, data);
+        var attrs = template.attributes || [];
+        var unitCount = entries.length;
+        // columns: [vertical band, attribute label, unit1, unit2, ...]
+        var colCount = 2 + unitCount;
+        var rows = [];
+        var merges = [];
+
+        putCell(rows, merges, 0, 0,
+                { value: template.title, bold: true, title: true }, 1, colCount);
+        var titleRowCount = 1;
+
+        var r = titleRowCount;
+        var mainStartRow = null;
+        var mainCount = 0;
+        attrs.forEach(function (attr) {
+            var isTop = attr.band === 'top';
+            if (isTop) {
+                // Label spans the band + label columns
+                putCell(rows, merges, r, 0,
+                        { value: attr.label, bold: true, align: 'left' }, 1, 2);
+            } else {
+                if (mainStartRow === null) mainStartRow = r;
+                mainCount++;
+                putCell(rows, merges, r, 1,
+                        { value: attr.label, bold: true, align: 'left' }, 1, 1);
+            }
+            entries.forEach(function (entry, ui) {
+                var g = makeTemplateApi(productKey, entry.item, entry.selection, 0);
+                var resolved = resolveTemplateField(attr, g);
+                putCell(rows, merges, r, 2 + ui,
+                        templateCellData(attr, resolved, entry.item), 1, 1);
+            });
+            r++;
+        });
+
+        // Empty vertical divider band down the left of the main rows
+        if (mainStartRow !== null && mainCount > 0) {
+            putCell(rows, merges, mainStartRow, 0, { value: '' }, mainCount, 1);
+        }
+        var dataEndRow = r;
+
+        appendTemplateNotes(rows, merges, colCount, template, r);
+
+        return {
+            rows: rows,
+            merges: merges,
+            numHeaderRows: titleRowCount,
+            titleRowCount: titleRowCount,
+            dataEndRow: dataEndRow,
+            colCount: colCount,
+            colWidths: computeTemplateColWidths(rows, colCount)
+        };
+    }
+
+    // Notes box(es) for a template: the firm's verbatim notes, then an
+    // optional "acceptable manufacturers" box, with the HHpro watermark
+    // tucked inside the last box (matches the native notes section).
+    function appendTemplateNotes(rows, merges, colCount, template, startRow) {
+        var r = startRow;
+        var watermark = { value: 'Created with HHpro-HVAC.com', watermark: true, align: 'right' };
+        var hasNotes = !!(template.notes && template.notes.length);
+        var hasMfr = !!template.manufacturers;
+
+        if (hasNotes) {
+            r = emitNotesBox(rows, merges, colCount, r,
+                template.notesTitle || null, template.notes.slice(),
+                hasMfr ? null : watermark);
+        }
+        if (hasMfr) {
+            r = emitNotesBox(rows, merges, colCount, r, null,
+                String(template.manufacturers).split('\n'), watermark);
+        }
+        if (!hasNotes && !hasMfr) {
+            r = emitNotesBox(rows, merges, colCount, r, null, [], watermark);
+        }
+        return r;
+    }
+
+    // Column widths (Excel char units) for a template grid: fit each
+    // single-column cell's content; multi-column header bands, the
+    // title, and full-width notes don't constrain widths.
+    function computeTemplateColWidths(rows, colCount) {
+        var widths = new Array(colCount).fill(8);
+        for (var r = 0; r < rows.length; r++) {
+            var row = rows[r];
+            if (!row) continue;
+            for (var c = 0; c < colCount; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+                if (cell.title || cell.notesRow) continue;
+                if ((cell.colSpan || 1) > 1) continue;
+                var len = String(cell.value == null ? '' : cell.value).length;
+                if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 28);
+            }
+        }
+        return widths;
+    }
+
+    // =================================================================
     // Schedule notes appended after the data rows
     // -----------------------------------------------------------------
     // For Marvair schedules we emit three sections (STANDARD,
@@ -570,6 +823,8 @@ WHAT'S IN THE GRID
      * schedule (Excel + PDF). Matches the titles the user requested.
      */
     function getExportScheduleTitle(productKey) {
+        var template = templateFor(productKey);
+        if (template && template.title) return template.title;
         var titles = {
             'gas_packs':              'PACKAGED ROOFTOP UNIT SCHEDULE',
             'marvair':                'VERTICAL WALL MOUNTED PACKAGED SCHEDULE',
@@ -606,7 +861,14 @@ WHAT'S IN THE GRID
             notesRow: !!cellData.notesRow,
             dataRow: !!cellData.dataRow,
             borderPos: cellData.borderPos || '',
-            watermark: !!cellData.watermark
+            watermark: !!cellData.watermark,
+            // Template editable-cell metadata (ignored by xlsx/dxf/pdf,
+            // used by the on-screen renderer to bind an input). Present
+            // only for engineer-template fields with no native source.
+            editable: !!cellData.editable,
+            fieldKey: cellData.fieldKey || '',
+            instanceId: cellData.instanceId || '',
+            editValue: cellData.editValue || ''
         };
         // Mark every covered position so neither the XLSX nor the
         // HTML-for-PDF renderer overwrites it later, AND so the XLSX

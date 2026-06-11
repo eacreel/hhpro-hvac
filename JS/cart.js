@@ -70,8 +70,13 @@
         name: null,
         items: [],       // [{ instanceId, productKey, selectionId, label, addedAt, tag? }]
         extra: {},       // { <productKey>: { hiddenColumns, lastAutoTag } }
+        engineer: 'hoffman', // project-level schedule-layout template key
         nextInstanceNum: 1
     };
+
+    // Default engineer template key used whenever a project/cart hasn't
+    // picked one yet (the original Hoffman & Hoffman layout).
+    var DEFAULT_ENGINEER = 'hoffman';
 
     // --- DOM refs (set during init) ----------------------------------
     var toggleBtn = null;
@@ -102,6 +107,9 @@
 
         getProjectExtra: getProjectExtra,
         setProjectExtra: setProjectExtra,
+
+        getProjectEngineer: getProjectEngineer,
+        setProjectEngineer: setProjectEngineer,
 
         listProjects: listProjects,
         getCurrentProjectId: getCurrentProjectId,
@@ -199,7 +207,7 @@
             try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
             state = {
                 mode: null, projectId: null, name: null,
-                items: [], extra: {}, nextInstanceNum: 1
+                items: [], extra: {}, engineer: DEFAULT_ENGINEER, nextInstanceNum: 1
             };
             initialized = true;
         }
@@ -221,12 +229,13 @@
                 state.name = parsed.name || null;
                 state.items = Array.isArray(parsed.items) ? parsed.items : [];
                 state.extra = (parsed.extra && typeof parsed.extra === 'object') ? parsed.extra : {};
+                state.engineer = parsed.engineer || DEFAULT_ENGINEER;
                 state.nextInstanceNum = parsed.nextInstanceNum || (state.items.length + 1);
             }
         } catch (e) {
             state = {
                 mode: null, projectId: null, name: null,
-                items: [], extra: {}, nextInstanceNum: 1
+                items: [], extra: {}, engineer: DEFAULT_ENGINEER, nextInstanceNum: 1
             };
         }
     }
@@ -276,6 +285,7 @@
             name: name,
             items: [],
             extra: {},
+            engineer: DEFAULT_ENGINEER,
             createdAt: now,
             updatedAt: now
         };
@@ -294,6 +304,7 @@
         if (!existing) return;
         existing.items = state.items.slice();
         existing.extra = deepClone(state.extra);
+        existing.engineer = state.engineer || DEFAULT_ENGINEER;
         existing.updatedAt = new Date().toISOString();
         saveProjects(projects);
     }
@@ -364,6 +375,7 @@
         state.name = null;
         state.items = [];
         state.extra = {};
+        state.engineer = DEFAULT_ENGINEER;
         state.nextInstanceNum = 1;
         try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
         renderPanel();
@@ -412,6 +424,7 @@
                 name: finalName,
                 items: Array.isArray(incoming.items) ? incoming.items.slice() : [],
                 extra: (incoming.extra && typeof incoming.extra === 'object') ? incoming.extra : {},
+                engineer: incoming.engineer || DEFAULT_ENGINEER,
                 createdAt: incoming.createdAt || nowIso,
                 updatedAt: incoming.updatedAt || nowIso
             };
@@ -446,8 +459,26 @@
             projectId: state.projectId,
             name: state.name,
             items: state.items.slice(),
-            extra: deepClone(state.extra)
+            extra: deepClone(state.extra),
+            engineer: state.engineer || DEFAULT_ENGINEER
         };
+    }
+
+    /**
+     * Project-level engineer schedule-layout template. Determines which
+     * firm's schedule layout (Hoffman & Hoffman, Refresco, ...) the
+     * on-screen schedule and the Excel/CAD/PDF exports use.
+     */
+    function getProjectEngineer() {
+        return state.engineer || DEFAULT_ENGINEER;
+    }
+
+    function setProjectEngineer(key) {
+        var next = key || DEFAULT_ENGINEER;
+        if (next === state.engineer) return;
+        pushUndo();
+        state.engineer = next;
+        saveStateToSession();
     }
 
     /**
@@ -513,6 +544,7 @@
         state.items = Array.isArray(project.items) ? project.items.slice() : [];
         state.extra = (project.extra && typeof project.extra === 'object')
             ? deepClone(project.extra) : {};
+        state.engineer = project.engineer || DEFAULT_ENGINEER;
         var maxNum = 0;
         state.items.forEach(function (it) {
             var n = parseInt((it.instanceId || '').replace(/\D/g, ''), 10);
