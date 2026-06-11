@@ -223,8 +223,25 @@
         { key: 'refresco', label: 'Refresco' }
     ];
 
+    // Engineer access is gated by the login password (see login.js ->
+    // State.getAllowedEngineers). 'hoffman' (the standard layout) is
+    // always allowed. This is the security boundary: a disallowed firm's
+    // template is never returned, so even a project saved/imported with
+    // engineer:'refresco' renders the standard schedule for a login that
+    // lacks Refresco access.
+    function isAllowed(engineerKey) {
+        if (engineerKey === 'hoffman') return true;
+        if (HHpro.State && typeof HHpro.State.isEngineerAllowed === 'function') {
+            return HHpro.State.isEngineerAllowed(engineerKey);
+        }
+        return false;
+    }
+
     HHpro.Templates = {
-        listEngineers: function () { return ENGINEERS.slice(); },
+        // Only engineers the current login is allowed to use.
+        listEngineers: function () {
+            return ENGINEERS.filter(function (e) { return isAllowed(e.key); });
+        },
 
         engineerLabel: function (key) {
             for (var i = 0; i < ENGINEERS.length; i++) {
@@ -235,9 +252,11 @@
 
         /**
          * Returns a template object for (engineerKey, productKey), or
-         * null to fall back to the native scheduleHeader layout.
+         * null to fall back to the native scheduleHeader layout. Returns
+         * null when the current login isn't allowed this engineer.
          */
         getTemplate: function (engineerKey, productKey) {
+            if (!isAllowed(engineerKey)) return null;
             var byProduct = REGISTRY[engineerKey || 'hoffman'];
             if (!byProduct) return null;
             var factory = byProduct[productKey];

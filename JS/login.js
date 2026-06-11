@@ -1,7 +1,13 @@
 /* ============================================================
    HHpro - Login view
    ------------------------------------------------------------
-   Single password prompt. Password is "Mellon".
+   Password prompt. Each password maps to the engineer schedule
+   templates that login may use:
+     - "Mellon"    -> standard (Hoffman & Hoffman) schedules only
+     - "Refresco1" -> standard + Refresco engineer templates
+   Every password always includes the standard layout. Adding a
+   new firm = add its password here plus a template in
+   schedule_templates.js.
    ============================================================ */
 
 (function () {
@@ -10,7 +16,11 @@
     window.HHpro = window.HHpro || {};
     HHpro.Views = HHpro.Views || {};
 
-    var CORRECT_PASSWORD = 'Mellon';
+    // password -> allowed engineer-template keys
+    var PASSWORDS = {
+        'Mellon':    ['hoffman'],
+        'Refresco1': ['hoffman', 'refresco']
+    };
 
     HHpro.Views.login = {
         render: function (root) {
@@ -73,8 +83,11 @@
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
                 var value = input.value;
-                if (value === CORRECT_PASSWORD) {
+                var allowed = Object.prototype.hasOwnProperty.call(PASSWORDS, value)
+                    ? PASSWORDS[value] : null;
+                if (allowed) {
                     HHpro.State.setLoggedIn(true);
+                    HHpro.State.setAllowedEngineers(allowed);
                     HHpro.App.showView('main');
                 } else {
                     error.textContent = 'Incorrect password. Please try again.';

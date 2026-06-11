@@ -183,7 +183,10 @@
         meta.textContent = modeLabel + ' \u00b7 ' + count + ' item' + (count === 1 ? '' : 's');
         left.appendChild(meta);
 
-        left.appendChild(buildEngineerSelector());
+        // Only offer the layout selector when this login can use more
+        // than the standard layout (i.e. has an engineer template).
+        var selector = buildEngineerSelector();
+        if (selector) left.appendChild(selector);
 
         header.appendChild(left);
 
@@ -230,6 +233,13 @@
     // re-renders the whole project view so every product tab's schedule
     // (and the Excel/CAD/PDF exports) pick up the chosen firm's layout.
     function buildEngineerSelector() {
+        var engineers = (HHpro.Templates && HHpro.Templates.listEngineers)
+            ? HHpro.Templates.listEngineers()
+            : [{ key: 'hoffman', label: 'Hoffman & Hoffman' }];
+
+        // Nothing to choose when only the standard layout is available.
+        if (engineers.length <= 1) return null;
+
         var wrap = document.createElement('div');
         wrap.className = 'project-engineer-select';
 
@@ -245,9 +255,10 @@
 
         var current = (HHpro.Cart && HHpro.Cart.getProjectEngineer)
             ? HHpro.Cart.getProjectEngineer() : 'hoffman';
-        var engineers = (HHpro.Templates && HHpro.Templates.listEngineers)
-            ? HHpro.Templates.listEngineers()
-            : [{ key: 'hoffman', label: 'Hoffman & Hoffman' }];
+        // Clamp to an allowed engineer so the control never shows a
+        // selection this login can't actually use.
+        var allowedKeys = engineers.map(function (e) { return e.key; });
+        if (allowedKeys.indexOf(current) === -1) current = 'hoffman';
 
         engineers.forEach(function (e) {
             var opt = document.createElement('option');
