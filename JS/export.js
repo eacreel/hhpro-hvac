@@ -657,8 +657,16 @@ WHAT'S IN THE GRID
                 if (!cell || cell.covered) continue;
                 if (cell.title || cell.notesRow) continue;
                 if ((cell.colSpan || 1) > 1) continue;
-                var len = String(cell.value == null ? '' : cell.value).length;
-                if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 28);
+                var text = String(cell.value == null ? '' : cell.value);
+                // Circled digits (note refs) render wider than a plain
+                // character, so count them double - otherwise a REMARKS
+                // cell like "① ② ... ⑨" gets too narrow a column.
+                var len = text.length;
+                for (var k = 0; k < text.length; k++) {
+                    var cc = text.charCodeAt(k);
+                    if (cc >= 0x2460 && cc <= 0x2473) len++;
+                }
+                if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 30);
             }
         }
         return widths;
@@ -2167,11 +2175,11 @@ WHAT'S IN THE GRID
         return s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '.0');
     }
 
-    // Circled digits ①-⑳ (U+2460-U+2473) -> "(1)".."(20)". The DXF and
-    // hand-rolled PDF are single-byte (ASCII/WinAnsi) only, so without
-    // this they'd become "?". Engineer templates use circled note refs;
-    // this degrades them gracefully in CAD/PDF while screen/Excel/print
-    // keep the true glyphs.
+    // Circled digits ①-⑳ (U+2460-U+2473) -> "(1)".."(20)". Used by the
+    // hand-rolled PDF (Helvetica/WinAnsi, single-byte) which can't embed
+    // the glyphs. The DXF instead renders true circled digits via an
+    // inline Arial run (see mtextEscape); screen/xlsx/print-PDF keep the
+    // real glyphs.
     function asciiizeCircledDigits(s) {
         return String(s).replace(/[①-⑳]/g, function (ch) {
             return '(' + (ch.charCodeAt(0) - 0x2460 + 1) + ')';
@@ -2179,14 +2187,31 @@ WHAT'S IN THE GRID
     }
 
     function mtextEscape(s) {
-        // MTEXT treats { } \ as control characters. Escape them.
-        // Replace anything outside printable ASCII with '?' so the
-        // file stays single-byte-safe.
-        return asciiizeCircledDigits(s)
-            .replace(/[^\x20-\x7e]/g, '?')
-            .replace(/\\/g, '\\\\')
-            .replace(/\{/g, '\\{')
-            .replace(/\}/g, '\\}');
+        // Built char-by-char so we can: escape MTEXT control chars
+        // ({ } \), render circled digits ①-⑳ via an inline Arial font
+        // run + \U+ codepoint (the default txt.shx has no circled-digit
+        // glyph, so this is what makes AutoCAD draw the actual circle),
+        // and drop any other non-ASCII to '?'.
+        var str = String(s);
+        var out = '';
+        for (var i = 0; i < str.length; i++) {
+            var ch = str.charAt(i);
+            var cp = str.charCodeAt(i);
+            if (cp >= 0x2460 && cp <= 0x2473) {
+                out += '{\\fArial|b0|i0|c0|p0;\\U+' + cp.toString(16).toUpperCase() + '}';
+            } else if (ch === '\\') {
+                out += '\\\\';
+            } else if (ch === '{') {
+                out += '\\{';
+            } else if (ch === '}') {
+                out += '\\}';
+            } else if (cp < 0x20 || cp > 0x7e) {
+                out += '?';
+            } else {
+                out += ch;
+            }
+        }
+        return out;
     }
 
     function dxfHeader(minX, minY, maxX, maxY, handleSeed) {
