@@ -5,10 +5,15 @@
    then one per product type.
    ============================================================ */
 
+/* The title is instructional guidance, not a heading competing with
+   the tile labels - centered to sit on the same axis as the tile
+   grid, and muted so the action tiles stay the loudest elements. */
 .main-title {
-    font-size: var(--font-size-xl);
-    color: var(--color-text);
-    margin-bottom: var(--space-lg);
+    text-align: center;
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xl);
 }
 
 /* Action tiles row - centered above the product grid. Holds the
@@ -24,13 +29,15 @@
 
 /* The compact action tile - no image block, just a nicely styled
    card with the primary action text. Wider than a product tile is
-   tall so the two lines of text have room to breathe, and visually
-   prominent (saturated background + light text) to read as a
-   primary action on the page. */
+   tall so the two lines of text have room to breathe. The reserved
+   brand-blue surface (matching the header/button family) marks
+   these as the page's primary actions, distinct from the neutral
+   product cards below. */
 .tile.tile-projects-compact {
     width: 100%;
     max-width: 420px;
-    background: linear-gradient(135deg, var(--tile-projects) 0%, #1f2d3d 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #0d3a5a 100%);
+    border: 1px solid rgba(91, 169, 216, 0.3);
     border-radius: var(--radius-md);
     padding: var(--space-lg) var(--space-xl);
     text-align: center;
@@ -48,14 +55,25 @@
     padding: 0;
 }
 
+/* Icon + text sit on one centered line; the icon is slightly smaller
+   than the cap-height so it reads as a marker, not a second glyph. */
 .tile.tile-projects-compact .tile-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
     color: var(--color-text-inverse);
     font-size: var(--font-size-xxl);
     letter-spacing: 0.5px;
 }
 
+.tile.tile-projects-compact .tile-label .icon {
+    font-size: 0.8em;
+}
+
 .tile.tile-projects-compact .tile-sublabel {
-    color: rgba(255, 255, 255, 0.75);
+    /* 0.8 keeps the sublabel above 4.5:1 on the brand-blue gradient */
+    color: rgba(255, 255, 255, 0.8);
     font-size: var(--font-size-md);
     margin-top: var(--space-xs);
 }
@@ -69,9 +87,14 @@
     justify-content: center;
 }
 
-/* A single tile (button for accessibility and keyboard navigation) */
+/* A single tile (button for accessibility and keyboard navigation).
+   The hairline border defines the card edge - the product JPGs have
+   pure-black backgrounds darker than the page, so without it the
+   image half of each tile dissolves into the canvas. overflow:hidden
+   keeps the border radius clean over the image corners. */
 .tile {
     background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -85,34 +108,73 @@
 
 .tile:hover {
     transform: translateY(-2px);
-    /* Soft elevation shadow + 1px brand-blue ring so the tile reads
-       as actively hovered instead of just lifted. */
-    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-primary-light);
+    /* Elevation shadow + 1px brand-blue ring so the tile reads as
+       actively hovered instead of just lifted. The gray border goes
+       transparent so it doesn't double up against the ring. */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--color-primary-light);
+    border-color: transparent;
 }
 
-.tile:focus-visible {
-    outline: 3px solid var(--color-primary-light);
-    outline-offset: 2px;
+/* Press feedback: cancel the hover lift and dip slightly, matching
+   the scale-down language the button families use app-wide. The
+   compact selector is repeated so it outranks the compact hover. */
+.tile:active,
+.tile.tile-projects-compact:active {
+    transform: translateY(0) scale(0.99);
 }
 
-/* Image / placeholder area at the top of each tile */
+/* Image / placeholder area at the top of each tile. The black
+   background matches the product JPGs (all shot on pure #000), so
+   the reserved 4:3 box doesn't flash a different color when the
+   image arrives - and missing images sit on the same surface.
+   overflow:hidden contains the hover zoom on the img below. */
 .tile-image {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.85);
+    overflow: hidden;
+    background-color: #000;
+    /* Seam between the photo and the label strip below it, so the
+       black-to-surface boundary reads as deliberate construction. */
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
     font-size: var(--font-size-sm);
     font-weight: 500;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
 
+/* Images attach asynchronously in img.onload after render, so fade
+   them in rather than popping. The transform transition drives the
+   restrained zoom on tile hover. */
 .tile-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    animation: tile-img-fade 250ms ease;
+    transition: transform var(--transition-med);
+}
+
+@keyframes tile-img-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.tile:hover .tile-image img {
+    transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tile-image img {
+        animation: none;
+        transition: none;
+    }
+
+    .tile:hover .tile-image img {
+        transform: none;
+    }
 }
 
 /* Label area below the image */

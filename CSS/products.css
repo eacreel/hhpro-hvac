@@ -50,18 +50,21 @@
     white-space: nowrap;
     align-self: center;
     transition: background-color var(--transition-fast),
-                border-color var(--transition-fast),
-                color var(--transition-fast);
+                border-color var(--transition-fast);
 }
+/* Secondary-button hover recipe shared app-wide: row-hover fill +
+   brand border, text color unchanged. */
 .product-back-btn:hover {
     background-color: var(--color-row-hover);
     border-color: var(--color-primary-light);
-    color: var(--color-primary-light);
 }
 
 /* ---------- Filter bar ---------- */
 .filter-bar {
     background-color: var(--color-surface);
+    /* Hairline border defines the card edge on the dark page; the
+       shadow alone is too subtle at this elevation. */
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--space-md);
     box-shadow: var(--shadow-sm);
@@ -90,7 +93,9 @@
     padding: 8px 10px;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
-    background-color: var(--color-surface);
+    /* Inset "well" tone (one step below the filter-bar surface) so the
+       dropdowns read as inputs rather than dissolving into the card. */
+    background-color: var(--color-bg);
     color: var(--color-text);
     font-size: var(--font-size-sm);
     cursor: pointer;
@@ -103,6 +108,17 @@
     border-color: var(--color-primary-light);
 }
 
+/* Constraining filters get a brand-blue border + label so a quick scan
+   of the bar shows which dropdowns are set vs. on "All". The classes
+   are toggled in buildFilterBar (JS/base.js). */
+.filter-select.is-active {
+    border-color: var(--color-primary-light);
+}
+
+.filter-group.is-active .filter-label {
+    color: var(--color-primary-light);
+}
+
 .filter-clear {
     padding: 8px 14px;
     background-color: transparent;
@@ -110,12 +126,14 @@
     color: var(--color-text);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
-    transition: background-color var(--transition-fast);
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast);
     min-height: 36px;
 }
 
 .filter-clear:hover {
-    background-color: var(--color-bg);
+    background-color: var(--color-row-hover);
+    border-color: var(--color-primary-light);
 }
 
 .filter-status {
@@ -171,6 +189,9 @@
 /* ---------- Schedule table ---------- */
 .schedule-wrap {
     background-color: var(--color-surface);
+    /* Hairline border defines the card edge on the dark page; the
+       shadow alone is too subtle at this elevation. */
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
     overflow: auto;
@@ -188,6 +209,9 @@
     border-collapse: separate;
     border-spacing: 0;
     font-size: var(--font-size-sm);
+    /* Fixed-width figures so stacked numbers (CFM, MCA, MOP, weights)
+       align vertically and are comparable down a column. */
+    font-variant-numeric: tabular-nums;
     width: min-content;
 }
 
@@ -205,10 +229,15 @@
 /* Headers wrap at word boundaries so long names ("OPERATING WEIGHT") can
    break onto two lines and keep the column narrower. word-break: normal
    means individual words WON'T be broken mid-letter even if they don't
-   fit - the column will grow instead. */
+   fit - the column will grow instead.
+   Header type is one step smaller + muted so the (already ALL-CAPS)
+   header band recedes behind the data; smaller words also let the
+   min-content column sizing produce narrower columns. */
 .schedule-table thead th {
     background-color: var(--color-bg);
-    color: var(--color-text);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.04em;
     font-weight: 600;
     border-top: 1px solid var(--color-border);
     white-space: normal;
@@ -220,6 +249,17 @@
     z-index: 2;
 }
 
+/* Seam under the sticky header so rows visibly slide beneath a pinned
+   plane. Scoped to the LAST thead row only -- applyStickyHeaderOffsets
+   stacks several sticky rows and a shadow on every row would draw onto
+   the header row below it. The pinned actions-head spans all header
+   rows, so it carries its own copy of the seam (combined with the pin
+   shadow) further down. */
+.schedule-table thead tr:last-child th:not(.actions-head) {
+    border-bottom: 2px solid var(--color-border-strong);
+    box-shadow: 0 4px 8px -4px rgba(0, 0, 0, 0.5);
+}
+
 /* Data cells stay on a single line so schedule values don't wrap */
 .schedule-table tbody td {
     white-space: nowrap;
@@ -229,7 +269,7 @@
    scroll. Even rows get a subtle lift above the base surface; hover and
    the selection-boundary border still win over this. */
 .schedule-table tbody tr:nth-child(even) > td {
-    background-color: rgba(255, 255, 255, 0.025);
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 .schedule-table tbody tr.selection-boundary > td {
@@ -252,9 +292,11 @@
     left: 0;
     z-index: 4; /* higher than other thead cells (2) and body action cells (1) */
     min-width: 200px;
-    /* Soft right-edge shadow so the pinned column reads as one continuous
-       sticky element from header through the last data row. */
-    box-shadow: 6px 0 8px -4px rgba(15, 32, 56, 0.12);
+    /* Pin shadow (right-edge cast for the sticky column) combined with
+       this cell's copy of the header seam -- it rowspans every header
+       row, so the tr:last-child seam rule above can't reach it. */
+    border-bottom: 2px solid var(--color-border-strong);
+    box-shadow: var(--shadow-pin), 0 4px 8px -4px rgba(0, 0, 0, 0.5);
 }
 
 .schedule-table tbody td.actions-cell {
@@ -264,17 +306,24 @@
     z-index: 1;
     border-right: 2px solid var(--color-border-strong);
     padding: 6px 8px;
-    box-shadow: 6px 0 8px -4px rgba(15, 32, 56, 0.12);
-}
-
-.schedule-table tbody tr:hover > td.actions-cell {
-    background-color: var(--color-bg);
+    /* Right-edge cast so scrolled columns read as sliding underneath
+       the pinned column rather than through it. */
+    box-shadow: var(--shadow-pin);
 }
 
 /* Zebra rule above also paints the actions-cell, but the pinned action
    column should keep its own bg color regardless of row parity. */
 .schedule-table tbody tr:nth-child(even) > td.actions-cell {
     background-color: var(--color-bg);
+}
+
+/* The pinned column keeps its own (opaque, sticky-safe) background on
+   hover, but lifts toward row-hover so the highlighted row still reads
+   continuously across the pinned boundary. #182742 is --color-bg nudged
+   toward --color-row-hover. Declared after the zebra-parity rule above
+   so the hover tint wins on even rows too. */
+.schedule-table tbody tr:hover > td.actions-cell {
+    background-color: #182742;
 }
 
 .actions-row {
@@ -354,6 +403,13 @@
     outline: none;
 }
 
+/* Keyboard focus: the global +2px ring would collide with the tight
+   table cell around this select, so pull the ring inside the control. */
+.kw-variant-select:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -1px;
+}
+
 .kw-variant-chevron {
     position: absolute;
     right: 2px;
@@ -383,7 +439,9 @@
 }
 
 .product-message.error {
-    color: var(--color-error);
+    /* Light variant: solid --color-error fails AA as text on the
+       dark page background. */
+    color: var(--color-error-light);
 }
 
 .product-message-hint {
@@ -403,9 +461,20 @@
     overflow-wrap: break-word;
 }
 
+/* Bare .zero-results (still used by the project-view schedule) keeps
+   the legacy text-only treatment. */
 .zero-results {
     padding: var(--space-xxl);
     text-align: center;
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
+}
+
+/* The browse schedule composes the shared .hh-empty primitives
+   (base.css) instead; here we just re-assert hh-empty's padding and
+   position the dashed well inside the schedule card. */
+.hh-empty.zero-results {
+    padding: var(--space-xxl) var(--space-lg);
+    margin: var(--space-xl) auto;
+    max-width: min(520px, calc(100% - var(--space-xl) * 2));
 }

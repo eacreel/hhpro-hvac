@@ -69,6 +69,14 @@
         var title = document.createElement('h1');
         title.className = 'projects-title';
         title.textContent = 'Projects';
+
+        // At-a-glance inventory count next to the title
+        var count = HHpro.Cart.listProjects().length;
+        var countEl = document.createElement('span');
+        countEl.className = 'projects-title-count';
+        countEl.textContent = count + ' project' + (count === 1 ? '' : 's');
+        title.appendChild(countEl);
+
         bar.appendChild(title);
 
         return bar;
@@ -103,7 +111,7 @@
         exportBtn.className = 'projects-btn projects-btn-secondary';
         exportBtn.appendChild(HHpro.UI.icon('download'));
         var exportLabel = document.createElement('span');
-        exportLabel.textContent = 'Export all to CSV';
+        exportLabel.textContent = 'Export All to CSV';
         exportBtn.appendChild(exportLabel);
         exportBtn.addEventListener('click', handleExportAllCSV);
         if (!HHpro.Cart.listProjects().length) {
@@ -121,6 +129,8 @@
 
         var projects = HHpro.Cart.listProjects();
         if (!projects.length) {
+            // Modifier centers the empty-state well in the leftover space
+            wrap.classList.add('projects-list-wrap-empty');
             wrap.appendChild(buildEmptyState());
             return wrap;
         }
@@ -138,16 +148,20 @@
     }
 
     function buildEmptyState() {
+        // Shared .hh-empty primitives from base.css; .projects-empty
+        // only adds the view's width cap and inset background
         var empty = document.createElement('div');
-        empty.className = 'projects-empty';
+        empty.className = 'hh-empty projects-empty';
+
+        empty.appendChild(HHpro.UI.icon('folder'));
 
         var msg = document.createElement('p');
-        msg.className = 'projects-empty-msg';
+        msg.className = 'hh-empty-title';
         msg.textContent = 'No saved projects yet.';
         empty.appendChild(msg);
 
         var hint = document.createElement('p');
-        hint.className = 'projects-empty-hint';
+        hint.className = 'hh-empty-hint';
         hint.textContent = 'Create a new project to start building a schedule, or import from a CSV backup.';
         empty.appendChild(hint);
 

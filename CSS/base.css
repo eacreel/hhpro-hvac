@@ -6,6 +6,11 @@
    ============================================================ */
 
 :root {
+    /* Tell the browser this is a dark UI so native chrome (scrollbars,
+       checkbox wells, select dropdowns, date pickers) renders dark
+       instead of the light-theme defaults. */
+    color-scheme: dark;
+
     /* ---- Dark mode palette ----
        Surface hierarchy (darkest -> brightest):
          --color-bg-dark  : deep saturated dark (sticky sub-headers,
@@ -35,8 +40,14 @@
     --color-primary-hover: #1a6090;
     --color-primary-light: #5ba9d8;
 
-    /* Colors - semantic (slightly more vibrant on dark backgrounds) */
+    /* Colors - semantic (slightly more vibrant on dark backgrounds).
+       --color-error is for fills/borders; --color-error-light is the
+       readable text variant on dark surfaces (plain #ef4444 fails WCAG
+       AA as small text on the navy surfaces); --color-error-hover is
+       the darkened hover for solid danger buttons. */
     --color-error: #ef4444;
+    --color-error-light: #f87171;
+    --color-error-hover: #dc2626;
     --color-success: #22c55e;
     --color-warning: #f59e0b;
     --color-row-hover: #2a3b54;
@@ -49,6 +60,7 @@
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
+    --font-size-md: 0.9375rem;
     --font-size-base: 1rem;
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.5rem;
@@ -67,10 +79,14 @@
     --radius-md: 8px;
     --radius-lg: 12px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+    /* Shadows - tuned for the dark theme: black needs ~0.45+ alpha to
+       register over the navy page. --shadow-pin is the horizontal cast
+       used by sticky table columns so scrolled content reads as sliding
+       underneath them. */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --shadow-pin: 8px 0 12px -6px rgba(0, 0, 0, 0.55);
 
     /* Transitions */
     --transition-fast: 150ms ease;
@@ -140,7 +156,65 @@ input, select, textarea {
 
 input::placeholder, textarea::placeholder {
     color: var(--color-text-muted);
-    opacity: 0.6;
+    /* 0.75 keeps placeholders clearly secondary while staying readable
+       on the dark surfaces (0.6 dipped below ~3:1 contrast). */
+    opacity: 0.75;
+}
+
+/* Checkboxes and radios pick up the brand accent instead of the
+   user-agent default blue (matters most on the Files tab, which is
+   essentially a wall of checkboxes). */
+input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--color-primary-light);
+}
+
+/* ============================================================
+   Scrollbars
+   ------------------------------------------------------------
+   The app is built around internal scroll containers (schedule
+   tables scroll both axes constantly), so the default light-grey
+   Windows scrollbars are the brightest thing on screen without
+   this. Thin, dark, pill-style thumbs on a transparent track.
+   ============================================================ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 999px;
+    /* Transparent border + padding-box clip insets the thumb from the
+       container edge so it reads as a floating pill. */
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text-muted);
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* ============================================================
+   Keyboard focus
+   ------------------------------------------------------------
+   One ring for every control. Element-level so any class-based
+   :focus recipe (inputs with custom borders/glows) still wins on
+   specificity; buttons and links that define nothing get a clear
+   brand-blue ring instead of the UA default.
+   ============================================================ */
+:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 2px;
 }
 
 /* ============================================================
@@ -331,6 +405,69 @@ input::placeholder, textarea::placeholder {
     padding: var(--space-xl);
     overflow: auto;
     min-height: 0;
+}
+
+/* ============================================================
+   Loading spinner + empty states (shared primitives)
+   ------------------------------------------------------------
+   Views compose these instead of inventing their own: append a
+   .hh-spinner div above loading text, or build empty states as
+   .hh-empty > (icon + .hh-empty-title + .hh-empty-hint).
+   ============================================================ */
+@keyframes hh-spin {
+    to { transform: rotate(360deg); }
+}
+
+.hh-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary-light);
+    border-radius: 50%;
+    animation: hh-spin 0.8s linear infinite;
+}
+
+/* Smaller variant for inline/button contexts */
+.hh-spinner-sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-spinner {
+        /* Keep a slow rotation so "working" stays distinguishable from
+           "stuck" without the fast spin. */
+        animation-duration: 2.4s;
+    }
+}
+
+.hh-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-xxl) var(--space-lg);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.hh-empty .icon {
+    /* .icon sizes to 1em, so font-size scales the glyph */
+    font-size: 44px;
+    color: var(--color-border-strong);
+}
+
+.hh-empty-title {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.hh-empty-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
 }
 
 /* Utility */

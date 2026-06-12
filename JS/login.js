@@ -28,6 +28,11 @@
         render: function (root) {
             root.innerHTML = '';
 
+            // The cart toggle/panel live outside #app-root, so they
+            // survive a logout. Flag the body while the login view is
+            // up; cart.css hides the cart UI under this class.
+            document.body.classList.add('login-active');
+
             var view = document.createElement('div');
             view.className = 'login-view';
 
@@ -81,6 +86,12 @@
 
             // Focus the input immediately for keyboard users
             window.setTimeout(function () { input.focus(); }, 0);
+
+            // Clear the failed-attempt tint (red input border) once
+            // the user starts retyping
+            input.addEventListener('input', function () {
+                card.classList.remove('shake');
+            });
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();

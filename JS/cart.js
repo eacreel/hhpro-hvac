@@ -81,6 +81,7 @@
     // --- DOM refs (set during init) ----------------------------------
     var toggleBtn = null;
     var toggleLabel = null;
+    var toggleText = null;
     var toggleCount = null;
     var panel = null;
     var panelTitle = null;
@@ -713,6 +714,13 @@
         toggleLabel.className = 'cart-toggle-label';
         toggleLabel.appendChild(HHpro.UI.icon('shopping-cart'));
 
+        // Text lives in its own span so renderToggle() can update it
+        // without wiping the icon node next to it.
+        toggleText = document.createElement('span');
+        toggleText.className = 'cart-toggle-text';
+        toggleText.textContent = 'Cart';
+        toggleLabel.appendChild(toggleText);
+
         toggleCount = document.createElement('span');
         toggleCount.className = 'cart-toggle-count';
         toggleCount.textContent = '0';
@@ -758,9 +766,21 @@
         panelItemsList = document.createElement('div');
         panelItemsList.className = 'cart-items-list';
 
+        // Empty state composes the shared .hh-empty primitives from
+        // base.css: icon first, then title + hint lines.
         panelEmpty = document.createElement('div');
-        panelEmpty.className = 'cart-items-empty';
-        panelEmpty.textContent = 'No items selected yet.';
+        panelEmpty.className = 'cart-items-empty hh-empty';
+        panelEmpty.appendChild(HHpro.UI.icon('shopping-cart'));
+
+        var emptyTitle = document.createElement('div');
+        emptyTitle.className = 'hh-empty-title';
+        emptyTitle.textContent = 'No items yet';
+        panelEmpty.appendChild(emptyTitle);
+
+        var emptyHint = document.createElement('div');
+        emptyHint.className = 'hh-empty-hint';
+        emptyHint.textContent = 'Select units from a schedule to add them here.';
+        panelEmpty.appendChild(emptyHint);
 
         panel.appendChild(panelHeader);
         panel.appendChild(viewProjectBtn);
@@ -880,8 +900,9 @@
         toggleBtn.classList.toggle('cart-toggle-has-items', state.items.length > 0);
         // Label follows the active context: project name when working
         // inside a project, "Cart" otherwise. Matches the panel title.
-        if (toggleLabel) {
-            toggleLabel.textContent = (state.mode === 'project' && state.name)
+        // Only the text span changes - the icon next to it stays put.
+        if (toggleText) {
+            toggleText.textContent = (state.mode === 'project' && state.name)
                 ? state.name
                 : 'Cart';
             toggleBtn.setAttribute('aria-label',

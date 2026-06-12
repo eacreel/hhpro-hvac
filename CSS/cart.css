@@ -47,11 +47,19 @@
     transform: translateY(-50%) translateX(20px);
 }
 
+/* The cart UI lives outside #app-root and would otherwise linger over
+   the login screen after a logout. login.js flags the body while the
+   login view is showing. */
+body.login-active #cart-root {
+    display: none;
+}
+
 .cart-toggle-label {
     letter-spacing: 0.02em;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
 }
 
 /* Cart toggle holds an icon now; bump it up so it reads as a real
@@ -59,6 +67,17 @@
 .cart-toggle-label .icon {
     width: 22px;
     height: 22px;
+    flex-shrink: 0;
+}
+
+/* The text half of the label follows the active project name, which
+   can be arbitrarily long - clamp it so the fixed edge tab doesn't
+   blow wide open. */
+.cart-toggle-text {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cart-toggle-count {
@@ -76,14 +95,15 @@
 }
 
 .cart-toggle-has-items .cart-toggle-count {
-    background-color: var(--color-warning, #f5b400);
-    color: var(--color-text);
+    background-color: var(--color-warning, #f59e0b);
+    /* Dark numeral on amber - light text fails WCAG contrast here. */
+    color: var(--color-bg);
 }
 
-/* Pulse when an item is added */
+/* Pulse when an item is added (ring color matches the amber badge) */
 @keyframes cart-flash {
     0%   { box-shadow: var(--shadow-md); }
-    40%  { box-shadow: 0 0 0 8px rgba(245, 180, 0, 0.35), var(--shadow-md); }
+    40%  { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.35), var(--shadow-md); }
     100% { box-shadow: var(--shadow-md); }
 }
 .cart-toggle-flash {
@@ -100,12 +120,14 @@
     max-width: 92vw;
     background-color: var(--color-surface);
     border-left: 1px solid var(--color-border);
-    box-shadow: -6px 0 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-lg);
     z-index: 50;
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
-    transition: transform 250ms ease-out;
+    /* Same easing as hh-modal-pop so panel and modal motion share
+       one personality. */
+    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cart-panel.open {
@@ -129,19 +151,31 @@
     overflow-wrap: anywhere;
 }
 
+/* Square icon button - the SVG 'x' needs a fixed hit target and a
+   hover surface rather than the old text-glyph opacity fade. */
 .cart-panel-close {
     background: transparent;
     color: var(--color-text-inverse);
     border: none;
-    font-size: 28px;
-    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    padding: 0 6px;
-    transition: opacity var(--transition-fast);
+    padding: 0;
+    transition: background-color var(--transition-fast);
+}
+
+.cart-panel-close .icon {
+    width: 20px;
+    height: 20px;
 }
 
 .cart-panel-close:hover {
-    opacity: 0.7;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* "View Project" button below the header */
@@ -163,12 +197,11 @@
     background-color: var(--color-primary-hover);
 }
 
-/* Empty state */
+/* Empty state - composes the shared .hh-empty primitives from
+   base.css (dashed well + icon + title + hint); this rule only
+   places the well inside the panel. */
 .cart-items-empty {
-    padding: var(--space-xl) var(--space-lg);
-    text-align: center;
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    margin: var(--space-lg) var(--space-lg) 0;
 }
 
 /* Item list */
@@ -205,6 +238,14 @@
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+/* Row-hover token keeps the card lift consistent with schedule rows */
+.cart-item:hover {
+    background-color: var(--color-row-hover);
+    border-color: var(--color-border-strong);
 }
 
 .cart-item-label {
@@ -233,14 +274,21 @@
 }
 
 .cart-item-btn-secondary:hover {
-    background-color: var(--color-bg);
-    border-color: var(--color-border-strong);
+    background-color: var(--color-row-hover);
+    border-color: var(--color-primary-light);
+}
+
+/* Delete signals destruction at rest (tinted text/border) and hovers
+   to a soft red wash - a solid #ef4444 fill fails AA at this size. */
+.cart-item-btn-danger {
+    color: var(--color-error-light);
+    border-color: rgba(239, 68, 68, 0.4);
 }
 
 .cart-item-btn-danger:hover {
-    background-color: var(--color-error, #c0392b);
-    border-color: var(--color-error, #c0392b);
-    color: white;
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: var(--color-error);
+    color: var(--color-error-light);
 }
 
 /* ============================================================
@@ -262,7 +310,8 @@
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.45);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -273,8 +322,9 @@
 
 .modal {
     background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--shadow-lg);
     width: 100%;
     max-width: 480px;
     padding: var(--space-xl);
@@ -286,6 +336,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .modal-backdrop, .modal { animation: none; }
+    /* The cart panel's slide-in is the same class of motion */
+    .cart-panel { transition: none; }
 }
 
 .modal-title {
@@ -351,7 +403,7 @@
     border-color: var(--color-border-strong);
 }
 .modal-btn-secondary:hover:not(:disabled) {
-    background-color: var(--color-bg);
+    background-color: var(--color-row-hover);
     border-color: var(--color-primary-light);
 }
 

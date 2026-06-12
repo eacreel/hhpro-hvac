@@ -186,10 +186,19 @@
             return; // nothing to show until a category is picked
         }
         if (state.loading) {
+            // Centered card with the shared spinner so the two-pane
+            // layout keeps its footprint instead of collapsing to a
+            // single line of text while data fetches.
+            var loadingBox = document.createElement('div');
+            loadingBox.className = 'design-search-loading';
+            var spinner = document.createElement('div');
+            spinner.className = 'hh-spinner';
+            loadingBox.appendChild(spinner);
             var msg = document.createElement('p');
             msg.className = 'design-search-status';
             msg.textContent = 'Loading product data...';
-            work.appendChild(msg);
+            loadingBox.appendChild(msg);
+            work.appendChild(loadingBox);
             return;
         }
         if (state.error) {
@@ -208,9 +217,20 @@
     function buildResultsPlaceholder() {
         var wrap = document.createElement('section');
         wrap.className = 'design-search-results design-search-results-empty';
+        // Shared dashed-well empty state (base.css .hh-empty) with the
+        // search icon, so the pane reads "nothing here yet" instead of
+        // looking like a broken panel.
         var msg = document.createElement('div');
-        msg.className = 'design-search-placeholder';
-        msg.textContent = 'Enter design targets and click "Find matches" to see equipment that fits.';
+        msg.className = 'hh-empty design-search-placeholder';
+        msg.appendChild(HHpro.UI.icon('search'));
+        var title = document.createElement('div');
+        title.className = 'hh-empty-title';
+        title.textContent = 'No search run yet';
+        msg.appendChild(title);
+        var hint = document.createElement('div');
+        hint.className = 'hh-empty-hint';
+        hint.textContent = 'Enter design targets and click "Find matches" to see equipment that fits.';
+        msg.appendChild(hint);
         wrap.appendChild(msg);
         return wrap;
     }
@@ -538,26 +558,50 @@
         hdr.className = 'design-search-results-header';
 
         var title = document.createElement('h2');
-        title.className = 'design-search-section-title';
+        title.className = 'design-search-section-title design-search-results-title';
         var n = state.results.selections.length;
-        title.textContent = 'Results: ' + n + ' match' + (n === 1 ? '' : 'es');
+        var titleText = document.createElement('span');
+        titleText.textContent = 'Results';
+        title.appendChild(titleText);
+        var count = document.createElement('span');
+        count.className = 'design-search-count';
+        count.textContent = n + ' match' + (n === 1 ? '' : 'es');
+        title.appendChild(count);
         hdr.appendChild(title);
 
+        // One chip per active target so the criteria behind the ranking
+        // stay individually auditable instead of merging into a single
+        // semicolon-joined sentence.
         if (state.results.activeTargets.length) {
-            var meta = document.createElement('p');
-            meta.className = 'design-search-results-meta';
-            meta.textContent = 'Sorted by closeness to: ' + state.results.activeTargets.map(function (t) {
-                return t.label + ' = ' + t.target + ' ' + (t.unit || '') + ' ± ' + t.tolerance + '%';
-            }).join('; ');
-            hdr.appendChild(meta);
+            var chipRow = document.createElement('div');
+            chipRow.className = 'design-search-chip-row';
+            var lead = document.createElement('span');
+            lead.className = 'design-search-chip-lead';
+            lead.textContent = 'Sorted by closeness to:';
+            chipRow.appendChild(lead);
+            state.results.activeTargets.forEach(function (t) {
+                var chip = document.createElement('span');
+                chip.className = 'design-search-chip';
+                chip.textContent = t.label + ' ' + t.target + (t.unit ? ' ' + t.unit : '') + ' ±' + t.tolerance + '%';
+                chipRow.appendChild(chip);
+            });
+            hdr.appendChild(chipRow);
         }
 
         wrap.appendChild(hdr);
 
         if (n === 0) {
-            var empty = document.createElement('p');
-            empty.className = 'design-search-empty';
-            empty.textContent = 'No items match those targets and constraints. Try widening your tolerance or relaxing a filter.';
+            var empty = document.createElement('div');
+            empty.className = 'hh-empty design-search-empty';
+            empty.appendChild(HHpro.UI.icon('search'));
+            var emptyTitle = document.createElement('div');
+            emptyTitle.className = 'hh-empty-title';
+            emptyTitle.textContent = 'No items match those targets and constraints.';
+            empty.appendChild(emptyTitle);
+            var emptyHint = document.createElement('div');
+            emptyHint.className = 'hh-empty-hint';
+            emptyHint.textContent = 'Try widening your tolerance or relaxing a filter.';
+            empty.appendChild(emptyHint);
             wrap.appendChild(empty);
             return wrap;
         }

@@ -96,9 +96,17 @@
         modal.appendChild(header);
 
         if (items.length === 0) {
-            var empty = document.createElement('p');
-            empty.className = 'modal-desc';
-            empty.textContent = 'No documents are available for this item.';
+            var empty = document.createElement('div');
+            empty.className = 'hh-empty docs-empty';
+            empty.appendChild(HHpro.UI.icon('file-text'));
+            var emptyTitle = document.createElement('div');
+            emptyTitle.className = 'hh-empty-title';
+            emptyTitle.textContent = 'No documents';
+            var emptyHint = document.createElement('div');
+            emptyHint.className = 'hh-empty-hint';
+            emptyHint.textContent = 'No documents are available for this item.';
+            empty.appendChild(emptyTitle);
+            empty.appendChild(emptyHint);
             modal.appendChild(empty);
         } else {
             var list = document.createElement('div');
@@ -170,7 +178,9 @@
         var actionBtn = document.createElement('button');
         actionBtn.type = 'button';
         actionBtn.className = 'docs-item-action ' + (isZip ? 'docs-item-action-download' : 'docs-item-action-view');
-        actionBtn.textContent = isZip ? 'Download' : 'View';
+        // Icon distinguishes viewable PDFs from ZIP downloads at a glance
+        actionBtn.appendChild(HHpro.UI.icon(isZip ? 'download' : 'file-text'));
+        actionBtn.appendChild(document.createTextNode(isZip ? 'Download' : 'View'));
 
         var url = buildDocUrl(product, item.docColumn, item.filename);
         actionBtn.addEventListener('click', function () {

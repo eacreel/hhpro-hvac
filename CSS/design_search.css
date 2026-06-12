@@ -92,11 +92,37 @@
 .design-search-status {
     color: var(--color-text-muted);
     font-style: italic;
+    margin: 0;
 }
 
+/* Failure message framed as an alert card rather than bare red text;
+   --color-error-light keeps the copy readable on the tinted fill.
+   align-self stops it stretching to fill the flex work area. */
 .design-search-error {
-    color: var(--color-error);
+    color: var(--color-error-light);
     font-style: normal;
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    align-self: flex-start;
+}
+
+/* Loading: a centered surface card occupying the same footprint as the
+   placeholder, so switching categories doesn't collapse the two-pane
+   layout into a single floating line while data fetches. The spinner
+   is the shared .hh-spinner primitive from base.css. */
+.design-search-loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-xxl);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
 }
 
 /* ---------- Form ---------- */
@@ -109,6 +135,7 @@
     flex-direction: column;
     gap: var(--space-md);
     background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: var(--space-lg);
     box-shadow: var(--shadow-sm);
@@ -141,6 +168,23 @@
     margin: 0;
 }
 
+/* Inside the form card the section titles drop to eyebrow style (small,
+   uppercase, muted) so they group their controls instead of competing
+   with the 2rem page title; the results header keeps the larger cut. */
+.design-search-form .design-search-section-title {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+/* Hairline dividers between stacked form sections -- a tall multi-split
+   form otherwise reads as one undifferentiated column. */
+.design-search-section + .design-search-section {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+}
+
 .design-search-hint {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
@@ -162,6 +206,17 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
+    /* Padding and equal negative margin cancel out, so the hover pill
+       below can bleed slightly past the row without shifting layout. */
+    padding: 2px var(--space-xs);
+    margin: -2px calc(-1 * var(--space-xs));
+    border-radius: var(--radius-sm);
+}
+
+/* Row-tracking highlight: long target lists (multi-split) make it easy
+   to lose which value/tolerance pair belongs to which label. */
+.design-target-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .design-target-label {
@@ -188,6 +243,14 @@
        and the up/down buttons just shrink the usable text area. */
     -moz-appearance: textfield;
     appearance: textfield;
+    transition: border-color var(--transition-fast);
+}
+
+/* Pre-click responsiveness: lift the border before the focus outline
+   takes over so fields feel live under the pointer. */
+.design-target-value:hover,
+.design-target-tolerance:hover {
+    border-color: var(--color-text-muted);
 }
 
 .design-target-value::-webkit-outer-spin-button,
@@ -255,13 +318,42 @@
     width: 100%;
 }
 
+/* On the product page .filter-select sits on the page canvas, but here
+   it sits inside the surface-colored form card where its surface
+   background dissolves into the panel. The inset bg matches the target
+   inputs' "dark well = editable" affordance. */
+.design-search-form .filter-select {
+    background-color: var(--color-bg);
+    transition: border-color var(--transition-fast);
+}
+
+.design-search-form .filter-select:hover {
+    border-color: var(--color-text-muted);
+}
+
 /* ---------- Action buttons ---------- */
 
 .design-search-actions {
     display: flex;
     gap: var(--space-sm);
     flex-wrap: wrap;
-    padding-top: var(--space-xs);
+    /* Same hairline divider as between sections, anchoring the submit
+       row to the bottom of the form card. */
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+}
+
+/* "Find matches" is .btn-primary (1rem, 10px 20px padding) while Reset
+   reuses the projects-view secondary button (0.875rem, 10px 16px) --
+   level the pair to one height/size and let the primary action take
+   the leftover row width since it is the pane's single main action. */
+.design-search-actions .btn-primary {
+    flex: 1;
+}
+
+.design-search-actions .projects-btn {
+    padding: 10px 20px;
+    font-size: var(--font-size-base);
 }
 
 /* ---------- Results ---------- */
@@ -279,37 +371,65 @@
     flex-shrink: 0;
 }
 
-.design-search-results-meta {
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    margin: var(--space-xs) 0 0 0;
+.design-search-results-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
-.design-search-empty {
+/* Match count as a badge beside the title instead of baked into the
+   heading text, so the number pops out of the scan line. */
+.design-search-count {
+    padding: 2px 10px;
+    background-color: rgba(91, 169, 216, 0.12);
+    border: 1px solid var(--color-primary-light);
+    border-radius: 999px;
+    color: var(--color-primary-light);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Active search criteria as chips -- same visual recipe as the product
+   page's model-filter chip, so "what the ranking was based on" reads
+   in the established active-filter language and stays auditable. */
+.design-search-chip-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+}
+
+.design-search-chip-lead {
     color: var(--color-text-muted);
-    font-size: var(--font-size-base);
-    padding: var(--space-lg);
-    background-color: var(--color-surface);
-    border-radius: var(--radius-md);
-    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+.design-search-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background-color: rgba(91, 169, 216, 0.12);
+    border: 1px solid var(--color-primary-light);
+    border-radius: 999px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+}
+
+/* Zero-results: composed on the shared .hh-empty dashed well, grown to
+   fill the results column so a small card doesn't strand a dead zone
+   of canvas beneath it. */
+.design-search-empty {
+    flex: 1;
 }
 
 /* Placeholder shown in the right pane before any search has been run.
-   Centered, muted text on the same surface style as the form so the
-   right side of the split layout doesn't look like a black hole. */
+   Shares the .hh-empty dashed-well treatment ("nothing here yet");
+   the width cap keeps the message from stranding on wide screens. */
 .design-search-placeholder {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-xxl);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-lg);
-    font-style: italic;
-    text-align: center;
-    background-color: var(--color-surface);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    width: 100%;
     max-width: 640px;
     margin: 0 auto;
 }
@@ -324,6 +444,9 @@
     flex: 1;
     max-height: none;
     min-height: 0;
+    /* Hairline edge -- the shadow alone is too soft to crisp the card
+       against the canvas where the results pane meets the form. */
+    border: 1px solid var(--color-border);
 }
 
 /* (Narrow viewport stacking is handled higher up via the

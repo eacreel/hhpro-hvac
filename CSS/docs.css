@@ -23,19 +23,32 @@
     margin-bottom: var(--space-xs);
 }
 
+/* Fixed 32px square so the dismiss control has a real hit shape;
+   font-size drives the 1em icon glyph so it stays subordinate to
+   the 24px modal title beside it */
 .docs-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     background: transparent;
     color: var(--color-text-muted);
     border: none;
-    font-size: 28px;
+    border-radius: var(--radius-sm);
+    font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    padding: 0 6px;
-    transition: color var(--transition-fast);
+    padding: 0;
+    transition: color var(--transition-fast),
+                background-color var(--transition-fast),
+                transform var(--transition-fast);
 }
 
 .docs-modal-close:hover {
     color: var(--color-text);
+    /* Same translucent wash the header actions use in base.css */
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ---------- Document list ---------- */
@@ -49,6 +62,12 @@
     /* Subtle inset so the scrollbar doesn't sit flush against the modal edge */
     margin-right: -4px;
     padding-right: 4px;
+    /* Overflow cue: rows sliding past the bottom edge fade out instead
+       of being clipped. The bottom padding matches the 16px fade band
+       so a fully-scrolled list keeps its last row fully opaque. */
+    padding-bottom: var(--space-md);
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
 }
 
 .docs-item {
@@ -65,7 +84,9 @@
 }
 
 .docs-item:hover {
-    background-color: var(--color-surface);
+    /* Row-hover token (not --color-surface, which is the modal's own
+       background and would dissolve the row into the card) */
+    background-color: var(--color-row-hover);
     border-color: var(--color-primary-light);
 }
 
@@ -91,7 +112,9 @@
     word-break: break-word;
 }
 
-/* Action button on the right side of each row */
+/* Action button on the right side of each row. min-width is wide
+   enough for the longest label ("Download" + icon) so View and
+   Download buttons form a flush right rail instead of a ragged edge */
 .docs-item-action {
     flex-shrink: 0;
     padding: 6px 14px;
@@ -100,10 +123,11 @@
     font-size: var(--font-size-sm);
     font-weight: 500;
     cursor: pointer;
-    min-width: 90px;
+    min-width: 106px;
     transition: background-color var(--transition-fast),
                 border-color var(--transition-fast),
-                color var(--transition-fast);
+                color var(--transition-fast),
+                transform var(--transition-fast);
 }
 
 .docs-item-action-view {
@@ -121,8 +145,30 @@
     border-color: var(--color-border-strong);
 }
 
+/* Hover keeps the label at --color-text (primary-light on the
+   row-hover background falls just short of 4.5:1 AA contrast);
+   the accent border + background shift carry the hover signal */
 .docs-item-action-download:hover {
     background-color: var(--color-row-hover);
     border-color: var(--color-primary-light);
-    color: var(--color-primary-light);
+}
+
+/* ---------- Empty state + footer ---------- */
+
+/* Compact variant of the shared .hh-empty for use inside the modal;
+   the --color-bg well mirrors the inset treatment of .docs-item rows */
+.docs-empty {
+    padding: var(--space-xl) var(--space-md);
+    background-color: var(--color-bg);
+}
+
+.docs-empty .icon {
+    font-size: 28px;
+}
+
+/* Hairline between the (potentially scrolling) list and the footer
+   so the Close button reads as a fixed footer, not a floating row */
+.docs-modal .modal-actions {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-sm);
 }

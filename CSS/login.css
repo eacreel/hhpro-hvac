@@ -2,30 +2,46 @@
    Login View
    ============================================================ */
 
+/* The brand blue reads as ambient light glowing from behind the
+   card (rather than a corner-to-corner color slab), layered with
+   a faint blueprint grid over the standard page canvas. */
 .login-view {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--space-xl);
-    background: linear-gradient(135deg, #1e2a3a 0%, #0f4c75 100%);
+    background:
+        radial-gradient(900px 600px at 50% 38%, rgba(15, 76, 117, 0.35), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 32px),
+        var(--color-bg);
 }
 
+/* Dark surfaces need three elevation cues to read as raised: a
+   hairline border, a real shadow, and a top edge-light. */
 .login-card {
     background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-xxl);
     width: 100%;
     max-width: 400px;
-    box-shadow: var(--shadow-lg);
+    box-shadow:
+        var(--shadow-lg),
+        0 2px 8px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: login-enter var(--transition-med) both;
 }
 
+/* Near-white text two-tones the brand-logo: "HH" picks up
+   currentColor while "pro" keeps its accent blue, matching the
+   app header. Tracking comes from .brand-logo. */
 .login-title {
-    font-size: var(--font-size-xxl);
-    color: var(--color-primary-light);
+    font-size: 2.5rem;
+    color: var(--color-text);
     margin-bottom: var(--space-xs);
     text-align: center;
-    letter-spacing: 1px;
 }
 
 .login-subtitle {
@@ -41,45 +57,98 @@
     gap: var(--space-md);
 }
 
+/* Negative margin composes with the flex gap so the label sits
+   8px above its input while the other gaps stay at 16px. */
 .login-label {
     font-size: var(--font-size-sm);
     font-weight: 500;
+    letter-spacing: 0.01em;
     color: var(--color-text-muted);
+    margin-bottom: calc(-1 * var(--space-sm));
 }
 
+/* Page-bg fill makes the field read as a recessed well against
+   the card; both share --color-surface otherwise. */
 .login-input {
     padding: 12px 14px;
-    border: 2px solid var(--color-border);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     font-size: var(--font-size-base);
-    transition: border-color var(--transition-fast);
+    caret-color: var(--color-primary-light);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .login-input:focus {
     outline: none;
     border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.22);
 }
 
+/* min-height reserves the line so the card doesn't jump; the
+   message fades in once a failed attempt fills it. */
 .login-error {
-    color: var(--color-error);
+    color: var(--color-error-light);
     font-size: var(--font-size-sm);
     min-height: 20px;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
+.login-error:not(:empty) {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Tie the failed-attempt state to the field itself; login.js
+   drops the class as soon as the user starts retyping. */
+.login-card.shake .login-input {
+    border-color: var(--color-error);
+}
+
+/* Drop shadow + inset edge-light separate the primary fill from
+   the card surface (the two backgrounds alone are ~1.6:1). */
 .login-submit {
     width: 100%;
     padding: 12px;
     font-size: var(--font-size-base);
     margin-top: var(--space-sm);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Shake animation when password is wrong */
+/* Ring matches the input's focus glow so both interactive
+   elements on the screen share one focus language. */
+.login-submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.35);
+}
+
+/* Entrance for the app's first screen */
+@keyframes login-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Shake animation when password is wrong. login-enter must stay
+   in this list: animations are matched by name across property
+   changes, so keeping it here prevents toggling .shake from
+   replaying the entrance fade. */
 .login-card.shake {
-    animation: login-shake 0.4s;
+    animation: login-enter var(--transition-med) both, login-shake 0.4s;
 }
 
 @keyframes login-shake {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-6px); }
     40%, 80% { transform: translateX(6px); }
+}
+
+/* Both keyframes animate transform on the card; they never run
+   simultaneously, but both must respect reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    .login-card,
+    .login-card.shake {
+        animation: none;
+    }
 }

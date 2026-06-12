@@ -1783,6 +1783,12 @@
         }
 
         // Excel / CAD / PDF export buttons - all route through HHpro.Export.
+        // A thin divider in front so the export trio reads as its own
+        // group rather than six undifferentiated buttons.
+        var exportDivider = document.createElement('div');
+        exportDivider.className = 'project-toolbar-divider';
+        bar.appendChild(exportDivider);
+
         var activeState = HHpro.Cart.getActiveState ? HHpro.Cart.getActiveState() : {};
         var projectName = activeState.name || '';
 
@@ -1821,6 +1827,10 @@
 
         // Edit Schedule: toggle a fully-editable grid where any cell's
         // text can be overridden. Edits flow to the Excel/CAD/PDF output.
+        var editDivider = document.createElement('div');
+        editDivider.className = 'project-toolbar-divider';
+        bar.appendChild(editDivider);
+
         var editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'projects-btn ' +
@@ -2264,7 +2274,7 @@
                     rmBtn.className = 'project-sched-rm-btn';
                     rmBtn.setAttribute('aria-label', 'Remove item');
                     rmBtn.title = 'Remove from project';
-                    rmBtn.innerHTML = '&times;';
+                    rmBtn.appendChild(HHpro.UI.icon('x'));
                     rmBtn.addEventListener('click', function () {
                         HHpro.Cart.removeItem(item.instanceId);
                         filesCache = null;
@@ -3420,7 +3430,13 @@
         var downloadBtn = document.createElement('button');
         downloadBtn.type = 'button';
         downloadBtn.className = 'projects-btn projects-btn-primary';
-        downloadBtn.textContent = 'Download ZIP';
+        // Icon + separate label span: handleDownloadZip live-updates the
+        // label with progress text, and writing textContent on the
+        // button itself would wipe the SVG icon.
+        downloadBtn.appendChild(HHpro.UI.icon('download'));
+        var downloadBtnLabel = document.createElement('span');
+        downloadBtnLabel.textContent = 'Download ZIP';
+        downloadBtn.appendChild(downloadBtnLabel);
         downloadBtn.addEventListener('click', function () {
             handleDownloadZip(filesData, activeState, downloadBtn);
         });
@@ -3860,9 +3876,15 @@
         var baseName = buildZipBaseName(activeState);
         var rootFolder = zip.folder(baseName);
 
-        var originalText = downloadBtn.textContent;
+        // Progress text targets the label span (the button's first child
+        // is the download icon, which textContent would destroy). The
+        // busy class keeps the live progress text at full opacity and
+        // swaps the icon for a spinner ring while disabled.
+        var labelEl = downloadBtn.querySelector('span') || downloadBtn;
+        var originalText = labelEl.textContent;
         downloadBtn.disabled = true;
-        downloadBtn.textContent = 'Preparing 0 / ' + dedupedList.length + '...';
+        downloadBtn.classList.add('projects-btn-busy');
+        labelEl.textContent = 'Preparing 0 / ' + dedupedList.length + '...';
 
         var missing = [];
         var completed = 0;
@@ -3891,19 +3913,20 @@
                     })
                     .then(function () {
                         completed++;
-                        downloadBtn.textContent =
+                        labelEl.textContent =
                             'Preparing ' + completed + ' / ' + dedupedList.length + '...';
                     });
             });
         });
 
         chain.then(function () {
-            downloadBtn.textContent = 'Building archive...';
+            labelEl.textContent = 'Building archive...';
             return zip.generateAsync({ type: 'blob' });
         }).then(function (blob) {
             triggerBlobDownload(blob, baseName + '.zip');
             downloadBtn.disabled = false;
-            downloadBtn.textContent = originalText;
+            downloadBtn.classList.remove('projects-btn-busy');
+            labelEl.textContent = originalText;
 
             if (missing.length) {
                 var summary = missing.length + ' of ' + dedupedList.length +
@@ -3919,7 +3942,8 @@
             }
         }).catch(function (err) {
             downloadBtn.disabled = false;
-            downloadBtn.textContent = originalText;
+            downloadBtn.classList.remove('projects-btn-busy');
+            labelEl.textContent = originalText;
             alert('Failed to build ZIP: ' +
                   (err && err.message ? err.message : String(err)));
         });

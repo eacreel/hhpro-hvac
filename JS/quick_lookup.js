@@ -18,7 +18,9 @@
 
    Search: case-insensitive substring match on `modelLower`.
    Ranking: exact match first, then prefix match, then any
-   match alphabetical.
+   match alphabetical. Results carry `matchIdx` (where the query
+   begins in the model) so the dropdown can highlight the
+   matched substring.
 
    Adding a new product just means including a new product JSON
    with a "MODEL"-headed column -- the index picks it up
@@ -58,6 +60,9 @@
         var debounceTimer = null;
         var activeIdx = -1;
         var currentMatches = [];
+        // Lowercased query of the current match set; renderMatches uses
+        // its length to size the highlighted substring in each model.
+        var currentQuery = '';
 
         inputEl.setAttribute('autocomplete', 'off');
         inputEl.setAttribute('spellcheck', 'false');
@@ -126,7 +131,8 @@
                     hide();
                     return;
                 }
-                currentMatches = search(query.toLowerCase());
+                currentQuery = query.toLowerCase();
+                currentMatches = search(currentQuery);
                 activeIdx = currentMatches.length ? 0 : -1;
                 renderMatches();
                 position();
@@ -144,12 +150,24 @@
         function renderMatches() {
             dropdown.innerHTML = '';
             if (!currentMatches.length) {
-                var empty = document.createElement('div');
-                empty.className = 'quick-lookup-empty';
-                empty.textContent = indexBuilt
-                    ? 'No matching models.'
-                    : 'Loading product data...';
-                dropdown.appendChild(empty);
+                if (!indexBuilt) {
+                    // The first keystroke usually lands here while every
+                    // product JSON lazy-loads; show a spinner so it reads
+                    // as "working", not "no results".
+                    var loading = document.createElement('div');
+                    loading.className = 'quick-lookup-loading';
+                    var spinner = document.createElement('span');
+                    spinner.className = 'hh-spinner hh-spinner-sm';
+                    loading.appendChild(spinner);
+                    loading.appendChild(
+                        document.createTextNode('Loading product data...'));
+                    dropdown.appendChild(loading);
+                } else {
+                    var empty = document.createElement('div');
+                    empty.className = 'quick-lookup-empty';
+                    empty.textContent = 'No matching models.';
+                    dropdown.appendChild(empty);
+                }
                 return;
             }
             currentMatches.forEach(function (m, idx) {
@@ -162,7 +180,22 @@
 
                 var primary = document.createElement('span');
                 primary.className = 'quick-lookup-model';
-                primary.textContent = m.model;
+                // Wrap the matched substring so the user can see WHY each
+                // of ten near-identical codes matched. model and modelLower
+                // are the same length, so matchIdx slices both correctly.
+                if (m.matchIdx >= 0 && currentQuery.length) {
+                    primary.appendChild(
+                        document.createTextNode(m.model.slice(0, m.matchIdx)));
+                    var hl = document.createElement('span');
+                    hl.className = 'quick-lookup-hl';
+                    hl.textContent =
+                        m.model.slice(m.matchIdx, m.matchIdx + currentQuery.length);
+                    primary.appendChild(hl);
+                    primary.appendChild(document.createTextNode(
+                        m.model.slice(m.matchIdx + currentQuery.length)));
+                } else {
+                    primary.textContent = m.model;
+                }
 
                 var secondary = document.createElement('span');
                 secondary.className = 'quick-lookup-product';
@@ -207,6 +240,7 @@
             dropdown.style.display = 'none';
             currentMatches = [];
             activeIdx = -1;
+            currentQuery = '';
         }
     }
 
@@ -292,6 +326,17 @@
             if (a.idx !== b.idx) return a.idx - b.idx;
             return a.entry.modelLower.localeCompare(b.entry.modelLower);
         });
-        return hits.slice(0, MAX_RESULTS).map(function (h) { return h.entry; });
+        // Copy the entry plus the substring position -- the dropdown needs
+        // matchIdx to highlight the matched run inside the model code.
+        return hits.slice(0, MAX_RESULTS).map(function (h) {
+            return {
+                productKey: h.entry.productKey,
+                productDisplayName: h.entry.productDisplayName,
+                columnLabel: h.entry.columnLabel,
+                model: h.entry.model,
+                modelLower: h.entry.modelLower,
+                matchIdx: h.idx
+            };
+        });
     }
 })();

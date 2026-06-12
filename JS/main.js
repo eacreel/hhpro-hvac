@@ -18,6 +18,9 @@
     HHpro.Views.main = {
         render: function (root) {
             root.innerHTML = '';
+            // Leaving the login screen - unhide the cart UI (login.js
+            // sets this class; main is the only view login routes to).
+            document.body.classList.remove('login-active');
             // The cart panel/toggle should appear on the main overview
             // too, not just on product pages.
             if (HHpro.Cart && typeof HHpro.Cart.init === 'function') {
@@ -95,9 +98,14 @@
         var body = document.createElement('div');
         body.className = 'tile-body';
 
+        // Icon + text span (rather than bare textContent) so the label's
+        // flex layout can space the two with a gap.
         var label = document.createElement('h3');
         label.className = 'tile-label';
-        label.textContent = 'Projects';
+        label.appendChild(HHpro.UI.icon('folder'));
+        var labelText = document.createElement('span');
+        labelText.textContent = 'Projects';
+        label.appendChild(labelText);
 
         var sublabel = document.createElement('p');
         sublabel.className = 'tile-sublabel';
@@ -124,7 +132,10 @@
 
         var label = document.createElement('h3');
         label.className = 'tile-label';
-        label.textContent = 'Design Search';
+        label.appendChild(HHpro.UI.icon('search'));
+        var labelText = document.createElement('span');
+        labelText.textContent = 'Design Search';
+        label.appendChild(labelText);
 
         var sublabel = document.createElement('p');
         sublabel.className = 'tile-sublabel';
@@ -148,11 +159,13 @@
 
         var image = document.createElement('div');
         image.className = 'tile-image';
-        // Default label shown until a real JPG loads (or permanently, if none exists)
-        image.textContent = 'Placeholder';
+        // Default label shown until a real JPG loads (or permanently, if
+        // none exists). The product name reads as an intentional text
+        // card rather than a broken-looking 'Placeholder'.
+        image.textContent = product.displayName;
 
         // Try to swap in the real picture if one exists at the expected path.
-        // If the load fails (missing file), leave the colored placeholder as-is.
+        // If the load fails (missing file), leave the text placeholder as-is.
         var img = new Image();
         img.alt = product.displayName;
         img.onload = function () {

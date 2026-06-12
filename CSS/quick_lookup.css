@@ -7,8 +7,10 @@
 /* The wrapper sits in the app header between the brand and the
    Log out button. flex: 1 lets it absorb remaining horizontal
    space; max-width keeps it from stretching to absurd widths on
-   ultra-wide monitors. */
+   ultra-wide monitors. position: relative anchors the magnifier
+   icon overlaid on the input. */
 .quick-lookup {
+    position: relative;
     flex: 1;
     display: flex;
     justify-content: center;
@@ -17,16 +19,39 @@
     /* Auto-grow within the max so the input fills middle space. */
 }
 
+/* Magnifier overlaid inside the input's left padding -- the
+   universal "type to search" affordance. Decorative only, so
+   pointer-events: none keeps clicks landing on the input. */
+.quick-lookup-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.65);
+    pointer-events: none;
+}
+
 .quick-lookup-input {
     width: 100%;
-    padding: 8px 12px;
+    /* Extra left padding clears the 16px magnifier at left: 10px. */
+    padding: 8px 12px 8px 34px;
     border-radius: var(--radius-sm);
     border: 1px solid rgba(255, 255, 255, 0.25);
     background-color: rgba(255, 255, 255, 0.12);
     color: var(--color-text-inverse);
     font-size: var(--font-size-sm);
     transition: background-color var(--transition-fast),
-                border-color var(--transition-fast);
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+/* type="search" draws Chromium's native X cancel button, which
+   renders for a light color-scheme and clashes with the blue
+   header. Escape already clears the field. */
+.quick-lookup-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
 }
 
 .quick-lookup-input::placeholder {
@@ -37,10 +62,13 @@
     background-color: rgba(255, 255, 255, 0.18);
 }
 
+/* The brand-blue glow stands in for the removed outline so focus
+   is unmistakable against the dark blue header (WCAG 2.4.7). */
 .quick-lookup-input:focus {
     outline: none;
     background-color: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.4);
 }
 
 /* ---------- Dropdown (positioned via JS) ---------- */
@@ -51,19 +79,59 @@
     background-color: var(--color-surface);
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
+    /* Two layers -- a wide ambient drop plus a tight near-edge --
+       so the fixed overlay separates from the busy schedule tables
+       it floats over. */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5),
+                0 4px 12px rgba(0, 0, 0, 0.35);
+    /* Vertical inset keeps full-width row highlights from clipping
+       into the panel's rounded corners. */
+    padding: 4px 0;
     max-height: 360px;
     overflow-y: auto;
+    /* Settle in from the input instead of popping. display: none ->
+       block re-enters the element into the display tree, restarting
+       the animation on every open with no JS involvement. */
+    animation: ql-pop 120ms ease;
+    transform-origin: top center;
     /* Match input width by default; minWidth set inline by JS to the
        input's actual rendered width so the dropdown can be wider on
        small screens but not narrower than the input. */
+}
+
+@keyframes ql-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quick-lookup-dropdown {
+        animation: none;
+    }
 }
 
 .quick-lookup-empty {
     padding: var(--space-md) var(--space-lg);
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
-    font-style: italic;
+}
+
+/* First-keystroke state while every product JSON lazy-loads. The
+   shared .hh-spinner ring distinguishes "working" from the
+   "no match" empty message above. */
+.quick-lookup-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.quick-lookup-loading .hh-spinner {
+    flex: none;
 }
 
 .quick-lookup-item {
@@ -80,16 +148,36 @@
     transition: background-color var(--transition-fast);
 }
 
-.quick-lookup-item:hover,
-.quick-lookup-item-active {
+.quick-lookup-item:hover {
     background-color: var(--color-row-hover);
+}
+
+/* Keyboard-active row -- the one Enter will open. Brand tint plus
+   an inset accent bar so it stays distinguishable from a row the
+   mouse merely happens to be hovering. */
+.quick-lookup-item.quick-lookup-item-active {
+    background-color: rgba(91, 169, 216, 0.1);
+    box-shadow: inset 3px 0 0 var(--color-primary-light);
 }
 
 .quick-lookup-model {
     font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--color-text);
-    word-break: break-all;
+    /* Codes break only as a last resort (not at arbitrary chars),
+       and tabular figures keep digit-heavy model numbers optically
+       aligned when comparing near-identical part numbers. */
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+
+/* Matched substring within a model code. Color/tint only -- the
+   row is already 600 weight, so no bolding. */
+.quick-lookup-hl {
+    color: var(--color-primary-light);
+    background-color: rgba(91, 169, 216, 0.12);
+    border-radius: 2px;
 }
 
 .quick-lookup-product {
@@ -97,4 +185,12 @@
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+/* Muted #94a3b8 dips just under 4.5:1 on the hover/active row
+   backgrounds; brighten the secondary line on exactly the row
+   being targeted. */
+.quick-lookup-item:hover .quick-lookup-product,
+.quick-lookup-item-active .quick-lookup-product {
+    color: #b3c0d4;
 }

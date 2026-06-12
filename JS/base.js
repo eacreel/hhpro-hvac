@@ -184,6 +184,11 @@
 
         var msg = document.createElement('div');
         msg.className = 'product-message';
+        // Shared spinner primitive (base.css) so "working" is visually
+        // distinct from an empty/stalled page.
+        var spinner = document.createElement('div');
+        spinner.className = 'hh-spinner';
+        msg.appendChild(spinner);
         var p = document.createElement('p');
         p.textContent = 'Loading ' + product.displayName + '…';
         msg.appendChild(p);
@@ -416,9 +421,19 @@
             }
             updateStatus(visible.length, (data.selections || []).length);
             if (visible.length === 0) {
+                // Shared empty-state primitives (base.css): icon + title +
+                // hint inside a dashed well, positioned by .zero-results.
                 var zero = document.createElement('div');
-                zero.className = 'zero-results';
-                zero.textContent = 'No items match the current filters.';
+                zero.className = 'hh-empty zero-results';
+                zero.appendChild(HHpro.UI.icon('search'));
+                var zeroTitle = document.createElement('div');
+                zeroTitle.className = 'hh-empty-title';
+                zeroTitle.textContent = 'No items match the current filters.';
+                zero.appendChild(zeroTitle);
+                var zeroHint = document.createElement('div');
+                zeroHint.className = 'hh-empty-hint';
+                zeroHint.textContent = 'Try removing one or more filters.';
+                zero.appendChild(zeroHint);
                 scheduleWrap.appendChild(zero);
                 return;
             }
@@ -560,6 +575,11 @@
             var current = filterValues[fc.name];
             if (current !== null && current !== undefined) {
                 select.value = String(current);
+                // Mark constraining filters so the bar shows at a glance
+                // which dropdowns are set vs. on "All" (styled in
+                // products.css via .is-active).
+                select.classList.add('is-active');
+                group.classList.add('is-active');
             }
 
             select.addEventListener('change', function () {
@@ -741,7 +761,12 @@
 
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
-                if (rowIndex === 0) tr.className = 'selection-boundary';
+                // Boundary border only matters when a selection spans
+                // multiple rows; on single-row selections it would stack a
+                // 2px rule onto every row's 1px bottom border.
+                if (rowIndex === 0 && sel.rows.length > 1) {
+                    tr.className = 'selection-boundary';
+                }
 
                 // Actions cell on first row of each selection; multi-row
                 // selections use rowSpan to cover all their rows.
@@ -960,8 +985,9 @@
     // ---------------------------------------------------------------
 
     function buildKwFamilyRow(fam, kwVariants, product, data, colLetters) {
+        // No selection-boundary class here: kW family rows are always
+        // single rows, so the 1px row border is the right separator.
         var tr = document.createElement('tr');
-        tr.className = 'selection-boundary';
 
         var currentIdx = fam.defaultIdx;
         function getCurrentSel() { return fam.variants[currentIdx].sel; }

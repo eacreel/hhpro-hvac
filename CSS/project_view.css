@@ -87,6 +87,22 @@
     color: var(--color-text-muted);
 }
 
+/* Spinner ring above the loading text so the multi-second docs/
+   schedule fetches read as "working" rather than stalled. Same
+   metrics as the shared .hh-spinner in base.css (which also owns
+   the hh-spin keyframes). */
+.project-loading::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 28px;
+    margin: 0 auto var(--space-sm);
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary-light);
+    border-radius: 50%;
+    animation: hh-spin 0.8s linear infinite;
+}
+
 /* ---------- Tab bar ---------- */
 .project-tabs {
     display: flex;
@@ -101,6 +117,7 @@
     color: var(--color-text-muted);
     border: none;
     border-bottom: 2px solid transparent;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     margin-bottom: -2px;
     padding: 10px 18px;
     font-size: var(--font-size-sm);
@@ -111,14 +128,25 @@
                 border-color var(--transition-fast);
 }
 
+/* The tab bar sits directly on the --color-bg canvas, so the hover
+   tint must be a translucent lift rather than a solid bg color. */
 .project-tab:hover {
     color: var(--color-text);
-    background-color: var(--color-bg);
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Inset ring so the focus outline isn't clipped by the tab bar's
+   bottom border / neighboring tabs. */
+.project-tab:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -2px;
 }
 
 .project-tab-active {
     color: var(--color-primary-light);
     border-bottom-color: var(--color-primary-light);
+    /* Faint fill keeps the active tab findable in a long wrapped row */
+    background-color: rgba(91, 169, 216, 0.06);
     font-weight: 600;
 }
 
@@ -150,9 +178,22 @@
     flex-shrink: 0;
     position: sticky;
     top: 0;
-    background-color: var(--color-surface);
+    /* Matches the page canvas so the sticky bar doesn't read as a
+       stray lighter stripe; the bottom border gives scrolled-under
+       schedule content a deliberate edge to clip against. */
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
     z-index: 5;
     padding: var(--space-xs) 0;
+}
+
+/* Thin vertical rules splitting the toolbar into [edit actions] |
+   [exports] | [edit mode] so six peer buttons read as groups. */
+.project-toolbar-divider {
+    width: 1px;
+    align-self: stretch;
+    background-color: var(--color-border);
+    margin: 0 var(--space-xs);
 }
 
 /* ---------- Project schedule table ----------
@@ -190,8 +231,10 @@
     border-right: 1px solid var(--color-border);
 }
 
+/* Opaque hover tint (not transparent) so sticky masking still works
+   while the row-hover band runs continuously into the pinned cells. */
 .schedule-table tbody tr:hover > td.project-sched-rm-cell {
-    background-color: var(--color-bg) !important;
+    background-color: var(--color-row-hover) !important;
 }
 
 /* Container for the per-row action buttons (X + Docs). Horizontally
@@ -205,12 +248,18 @@
     min-height: 100%;
 }
 
+/* The Tag column is the outer edge of the sticky cluster, so it
+   carries the cast shadow that makes scrolled columns read as
+   sliding underneath. clip-path lets the shadow escape the cell's
+   right edge while clamping it to the row band vertically. */
 .project-sched-tag-head {
     background-color: var(--color-bg-dark) !important;
     color: var(--color-text-inverse) !important;
     left: 100px;
     z-index: 4;
     min-width: 90px;
+    box-shadow: var(--shadow-pin);
+    clip-path: inset(0 -16px 0 0);
 }
 
 .schedule-table thead th.project-sched-tag-head {
@@ -225,10 +274,12 @@
     border-right: 2px solid var(--color-border-strong) !important;
     font-weight: 600;
     color: var(--color-text);
+    box-shadow: var(--shadow-pin);
+    clip-path: inset(0 -16px 0 0);
 }
 
 .schedule-table tbody tr:hover > td.project-sched-tag-cell {
-    background-color: var(--color-bg) !important;
+    background-color: var(--color-row-hover) !important;
 }
 
 .project-sched-rm-btn {
@@ -238,8 +289,13 @@
     border: 1px solid var(--color-border-strong);
     background-color: var(--color-surface);
     color: var(--color-text-muted);
-    font-size: 18px;
+    /* Holds the SVG 'x' icon (sized 1em); flex centers it in the
+       square hit target. */
+    font-size: 16px;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
@@ -249,8 +305,8 @@
 }
 
 .project-sched-rm-btn:hover {
-    background-color: var(--color-error, #c0392b);
-    border-color: var(--color-error, #c0392b);
+    background-color: var(--color-error);
+    border-color: var(--color-error);
     color: white;
 }
 
@@ -417,6 +473,47 @@
     color: var(--color-text-muted);
 }
 
+/* Busy state for the Download ZIP button while the archive builds.
+   The button is disabled during the fetch, but its label is live
+   progress text the user must read - so full opacity overrides the
+   generic .projects-btn:disabled fade (defined in projects.css;
+   this file loads later). tabular-nums keeps "Preparing 9 / 12"
+   from jittering in width as the counter ticks. */
+.projects-btn-busy,
+.projects-btn-busy:disabled {
+    opacity: 1;
+    cursor: progress;
+    background-color: var(--color-primary-hover);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 14px ring (same metrics as .hh-spinner-sm in base.css, recolored
+   for the primary-blue fill) rendered as ::before so it picks up
+   the button's flex gap; the download icon hides while it spins. */
+.projects-btn-busy::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: hh-spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+.projects-btn-busy .icon {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* Slow rotation instead of none - "working" must stay
+       distinguishable from "stuck" (matches base.css .hh-spinner). */
+    .project-loading::before,
+    .projects-btn-busy::before {
+        animation-duration: 2.4s;
+    }
+}
+
 /* ---------- Body: sidebar + tree ---------- */
 .files-body {
     flex: 1;
@@ -528,10 +625,14 @@
     flex: 1;
 }
 
-/* Item block (inside a product) */
+/* Item block (inside a product). The border-left rail gives each
+   nesting level a vertical guide so the product > item > file
+   hierarchy stays parseable when a block scrolls past a screen. */
 .files-item {
     margin-top: var(--space-sm);
     margin-left: var(--space-md);
+    border-left: 1px solid var(--color-border);
+    padding-left: var(--space-sm);
 }
 
 .files-item-header {
@@ -568,16 +669,20 @@
     font-style: italic;
 }
 
-/* File rows (inside an item) */
+/* File rows (inside an item) - same nesting rail as .files-item */
 .files-list {
     margin-left: var(--space-md);
-    padding: var(--space-xs) 0;
+    padding: var(--space-xs) 0 var(--space-xs) var(--space-sm);
+    border-left: 1px solid var(--color-border);
 }
 
 .files-file-row {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    /* Wider horizontal gap so the doc-type and filename columns
+       align into scannable columns across rows */
+    column-gap: var(--space-md);
     padding: 5px 10px;
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -627,7 +732,9 @@
 }
 
 .files-file-badge-zip {
-    background-color: #8e44ad;
+    /* Violet from the same modern saturation family as the
+       error/success/warning tokens */
+    background-color: #8b5cf6;
 }
 
 /* Responsive: collapse to single column on narrow viewports */
@@ -748,15 +855,17 @@
                 border-color var(--transition-fast);
 }
 .notes-del-btn:hover {
-    background-color: var(--color-error, #c0392b);
-    border-color: var(--color-error, #c0392b);
+    background-color: var(--color-error);
+    border-color: var(--color-error);
     color: white;
 }
 
 /* User-added custom notes use the same styling but with a subtle
-   left-border accent so they're distinguishable from built-in notes */
+   left-border accent so they're distinguishable from built-in notes.
+   Must be the light brand blue - the dark primary all but vanishes
+   against the notes card surface. */
 .notes-item-custom-added {
-    border-left: 3px solid var(--color-primary);
+    border-left: 3px solid var(--color-primary-light);
     padding-left: 6px;
     margin-left: -9px;
 }
@@ -992,7 +1101,9 @@
 
 .project-sched-input::placeholder {
     color: var(--color-text-muted);
-    opacity: 0.5;
+    /* The placeholder is the only at-rest hint that a Tag/Serves/
+       Accessories cell accepts input - keep it readable. */
+    opacity: 0.75;
     font-style: italic;
 }
 
@@ -1050,16 +1161,27 @@
 .schedule-has-indoor-tag .project-sched-indoor-tag-head {
     position: sticky;
     left: 190px;    /* 100 (Remove/Docs actions) + 90 (Tag) */
+    box-shadow: var(--shadow-pin);
+    clip-path: inset(0 -16px 0 0);
 }
 
 .schedule-has-indoor-tag .project-sched-indoor-tag-cell {
     position: sticky;
     left: 190px;
     z-index: 1;
+    box-shadow: var(--shadow-pin);
+    clip-path: inset(0 -16px 0 0);
+}
+
+/* With an Indoor Tag column the sticky cluster's outer edge moves
+   one column right, so the Tag column hands its cast shadow off. */
+.schedule-has-indoor-tag .project-sched-tag-head,
+.schedule-has-indoor-tag .project-sched-tag-cell {
+    box-shadow: none;
 }
 
 .schedule-has-indoor-tag tbody tr:hover > td.project-sched-indoor-tag-cell {
-    background-color: var(--color-bg) !important;
+    background-color: var(--color-row-hover) !important;
 }
 
 /* ---------- Configuration column (Marvair only) ----------
