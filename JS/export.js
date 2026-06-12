@@ -468,6 +468,14 @@ WHAT'S IN THE GRID
             numRows: srows.length || 1,
             cell: function (letter) { return valAt(letter, rowIndex); },
             cellAt: function (letter, i) { return valAt(letter, i); },
+            // Filter-bar value for the current sub-row (e.g. 'SIZE' holds
+            // the nominal tonnage, which has no scheduleData letter).
+            filter: function (name) {
+                var row = srows[rowIndex] || srows[0];
+                var fd = (row && row.filterData) || {};
+                var v = fd[name];
+                return (v === null || v === undefined) ? '' : String(v);
+            },
             tf: function (key) {
                 var tfs = (item && item.templateFields) || {};
                 var v = tfs[key];

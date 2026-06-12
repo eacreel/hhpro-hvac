@@ -6,6 +6,7 @@
      - "Mellon"    -> standard (Hoffman & Hoffman) schedules only
      - "Refresco1" -> standard + Refresco engineer templates
      - "BW&A1"     -> standard + Barrett Woodyard & Associates templates
+     - "Allied1"   -> standard + Allied engineer templates
    Every password always includes the standard layout. Adding a
    new firm = add its password here plus a template in
    schedule_templates.js.
@@ -21,7 +22,8 @@
     var PASSWORDS = {
         'Mellon':    ['hoffman'],
         'Refresco1': ['hoffman', 'refresco'],
-        'BW&A1':     ['hoffman', 'barrett_woodyard']
+        'BW&A1':     ['hoffman', 'barrett_woodyard'],
+        'Allied1':   ['hoffman', 'allied']
     };
 
     HHpro.Views.login = {
