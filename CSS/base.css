@@ -112,9 +112,36 @@ body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     color: var(--color-text);
+    /* Brand glow over the page canvas on every view - reads as
+       ambient light behind the content. The blueprint grid that
+       pairs with it is drawn by JS/background.js on a fixed canvas
+       so it can react to the pointer. */
     background-color: var(--color-bg);
+    background-image: radial-gradient(900px 600px at 50% 38%,
+        rgba(15, 76, 117, 0.35), transparent 70%);
+    background-repeat: no-repeat;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+}
+
+/* Full-viewport blueprint-grid canvas (built by JS/background.js).
+   Negative z-index tucks it between the body's glow background and
+   every view's content; pointer-events none keeps it inert. The
+   glow stays under the grid only while the body background can
+   propagate to the document canvas - never set a background on
+   html, or it would paint over this layer.
+
+   width/height are required: a canvas is a replaced element, so
+   inset alone doesn't stretch it - without these it renders at its
+   bitmap size (viewport x devicePixelRatio) and the grid would
+   draw oversized on scaled Windows displays. */
+#bg-grid {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
 }
 
 #app-root {
@@ -159,6 +186,20 @@ input::placeholder, textarea::placeholder {
     /* 0.75 keeps placeholders clearly secondary while staying readable
        on the dark surfaces (0.6 dipped below ~3:1 contrast). */
     opacity: 0.75;
+}
+
+/* Chrome paints autofilled fields with its own yellow background,
+   which glares on the dark theme. Its background-color can't be
+   overridden directly, so the standard workaround: cover it with an
+   opaque inset shadow and re-tint the text. Fields whose resting
+   background isn't --color-surface override just the shadow color
+   (e.g. .login-input in login.css). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+    -webkit-text-fill-color: var(--color-text);
+    caret-color: var(--color-primary-light);
 }
 
 /* Checkboxes and radios pick up the brand accent instead of the

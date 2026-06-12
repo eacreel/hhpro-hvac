@@ -2,20 +2,16 @@
    Login View
    ============================================================ */
 
-/* The brand blue reads as ambient light glowing from behind the
-   card (rather than a corner-to-corner color slab), layered with
-   a faint blueprint grid over the standard page canvas. */
+/* The ambient brand glow + blueprint grid behind the card come
+   from the app-wide background (body glow in base.css plus the
+   pointer-reactive canvas from JS/background.js), so the view
+   itself stays transparent. */
 .login-view {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--space-xl);
-    background:
-        radial-gradient(900px 600px at 50% 38%, rgba(15, 76, 117, 0.35), transparent 70%),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 32px),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 32px),
-        var(--color-bg);
 }
 
 /* Dark surfaces need three elevation cues to read as raised: a
@@ -83,6 +79,21 @@
     outline: none;
     border-color: var(--color-primary-light);
     box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.22);
+}
+
+/* Autofill cover matches this field's recessed-well background
+   (the global rule in base.css assumes --color-surface). The
+   focused variant re-layers the focus glow, since the autofill
+   cover and the focus ring share the box-shadow property. */
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:hover {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-bg) inset;
+}
+
+.login-input:-webkit-autofill:focus {
+    -webkit-box-shadow:
+        0 0 0 1000px var(--color-bg) inset,
+        0 0 0 3px rgba(91, 169, 216, 0.22);
 }
 
 /* min-height reserves the line so the card doesn't jump; the
