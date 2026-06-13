@@ -9,10 +9,6 @@
    Owns:
      - Spotlight card borders : the edge of a tile/card facing the
                                 cursor lights up (CSS reads --spot-x/y).
-     - Table crosshair guides : CAD-style horizontal+vertical guide
-                                lines that track the cursor across a
-                                schedule. Self-attaches the first time
-                                the pointer enters a schedule wrap.
      - staggerReveal()        : fade/rise children in with a small
                                 per-item delay on first paint.
      - tweenNumber()          : ease a numeric readout from its
@@ -74,82 +70,6 @@
                 el.style.setProperty('--spot-y', (ev.clientY - rect.top) + 'px');
             });
         }, { passive: true });
-    }
-
-    // =================================================================
-    // Table crosshair guides
-    // -----------------------------------------------------------------
-    // Self-attaches the first time the pointer enters a schedule wrap,
-    // so no schedule-building code needs to opt in. The overlay is sized
-    // to the table (not the wrap) so the guide lines line up with cells
-    // and scroll with the content; sticky header/columns paint over the
-    // lines, which reads as intentional.
-    // =================================================================
-
-    // Every schedule table - the project-view schedules and the editable
-    // grid both carry .schedule-wrap, the equipment-browse schedule uses
-    // it too, and the refrigerant tab has its own wrap.
-    var CROSS_SELECTOR = '.schedule-wrap, .refrigerant-table-wrap';
-
-    function initCrosshair() {
-        if (!interactive()) return;
-        document.addEventListener('pointerover', function (e) {
-            if (!e.target || !e.target.closest) return;
-            var wrap = e.target.closest(CROSS_SELECTOR);
-            if (!wrap || wrap.__xhInit) return;
-            attachCrosshair(wrap);
-        }, { passive: true });
-    }
-
-    function attachCrosshair(wrap) {
-        if (!wrap || wrap.__xhInit) return;
-        wrap.__xhInit = true;
-        wrap.classList.add('hh-crosshair-host');
-
-        var overlay = document.createElement('div');
-        overlay.className = 'hh-crosshair';
-        overlay.setAttribute('aria-hidden', 'true');
-        var vline = document.createElement('div');
-        vline.className = 'hh-crosshair-line hh-crosshair-v';
-        var hline = document.createElement('div');
-        hline.className = 'hh-crosshair-line hh-crosshair-h';
-        overlay.appendChild(vline);
-        overlay.appendChild(hline);
-        wrap.appendChild(overlay);
-
-        var table = wrap.querySelector('table');
-        function sizeOverlay() {
-            var w = table ? table.offsetWidth : wrap.scrollWidth;
-            var h = table ? table.offsetHeight : wrap.scrollHeight;
-            overlay.style.width = w + 'px';
-            overlay.style.height = h + 'px';
-        }
-        sizeOverlay();
-        if (window.ResizeObserver) {
-            var ro = new ResizeObserver(sizeOverlay);
-            ro.observe(wrap);
-            if (table) ro.observe(table);
-        }
-
-        var pending = false, lastX = 0, lastY = 0;
-        wrap.addEventListener('pointermove', function (e) {
-            lastX = e.clientX;
-            lastY = e.clientY;
-            if (pending) return;
-            pending = true;
-            requestAnimationFrame(function () {
-                pending = false;
-                var rect = wrap.getBoundingClientRect();
-                overlay.style.setProperty('--cx',
-                    (lastX - rect.left + wrap.scrollLeft) + 'px');
-                overlay.style.setProperty('--cy',
-                    (lastY - rect.top + wrap.scrollTop) + 'px');
-                wrap.classList.add('hh-crosshair-active');
-            });
-        }, { passive: true });
-        wrap.addEventListener('pointerleave', function () {
-            wrap.classList.remove('hh-crosshair-active');
-        });
     }
 
     // =================================================================
@@ -248,14 +168,12 @@
 
     function init() {
         initSpotlight();
-        initCrosshair();
     }
 
     HHpro.FX = {
         staggerReveal: staggerReveal,
         tweenNumber: tweenNumber,
-        flashSuccess: flashSuccess,
-        attachCrosshair: attachCrosshair
+        flashSuccess: flashSuccess
     };
 
     if (document.readyState === 'loading') {
