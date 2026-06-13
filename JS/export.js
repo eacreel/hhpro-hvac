@@ -530,6 +530,13 @@ WHAT'S IN THE GRID
             d.capacityField = field.capacityField;
             d.instanceId = item.instanceId;
         }
+        // kW-variant field (e.g. the BW secondary-heating capacity): the
+        // on-screen renderer turns it into the kW dropdown; exports keep
+        // the derived value.
+        if (field.kwSelect) {
+            d.kwSelect = true;
+            d.instanceId = item.instanceId;
+        }
         return d;
     }
 
@@ -945,7 +952,9 @@ WHAT'S IN THE GRID
             instanceId: cellData.instanceId || '',
             editValue: cellData.editValue || '',
             // Capacity-mapped field (on-screen renderer binds a dropdown).
-            capacityField: cellData.capacityField || ''
+            capacityField: cellData.capacityField || '',
+            // kW-variant field (on-screen renderer binds the kW dropdown).
+            kwSelect: !!cellData.kwSelect
         };
         // Mark every covered position so neither the XLSX nor the
         // HTML-for-PDF renderer overwrites it later, AND so the XLSX

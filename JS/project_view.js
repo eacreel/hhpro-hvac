@@ -2018,7 +2018,15 @@
                 if (cell.align === 'left') cls.push('tpl-left');
                 if (cls.length) el.className = cls.join(' ');
 
-                if (cell.capacityField) {
+                if (cell.kwSelect) {
+                    var kwCtl = buildTemplateKwControl(cell, productKey, data);
+                    if (kwCtl) {
+                        el.classList.add('kw-variant-cell');
+                        el.appendChild(kwCtl);
+                    } else {
+                        el.textContent = (cell.value == null) ? '' : String(cell.value);
+                    }
+                } else if (cell.capacityField) {
                     var capCtl = buildTemplateCapacityControl(cell, productKey, data);
                     if (capCtl) {
                         el.classList.add('kw-variant-cell');
@@ -2060,6 +2068,59 @@
                 HHpro.App.showView('project_view');
             }
         });
+    }
+
+    // Build the kW-variant dropdown for a template cell flagged kwSelect
+    // (e.g. the BW secondary-heating capacity). Choosing a kW switches the
+    // item to that variant's selection and re-renders, so the firm's
+    // derived TYPE/CAPACITY cells update (TYPE -> ELEC, or "-" for none).
+    function buildTemplateKwControl(cell, productKey, data) {
+        if (!(HHpro.Schedule && HHpro.Schedule.findKwFamilyForSelection)) return null;
+        var item = findLiveItem(cell.instanceId);
+        if (!item) return null;
+        var familyInfo = HHpro.Schedule.findKwFamilyForSelection(
+            data, productKey, item.selectionId);
+        if (!familyInfo || !familyInfo.family) return null;
+        var variants = familyInfo.family.variants || [];
+        if (variants.length <= 1) return null;   // nothing to choose
+
+        var wrap = document.createElement('span');
+        wrap.className = 'kw-variant-control capacity-control';
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select capacity-select';
+        select.setAttribute('aria-label', 'Secondary heating electric heat (kW)');
+
+        variants.forEach(function (v, idx) {
+            var opt = document.createElement('option');
+            opt.value = String(idx);
+            var kw = v.kw;
+            opt.textContent = (kw === null || kw === undefined || kw === '')
+                ? '-' : String(kw);
+            if (idx === familyInfo.variantIdx) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', function () {
+            var idx = parseInt(select.value, 10);
+            if (isNaN(idx) || idx < 0 || idx >= variants.length) return;
+            var newSel = variants[idx].sel;
+            var product = HHpro.Data.getProduct(productKey);
+            var label = (HHpro.Cart && HHpro.Cart.computeLabel)
+                ? HHpro.Cart.computeLabel(product, newSel, data) : item.label;
+            if (HHpro.Cart && HHpro.Cart.updateItem) {
+                HHpro.Cart.updateItem(item.instanceId,
+                    { selectionId: newSel.id, label: label });
+            }
+            HHpro.App.showView('project_view');
+        });
+
+        var chev = document.createElement('span');
+        chev.className = 'kw-variant-chevron';
+        chev.setAttribute('aria-hidden', 'true');
+        chev.textContent = '▾';
+        wrap.appendChild(select);
+        wrap.appendChild(chev);
+        return wrap;
     }
 
     function buildTemplateFieldInput(cell) {
