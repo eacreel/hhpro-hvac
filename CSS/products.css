@@ -9,7 +9,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: var(--space-lg) var(--space-xl);
+    padding: var(--space-md);
     gap: var(--space-md);
     overflow: hidden;
     min-height: 0;
@@ -197,6 +197,12 @@
     overflow: auto;
     flex: 1;
     min-height: 200px;
+    /* Hug the table and center it on the page. Tables wider than the
+       page cap at full width and scroll inside (max-width + overflow);
+       narrower ones (e.g. Marvair) shrink-wrap and sit centered. */
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
 }
 
 /* width: min-content gives us tight columns. Each column is sized to the
