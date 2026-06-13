@@ -311,6 +311,14 @@
         scheduleWrap.className = 'schedule-wrap';
         main.appendChild(scheduleWrap);
 
+        // Wrap header/filters/status/schedule in an inner column that
+        // shrink-wraps to the schedule's width, so they all share that
+        // width and center together on the page.
+        var inner = document.createElement('div');
+        inner.className = 'product-view-inner';
+        while (main.firstChild) inner.appendChild(main.firstChild);
+        main.appendChild(inner);
+
         root.appendChild(main);
 
         // --- Initial state ---

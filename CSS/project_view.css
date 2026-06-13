@@ -11,13 +11,23 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: var(--space-lg) var(--space-xl);
+    padding: var(--space-md);
     gap: var(--space-md);
     overflow: hidden;
     min-height: 0;
 }
 
 /* ---------- Header (title + Back button) ---------- */
+/* The header + tab bar are centered to the active tab's schedule width,
+   published as --active-sched-w by syncHeaderWidthToSchedule(). Tabs with
+   no schedule (Files) leave it unset, falling back to full width. */
+.project-header,
+.project-tabs {
+    width: var(--active-sched-w, 100%);
+    max-width: 100%;
+    margin-inline: auto;
+}
+
 .project-header {
     display: flex;
     align-items: flex-start;
@@ -165,8 +175,26 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    align-items: center;          /* center the inner block on the page */
     overflow: auto;
+}
+
+/* Inner column: shrink-wraps to the schedule's width so the toolbar,
+   schedule, and notes share it and center together. */
+.project-product-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* Keep long note lines from widening the centered block: contribute 0 to
+   the inner's intrinsic width, then fill that width and wrap. Result: the
+   notes section is never wider than the schedule above it. */
+.project-product-inner > .schedule-notes-section {
+    width: 0;
+    min-width: 100%;
 }
 
 /* ---------- Per-product toolbar ---------- */

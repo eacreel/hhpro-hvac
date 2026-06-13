@@ -486,14 +486,43 @@
     // Tab body dispatcher
     // =================================================================
 
+    // Keep the project header + tab bar the same width as the active
+    // tab's schedule (and centered with it). The schedule lives inside a
+    // scrolling container, so its width can't reach the header via CSS -
+    // we measure it and publish it as --active-sched-w, re-syncing on any
+    // resize. Tabs without a schedule (Files/Refrigerant) clear it, so the
+    // header falls back to full width.
+    var headerWidthRO = null;
+    function syncHeaderWidthToSchedule() {
+        var page = document.querySelector('.project-view-page');
+        if (!page) return;
+        if (headerWidthRO) { headerWidthRO.disconnect(); headerWidthRO = null; }
+        var inner = document.querySelector('.project-product-inner');
+        if (!inner) {
+            page.style.removeProperty('--active-sched-w');
+            return;
+        }
+        var apply = function () {
+            page.style.setProperty('--active-sched-w',
+                Math.round(inner.getBoundingClientRect().width) + 'px');
+        };
+        apply();
+        if (typeof ResizeObserver === 'function') {
+            headerWidthRO = new ResizeObserver(apply);
+            headerWidthRO.observe(inner);
+        }
+    }
+
     function renderActiveTab(container, groups, activeState) {
         container.innerHTML = '';
         if (activeTab === 'files') {
             renderFilesTab(container, activeState);
+            syncHeaderWidthToSchedule();
             return;
         }
         if (activeTab === 'refrigerant') {
             renderRefrigerantTab(container, activeState);
+            syncHeaderWidthToSchedule();
             return;
         }
         var items = groups[activeTab];
@@ -517,6 +546,7 @@
                 return ready.then(function () {
                     container.innerHTML = '';
                     container.appendChild(buildProductTabBody(activeTab, items, data));
+                    syncHeaderWidthToSchedule();
                 });
             })
             .catch(function (err) {
@@ -1772,17 +1802,24 @@
         var wrap = document.createElement('div');
         wrap.className = 'project-product-tab';
 
+        // Inner column that shrink-wraps to the schedule's width, so the
+        // toolbar, schedule, and notes share that width and center
+        // together (the notes are capped so they never widen the block).
+        var inner = document.createElement('div');
+        inner.className = 'project-product-inner';
+        wrap.appendChild(inner);
+
         // Engineer templates carry their own fixed columns + notes, so
         // the native column-hiding and notes-editor controls don't apply.
         var tplActive = !!activeTemplate(productKey);
         var editing = !!editModeByProduct[productKey];
 
-        wrap.appendChild(buildProductToolbar(productKey, items, data, tplActive, editing));
+        inner.appendChild(buildProductToolbar(productKey, items, data, tplActive, editing));
 
         if (editing) {
             // Edit mode replaces the normal schedule with a fully
             // editable grid (every cell). Notes live inside that grid.
-            wrap.appendChild(buildEditableSchedule(productKey, items, data));
+            inner.appendChild(buildEditableSchedule(productKey, items, data));
             return wrap;
         }
 
@@ -1791,9 +1828,9 @@
             ? extra.hiddenColumns.slice()
             : scheduleHiddenDefaults(productKey, items, data);
 
-        wrap.appendChild(buildProjectSchedule(productKey, items, data, hidden));
+        inner.appendChild(buildProjectSchedule(productKey, items, data, hidden));
         if (!tplActive) {
-            wrap.appendChild(buildScheduleNotesSection(productKey, data));
+            inner.appendChild(buildScheduleNotesSection(productKey, data));
         }
 
         return wrap;
