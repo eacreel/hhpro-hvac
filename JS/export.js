@@ -465,9 +465,18 @@ WHAT'S IN THE GRID
     // Per-(item, sub-row) data-access object handed to a template field's
     // derive() function. Native cell values are read by HHpro column
     // letter and formatted the same way the native path formats them.
-    function makeTemplateApi(productKey, item, selection, rowIndex) {
+    function makeTemplateApi(productKey, item, selection, rowIndex, data) {
         var srows = (selection && selection.rows) || [];
+        // Multi Position Split capacity choices (saved on the item) override
+        // the native cell values a template's derive() reads, so an engineer
+        // schedule reflects the conditions picked on the Hoffman schedule.
+        var capOverrides = (data && HHpro.Capacity && HHpro.Capacity.overridesFor)
+            ? HHpro.Capacity.overridesFor(item, (srows[0] && srows[0].scheduleData) || {}, data)
+            : {};
         function valAt(letter, i) {
+            if (capOverrides[letter] !== undefined) {
+                return formatCellValue(capOverrides[letter], letter, productKey);
+            }
             var row = srows[i];
             var raw = (row && row.scheduleData) ? row.scheduleData[letter] : undefined;
             return formatCellValue(raw, letter, productKey);
@@ -514,6 +523,13 @@ WHAT'S IN THE GRID
             d.instanceId = item.instanceId;
             d.editValue = resolved.editValue || '';
         }
+        // Capacity-mapped fields: engineer templates expose a subset of the
+        // MPS capacity inputs. The on-screen renderer turns these into
+        // constrained dropdowns; exports keep the derived (looked-up) value.
+        if (field.capacityField) {
+            d.capacityField = field.capacityField;
+            d.instanceId = item.instanceId;
+        }
         return d;
     }
 
@@ -552,13 +568,13 @@ WHAT'S IN THE GRID
             var numRows = (sel && sel.rows && sel.rows.length) ? sel.rows.length : 1;
             cols.forEach(function (col, ci) {
                 if (col.scope === 'item') {
-                    var g = makeTemplateApi(productKey, item, sel, 0);
+                    var g = makeTemplateApi(productKey, item, sel, 0, data);
                     var resolved = resolveTemplateField(col, g);
                     putCell(rows, merges, curRow, ci,
                             templateCellData(col, resolved, item), numRows, 1);
                 } else {
                     for (var ri = 0; ri < numRows; ri++) {
-                        var g2 = makeTemplateApi(productKey, item, sel, ri);
+                        var g2 = makeTemplateApi(productKey, item, sel, ri, data);
                         var resolved2 = resolveTemplateField(col, g2);
                         putCell(rows, merges, curRow + ri, ci,
                                 templateCellData(col, resolved2, item), 1, 1);
@@ -611,7 +627,7 @@ WHAT'S IN THE GRID
                         { value: attr.label, bold: true, align: 'left' }, 1, 1);
             }
             entries.forEach(function (entry, ui) {
-                var g = makeTemplateApi(productKey, entry.item, entry.selection, 0);
+                var g = makeTemplateApi(productKey, entry.item, entry.selection, 0, data);
                 var resolved = resolveTemplateField(attr, g);
                 putCell(rows, merges, r, 2 + ui,
                         templateCellData(attr, resolved, entry.item), 1, 1);
@@ -927,7 +943,9 @@ WHAT'S IN THE GRID
             editable: !!cellData.editable,
             fieldKey: cellData.fieldKey || '',
             instanceId: cellData.instanceId || '',
-            editValue: cellData.editValue || ''
+            editValue: cellData.editValue || '',
+            // Capacity-mapped field (on-screen renderer binds a dropdown).
+            capacityField: cellData.capacityField || ''
         };
         // Mark every covered position so neither the XLSX nor the
         // HTML-for-PDF renderer overwrites it later, AND so the XLSX

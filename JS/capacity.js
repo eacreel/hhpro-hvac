@@ -81,6 +81,48 @@
         return e;
     }
 
+    // ----- Cooling-combo helpers (shared by the row controller and the
+    // single-field control used inside engineer templates) -----
+    function coolKeyOf(s) {
+        return [s.eatDb, s.eatWb, s.oaCooling, s.airflow].map(numStr).join('|');
+    }
+    function seedCapacityState(matchup, cols, scheduleData, initial) {
+        function seed(field) {
+            if (initial && initial[field] != null) return Number(initial[field]);
+            var col = cols[field];
+            var v = (col != null) ? scheduleData[col] : undefined;
+            return (v != null && isFinite(Number(v))) ? Number(v) : null;
+        }
+        var st = {
+            eatDb: seed('eatDb'), eatWb: seed('eatWb'),
+            oaCooling: seed('oaCooling'), airflow: seed('airflow'),
+            hpAmbient: seed('hpAmbient')
+        };
+        // Snap to a valid combo if the seeded one doesn't resolve.
+        if (!matchup.cooling[coolKeyOf(st)]) {
+            var first = Object.keys(matchup.cooling)[0];
+            if (first) {
+                var p = first.split('|').map(Number);
+                st.eatDb = p[0]; st.eatWb = p[1]; st.oaCooling = p[2]; st.airflow = p[3];
+            }
+        }
+        return st;
+    }
+    // Values of `field` that form a valid combo with the other three.
+    function validAxisValues(matchup, st, field) {
+        if (field === 'hpAmbient') return (matchup.hpAxis || []).map(Number);
+        var trial = {
+            eatDb: st.eatDb, eatWb: st.eatWb,
+            oaCooling: st.oaCooling, airflow: st.airflow
+        };
+        var out = [];
+        (matchup.axes[field] || []).forEach(function (v) {
+            trial[field] = v;
+            if (matchup.cooling[coolKeyOf(trial)]) out.push(v);
+        });
+        return out;
+    }
+
     // Column letter for each capacity field, resolved from the schedule
     // header by LABEL (cached on the product data object). "TOTAL
     // CAPACITY" is disambiguated by its parent group (COOLING vs HEAT
@@ -163,31 +205,8 @@
     function createController(matchup, cols, scheduleData, initial, onChange) {
         var hasHp = !!(matchup.hp && cols.hpAmbient);
 
-        function coolKey(s) {
-            return [s.eatDb, s.eatWb, s.oaCooling, s.airflow].map(numStr).join('|');
-        }
-        function coolResult(s) { return matchup.cooling[coolKey(s || st)]; }
-
-        // ---- initial state: persisted values, else the system's current
-        // scheduled values; snap to a valid combo if those don't resolve.
-        function seed(field) {
-            if (initial && initial[field] != null) return Number(initial[field]);
-            var col = cols[field];
-            var v = col != null ? scheduleData[col] : undefined;
-            return (v != null && isFinite(Number(v))) ? Number(v) : null;
-        }
-        var st = {
-            eatDb: seed('eatDb'), eatWb: seed('eatWb'),
-            oaCooling: seed('oaCooling'), airflow: seed('airflow'),
-            hpAmbient: seed('hpAmbient')
-        };
-        if (!coolResult()) {
-            var first = Object.keys(matchup.cooling)[0];
-            if (first) {
-                var p = first.split('|').map(Number);
-                st.eatDb = p[0]; st.eatWb = p[1]; st.oaCooling = p[2]; st.airflow = p[3];
-            }
-        }
+        var st = seedCapacityState(matchup, cols, scheduleData, initial);
+        function coolResult() { return matchup.cooling[coolKeyOf(st)]; }
 
         var selects = {};      // field -> <select>
         var outCells = {};     // field -> [td, ...]
@@ -203,17 +222,7 @@
         if (hasHp) (cols.hpTotalCols || []).forEach(function (c) { outputCols[c] = 'hpTotal'; });
 
         function validValues(field) {
-            if (field === 'hpAmbient') return (matchup.hpAxis || []).map(Number);
-            var trial = {
-                eatDb: st.eatDb, eatWb: st.eatWb,
-                oaCooling: st.oaCooling, airflow: st.airflow
-            };
-            var out = [];
-            (matchup.axes[field] || []).forEach(function (v) {
-                trial[field] = v;
-                if (matchup.cooling[coolKey(trial)]) out.push(v);
-            });
-            return out;
+            return validAxisValues(matchup, st, field);
         }
 
         function populate(field) {
@@ -347,6 +356,54 @@
             if (!matchup) return null;
             return createController(matchup, cols, opts.scheduleData || {},
                                     opts.initial || null, opts.onChange || null);
+        },
+
+        /**
+         * Build ONE constrained capacity dropdown for a single field -
+         * used by engineer-template cells, which expose only the subset
+         * of capacity inputs that the firm's schedule maps. opts:
+         * { field, item, scheduleData, data, onChange }. onChange gets
+         * the FULL updated capacityInputs object. Null when N/A.
+         */
+        fieldControl: function (opts) {
+            if (!opts || !cache) return null;
+            var cols = resolveColumns(opts.data);
+            var matchup = matchupFor(opts.scheduleData || {}, cols);
+            if (!matchup) return null;
+            var field = opts.field;
+            if (field === 'hpAmbient' && !matchup.hp) return null;
+
+            var st = seedCapacityState(matchup, cols, opts.scheduleData || {},
+                opts.item && opts.item.capacityInputs);
+            var vals = validAxisValues(matchup, st, field);
+            var cur = st[field];
+            if (cur != null && vals.indexOf(cur) < 0) vals = vals.concat([cur]);
+            vals.sort(function (a, b) { return a - b; });
+
+            var wrap = el('span', 'kw-variant-control capacity-control');
+            var sel = el('select', 'kw-variant-select capacity-select');
+            sel.setAttribute('aria-label', ARIA[field] || field);
+            vals.forEach(function (v) {
+                var o = el('option');
+                o.value = String(v);
+                o.textContent = String(v);
+                if (v === cur) o.selected = true;
+                sel.appendChild(o);
+            });
+            sel.addEventListener('change', function () {
+                var next = {
+                    eatDb: st.eatDb, eatWb: st.eatWb, oaCooling: st.oaCooling,
+                    airflow: st.airflow, hpAmbient: st.hpAmbient
+                };
+                next[field] = Number(sel.value);
+                if (typeof opts.onChange === 'function') opts.onChange(next);
+            });
+            var chev = el('span', 'kw-variant-chevron');
+            chev.setAttribute('aria-hidden', 'true');
+            chev.textContent = '▾';
+            wrap.appendChild(sel);
+            wrap.appendChild(chev);
+            return wrap;
         },
 
         /**

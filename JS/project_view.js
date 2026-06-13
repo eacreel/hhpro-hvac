@@ -1990,7 +1990,7 @@
     // shape used by the xlsx/dxf/pdf emitters so the screen matches the
     // downloads; cells flagged `editable` become in-place inputs whose
     // values persist on the item as templateFields.
-    function renderTemplateGridToDom(grid) {
+    function renderTemplateGridToDom(grid, productKey, data) {
         var table = document.createElement('table');
         table.className = 'schedule-table project-schedule-table template-schedule';
         var numHeaderRows = grid.numHeaderRows || 0;
@@ -2018,7 +2018,15 @@
                 if (cell.align === 'left') cls.push('tpl-left');
                 if (cls.length) el.className = cls.join(' ');
 
-                if (cell.editable) {
+                if (cell.capacityField) {
+                    var capCtl = buildTemplateCapacityControl(cell, productKey, data);
+                    if (capCtl) {
+                        el.classList.add('kw-variant-cell');
+                        el.appendChild(capCtl);
+                    } else {
+                        el.textContent = (cell.value == null) ? '' : String(cell.value);
+                    }
+                } else if (cell.editable) {
                     el.appendChild(buildTemplateFieldInput(cell));
                 } else {
                     el.textContent = (cell.value == null) ? '' : String(cell.value);
@@ -2028,6 +2036,30 @@
             table.appendChild(tr);
         }
         return table;
+    }
+
+    // Build the constrained capacity dropdown for a template cell flagged
+    // with a capacityField. Changing it saves the chosen conditions on the
+    // item (shared with the Hoffman schedule) and re-renders so the derived
+    // cells (Total / Sensible / etc.) pick up the new combo.
+    function buildTemplateCapacityControl(cell, productKey, data) {
+        if (!(HHpro.Capacity && HHpro.Capacity.fieldControl)) return null;
+        var item = findLiveItem(cell.instanceId);
+        if (!item) return null;
+        var sel = findSelectionById(data, item.selectionId);
+        var sd = (sel && sel.rows[0] && sel.rows[0].scheduleData) || {};
+        return HHpro.Capacity.fieldControl({
+            field: cell.capacityField,
+            item: item,
+            scheduleData: sd,
+            data: data,
+            onChange: function (capacityInputs) {
+                if (HHpro.Cart && HHpro.Cart.updateItem) {
+                    HHpro.Cart.updateItem(item.instanceId, { capacityInputs: capacityInputs });
+                }
+                HHpro.App.showView('project_view');
+            }
+        });
     }
 
     function buildTemplateFieldInput(cell) {
@@ -2077,7 +2109,7 @@
         // schedule matches the downloaded Excel/CAD/PDF byte-for-intent.
         if (activeTemplate(productKey) && HHpro.Export && HHpro.Export.buildScheduleGrid) {
             var tplGrid = HHpro.Export.buildScheduleGrid(productKey, items, data);
-            wrap.appendChild(renderTemplateGridToDom(tplGrid));
+            wrap.appendChild(renderTemplateGridToDom(tplGrid, productKey, data));
             return wrap;
         }
 
