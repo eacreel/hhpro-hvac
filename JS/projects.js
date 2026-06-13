@@ -77,6 +77,18 @@
         countEl.textContent = count + ' project' + (count === 1 ? '' : 's');
         title.appendChild(countEl);
 
+        // Count up from zero on load (no-ops to the final value under
+        // reduced motion).
+        if (count > 0 && HHpro.FX && HHpro.FX.tweenNumber) {
+            HHpro.FX.tweenNumber(countEl, count, {
+                from: 0,
+                duration: 500,
+                format: function (v) {
+                    return Math.round(v) + ' project' + (count === 1 ? '' : 's');
+                }
+            });
+        }
+
         bar.appendChild(title);
 
         return bar;
@@ -143,6 +155,10 @@
             list.appendChild(buildProjectCard(proj, proj.id === activeId));
         });
 
+        if (HHpro.FX && HHpro.FX.staggerReveal) {
+            HHpro.FX.staggerReveal(list);
+        }
+
         wrap.appendChild(list);
         return wrap;
     }
@@ -172,6 +188,13 @@
         var card = document.createElement('div');
         card.className = 'project-card';
         if (isActive) card.classList.add('project-card-active');
+
+        // Drag-to-reorder. The whole card is the handle; the snap guide
+        // (a brand-blue edge bar) marks the drop slot and a FLIP spring
+        // settles the cards into place on drop.
+        card.draggable = true;
+        card.dataset.projectId = proj.id;
+        attachCardDragHandlers(card, proj.id);
 
         var header = document.createElement('div');
         header.className = 'project-card-header';
@@ -227,6 +250,118 @@
 
         card.appendChild(actions);
         return card;
+    }
+
+    // =================================================================
+    // Drag-to-reorder
+    // -----------------------------------------------------------------
+    // HTML5 drag-and-drop on the cards. The hovered card shows a snap
+    // guide (a brand-blue edge bar) on the side the dragged card will
+    // land; on drop the order is persisted and the cards FLIP-spring
+    // into their new slots. Honors prefers-reduced-motion (no FLIP).
+    // =================================================================
+
+    // The card currently being dragged: { id, el }. Module-scoped so the
+    // per-card handlers coordinate without a shared closure.
+    var dragState = null;
+
+    function attachCardDragHandlers(card, projId) {
+        card.addEventListener('dragstart', function (e) {
+            dragState = { id: projId, el: card };
+            card.classList.add('hh-dragging');
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                try { e.dataTransfer.setData('text/plain', projId); } catch (_) { /* IE */ }
+            }
+        });
+
+        card.addEventListener('dragend', function () {
+            card.classList.remove('hh-dragging');
+            clearDropMarkers();
+            dragState = null;
+        });
+
+        card.addEventListener('dragover', function (e) {
+            if (!dragState || dragState.id === projId) return;
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+            var rect = card.getBoundingClientRect();
+            var before = (e.clientX - rect.left) < rect.width / 2;
+            clearDropMarkers();
+            card.classList.add(before ? 'hh-drop-before' : 'hh-drop-after');
+        });
+
+        card.addEventListener('drop', function (e) {
+            if (!dragState || dragState.id === projId) return;
+            e.preventDefault();
+            var rect = card.getBoundingClientRect();
+            var before = (e.clientX - rect.left) < rect.width / 2;
+            commitReorder(dragState.id, projId, before);
+        });
+    }
+
+    function clearDropMarkers() {
+        var marked = document.querySelectorAll('.hh-drop-before, .hh-drop-after');
+        [].forEach.call(marked, function (el) {
+            el.classList.remove('hh-drop-before', 'hh-drop-after');
+        });
+    }
+
+    function commitReorder(dragId, targetId, before) {
+        clearDropMarkers();
+        var listEl = document.querySelector('.projects-list');
+        if (!listEl) return;
+
+        var cards = [].slice.call(listEl.querySelectorAll('.project-card'));
+        var dragEl = null, targetEl = null;
+        cards.forEach(function (c) {
+            if (c.dataset.projectId === dragId) dragEl = c;
+            if (c.dataset.projectId === targetId) targetEl = c;
+        });
+        if (!dragEl || !targetEl || dragEl === targetEl) return;
+        dragEl.classList.remove('hh-dragging');
+
+        // FIRST: record every card's current position.
+        var first = {};
+        cards.forEach(function (c) {
+            first[c.dataset.projectId] = c.getBoundingClientRect();
+        });
+
+        // Reorder the DOM, then persist the resulting id order.
+        listEl.insertBefore(dragEl, before ? targetEl : targetEl.nextSibling);
+        var newIds = [].slice.call(listEl.querySelectorAll('.project-card'))
+            .map(function (c) { return c.dataset.projectId; });
+        HHpro.Cart.setProjectsOrder(newIds);
+
+        if (window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+
+        // INVERT: jump each moved card back to where it was...
+        cards.forEach(function (c) {
+            var f = first[c.dataset.projectId];
+            if (!f) return;
+            var last = c.getBoundingClientRect();
+            var dx = f.left - last.left;
+            var dy = f.top - last.top;
+            if (!dx && !dy) return;
+            c.style.transition = 'none';
+            c.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+        });
+        // ...then PLAY: release to the new slot with a spring overshoot.
+        requestAnimationFrame(function () {
+            cards.forEach(function (c) {
+                c.style.transition = 'transform 360ms cubic-bezier(0.34, 1.3, 0.5, 1)';
+                c.style.transform = '';
+            });
+        });
+        window.setTimeout(function () {
+            cards.forEach(function (c) {
+                c.style.transition = '';
+                c.style.transform = '';
+            });
+        }, 420);
     }
 
     // =================================================================

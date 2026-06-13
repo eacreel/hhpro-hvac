@@ -1304,7 +1304,7 @@
         card.className = 'refrigerant-totals-card';
 
         var hdr = document.createElement('h3');
-        hdr.className = 'refrigerant-totals-header';
+        hdr.className = 'refrigerant-totals-header hh-dimline';
         hdr.textContent = 'Project Total Refrigerant';
         card.appendChild(hdr);
 
@@ -1328,13 +1328,26 @@
         var ozEl = card.querySelector('[data-unit="oz"]');
         var lbsEl = card.querySelector('[data-unit="lbs"]');
         if (totalOz === null) {
+            // Reset the tween baselines so the next real value counts up
+            // from zero rather than from a stale figure.
+            ozEl.__tweenVal = 0;
+            lbsEl.__tweenVal = 0;
             ozEl.textContent = '—';
             lbsEl.textContent = 'Enter line-set distances above to calculate.';
             lbsEl.classList.add('refrigerant-totals-hint');
         } else {
-            ozEl.textContent = totalOz.toFixed(2) + ' oz';
-            lbsEl.textContent = (totalOz / 16).toFixed(3) + ' lbs';
             lbsEl.classList.remove('refrigerant-totals-hint');
+            if (HHpro.FX && HHpro.FX.tweenNumber) {
+                HHpro.FX.tweenNumber(ozEl, totalOz, {
+                    format: function (v) { return v.toFixed(2) + ' oz'; }
+                });
+                HHpro.FX.tweenNumber(lbsEl, totalOz / 16, {
+                    format: function (v) { return v.toFixed(3) + ' lbs'; }
+                });
+            } else {
+                ozEl.textContent = totalOz.toFixed(2) + ' oz';
+                lbsEl.textContent = (totalOz / 16).toFixed(3) + ' lbs';
+            }
         }
     }
 
@@ -1799,6 +1812,7 @@
         excelBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toExcel === 'function') {
                 HHpro.Export.toExcel(productKey, items, data, projectName);
+                if (HHpro.FX) HHpro.FX.flashSuccess(excelBtn);
             }
         });
         bar.appendChild(excelBtn);
@@ -1810,6 +1824,7 @@
         cadBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toCAD === 'function') {
                 HHpro.Export.toCAD(productKey, items, data, projectName);
+                if (HHpro.FX) HHpro.FX.flashSuccess(cadBtn);
             }
         });
         bar.appendChild(cadBtn);
@@ -1821,6 +1836,7 @@
         pdfBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toPDF === 'function') {
                 HHpro.Export.toPDF(productKey, items, data, projectName);
+                if (HHpro.FX) HHpro.FX.flashSuccess(pdfBtn);
             }
         });
         bar.appendChild(pdfBtn);

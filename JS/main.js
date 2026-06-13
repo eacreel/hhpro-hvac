@@ -42,6 +42,8 @@
 
         header.appendChild(HHpro.UI.createLookupInput());
 
+        header.appendChild(HHpro.UI.createThemeToggle());
+
         // Logout button on the right. Later steps may add additional
         // header actions alongside this one.
         var logoutBtn = document.createElement('button');
@@ -65,7 +67,7 @@
         main.className = 'app-main main-view';
 
         var title = document.createElement('h2');
-        title.className = 'main-title';
+        title.className = 'main-title hh-dimline';
         title.textContent = 'Select Projects or a product type to get started';
         main.appendChild(title);
 
@@ -86,6 +88,12 @@
             grid.appendChild(createProductTile(product));
         });
         main.appendChild(grid);
+
+        // Soft staggered reveal as the overview paints in.
+        if (HHpro.FX && HHpro.FX.staggerReveal) {
+            HHpro.FX.staggerReveal(projectsRow);
+            HHpro.FX.staggerReveal(grid);
+        }
 
         return main;
     }

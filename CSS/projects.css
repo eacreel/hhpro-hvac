@@ -253,3 +253,26 @@
     background-color: #b91c1c;
     border-color: #b91c1c;
 }
+
+/* ---------- Drag-to-reorder ----------
+   The whole card is the drag handle (its buttons keep their pointer
+   cursor). While dragging, the source card dims; the card under the
+   pointer shows a brand-blue snap-guide bar on the side the dragged
+   card will land. Declared after the :hover rule so it wins at equal
+   specificity during a drag. */
+.project-card[draggable="true"] {
+    cursor: grab;
+}
+
+.project-card.hh-dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.project-card.hh-drop-before {
+    box-shadow: inset 3px 0 0 0 var(--color-primary-light), var(--shadow-md);
+}
+
+.project-card.hh-drop-after {
+    box-shadow: inset -3px 0 0 0 var(--color-primary-light), var(--shadow-md);
+}

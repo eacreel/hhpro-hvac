@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HHpro</title>
+    <!-- Apply the saved blueprint theme before the stylesheets paint so a
+         returning user never sees a flash of the standard palette. The
+         toggle + persistence live in JS/visual_fx.js (HHpro.FX). -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('hhpro.theme') === 'blueprint') {
+                    document.documentElement.setAttribute('data-theme', 'blueprint');
+                }
+            } catch (e) { /* storage disabled - fall back to standard */ }
+        })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="ASSETS/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +46,7 @@
     <script src="JS/data.js"></script>
     <script src="JS/ui.js"></script>
     <script src="JS/background.js"></script>
+    <script src="JS/visual_fx.js"></script>
     <script src="JS/quick_lookup.js"></script>
     <script src="JS/cart.js"></script>
     <script src="JS/docs.js"></script>

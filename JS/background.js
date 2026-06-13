@@ -27,7 +27,24 @@
     var RADIUS = 200;     // px reach of the pinch around the cursor
     var STRENGTH = 0.4;   // 0..1 pull at the cursor itself
     var EASE = 0.14;      // per-frame smoothing (position and fade)
-    var LINE_COLOR = 'rgba(255, 255, 255, 0.028)';
+    var GLOW_RADIUS = 340; // px reach of the ambient cursor light
+
+    // Grid line + ambient-glow colors. Not constants: the blueprint
+    // theme (data-theme="blueprint" on <html>) swaps them for a cyan
+    // cast. applyThemeColors() resolves them; the page dispatches
+    // 'hhpro:themechange' when the toggle flips so we recolor + redraw.
+    var lineColor = 'rgba(255, 255, 255, 0.028)';
+    var glowColor = 'rgba(91, 169, 216, 0.07)';
+
+    function applyThemeColors() {
+        var blueprint = document.documentElement.getAttribute('data-theme') === 'blueprint';
+        lineColor = blueprint
+            ? 'rgba(150, 209, 255, 0.05)'
+            : 'rgba(255, 255, 255, 0.028)';
+        glowColor = blueprint
+            ? 'rgba(95, 180, 255, 0.10)'
+            : 'rgba(91, 169, 216, 0.07)';
+    }
 
     // Lines bend only within this distance of the cursor; farther
     // ones draw as cheap straight segments. At 2.5x RADIUS the
@@ -74,8 +91,15 @@
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');
 
+        applyThemeColors();
         resize();
         window.addEventListener('resize', resize);
+        // Recolor the grid + glow when the blueprint theme toggles. A
+        // redraw is enough even when the loop is idle (static grid).
+        window.addEventListener('hhpro:themechange', function () {
+            applyThemeColors();
+            draw();
+        });
 
         if (interactive()) {
             window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -169,7 +193,24 @@
 
     function draw() {
         ctx.clearRect(0, 0, width, height);
-        ctx.strokeStyle = LINE_COLOR;
+
+        // Ambient cursor light: a soft radial pool centered on the eased
+        // pointer, scaled by the same fade envelope as the pinch so the
+        // light and the grid distortion swell and fade together. Painted
+        // before the lines so the grid reads as sitting inside the light.
+        if (fade > 0.01 && easedX > PARKED) {
+            var glow = ctx.createRadialGradient(
+                easedX, easedY, 0, easedX, easedY, GLOW_RADIUS);
+            glow.addColorStop(0, glowColor);
+            glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.globalAlpha = fade;
+            ctx.fillStyle = glow;
+            ctx.fillRect(easedX - GLOW_RADIUS, easedY - GLOW_RADIUS,
+                         GLOW_RADIUS * 2, GLOW_RADIUS * 2);
+            ctx.globalAlpha = 1;
+        }
+
+        ctx.strokeStyle = lineColor;
         ctx.lineWidth = 1;
         ctx.beginPath();
 

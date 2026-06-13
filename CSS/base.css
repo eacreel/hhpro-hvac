@@ -523,3 +523,302 @@ input[type="checkbox"], input[type="radio"] {
     white-space: nowrap;
     border: 0;
 }
+
+/* ============================================================
+   Visual effects layer
+   ------------------------------------------------------------
+   Tasteful, blueprint-flavored touches that pair with the
+   ambient grid. The pointer-driven pieces (spotlight borders,
+   table crosshair) read coordinates written by JS/visual_fx.js;
+   the rest are pure CSS utilities. Everything degrades to plain
+   surfaces under prefers-reduced-motion.
+   ============================================================ */
+
+/* ---------- Spotlight card borders ----------
+   The card's edge nearest the cursor brightens on hover. A masked
+   gradient on ::after paints only the 1px border ring; the gradient
+   is centered on the pointer via --spot-x/--spot-y (defaults to the
+   card center until the first move). Layers under the existing hover
+   ring rather than replacing it. */
+.tile,
+.project-card {
+    position: relative;
+}
+
+.tile::after,
+.project-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(180px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+        var(--spot-color, rgba(91, 169, 216, 0.65)), transparent 60%);
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--transition-med);
+    pointer-events: none;
+}
+
+.tile:hover::after,
+.project-card:hover::after {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tile::after,
+    .project-card::after {
+        display: none;
+    }
+}
+
+/* ---------- Drafting corner ticks ----------
+   Four L-shaped registration marks, like the crop marks on a drawing
+   sheet, drawn with eight layered gradients on a single ::before (two
+   bars per corner). Applied to the action tiles, project cards, and
+   the refrigerant totals card. */
+.tile-projects-compact,
+.project-card,
+.refrigerant-totals-card {
+    position: relative;
+}
+
+.tile-projects-compact::before,
+.project-card::before,
+.refrigerant-totals-card::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    pointer-events: none;
+    opacity: 0.55;
+    --tick: var(--color-border-strong);
+    --len: 9px;
+    background-image:
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick)),
+        linear-gradient(var(--tick), var(--tick));
+    background-repeat: no-repeat;
+    background-position:
+        top left, top left,
+        top right, top right,
+        bottom left, bottom left,
+        bottom right, bottom right;
+    background-size:
+        var(--len) 1px, 1px var(--len),
+        var(--len) 1px, 1px var(--len),
+        var(--len) 1px, 1px var(--len),
+        var(--len) 1px, 1px var(--len);
+}
+
+/* The action tiles carry their own ::before? No - keep the gradient
+   marks above their gradient fill but below the label text. */
+.tile-projects-compact .tile-body {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Dimension-line section header ----------
+   Styles a heading as a drafting dimension callout: the title sits in
+   a gap between two thin rules, each capped with a vertical end tick. */
+.hh-dimline {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.hh-dimline::before,
+.hh-dimline::after {
+    content: "";
+    flex: 1;
+    height: 7px;
+    --dl: var(--color-border-strong);
+}
+
+.hh-dimline::before {
+    background:
+        linear-gradient(var(--dl), var(--dl)) left center / 100% 1px no-repeat,
+        linear-gradient(var(--dl), var(--dl)) left center / 1px 7px no-repeat;
+}
+
+.hh-dimline::after {
+    background:
+        linear-gradient(var(--dl), var(--dl)) right center / 100% 1px no-repeat,
+        linear-gradient(var(--dl), var(--dl)) right center / 1px 7px no-repeat;
+}
+
+/* ---------- Staggered reveal ----------
+   visual_fx.js adds .hh-reveal + a per-item --reveal-delay to grid /
+   list children on first paint. */
+@keyframes hh-reveal-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.hh-reveal {
+    animation: hh-reveal-in 360ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-reveal { animation: none; }
+}
+
+/* ---------- Export draw-in confirmation ----------
+   flashSuccess() overlays a brand-blue badge whose checkmark strokes
+   itself in (stroke-dashoffset), then removes it after ~1.3s. */
+.hh-flashing {
+    position: relative;
+}
+
+.hh-check {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: inherit;
+    animation: hh-check-pop 160ms ease both;
+}
+
+.hh-check .icon {
+    width: 18px;
+    height: 18px;
+    stroke-dasharray: 26;
+    stroke-dashoffset: 26;
+    animation: hh-check-draw 380ms ease forwards;
+    animation-delay: 70ms;
+}
+
+@keyframes hh-check-pop {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes hh-check-draw {
+    to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-check { animation: none; }
+    .hh-check .icon { animation: none; stroke-dashoffset: 0; }
+}
+
+/* ---------- Table crosshair guides ----------
+   CAD-style guide lines that follow the cursor across a schedule. The
+   overlay is sized to the table by visual_fx.js and scrolls with it;
+   sticky header/columns paint over the lines, which reads as intended. */
+.hh-crosshair-host {
+    position: relative;
+}
+
+.hh-crosshair {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.hh-crosshair-line {
+    position: absolute;
+    background-color: var(--color-primary-light);
+    opacity: 0;
+    transition: opacity 140ms ease;
+}
+
+.hh-crosshair-active .hh-crosshair-line {
+    opacity: 0.28;
+}
+
+.hh-crosshair-v {
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    transform: translateX(var(--cx, -2px));
+}
+
+.hh-crosshair-h {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: translateY(var(--cy, -2px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-crosshair-line { transition: none; }
+}
+
+/* ---------- CAD crosshair cursor ----------
+   The schedule areas adopt a crosshair cursor (pairs with the guide
+   lines). Interactive children keep their normal affordance cursors. */
+.schedule-wrap,
+.refrigerant-table-wrap {
+    cursor: crosshair;
+}
+
+.schedule-wrap input,
+.schedule-wrap select,
+.schedule-wrap textarea,
+.refrigerant-table-wrap input,
+.refrigerant-table-wrap select,
+.refrigerant-table-wrap textarea {
+    cursor: auto;
+}
+
+.schedule-wrap a,
+.schedule-wrap button,
+.refrigerant-table-wrap a,
+.refrigerant-table-wrap button {
+    cursor: pointer;
+}
+
+/* ---------- Blueprint theme toggle (header button) ---------- */
+.theme-toggle.theme-toggle-on {
+    background-color: rgba(255, 255, 255, 0.18);
+    color: var(--color-text-inverse);
+}
+
+/* ============================================================
+   Blueprint theme
+   ------------------------------------------------------------
+   An alternate cyanotype palette - deeper cobalt surfaces with a
+   cyan ink/accent - applied by toggling data-theme="blueprint" on
+   <html>. Everything is variable-driven, so this single override
+   re-tints the whole app; the grid canvas recolors itself off the
+   hhpro:themechange event. The attribute selector outranks :root.
+   ============================================================ */
+html[data-theme="blueprint"] {
+    --color-bg: #082c54;
+    --color-bg-dark: #051d3a;
+    --color-surface: #0e3a66;
+    --color-border: #1c5189;
+    --color-border-strong: #3b78b8;
+    --color-text: #e8f3ff;
+    --color-text-muted: #9cc4e8;
+    --color-primary: #1769aa;
+    --color-primary-hover: #2280c4;
+    --color-primary-light: #7fd4ff;
+    --color-row-hover: #114063;
+    --tile-projects: #0e3a66;
+}
+
+html[data-theme="blueprint"] body {
+    background-image: radial-gradient(900px 600px at 50% 38%,
+        rgba(40, 130, 200, 0.40), transparent 70%);
+}

@@ -62,6 +62,10 @@
     // --- storage keys ------------------------------------------------
     var SESSION_KEY = 'hhpro_active_cart';
     var PROJECTS_KEY = 'hhpro_projects';
+    // Manual display order for the Projects list (array of project ids).
+    // Empty until the user drags to reorder, so listProjects keeps its
+    // original "newest first" default until then.
+    var PROJECTS_ORDER_KEY = 'hhpro_projects_order';
 
     // --- in-memory state (mirror of sessionStorage) ------------------
     var state = {
@@ -113,6 +117,7 @@
         setProjectEngineer: setProjectEngineer,
 
         listProjects: listProjects,
+        setProjectsOrder: setProjectsOrder,
         getCurrentProjectId: getCurrentProjectId,
         activateProject: activateProject,
         deleteProject: deleteProject,
@@ -328,13 +333,45 @@
     // Project management - public
     // =================================================================
 
+    function loadProjectOrder() {
+        try {
+            var raw = localStorage.getItem(PROJECTS_ORDER_KEY);
+            if (!raw) return [];
+            var parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // Persist the manual project order (array of ids). Ids that no longer
+    // exist are harmless - listProjects intersects against live projects.
+    function setProjectsOrder(ids) {
+        if (!Array.isArray(ids)) return;
+        try {
+            localStorage.setItem(PROJECTS_ORDER_KEY, JSON.stringify(ids));
+        } catch (e) { /* non-fatal: the order just won't persist */ }
+    }
+
     function listProjects() {
         var projects = loadProjects();
-        var list = Object.keys(projects).map(function (id) { return projects[id]; });
-        list.sort(function (a, b) {
-            return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+        var ids = Object.keys(projects);
+        var order = loadProjectOrder();
+        var pos = {};
+        order.forEach(function (id, i) { pos[id] = i; });
+
+        // Projects present in the saved order follow it; any not in it
+        // (created since the last manual reorder) sort first by recency.
+        // With no saved order this reduces to the original newest-first.
+        var ordered = ids.filter(function (id) { return pos[id] !== undefined; });
+        var unordered = ids.filter(function (id) { return pos[id] === undefined; });
+        unordered.sort(function (a, b) {
+            return String(projects[b].updatedAt || '')
+                .localeCompare(String(projects[a].updatedAt || ''));
         });
-        return list;
+        ordered.sort(function (a, b) { return pos[a] - pos[b]; });
+
+        return unordered.concat(ordered).map(function (id) { return projects[id]; });
     }
 
     function getCurrentProjectId() {
