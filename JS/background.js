@@ -27,24 +27,11 @@
     var RADIUS = 200;     // px reach of the pinch around the cursor
     var STRENGTH = 0.4;   // 0..1 pull at the cursor itself
     var EASE = 0.14;      // per-frame smoothing (position and fade)
-    var GLOW_RADIUS = 340; // px reach of the ambient cursor light
-
-    // Grid line + ambient-glow colors. Not constants: the blueprint
-    // theme (data-theme="blueprint" on <html>) swaps them for a cyan
-    // cast. applyThemeColors() resolves them; the page dispatches
-    // 'hhpro:themechange' when the toggle flips so we recolor + redraw.
-    var lineColor = 'rgba(255, 255, 255, 0.028)';
-    var glowColor = 'rgba(91, 169, 216, 0.07)';
-
-    function applyThemeColors() {
-        var blueprint = document.documentElement.getAttribute('data-theme') === 'blueprint';
-        lineColor = blueprint
-            ? 'rgba(150, 209, 255, 0.05)'
-            : 'rgba(255, 255, 255, 0.028)';
-        glowColor = blueprint
-            ? 'rgba(95, 180, 255, 0.10)'
-            : 'rgba(91, 169, 216, 0.07)';
-    }
+    var GLOW_RADIUS = 300; // px reach of the ambient cursor light
+    var LINE_COLOR = 'rgba(255, 255, 255, 0.028)';
+    // Kept faint on purpose - the cursor light is a whisper of ambient
+    // glow under the grid, not a spotlight.
+    var GLOW_COLOR = 'rgba(91, 169, 216, 0.035)';
 
     // Lines bend only within this distance of the cursor; farther
     // ones draw as cheap straight segments. At 2.5x RADIUS the
@@ -91,15 +78,8 @@
         document.body.appendChild(canvas);
         ctx = canvas.getContext('2d');
 
-        applyThemeColors();
         resize();
         window.addEventListener('resize', resize);
-        // Recolor the grid + glow when the blueprint theme toggles. A
-        // redraw is enough even when the loop is idle (static grid).
-        window.addEventListener('hhpro:themechange', function () {
-            applyThemeColors();
-            draw();
-        });
 
         if (interactive()) {
             window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -201,7 +181,7 @@
         if (fade > 0.01 && easedX > PARKED) {
             var glow = ctx.createRadialGradient(
                 easedX, easedY, 0, easedX, easedY, GLOW_RADIUS);
-            glow.addColorStop(0, glowColor);
+            glow.addColorStop(0, GLOW_COLOR);
             glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.globalAlpha = fade;
             ctx.fillStyle = glow;
@@ -210,7 +190,7 @@
             ctx.globalAlpha = 1;
         }
 
-        ctx.strokeStyle = lineColor;
+        ctx.strokeStyle = LINE_COLOR;
         ctx.lineWidth = 1;
         ctx.beginPath();
 

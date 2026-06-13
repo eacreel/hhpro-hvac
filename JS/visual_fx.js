@@ -19,10 +19,6 @@
                                 current value to a new one.
      - flashSuccess()         : draw a checkmark over a button as a
                                 one-shot "done" confirmation.
-     - Blueprint theme        : get/set/toggle the data-theme on
-                                <html>, persisted to localStorage. The
-                                grid canvas recolors itself off the
-                                'hhpro:themechange' event we dispatch.
 
    The grid + ambient cursor glow live in background.js (it already
    owns the eased pointer signal); this module covers everything else.
@@ -45,40 +41,6 @@
     // we hold them back under reduced-motion to match the app's restraint.
     function interactive() {
         return finePointer() && !prefersReducedMotion();
-    }
-
-    // =================================================================
-    // Blueprint theme
-    // -----------------------------------------------------------------
-    // The attribute is set as early as possible by an inline script in
-    // index.html (no flash of the wrong palette); this controller just
-    // flips + persists it and tells the grid canvas to recolor.
-    // =================================================================
-
-    var THEME_KEY = 'hhpro.theme';
-
-    function getTheme() {
-        return document.documentElement.getAttribute('data-theme') === 'blueprint'
-            ? 'blueprint' : 'standard';
-    }
-
-    function setTheme(theme) {
-        var blueprint = theme === 'blueprint';
-        if (blueprint) {
-            document.documentElement.setAttribute('data-theme', 'blueprint');
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-        }
-        try {
-            localStorage.setItem(THEME_KEY, blueprint ? 'blueprint' : 'standard');
-        } catch (e) { /* private mode / storage disabled - non-fatal */ }
-        // background.js (and anything else theme-aware) listens for this.
-        window.dispatchEvent(new Event('hhpro:themechange'));
-        return getTheme();
-    }
-
-    function toggleTheme() {
-        return setTheme(getTheme() === 'blueprint' ? 'standard' : 'blueprint');
     }
 
     // =================================================================
@@ -290,9 +252,6 @@
     }
 
     HHpro.FX = {
-        getTheme: getTheme,
-        setTheme: setTheme,
-        toggleTheme: toggleTheme,
         staggerReveal: staggerReveal,
         tweenNumber: tweenNumber,
         flashSuccess: flashSuccess,

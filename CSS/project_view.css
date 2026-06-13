@@ -282,6 +282,22 @@
     background-color: var(--color-row-hover) !important;
 }
 
+/* The data-column headers in the last header row get a 2px border-strong
+   underline (the header/body divider). The sticky + edge columns
+   (Actions, Tag, Serves, Indoor Tag, Configuration, Accessories) sit in
+   the FIRST header row and rowspan down, so that `tr:last-child` rule
+   never reaches them and their divider falls back to the default 1px -
+   the thick line visibly breaks under those columns. Match them up so
+   the divider is one consistent weight across the whole table width. */
+.schedule-table thead th.project-sched-rm-head,
+.schedule-table thead th.project-sched-tag-head,
+.schedule-table thead th.project-sched-serves-head,
+.schedule-table thead th.project-sched-indoor-tag-head,
+.schedule-table thead th.project-sched-config-head,
+.schedule-table thead th.project-sched-acc-head {
+    border-bottom: 2px solid var(--color-border-strong);
+}
+
 .project-sched-rm-btn {
     width: 28px;
     height: 28px;

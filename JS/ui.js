@@ -79,14 +79,6 @@
         // Drawn by the export "draw-in" confirmation (HHpro.FX.flashSuccess).
         'check': [
             ['polyline', { points: '20 6 9 17 4 12' }]
-        ],
-        // Blueprint-theme toggle in the header.
-        'grid': [
-            ['rect', { x: 3, y: 3, width: 18, height: 18, rx: 2 }],
-            ['line', { x1: 3, y1: 9, x2: 21, y2: 9 }],
-            ['line', { x1: 3, y1: 15, x2: 21, y2: 15 }],
-            ['line', { x1: 9, y1: 3, x2: 9, y2: 21 }],
-            ['line', { x1: 15, y1: 3, x2: 15, y2: 21 }]
         ]
     };
 
@@ -183,39 +175,6 @@
         },
 
         /**
-         * Build the blueprint-theme toggle button for the header. Icon-only
-         * (a grid glyph); reflects the current theme via aria-pressed + a
-         * lit class, and flips it through HHpro.FX on click. The actual
-         * palette swap + persistence lives in HHpro.FX.toggleTheme().
-         *
-         * @returns {HTMLElement}
-         */
-        createThemeToggle: function () {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'header-action theme-toggle';
-            btn.appendChild(HHpro.UI.icon('grid'));
-
-            function sync() {
-                var bp = !!(HHpro.FX && HHpro.FX.getTheme &&
-                            HHpro.FX.getTheme() === 'blueprint');
-                btn.classList.toggle('theme-toggle-on', bp);
-                btn.setAttribute('aria-pressed', bp ? 'true' : 'false');
-                var label = bp ? 'Switch to standard theme'
-                               : 'Switch to blueprint theme';
-                btn.title = label;
-                btn.setAttribute('aria-label', label);
-            }
-            sync();
-
-            btn.addEventListener('click', function () {
-                if (HHpro.FX && HHpro.FX.toggleTheme) HHpro.FX.toggleTheme();
-                sync();
-            });
-            return btn;
-        },
-
-        /**
          * Build the dark top header used on every logged-in view.
          *
          * @param {string=} currentPage - optional breadcrumb label shown after the logo.
@@ -254,8 +213,6 @@
             header.appendChild(brandWrap);
 
             header.appendChild(HHpro.UI.createLookupInput());
-
-            header.appendChild(HHpro.UI.createThemeToggle());
 
             var logout = document.createElement('button');
             logout.type = 'button';

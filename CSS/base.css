@@ -788,37 +788,3 @@ input[type="checkbox"], input[type="radio"] {
     cursor: pointer;
 }
 
-/* ---------- Blueprint theme toggle (header button) ---------- */
-.theme-toggle.theme-toggle-on {
-    background-color: rgba(255, 255, 255, 0.18);
-    color: var(--color-text-inverse);
-}
-
-/* ============================================================
-   Blueprint theme
-   ------------------------------------------------------------
-   An alternate cyanotype palette - deeper cobalt surfaces with a
-   cyan ink/accent - applied by toggling data-theme="blueprint" on
-   <html>. Everything is variable-driven, so this single override
-   re-tints the whole app; the grid canvas recolors itself off the
-   hhpro:themechange event. The attribute selector outranks :root.
-   ============================================================ */
-html[data-theme="blueprint"] {
-    --color-bg: #082c54;
-    --color-bg-dark: #051d3a;
-    --color-surface: #0e3a66;
-    --color-border: #1c5189;
-    --color-border-strong: #3b78b8;
-    --color-text: #e8f3ff;
-    --color-text-muted: #9cc4e8;
-    --color-primary: #1769aa;
-    --color-primary-hover: #2280c4;
-    --color-primary-light: #7fd4ff;
-    --color-row-hover: #114063;
-    --tile-projects: #0e3a66;
-}
-
-html[data-theme="blueprint"] body {
-    background-image: radial-gradient(900px 600px at 50% 38%,
-        rgba(40, 130, 200, 0.40), transparent 70%);
-}

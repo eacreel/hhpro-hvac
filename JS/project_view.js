@@ -242,6 +242,20 @@
             ? HHpro.Templates.listEngineers()
             : [{ key: 'hoffman', label: 'Hoffman & Hoffman' }];
 
+        // On a product tab, only offer engineers that actually have a
+        // layout for THAT product type ('hoffman' is the standard layout,
+        // always valid). So a firm with no template for the active product
+        // (e.g. Refresco has no multi-position-split layout) drops out, and
+        // the selector hides entirely when only the standard remains - the
+        // tab renders native regardless, so there's nothing to choose.
+        if (activeTab && activeTab !== 'files' && activeTab !== 'refrigerant' &&
+            HHpro.Templates && HHpro.Templates.getTemplate) {
+            engineers = engineers.filter(function (e) {
+                return e.key === 'hoffman' ||
+                    HHpro.Templates.getTemplate(e.key, activeTab);
+            });
+        }
+
         // Nothing to choose when only the standard layout is available.
         if (engineers.length <= 1) return null;
 

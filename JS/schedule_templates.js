@@ -168,11 +168,16 @@
                 { scope: 'row', derive: function (g) { return g.cell('G'); } },
                 { scope: 'row', derive: function (g) { return g.cell('P'); } },
                 { scope: 'item', derive: function (g) { return firstNumber(g.cell('R')); } },
-                // Indoor units are powered from the outdoor single-point
-                // feed, so the indoor section has the feed voltage but NO
-                // separate MCA/MOP - that belongs in the SINGLE POINT
-                // POWER column (cols 16/17), and the indoor MCA/MOCP is "-".
-                { scope: 'item', derive: function (g) { return voltPh(g.cell('S')); } },
+                // Indoor units fed from the outdoor single-point feed have
+                // no independent service, so BOTH the indoor VOLT/PH and
+                // MCA/MOCP read "-" (the real feed lives in the SINGLE POINT
+                // POWER column, cols 16/17). Column J flags the indoor power
+                // source; if a unit were ever independently powered it would
+                // fall back to showing its own voltage.
+                { scope: 'item', derive: function (g) {
+                    return /powered from outdoor/i.test(g.cell('J'))
+                        ? '-' : voltPh(g.cell('S'));
+                } },
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function (g) { return s(g.item.tag); } },
                 { scope: 'item', derive: function (g) { return combine(g.cell('V'), g.cell('W')); } },

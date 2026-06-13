@@ -42,8 +42,6 @@
 
         header.appendChild(HHpro.UI.createLookupInput());
 
-        header.appendChild(HHpro.UI.createThemeToggle());
-
         // Logout button on the right. Later steps may add additional
         // header actions alongside this one.
         var logoutBtn = document.createElement('button');
