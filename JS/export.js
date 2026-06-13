@@ -164,7 +164,17 @@ WHAT'S IN THE GRID
 
         var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
             ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
-        var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
+        var hidden;
+        if (Array.isArray(extra.hiddenColumns)) {
+            hidden = extra.hiddenColumns.slice();
+        } else if (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns) {
+            var hpSels = (items || []).map(function (it) {
+                return findSelectionById(data, it.selectionId);
+            }).filter(Boolean);
+            hidden = HHpro.Capacity.scheduleHiddenColumns(productKey, data, hpSels);
+        } else {
+            hidden = [];
+        }
         var hiddenSet = {};
         hidden.forEach(function (l) { hiddenSet[l] = true; });
 

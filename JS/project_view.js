@@ -1787,7 +1787,9 @@
         }
 
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
-        var hidden = Array.isArray(extra.hiddenColumns) ? extra.hiddenColumns.slice() : [];
+        var hidden = Array.isArray(extra.hiddenColumns)
+            ? extra.hiddenColumns.slice()
+            : scheduleHiddenDefaults(productKey, items, data);
 
         wrap.appendChild(buildProjectSchedule(productKey, items, data, hidden));
         if (!tplActive) {
@@ -1795,6 +1797,19 @@
         }
 
         return wrap;
+    }
+
+    // Columns hidden by default on the native layout until the user
+    // customises them via "Add / Remove Columns": the outdoor heat-pump-
+    // total duplicate (always) plus the rest of the heat-pump block when
+    // no heat-pump units are in the project (HHpro.Capacity.
+    // scheduleHiddenColumns); [] for every other product.
+    function scheduleHiddenDefaults(productKey, items, data) {
+        if (!(HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns)) return [];
+        var sels = (items || []).map(function (it) {
+            return findSelectionById(data, it.selectionId);
+        }).filter(Boolean);
+        return HHpro.Capacity.scheduleHiddenColumns(productKey, data, sels);
     }
 
     function buildProductToolbar(productKey, items, data, tplActive, editing) {
@@ -1818,7 +1833,7 @@
             colsBtn.className = 'projects-btn projects-btn-secondary';
             colsBtn.textContent = 'Add / Remove Columns';
             colsBtn.addEventListener('click', function () {
-                openColumnsModal(productKey, data);
+                openColumnsModal(productKey, data, items);
             });
             bar.appendChild(colsBtn);
         }
@@ -3154,12 +3169,15 @@
     // Add/Remove Columns modal
     // =================================================================
 
-    function openColumnsModal(productKey, data) {
+    function openColumnsModal(productKey, data, items) {
         var colLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
         var names = getLeafColumnNames(data);
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
         var hiddenSet = {};
-        (extra.hiddenColumns || []).forEach(function (l) { hiddenSet[l] = true; });
+        var hiddenList = Array.isArray(extra.hiddenColumns)
+            ? extra.hiddenColumns
+            : scheduleHiddenDefaults(productKey, items, data);
+        hiddenList.forEach(function (l) { hiddenSet[l] = true; });
 
         var backdrop = document.createElement('div');
         backdrop.className = 'modal-backdrop';
@@ -3263,22 +3281,52 @@
     function getLeafColumnNames(data) {
         var colLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
         var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
-        var names = {};
-        colLetters.forEach(function (l) { names[l] = l; });
 
+        // Full header trail (title -> group -> ... -> leaf) per column.
+        var trail = {};
+        colLetters.forEach(function (l) { trail[l] = []; });
         rows.forEach(function (row) {
             row.forEach(function (cell) {
                 var startIdx = colLetters.indexOf(cell.col);
                 if (startIdx < 0) return;
                 var span = cell.colspan || 1;
                 var value = (cell.value !== null && cell.value !== undefined)
-                    ? String(cell.value) : '';
+                    ? String(cell.value).trim() : '';
                 if (!value) return;
                 for (var i = 0; i < span; i++) {
                     var letter = colLetters[startIdx + i];
-                    if (letter !== undefined) names[letter] = value;
+                    if (letter !== undefined) trail[letter].push(value);
                 }
             });
+        });
+
+        // Leaf label per column (deepest header) + how many columns share
+        // each leaf, so duplicated leaves can be qualified by their group.
+        var leaf = {};
+        var leafCount = {};
+        colLetters.forEach(function (l) {
+            var t = trail[l];
+            var lf = (t && t.length) ? t[t.length - 1] : l;
+            leaf[l] = lf;
+            leafCount[lf] = (leafCount[lf] || 0) + 1;
+        });
+
+        var names = {};
+        colLetters.forEach(function (l) {
+            var t = trail[l];
+            // Unique leaf -> use it as-is.
+            if (leafCount[leaf[l]] <= 1 || t.length <= 2) { names[l] = leaf[l]; return; }
+            // Duplicated leaf (e.g. two "TOTAL CAPACITY" columns): qualify
+            // with the immediate parent group; if that's still shared
+            // (e.g. indoor vs outdoor "ELECTRICAL DATA"), fall back to the
+            // top-level group so the dialog label is always unambiguous.
+            var parent = t[t.length - 2];
+            var parentShared = colLetters.some(function (o) {
+                var to = trail[o];
+                return o !== l && leaf[o] === leaf[l] && to.length > 1 &&
+                       to[to.length - 2] === parent;
+            });
+            names[l] = (parentShared ? t[1] : parent) + ' – ' + leaf[l];
         });
         return names;
     }

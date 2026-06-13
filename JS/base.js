@@ -678,6 +678,14 @@
         var hiddenSet = {};
         var hidden = (product && product.hiddenSelectionColumns) || [];
         hidden.forEach(function (letter) { hiddenSet[letter] = true; });
+        // Capacity-driven hides (multi-position splits): always drop the
+        // outdoor heat-pump-total duplicate, and drop the whole heat-pump
+        // block when the rows in view are all cooling-only.
+        if (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns) {
+            HHpro.Capacity.scheduleHiddenColumns(
+                product && product.productKey, data, selections
+            ).forEach(function (letter) { hiddenSet[letter] = true; });
+        }
         table.appendChild(buildScheduleHead(data, hiddenSet));
         table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));
         return table;

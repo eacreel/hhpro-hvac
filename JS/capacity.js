@@ -166,10 +166,29 @@
             });
             return out;
         }
+        // Every heat-pump column: the indoor "HEAT PUMP TOTAL CAPACITY"
+        // summary plus the whole outdoor "HEAT PUMP HEATING DATA" block
+        // (outdoor ambient, total, efficiency). Dropped when a schedule
+        // has no heat-pump systems (see scheduleHiddenColumns).
+        var heatPumpCols = [];
+        letters.forEach(function (L) {
+            var t = trail[L] || [];
+            if (t.indexOf('HEAT PUMP HEATING DATA') >= 0 ||
+                (t.length && t[t.length - 1] === 'HEAT PUMP TOTAL CAPACITY')) {
+                heatPumpCols.push(L);
+            }
+        });
+        // Heat-pump total capacity appears twice: a summary in the INDOOR
+        // AIR HANDLING UNIT block ("HEAT PUMP TOTAL CAPACITY") and the same
+        // value inside the outdoor "HEAT PUMP HEATING DATA" block ("TOTAL
+        // CAPACITY"). The dropdowns fill BOTH; the outdoor duplicate is
+        // tracked separately so it can be hidden even when heat-pump
+        // systems are present (see scheduleHiddenColumns).
+        var hpHeatingTotal = findAll('TOTAL CAPACITY', 'HEAT PUMP HEATING DATA');
         var hpTotal = [];
         var k = find('HEAT PUMP TOTAL CAPACITY');
         if (k) hpTotal.push(k);
-        findAll('TOTAL CAPACITY', 'HEAT PUMP HEATING DATA').forEach(function (c) {
+        hpHeatingTotal.forEach(function (c) {
             if (hpTotal.indexOf(c) < 0) hpTotal.push(c);
         });
 
@@ -183,6 +202,8 @@
             oaCooling:    find('OUTDOOR AMBIENT (COOLING)'),
             hpAmbient:    find('OUTDOOR AMBIENT (DB)', 'HEAT PUMP HEATING DATA'),
             hpTotalCols:  hpTotal,
+            hpHeatingTotalCols: hpHeatingTotal,
+            heatPumpCols: heatPumpCols,
             outdoorModel: find('MODEL', 'OUTDOOR CONDENSING UNIT'),
             airHandler:   find('MODEL', 'INDOOR AIR HANDLING UNIT')
         };
@@ -343,6 +364,41 @@
         load: load,
         ensureFor: ensureFor,
         isProduct: function (productKey) { return productKey === CAPACITY_PRODUCT; },
+
+        /**
+         * Native-schedule column letters hidden by DEFAULT, given the
+         * selections currently in view. Two rules, resolved by header
+         * LABEL so they survive column edits:
+         *   - The outdoor "HEAT PUMP HEATING DATA -> TOTAL CAPACITY"
+         *     duplicates the indoor "HEAT PUMP TOTAL CAPACITY", so it is
+         *     ALWAYS hidden (the HP total shows once, in the AHU section).
+         *   - When NONE of the in-view selections is a heat pump, the
+         *     whole heat-pump block (indoor HP total + the outdoor HEAT
+         *     PUMP HEATING DATA columns) is hidden too - they would all be
+         *     "-" anyway.
+         * All overridable via "Add / Remove Columns". `selections` is the
+         * list of selection objects on screen (browse: the filtered rows;
+         * project: the selected units). [] for every other product.
+         */
+        scheduleHiddenColumns: function (productKey, data, selections) {
+            if (productKey !== CAPACITY_PRODUCT || !data || !data.scheduleHeader) {
+                return [];
+            }
+            var cols = resolveColumns(data);
+            var hpCols = cols.heatPumpCols || [];
+            var anyHeatPump = (selections || []).some(function (sel) {
+                var sd = sel && sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
+                if (!sd) return false;
+                return hpCols.some(function (L) {
+                    var v = sd[L];
+                    return v != null && v !== '' && v !== '-';
+                });
+            });
+            // Heat pumps present -> drop only the duplicate; otherwise drop
+            // the entire (all-"-") heat-pump block.
+            return anyHeatPump ? (cols.hpHeatingTotalCols || []).slice()
+                               : hpCols.slice();
+        },
 
         /**
          * Build a per-row controller, or null when capacity dropdowns
