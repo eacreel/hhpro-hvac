@@ -603,7 +603,7 @@
     // Adding / removing / duplicating items
     // =================================================================
 
-    function addItem(productKey, selectionId, label) {
+    function addItem(productKey, selectionId, label, extra) {
         ensureModeChosen(function () {
             // Snapshot AFTER mode is settled so a brand-new project's
             // very first add still has a meaningful "before" entry on
@@ -611,14 +611,23 @@
             pushUndo();
             var instanceId = 'item_' + String(state.nextInstanceNum).padStart(4, '0');
             state.nextInstanceNum++;
-            state.items.push({
+            var item = {
                 instanceId: instanceId,
                 productKey: productKey,
                 selectionId: selectionId,
                 label: label || selectionId,
                 addedAt: new Date().toISOString(),
                 tag: ''
-            });
+            };
+            // Optional extra fields merged onto the new item (e.g.
+            // capacityInputs carried over from the browse schedule's
+            // capacity dropdowns).
+            if (extra && typeof extra === 'object') {
+                Object.keys(extra).forEach(function (k) {
+                    if (extra[k] != null) item[k] = extra[k];
+                });
+            }
+            state.items.push(item);
             saveStateToSession();
             renderPanel();
             renderToggle();

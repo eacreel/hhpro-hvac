@@ -195,6 +195,143 @@ PRODUCT_CONFIGS = {
 
 
 # -----------------------------------------------------------------------------
+# MULTI POSITION SPLIT CAPACITY TABLES
+# -----------------------------------------------------------------------------
+# A separate workbook (one tab per outdoor-condenser + air-handler matchup,
+# tab name "<ODU> - <AHU>") that the site uses to drive the cooling +
+# heat-pump capacity dropdowns on the Multi Position Split schedule. Each
+# tab holds:
+#   - a cooling table (cols A-F) in "long" form: every combination of
+#     EAT-DB(A) / OA-cooling(B) / Airflow(C) / EAT-WB(D) has several rows
+#     keyed by a VALUE type in col E, with the number in col F (RESULT).
+#     We keep only MBh (total), S/T (sensible ratio) and the delta-T row
+#     and ignore everything else (kW, Amps, Hi/Lo PR, etc.).
+#   - an optional heat-pump table (cols H-I): outdoor ambient -> capacity
+#     (MBH). Cooling-only systems omit it.
+# A combination whose RESULT is "-" (or that is absent entirely) is
+# invalid; we simply leave it out of the lookup, so the site only ever
+# offers valid combinations in the dropdowns.
+# -----------------------------------------------------------------------------
+
+CAPACITY_FILE = "Multi Position Split Capacity Tables.xlsx"
+CAPACITY_OUTPUT = "multi_position_split_capacity.json"
+# Only these VALUE types (col E) feed the schedule; everything else is junk.
+CAPACITY_VALUE_TYPES = ("MBh", "S/T", "∆T")  # ∆ == the delta sign
+
+
+def _num_key(v):
+    """Stringify a numeric cell for use as a JSON lookup key (e.g. 70.0 ->
+    '70', -5 -> '-5'), so keys built here match String(value) on the site."""
+    if isinstance(v, float) and v.is_integer():
+        v = int(v)
+    return str(v)
+
+
+def convert_capacity_tables(input_path, output_path):
+    """Convert the capacity-tables workbook to a JSON keyed by matchup.
+
+    Output shape:
+      {
+        "matchups": {
+          "<ODU> - <AHU>": {
+            "axes":    {"eatDb":[...], "eatWb":[...], "oaCooling":[...], "airflow":[...]},
+            "cooling": {"<eatDb>|<eatWb>|<oaCooling>|<airflow>": {"ct":N,"cs":N,"lat":N}, ...},
+            "hpAxis":  [65, 60, ... -5],     # only when a heat-pump table exists
+            "hp":      {"47": 17400, ...}    # outdoor ambient -> total cap (BTU/h)
+          }, ...
+        }
+      }
+    Only VALID cooling combos are emitted (invalid/"-"/missing are omitted),
+    so the site can constrain its dropdowns to valid combinations.
+    """
+    print(f"\nConverting: {os.path.basename(input_path)}")
+    wb = openpyxl.load_workbook(input_path, data_only=True)
+
+    matchups = {}
+    skipped_tabs = []
+    for sheet_name in wb.sheetnames:
+        name = sheet_name.strip()
+        if " - " not in name:
+            skipped_tabs.append(sheet_name)
+            continue
+        ws = wb[sheet_name]
+
+        combos = {}        # (db, wb, oa, cfm) -> {"MBh":.., "S/T":.., delta:..}
+        axes = {"eatDb": set(), "eatWb": set(), "oaCooling": set(), "airflow": set()}
+        hp = {}
+
+        for r in range(2, ws.max_row + 1):
+            # Cooling table (A-F)
+            etype = ws.cell(row=r, column=5).value
+            if etype is not None and str(etype).strip() in CAPACITY_VALUE_TYPES:
+                db = ws.cell(row=r, column=1).value
+                oa = ws.cell(row=r, column=2).value
+                cfm = ws.cell(row=r, column=3).value
+                wbv = ws.cell(row=r, column=4).value
+                if None not in (db, oa, cfm, wbv):
+                    combos.setdefault((db, oa, cfm, wbv), {})[str(etype).strip()] = \
+                        ws.cell(row=r, column=6).value
+                    axes["eatDb"].add(db)
+                    axes["oaCooling"].add(oa)
+                    axes["airflow"].add(cfm)
+                    axes["eatWb"].add(wbv)
+            # Heat-pump table (H-I)
+            amb = ws.cell(row=r, column=8).value
+            cap = ws.cell(row=r, column=9).value
+            if isinstance(amb, (int, float)) and isinstance(cap, (int, float)):
+                hp[_num_key(amb)] = int(round(cap * 1000))
+
+        # Keep only fully-valid cooling combos.
+        cooling = {}
+        for (db, oa, cfm, wbv), vals in combos.items():
+            mbh = vals.get("MBh")
+            st = vals.get("S/T")
+            dt = vals.get("∆T")
+            if not all(isinstance(x, (int, float)) for x in (mbh, st, dt)):
+                continue  # invalid ("-") or incomplete -> omit
+            key = f"{_num_key(db)}|{_num_key(wbv)}|{_num_key(oa)}|{_num_key(cfm)}"
+            ct = int(round(mbh * 1000))
+            # Sensible: round the MBH product to 3 decimals, then x1000.
+            cs = int(round(round(mbh * st, 3) * 1000))
+            lat_raw = db - dt
+            lat = int(lat_raw) if float(lat_raw).is_integer() else round(lat_raw, 2)
+            # Stored as a compact [total, sensible, LAT] triple (see _meta).
+            cooling[key] = [ct, cs, lat]
+
+        entry = {
+            "axes": {k: sorted(v) for k, v in axes.items()},
+            "cooling": cooling,
+        }
+        if hp:
+            entry["hpAxis"] = sorted(hp.keys(), key=lambda x: float(x), reverse=True)
+            entry["hp"] = hp
+        matchups[name] = entry
+
+    payload = {
+        "matchups": matchups,
+        "_meta": {
+            "sourceFile":    os.path.basename(input_path),
+            "generatedAt":   datetime.now().isoformat(timespec="seconds"),
+            "matchupCount":  len(matchups),
+            "coolingKey":    "eatDb|eatWb|oaCooling|airflow",
+            "coolingValue":  "[total BTU/h, sensible BTU/h, LAT degF]",
+            "hp":            "outdoor ambient (degF) -> heat-pump total BTU/h",
+        },
+    }
+    # Pure lookup data (not hand-edited) - written compact to keep the
+    # file the site fetches small.
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, separators=(",", ":"), ensure_ascii=False)
+
+    hp_count = sum(1 for m in matchups.values() if "hp" in m)
+    print(f"  -> {len(matchups)} matchups written to {os.path.basename(output_path)} "
+          f"({hp_count} with a heat-pump table)")
+    if skipped_tabs:
+        print(f"     (skipped {len(skipped_tabs)} non-matchup tab(s): "
+              f"{', '.join(skipped_tabs)})")
+
+
+# -----------------------------------------------------------------------------
 # DOCUMENTATION COLUMN -> FOLDER / EXTENSION MAP
 # -----------------------------------------------------------------------------
 # Maps the column-name prefix (e.g. "SUBMITTAL (SYSTEM)" -> "SUBMITTAL") to
@@ -822,6 +959,16 @@ def main():
         if not fname.lower().endswith(".xlsx"):
             continue
         if fname.startswith("~$"):  # Excel lock files
+            continue
+        if fname == CAPACITY_FILE:
+            try:
+                convert_capacity_tables(
+                    os.path.join(script_dir, fname),
+                    os.path.join(output_dir, CAPACITY_OUTPUT),
+                )
+                converted += 1
+            except Exception as e:
+                print(f"  ERROR processing {fname}: {e}")
             continue
         if fname not in PRODUCT_CONFIGS:
             skipped.append(fname)

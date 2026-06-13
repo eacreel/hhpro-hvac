@@ -510,8 +510,14 @@
 
         HHpro.Data.loadProduct(activeTab)
             .then(function (data) {
-                container.innerHTML = '';
-                container.appendChild(buildProductTabBody(activeTab, items, data));
+                // Ensure the capacity tables are loaded before a Multi
+                // Position Split schedule renders (no-op otherwise).
+                var ready = (HHpro.Capacity && HHpro.Capacity.ensureFor)
+                    ? HHpro.Capacity.ensureFor(activeTab) : Promise.resolve();
+                return ready.then(function () {
+                    container.innerHTML = '';
+                    container.appendChild(buildProductTabBody(activeTab, items, data));
+                });
             })
             .catch(function (err) {
                 container.innerHTML = '';
@@ -2292,6 +2298,22 @@
                     data, productKey, item.selectionId);
             }
 
+            // Capacity dropdowns (Multi Position Split systems with a
+            // matching capacity table). Chosen conditions persist on the
+            // cart item so they survive reloads and feed the exports.
+            var capCtrl = (HHpro.Capacity && HHpro.Capacity.rowController)
+                ? HHpro.Capacity.rowController({
+                    productKey: productKey,
+                    data: data,
+                    scheduleData: (sel.rows[0] && sel.rows[0].scheduleData) || {},
+                    initial: item.capacityInputs || null,
+                    onChange: function (state) {
+                        if (HHpro.Cart && HHpro.Cart.updateItem) {
+                            HHpro.Cart.updateItem(item.instanceId, { capacityInputs: state });
+                        }
+                    }
+                }) : null;
+
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
                 if (rowIndex === 0) tr.className = 'selection-boundary';
@@ -2378,7 +2400,9 @@
                     if (cell === null) return;
                     var td = document.createElement('td');
 
-                    if (kwVariants && rowIndex === 0 && kwFamilyInfo &&
+                    if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
+                        capCtrl.fillCell(td, colLetter);
+                    } else if (kwVariants && rowIndex === 0 && kwFamilyInfo &&
                         colLetter === kwVariants.variantColumn) {
                         td.classList.add('kw-variant-cell');
                         td.appendChild(buildProjectKwSelect(
@@ -2408,6 +2432,8 @@
 
                 tbody.appendChild(tr);
             });
+
+            if (capCtrl) capCtrl.finalize();
         });
 
         return tbody;

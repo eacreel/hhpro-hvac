@@ -334,6 +334,14 @@ WHAT'S IN THE GRID
                 }
             }
 
+            // Multi Position Split capacity overrides: the engineer's
+            // chosen cooling / heat-pump conditions (saved on the item)
+            // replace the static schedule values for those columns so the
+            // download matches the on-screen schedule.
+            var capOverrides = (HHpro.Capacity && HHpro.Capacity.overridesFor)
+                ? HHpro.Capacity.overridesFor(item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data)
+                : {};
+
             // Data cells (use computeCellLayout to preserve the same
             // merge pattern the on-screen schedule shows)
             var layout = computeCellLayout(sel, visibleLetters);
@@ -342,9 +350,11 @@ WHAT'S IN THE GRID
                     var cell = layout[rIdx][letter];
                     if (!cell) return;             // covered by a merge above
                     var targetCol = letterToCol[letter];
+                    var cellValue = (capOverrides[letter] !== undefined)
+                        ? capOverrides[letter] : cell.value;
                     putCell(rows, merges,
                             curRow + rIdx, targetCol,
-                            { value: formatCellValue(cell.value, letter, productKey), dataRow: true },
+                            { value: formatCellValue(cellValue, letter, productKey), dataRow: true },
                             cell.rowSpan || 1,
                             cell.colSpan || 1);
                 });

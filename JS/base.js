@@ -162,7 +162,13 @@
 
             HHpro.Data.loadProduct(productKey)
                 .then(function (data) {
-                    renderPage(root, product, data, params);
+                    // Make sure the capacity tables are loaded before a
+                    // Multi Position Split schedule renders (no-op otherwise).
+                    var ready = (HHpro.Capacity && HHpro.Capacity.ensureFor)
+                        ? HHpro.Capacity.ensureFor(productKey) : Promise.resolve();
+                    return ready.then(function () {
+                        renderPage(root, product, data, params);
+                    });
                 })
                 .catch(function (err) {
                     var msg = (err && err.message) ? err.message : String(err);
@@ -931,7 +937,7 @@
     // when the user changes the dropdown.
     // ---------------------------------------------------------------
 
-    function buildActionButtons(getSel, product, data) {
+    function buildActionButtons(getSel, product, data, getExtra) {
         var row = document.createElement('div');
         row.className = 'actions-row';
 
@@ -948,7 +954,8 @@
             var label = HHpro.Cart.computeLabel
                 ? HHpro.Cart.computeLabel(product, sel, data)
                 : sel.id;
-            HHpro.Cart.addItem(product.productKey, sel.id, label);
+            HHpro.Cart.addItem(product.productKey, sel.id, label,
+                (typeof getExtra === 'function') ? getExtra() : undefined);
         });
 
         // ----- Submittal (open PDF in new tab) -----
@@ -992,10 +999,24 @@
         var currentIdx = fam.defaultIdx;
         function getCurrentSel() { return fam.variants[currentIdx].sel; }
 
-        // Actions cell -- buttons read the live variant via getSel.
+        // Capacity dropdowns (Multi Position Split systems with a matching
+        // capacity table); null for every other product/system. The matchup
+        // is the same across kW variants, so it's built once.
+        var capCtrl = (HHpro.Capacity && HHpro.Capacity.rowController)
+            ? HHpro.Capacity.rowController({
+                productKey: product && product.productKey,
+                data: data,
+                scheduleData: (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {},
+                initial: null,
+                onChange: null
+            }) : null;
+
+        // Actions cell -- buttons read the live variant via getSel; the
+        // capacity conditions chosen here ride along into the cart on Select.
         var actionsTd = document.createElement('td');
         actionsTd.className = 'actions-cell';
-        actionsTd.appendChild(buildActionButtons(getCurrentSel, product, data));
+        actionsTd.appendChild(buildActionButtons(getCurrentSel, product, data,
+            capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null));
         tr.appendChild(actionsTd);
 
         // Track tds for the variant column + dependent columns so we
@@ -1009,7 +1030,9 @@
         colLetters.forEach(function (colLetter) {
             var td = document.createElement('td');
 
-            if (colLetter === variantCol) {
+            if (capCtrl && capCtrl.handles(colLetter)) {
+                capCtrl.fillCell(td, colLetter);
+            } else if (colLetter === variantCol) {
                 td.classList.add('kw-variant-cell');
                 td.appendChild(buildKwSelect(fam, currentIdx, function (newIdx) {
                     currentIdx = newIdx;
@@ -1023,6 +1046,8 @@
 
             tr.appendChild(td);
         });
+
+        if (capCtrl) capCtrl.finalize();
 
         function refreshDependents() {
             var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};

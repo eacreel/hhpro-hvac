@@ -422,6 +422,22 @@
     line-height: 1;
 }
 
+/* ---------- Multi Position Split capacity dropdowns ----------
+   The cooling/heat-pump dropdowns reuse the kW-dropdown control styling.
+   A saved cooling combo that's no longer valid (e.g. after a capacity
+   table edit) flags only the offending dropdown(s) orange; the outputs
+   show "-". Normal interaction can't reach this state because the menus
+   only ever offer valid combinations. */
+.capacity-invalid .kw-variant-select {
+    border-color: var(--color-warning);
+    background-color: rgba(245, 158, 11, 0.18);
+    color: var(--color-text);
+}
+
+.capacity-invalid .kw-variant-chevron {
+    color: var(--color-warning);
+}
+
 /* ---------- Loading / error / empty states ---------- */
 .product-message {
     flex: 1;
