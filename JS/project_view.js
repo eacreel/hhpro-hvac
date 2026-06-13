@@ -73,27 +73,31 @@
                 return;
             }
 
+            // Resolve the project's content and validate the persisted
+            // activeTab BEFORE building the header - the header's engineer
+            // layout selector keys off the active tab (it only shows on a
+            // product schedule tab that has an engineer layout).
+            var groups = groupItemsByProduct(activeState.items);
+            var productKeys = Object.keys(groups);
+
+            // If the user's last tab no longer exists (e.g. the only mini
+            // split was deleted while they were on the refrigerant tab),
+            // fall back to the first available product tab.
+            if (activeState.items.length) {
+                var hasRefrig = hasRefrigerantSystems(groups);
+                if (activeTab === 'refrigerant' && !hasRefrig) {
+                    activeTab = productKeys[0];
+                } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
+                           productKeys.indexOf(activeTab) < 0) {
+                    activeTab = productKeys[0];
+                }
+            }
+
             main.appendChild(buildProjectHeader(activeState));
 
             if (!activeState.items.length) {
                 main.appendChild(buildEmptyProjectState());
                 return;
-            }
-
-            var groups = groupItemsByProduct(activeState.items);
-            var productKeys = Object.keys(groups);
-
-            // Validate the persisted activeTab against the tabs that
-            // exist for the current project content. If the user's last
-            // tab was removed (e.g. the only mini split was deleted and
-            // they were on the refrigerant tab), fall back to the first
-            // available product tab.
-            var hasRefrig = hasRefrigerantSystems(groups);
-            if (activeTab === 'refrigerant' && !hasRefrig) {
-                activeTab = productKeys[0];
-            } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
-                       productKeys.indexOf(activeTab) < 0) {
-                activeTab = productKeys[0];
             }
 
             main.appendChild(buildTabBar(productKeys, groups));
@@ -238,18 +242,22 @@
     // re-renders the whole project view so every product tab's schedule
     // (and the Excel/CAD/PDF exports) pick up the chosen firm's layout.
     function buildEngineerSelector() {
+        // The layout selector only belongs on a product schedule tab - it
+        // chooses the firm's layout for THAT schedule. The Refrigerant and
+        // Files tabs aren't schedules, so there's nothing to pick there.
+        if (activeTab === 'files' || activeTab === 'refrigerant') return null;
+
         var engineers = (HHpro.Templates && HHpro.Templates.listEngineers)
             ? HHpro.Templates.listEngineers()
             : [{ key: 'hoffman', label: 'Hoffman & Hoffman' }];
 
-        // On a product tab, only offer engineers that actually have a
-        // layout for THAT product type ('hoffman' is the standard layout,
-        // always valid). So a firm with no template for the active product
-        // (e.g. Refresco has no multi-position-split layout) drops out, and
-        // the selector hides entirely when only the standard remains - the
-        // tab renders native regardless, so there's nothing to choose.
-        if (activeTab && activeTab !== 'files' && activeTab !== 'refrigerant' &&
-            HHpro.Templates && HHpro.Templates.getTemplate) {
+        // Only offer engineers that actually have a layout for the active
+        // product tab ('hoffman' is the standard layout, always valid). A
+        // firm with no template for this product (e.g. Refresco has no
+        // multi-position-split layout) drops out, and the selector hides
+        // entirely when only the standard remains - the tab renders native
+        // regardless, so there's nothing to choose.
+        if (activeTab && HHpro.Templates && HHpro.Templates.getTemplate) {
             engineers = engineers.filter(function (e) {
                 return e.key === 'hoffman' ||
                     HHpro.Templates.getTemplate(e.key, activeTab);
