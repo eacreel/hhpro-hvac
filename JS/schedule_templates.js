@@ -208,7 +208,7 @@
                 { band: 'top', label: 'TAG:', derive: function (g) { return s(g.item.tag); } },
                 { band: 'top', label: 'MANUFACTURER:', derive: function (g) { return g.cell('A'); } },
                 { band: 'top', label: 'UNIT MODEL NUMBER:', derive: function (g) { return g.cell('B'); } },
-                { band: 'top', label: 'WEIGHT:', editable: true, fieldKey: 'refresco_rtu_weight' },
+                { band: 'top', label: 'WEIGHT:', derive: function (g) { return g.cell('X'); } },
 
                 { band: 'main', label: 'NOTES', editable: true, fieldKey: 'refresco_rtu_notes' },
                 { band: 'main', label: 'SUPPLY  CFM', derive: function (g) { return g.cell('D'); } },
@@ -372,7 +372,7 @@
                 { scope: 'item', derive: function (g) { return g.cell('W'); } },
                 { scope: 'item', derive: function (g) { return combine(g.cell('A'), g.cell('B')); } },
                 { scope: 'item', derive: function (g) { return g.cell('I'); } },
-                { scope: 'item', derive: function () { return '-'; } },
+                { scope: 'item', derive: function (g) { return g.cell('X'); } },
                 { scope: 'item', derive: function () { return '① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨'; } }
             ],
             notesTitle: '',
