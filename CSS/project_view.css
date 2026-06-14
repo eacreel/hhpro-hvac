@@ -1660,6 +1660,17 @@
    Reuses .schedule-table cell styling; these rules add the title row,
    transposed row-header look, notes/manufacturers boxes, watermark, and
    the in-place editable fields for not-yet-sourced values. */
+
+/* The template grid renders bare <tr><td> (no <tbody>), so it never inherits
+   the native schedule's "tbody td { nowrap }". Without this, attribute labels
+   and values wrap in narrow columns instead of sitting on one line like the
+   CAD/Excel exports. Notes & manufacturers rows re-enable wrapping below via
+   .tpl-notes (pre-wrap), which wins on specificity. */
+.template-schedule td,
+.template-schedule th {
+    white-space: nowrap;
+}
+
 .template-schedule .tpl-title {
     font-size: var(--font-size-lg);
     font-weight: 700;
