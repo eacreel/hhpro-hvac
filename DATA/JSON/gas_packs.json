@@ -63,14 +63,15 @@
       "T",
       "U",
       "V",
-      "W"
+      "W",
+      "X"
     ],
     "rows": [
       [
         {
           "col": "A",
           "value": "PACKAGED ROOFTOP UNITS",
-          "colspan": 23,
+          "colspan": 24,
           "rowspan": 1
         }
       ],
@@ -128,6 +129,12 @@
           "value": "Electrical Data",
           "colspan": 4,
           "rowspan": 1
+        },
+        {
+          "col": "X",
+          "value": "Weight (lbs)",
+          "colspan": 1,
+          "rowspan": 2
         }
       ],
       [
@@ -245,135 +252,135 @@
   "filterColumns": [
     {
       "name": "SIZE",
-      "col": "Y"
-    },
-    {
-      "name": "ELECTRICAL",
       "col": "Z"
     },
     {
-      "name": "EFFICIENCY",
+      "name": "ELECTRICAL",
       "col": "AA"
     },
     {
-      "name": "COOLING STAGES",
+      "name": "EFFICIENCY",
       "col": "AB"
     },
     {
-      "name": "HIGH/MEDIUM/LOW GAS HEAT",
+      "name": "COOLING STAGES",
       "col": "AC"
     },
     {
-      "name": "HGRH",
+      "name": "HIGH/MEDIUM/LOW GAS HEAT",
       "col": "AD"
+    },
+    {
+      "name": "HGRH",
+      "col": "AE"
     }
   ],
   "documentationColumns": [
     {
       "name": "SUBMITTAL (OUTDOOR UNIT)",
-      "col": "AF",
-      "folder": "SUBMITTALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "AG",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "SUBMITTAL (SYSTEM)",
+      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "AH",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "name": "SUBMITTAL (SYSTEM)",
       "col": "AI",
-      "folder": "ENGINEERING MANUALS",
+      "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (SYSTEM)",
       "col": "AJ",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
       "col": "AK",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "CAPACITY TABLE",
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
       "col": "AL",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AM",
       "folder": "CAPACITY TABLES",
       "fileExtension": "pdf"
     },
     {
       "name": "INSTALLATION MANUAL (OUTDOOR)",
-      "col": "AM",
-      "folder": "INSTALLATION MANUALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AN",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AO",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (OUTDOOR)",
+      "name": "INSTALLATION MANUAL (SYSTEM)",
       "col": "AP",
-      "folder": "REVIT",
-      "fileExtension": "zip"
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (INDOOR)",
+      "name": "REVIT (OUTDOOR)",
       "col": "AQ",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "REVIT (SYSTEM)",
+      "name": "REVIT (INDOOR)",
       "col": "AR",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (OUTDOOR)",
+      "name": "REVIT (SYSTEM)",
       "col": "AS",
-      "folder": "CAD",
+      "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (INDOOR)",
+      "name": "CAD (OUTDOOR)",
       "col": "AT",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (SYSTEM)",
+      "name": "CAD (INDOOR)",
       "col": "AU",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CONTROLS OPTIONS",
+      "name": "CAD (SYSTEM)",
       "col": "AV",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AW",
       "folder": "CONTROLS",
       "fileExtension": "pdf"
     },
     {
       "name": "OPERATION MANUAL",
-      "col": "AW",
+      "col": "AX",
       "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
@@ -407,15 +414,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 19.9,
-            "W": 30
+            "W": 30,
+            "X": 517
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0363DM",
@@ -454,15 +459,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 19.9,
-            "W": 30
+            "W": 30,
+            "X": 517
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0363DL",
@@ -501,15 +504,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 19.9,
-            "W": 30
+            "W": 30,
+            "X": 517
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0363DH",
@@ -548,15 +549,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 9.1,
-            "W": 15
+            "W": 15,
+            "X": 520
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0364DL",
@@ -595,15 +594,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 9.1,
-            "W": 15
+            "W": 15,
+            "X": 520
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0364DM",
@@ -642,15 +639,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 9.1,
-            "W": 15
+            "W": 15,
+            "X": 520
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0364DH",
@@ -689,15 +684,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DL",
@@ -736,15 +729,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DM",
@@ -783,15 +774,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DH",
@@ -830,15 +819,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DL",
@@ -877,15 +864,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DM",
@@ -924,15 +909,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DH",
@@ -971,15 +954,13 @@
             "T": "208/3",
             "U": 1,
             "V": 24.1,
-            "W": 35
+            "W": 35,
+            "X": 548
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0483DL",
@@ -1018,15 +999,13 @@
             "T": "208/3",
             "U": 1,
             "V": 24.1,
-            "W": 35
+            "W": 35,
+            "X": 548
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0483DM",
@@ -1065,15 +1044,13 @@
             "T": "208/3",
             "U": 1,
             "V": 24.1,
-            "W": 35
+            "W": 35,
+            "X": 548
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0483DH",
@@ -1112,15 +1089,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.6,
-            "W": 15
+            "W": 15,
+            "X": 552
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0484DL",
@@ -1159,15 +1134,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.6,
-            "W": 15
+            "W": 15,
+            "X": 552
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0484DM",
@@ -1206,15 +1179,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.6,
-            "W": 15
+            "W": 15,
+            "X": 552
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0484DH",
@@ -1253,15 +1224,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DL",
@@ -1300,15 +1269,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DM",
@@ -1347,15 +1314,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DH",
@@ -1394,15 +1359,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DL",
@@ -1441,15 +1404,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DM",
@@ -1488,15 +1449,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DH",
@@ -1535,15 +1494,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.1,
-            "W": 40
+            "W": 40,
+            "X": 537
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0603DL",
@@ -1582,15 +1539,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.1,
-            "W": 40
+            "W": 40,
+            "X": 537
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0603DM",
@@ -1629,15 +1584,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.1,
-            "W": 40
+            "W": 40,
+            "X": 537
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0603DH",
@@ -1676,15 +1629,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13,
-            "W": 20
+            "W": 20,
+            "X": 541
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0604DL",
@@ -1723,15 +1674,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13,
-            "W": 20
+            "W": 20,
+            "X": 541
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0604DM",
@@ -1770,15 +1719,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13,
-            "W": 20
+            "W": 20,
+            "X": 541
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 1,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0604DH",
@@ -1817,15 +1764,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DL",
@@ -1864,15 +1809,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DM",
@@ -1911,15 +1854,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DH",
@@ -1958,15 +1899,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DL",
@@ -2005,15 +1944,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DM",
@@ -2052,15 +1989,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DH",
@@ -2099,15 +2034,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0723DL",
@@ -2146,15 +2079,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0723DM",
@@ -2193,15 +2124,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0723DH",
@@ -2240,15 +2169,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0724DL",
@@ -2287,15 +2214,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0724DM",
@@ -2334,15 +2259,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 626
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0724DH",
@@ -2381,15 +2304,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DL",
@@ -2428,15 +2349,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DM",
@@ -2475,15 +2394,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DH",
@@ -2522,15 +2439,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DL",
@@ -2569,15 +2484,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DM",
@@ -2616,15 +2529,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DH",
@@ -2663,15 +2574,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0903DL",
@@ -2710,15 +2619,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0903DM",
@@ -2757,15 +2664,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0903DH",
@@ -2804,15 +2709,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0904DL",
@@ -2851,15 +2754,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0904DM",
@@ -2898,15 +2799,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1106
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG0904DH",
@@ -2945,15 +2844,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DL",
@@ -2992,15 +2889,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DM",
@@ -3039,15 +2934,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DH",
@@ -3086,15 +2979,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DL",
@@ -3133,15 +3024,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DM",
@@ -3180,15 +3069,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DH",
@@ -3227,15 +3114,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1023DL",
@@ -3274,15 +3159,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1023DM",
@@ -3321,15 +3204,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1023DH",
@@ -3368,15 +3249,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1024DL",
@@ -3415,15 +3294,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1024DM",
@@ -3462,15 +3339,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1118
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1024DH",
@@ -3509,15 +3384,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DL",
@@ -3556,15 +3429,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DM",
@@ -3603,15 +3474,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DH",
@@ -3650,15 +3519,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DL",
@@ -3697,15 +3564,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DM",
@@ -3744,15 +3609,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DH",
@@ -3791,15 +3654,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 53.8,
-            "W": 70
+            "W": 70,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1203DL",
@@ -3838,15 +3699,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 53.8,
-            "W": 70
+            "W": 70,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1203DM",
@@ -3885,15 +3744,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 53.8,
-            "W": 70
+            "W": 70,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1203DH",
@@ -3932,15 +3789,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 26.2,
-            "W": 30
+            "W": 30,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1204DL",
@@ -3979,15 +3834,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 26.2,
-            "W": 30
+            "W": 30,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1204DM",
@@ -4026,15 +3879,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 26.2,
-            "W": 30
+            "W": 30,
+            "X": 1161
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1204DH",
@@ -4073,15 +3924,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DL",
@@ -4120,15 +3969,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DM",
@@ -4167,15 +4014,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DH",
@@ -4214,15 +4059,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DL",
@@ -4261,15 +4104,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DM",
@@ -4308,15 +4149,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DH",
@@ -4355,15 +4194,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 59.5,
-            "W": 70
+            "W": 70,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1503DL",
@@ -4402,15 +4239,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 59.5,
-            "W": 70
+            "W": 70,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1503DM",
@@ -4449,15 +4284,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 59.5,
-            "W": 70
+            "W": 70,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1503DH",
@@ -4496,15 +4329,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.2,
-            "W": 35
+            "W": 35,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1504DL",
@@ -4543,15 +4374,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.2,
-            "W": 35
+            "W": 35,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1504DM",
@@ -4590,15 +4419,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.2,
-            "W": 35
+            "W": 35,
+            "X": 1244
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1504DH",
@@ -4637,15 +4464,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DL",
@@ -4684,15 +4509,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DM",
@@ -4731,15 +4554,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DH",
@@ -4778,15 +4599,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DL",
@@ -4825,15 +4644,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DM",
@@ -4872,15 +4689,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DH",
@@ -4919,15 +4734,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 84.1,
-            "W": 100
+            "W": 100,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1803DL",
@@ -4966,15 +4779,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 84.1,
-            "W": 100
+            "W": 100,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1803DM",
@@ -5013,15 +4824,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 84.1,
-            "W": 100
+            "W": 100,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1803DH",
@@ -5060,15 +4869,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 41.4,
-            "W": 50
+            "W": 50,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1804DL",
@@ -5107,15 +4914,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 41.4,
-            "W": 50
+            "W": 50,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1804DM",
@@ -5154,15 +4959,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 41.4,
-            "W": 50
+            "W": 50,
+            "X": 1922
           },
           "filterData": {
-            "SIZE": 15,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG1804DH",
@@ -5201,15 +5004,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 98.7,
-            "W": 125
+            "W": 125,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2403DL",
@@ -5248,15 +5049,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 98.7,
-            "W": 125
+            "W": 125,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2403DM",
@@ -5295,15 +5094,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 98.7,
-            "W": 125
+            "W": 125,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2403DH",
@@ -5342,15 +5139,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 50.8,
-            "W": 60
+            "W": 60,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2404DL",
@@ -5389,15 +5184,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 50.8,
-            "W": 60
+            "W": 60,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2404DM",
@@ -5436,15 +5229,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 50.8,
-            "W": 60
+            "W": 60,
+            "X": 2175
           },
           "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG2404DH",
@@ -5483,15 +5274,13 @@
             "T": "208/3",
             "U": 5,
             "V": 151,
-            "W": 175
+            "W": 175,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3003DL",
@@ -5530,15 +5319,13 @@
             "T": "208/3",
             "U": 5,
             "V": 151,
-            "W": 175
+            "W": 175,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3003DM",
@@ -5577,15 +5364,13 @@
             "T": "208/3",
             "U": 5,
             "V": 151,
-            "W": 175
+            "W": 175,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3003DH",
@@ -5624,15 +5409,13 @@
             "T": "460/3",
             "U": 5,
             "V": 74.3,
-            "W": 90
+            "W": 90,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3004DL",
@@ -5671,15 +5454,13 @@
             "T": "460/3",
             "U": 5,
             "V": 74.3,
-            "W": 90
+            "W": 90,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3004DM",
@@ -5718,15 +5499,13 @@
             "T": "460/3",
             "U": 5,
             "V": 74.3,
-            "W": 90
+            "W": 90,
+            "X": 2316
           },
           "filterData": {
-            "SIZE": 25,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "STANDARD",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "NO"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DSG3004DH",
@@ -5765,15 +5544,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DL - HGRH",
@@ -5812,15 +5589,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DM - HGRH",
@@ -5859,15 +5634,13 @@
             "T": "208/3",
             "U": 0.75,
             "V": 18.1,
-            "W": 25
+            "W": 25,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0363DH - HGRH",
@@ -5906,15 +5679,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DL - HGRH",
@@ -5953,15 +5724,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DM - HGRH",
@@ -6000,15 +5769,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 8.2,
-            "W": 15
+            "W": 15,
+            "X": 572
           },
           "filterData": {
-            "SIZE": 3,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0364DH - HGRH",
@@ -6047,15 +5814,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DL - HGRH",
@@ -6094,15 +5859,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DM - HGRH",
@@ -6141,15 +5904,13 @@
             "T": "208/3",
             "U": 1,
             "V": 22.8,
-            "W": 30
+            "W": 30,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0483DH - HGRH",
@@ -6188,15 +5949,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DL - HGRH",
@@ -6235,15 +5994,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DM - HGRH",
@@ -6282,15 +6039,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 10.7,
-            "W": 15
+            "W": 15,
+            "X": 647
           },
           "filterData": {
-            "SIZE": 4,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0484DH - HGRH",
@@ -6329,15 +6084,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DL - HGRH",
@@ -6376,15 +6129,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DM - HGRH",
@@ -6423,15 +6174,13 @@
             "T": "208/3",
             "U": 1,
             "V": 28.5,
-            "W": 40
+            "W": 40,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0603DH - HGRH",
@@ -6470,15 +6219,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DL - HGRH",
@@ -6517,15 +6264,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DM - HGRH",
@@ -6564,15 +6309,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 13.3,
-            "W": 20
+            "W": 20,
+            "X": 655
           },
           "filterData": {
-            "SIZE": 5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0604DH - HGRH",
@@ -6611,15 +6354,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DL - HGRH",
@@ -6658,15 +6399,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DM - HGRH",
@@ -6705,15 +6444,13 @@
             "T": "208/3",
             "U": 1.2,
             "V": 27.2,
-            "W": 40
+            "W": 40,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0723DH - HGRH",
@@ -6752,15 +6489,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DL - HGRH",
@@ -6799,15 +6534,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DM - HGRH",
@@ -6846,15 +6579,13 @@
             "T": "460/3",
             "U": 1.2,
             "V": 12.2,
-            "W": 15
+            "W": 15,
+            "X": 705
           },
           "filterData": {
-            "SIZE": 6,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0724DH - HGRH",
@@ -6893,15 +6624,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DL - HGRH",
@@ -6940,15 +6669,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DM - HGRH",
@@ -6987,15 +6714,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 39.4,
-            "W": 50
+            "W": 50,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0903DH - HGRH",
@@ -7034,15 +6759,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DL - HGRH",
@@ -7081,15 +6804,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DM - HGRH",
@@ -7128,15 +6849,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 20.1,
-            "W": 25
+            "W": 25,
+            "X": 1253
           },
           "filterData": {
-            "SIZE": 7.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG0904DH - HGRH",
@@ -7175,15 +6894,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DL - HGRH",
@@ -7222,15 +6939,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DM - HGRH",
@@ -7269,15 +6984,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 43.7,
-            "W": 50
+            "W": 50,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1023DH - HGRH",
@@ -7316,15 +7029,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DL - HGRH",
@@ -7363,15 +7074,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DM - HGRH",
@@ -7410,15 +7119,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 21.5,
-            "W": 25
+            "W": 25,
+            "X": 1268
           },
           "filterData": {
-            "SIZE": 8.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1024DH - HGRH",
@@ -7457,15 +7164,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DL - HGRH",
@@ -7504,15 +7209,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DM - HGRH",
@@ -7551,15 +7254,13 @@
             "T": "208/3",
             "U": 2.4,
             "V": 46.6,
-            "W": 60
+            "W": 60,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1203DH - HGRH",
@@ -7598,15 +7299,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DL - HGRH",
@@ -7645,15 +7344,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DM - HGRH",
@@ -7692,15 +7389,13 @@
             "T": "460/3",
             "U": 2.4,
             "V": 24.4,
-            "W": 30
+            "W": 30,
+            "X": 1296
           },
           "filterData": {
-            "SIZE": 10,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1204DH - HGRH",
@@ -7739,15 +7434,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DL - HGRH",
@@ -7786,15 +7479,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DM - HGRH",
@@ -7833,15 +7524,13 @@
             "T": "208/3",
             "U": 3.5,
             "V": 61.1,
-            "W": 80
+            "W": 80,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "208/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1503DH - HGRH",
@@ -7880,15 +7569,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "LOW",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "LOW"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DL - HGRH",
@@ -7927,15 +7614,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "MEDIUM"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DM - HGRH",
@@ -7974,15 +7659,13 @@
             "T": "460/3",
             "U": 3.5,
             "V": 30.6,
-            "W": 35
+            "W": 35,
+            "X": 1310
           },
           "filterData": {
-            "SIZE": 12.5,
-            "ELECTRICAL": "460/3",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH",
-            "HGRH": "YES"
+            "HIGH/MEDIUM/LOW GAS HEAT": "HIGH"
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "DHG1504DH - HGRH",
@@ -8009,7 +7692,7 @@
   },
   "_meta": {
     "sourceFile": "GAS PACKS DATA.xlsx",
-    "generatedAt": "2026-06-13T18:13:22",
+    "generatedAt": "2026-06-14T08:31:35",
     "dataRowCount": 162,
     "selectionCount": 162
   }
