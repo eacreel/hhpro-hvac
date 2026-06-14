@@ -18,12 +18,13 @@
 }
 
 /* ---------- Header (title + Back button) ---------- */
-/* The header + tab bar are centered to the active tab's schedule width,
-   published as --active-sched-w by syncHeaderWidthToSchedule(). Tabs with
-   no schedule (Files) leave it unset, falling back to full width. */
+/* Header + tab bar always span the full page width (centered), regardless of
+   how wide the active tab's schedule is. This keeps the tabs on one line and
+   the title/layout controls spread across the page even when a template's
+   schedule is narrow (e.g. the transposed Refresco layout). */
 .project-header,
 .project-tabs {
-    width: var(--active-sched-w, 100%);
+    width: 100%;
     max-width: 100%;
     margin-inline: auto;
 }
@@ -179,8 +180,9 @@
     overflow: auto;
 }
 
-/* Inner column: shrink-wraps to the schedule's width so the toolbar,
-   schedule, and notes share it and center together. */
+/* Inner column: shrink-wraps to the schedule's width so the schedule and
+   notes share it and center together. (The toolbar is a full-width sibling
+   above this, not inside it.) */
 .project-product-inner {
     display: flex;
     flex-direction: column;
@@ -204,6 +206,10 @@
     flex-wrap: wrap;
     align-items: center;
     flex-shrink: 0;
+    /* Full page width (its parent .project-product-tab centers its children),
+       so the toolbar spreads out like the wide Hoffman layout even when the
+       schedule below it is narrow. */
+    align-self: stretch;
     position: sticky;
     top: 0;
     /* Matches the page canvas so the sticky bar doesn't read as a
