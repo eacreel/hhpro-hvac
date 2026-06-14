@@ -2349,8 +2349,8 @@ WHAT'S IN THE GRID
     // | right | top] at one shared scale (true relative size across units),
     // stacked downward. Returns {width, height}.
     function emitCadDrawings(drawings, topY, ctx) {
-        var TITLE_H = 4, LABEL_H = 3.5, TARGET_MAX_H = 60;
-        var VIEW_GAP = 10, LABEL_W = 70, UNIT_GAP = 14;
+        var TITLE_H = 4, LABEL_H = 3.5;
+        var VIEW_GAP = 10, LABEL_W = 40, UNIT_GAP = 14;
         var VIEWS = ['front', 'right', 'top'];
         var y = topY;
         var maxX = 0;
@@ -2359,16 +2359,10 @@ WHAT'S IN THE GRID
             0, y, TITLE_H, 400, 1, mtextEscape('EQUIPMENT DRAWINGS')));
         y -= TITLE_H * 2.2;
 
-        // One uniform scale across every drawing = true relative size.
-        var maxH = 0;
-        drawings.forEach(function (d) {
-            VIEWS.forEach(function (v) {
-                var vv = d.geom && d.geom[v];
-                if (vv) { var h = vv.bbox[3] - vv.bbox[1]; if (h > maxH) maxH = h; }
-            });
-        });
-        if (maxH <= 0) maxH = 1;
-        var S = TARGET_MAX_H / maxH;
+        // True 1:1 scale: geometry is stored in mm; emit at 1 drawing unit =
+        // 1 inch so a measurement in CAD reads the real dimension directly.
+        // One fixed factor for every unit, so relative sizes stay correct.
+        var S = 1 / 25.4;   // mm -> inches
 
         drawings.forEach(function (d) {
             var views = VIEWS.map(function (v) { return [v, d.geom && d.geom[v]]; })
