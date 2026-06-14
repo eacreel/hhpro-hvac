@@ -72,7 +72,11 @@ WHAT'S IN THE GRID
         productTabLabel:          productTabLabel,
         xlsxBlobFromSections:     xlsxBlobFromSections,
         dxfBlobFromSections:      dxfBlobFromSections,
-        pdfBlobFromSections:      pdfBlobFromSections
+        pdfBlobFromSections:      pdfBlobFromSections,
+        // Resolve + fetch the per-unit CAD drawings for a set of
+        // {items, data} groups, so the combined Files-tab export can embed
+        // them below the multi-product schedule too.
+        prepareCadDrawings:       prepareCadDrawings
     };
 
     // =================================================================
@@ -116,12 +120,104 @@ WHAT'S IN THE GRID
             return;
         }
         var sections = [{ title: getExportScheduleTitle(productKey), grid: grid }];
-        dxfBlobFromSections(sections).then(function (blob) {
+        prepareCadDrawings([{ items: items, data: data }]).then(function (drawings) {
+            return dxfBlobFromSections(sections, drawings);
+        }).then(function (blob) {
             var safeName = safeFilename(projectName) + ' - ' +
                            safeFilename(productTabLabel(productKey)) + '.dxf';
             downloadBlob(blob, safeName);
         }).catch(function (err) {
             alert('CAD export failed: ' + (err && err.message ? err.message : err));
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // CAD unit drawings (embedded below the schedule in the DXF export)
+    // -----------------------------------------------------------------
+    // Each selected system resolves to one drawing PER PHYSICAL UNIT via
+    // the CAD documentation columns: a packaged RTU = its CAD (SYSTEM)
+    // model (one drawing); a split system = the outdoor unit once plus
+    // each indoor row's CAD (INDOOR) model (so a multi-zone shows the
+    // head as many times as there are heads). Geometry is the normalized
+    // 2D polylines from DATA/JSON/cad/<MODEL>.json (built by
+    // convert_cad_geometry.py), fetched per-model and cached so a normal
+    // export never loads the whole catalogue.
+
+    function resolveCadDrawings(items, data) {
+        if (!items || !data) return [];
+        var cadCols = (data.documentationColumns || []).filter(function (c) {
+            return /CAD/i.test(c.name || '');
+        });
+        function colName(re) {
+            for (var i = 0; i < cadCols.length; i++) {
+                if (re.test(cadCols[i].name)) return cadCols[i].name;
+            }
+            return null;
+        }
+        var outName = colName(/OUTDOOR/i);
+        var inName = colName(/INDOOR/i);
+        var sysName = colName(/SYSTEM/i);
+        function val(row, name) {
+            if (!name || !row || !row.documentationData) return '';
+            var v = row.documentationData[name];
+            return v == null ? '' : String(v).trim();
+        }
+        var out = [];
+        items.forEach(function (item) {
+            var sel = findSelectionById(data, item.selectionId);
+            if (!sel || !sel.rows || !sel.rows.length) return;
+            var r0 = sel.rows[0];
+            var od = val(r0, outName);
+            if (od) out.push({ label: od, model: od });
+            var sys = val(r0, sysName);
+            if (sys) out.push({ label: sys, model: sys });
+            if (inName) {
+                sel.rows.forEach(function (row) {
+                    var v = val(row, inName);
+                    if (v) out.push({ label: v, model: v });
+                });
+            }
+        });
+        return out;
+    }
+
+    var cadGeomCache = {};
+    var cadIndexPromise = null;
+    function loadCadIndex() {
+        if (!cadIndexPromise) {
+            cadIndexPromise = fetch('DATA/JSON/cad/_index.json')
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (list) {
+                    var s = {};
+                    (list || []).forEach(function (m) { s[m] = true; });
+                    return s;
+                })
+                .catch(function () { return {}; });
+        }
+        return cadIndexPromise;
+    }
+    function loadCadGeometry(model) {
+        if (Object.prototype.hasOwnProperty.call(cadGeomCache, model)) {
+            return Promise.resolve(cadGeomCache[model]);
+        }
+        return fetch('DATA/JSON/cad/' + encodeURIComponent(model) + '.json')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (g) { cadGeomCache[model] = g; return g; })
+            .catch(function () { cadGeomCache[model] = null; return null; });
+    }
+    function prepareCadDrawings(groups) {
+        var draws = [];
+        (groups || []).forEach(function (g) {
+            draws = draws.concat(resolveCadDrawings(g.items, g.data));
+        });
+        if (!draws.length) return Promise.resolve([]);
+        return loadCadIndex().then(function (idx) {
+            var uniq = {};
+            draws.forEach(function (d) { if (idx[d.model]) uniq[d.model] = true; });
+            return Promise.all(Object.keys(uniq).map(loadCadGeometry)).then(function () {
+                draws.forEach(function (d) { d.geom = cadGeomCache[d.model] || null; });
+                return draws.filter(function (d) { return d.geom; });
+            });
         });
     }
 
@@ -1871,9 +1967,9 @@ WHAT'S IN THE GRID
     var DXF_MODEL_SPACE_RECORD = '1F'; // BLOCK_RECORD for *Model_Space
     var DXF_ENTITY_HANDLE_BASE = 0x100;
 
-    function dxfBlobFromSections(sections) {
+    function dxfBlobFromSections(sections, drawings) {
         try {
-            var text = buildDxfText(sections);
+            var text = buildDxfText(sections, drawings);
             var blob = new Blob([text], { type: 'application/dxf' });
             return Promise.resolve(blob);
         } catch (e) {
@@ -1881,7 +1977,7 @@ WHAT'S IN THE GRID
         }
     }
 
-    function buildDxfText(sections) {
+    function buildDxfText(sections, drawings) {
         var ctx = {
             nextHandle: DXF_ENTITY_HANDLE_BASE,
             entities: [],
@@ -1898,6 +1994,15 @@ WHAT'S IN THE GRID
             yCursor += info.height;
             if (idx < sections.length - 1) yCursor += DXF_GAP;
         });
+
+        // Equipment drawings band below the last schedule (each selected
+        // unit's front/right/top views, true relative scale, model label).
+        if (drawings && drawings.length) {
+            yCursor += DXF_GAP;
+            var dInfo = emitCadDrawings(drawings, -yCursor, ctx);
+            if (dInfo.width > maxX) maxX = dInfo.width;
+            yCursor += dInfo.height;
+        }
 
         // Now that every cell has registered which edges it wants, merge
         // co-linear and overlapping segments and turn them into LINE
@@ -2224,6 +2329,77 @@ WHAT'S IN THE GRID
                '\n';
     }
 
+    function dxfLwPolylineEntity(handle, layer, pts) {
+        var s = '  0\nLWPOLYLINE\n  5\n' + handle +
+                '\n330\n' + DXF_MODEL_SPACE_RECORD +
+                '\n100\nAcDbEntity' +
+                '\n  8\n' + layer +
+                '\n100\nAcDbPolyline' +
+                '\n 90\n' + pts.length +
+                '\n 70\n0' +    // open polyline
+                '\n 43\n0.0';   // constant width 0
+        for (var i = 0; i < pts.length; i++) {
+            s += '\n 10\n' + fmt(pts[i][0]) + '\n 20\n' + fmt(pts[i][1]);
+        }
+        return s + '\n';
+    }
+
+    // Equipment drawings band. topY = world Y of the band's top (negative,
+    // continuing below the schedule). Lays each unit out as [label | front
+    // | right | top] at one shared scale (true relative size across units),
+    // stacked downward. Returns {width, height}.
+    function emitCadDrawings(drawings, topY, ctx) {
+        var TITLE_H = 4, LABEL_H = 3.5, TARGET_MAX_H = 60;
+        var VIEW_GAP = 10, LABEL_W = 70, UNIT_GAP = 14;
+        var VIEWS = ['front', 'right', 'top'];
+        var y = topY;
+        var maxX = 0;
+
+        ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+            0, y, TITLE_H, 400, 1, mtextEscape('EQUIPMENT DRAWINGS')));
+        y -= TITLE_H * 2.2;
+
+        // One uniform scale across every drawing = true relative size.
+        var maxH = 0;
+        drawings.forEach(function (d) {
+            VIEWS.forEach(function (v) {
+                var vv = d.geom && d.geom[v];
+                if (vv) { var h = vv.bbox[3] - vv.bbox[1]; if (h > maxH) maxH = h; }
+            });
+        });
+        if (maxH <= 0) maxH = 1;
+        var S = TARGET_MAX_H / maxH;
+
+        drawings.forEach(function (d) {
+            var views = VIEWS.map(function (v) { return [v, d.geom && d.geom[v]]; })
+                             .filter(function (p) { return p[1]; });
+            if (!views.length) return;
+            var rowH = 0;
+            views.forEach(function (p) {
+                var h = (p[1].bbox[3] - p[1].bbox[1]) * S;
+                if (h > rowH) rowH = h;
+            });
+            ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+                0, y - rowH / 2 + LABEL_H / 2, LABEL_H, LABEL_W, 1, mtextEscape(d.label)));
+            var x = LABEL_W;
+            views.forEach(function (p) {
+                var g = p[1], b = g.bbox;
+                var w = (b[2] - b[0]) * S, h = (b[3] - b[1]) * S;
+                g.pl.forEach(function (pl) {
+                    var pts = pl.map(function (pt) {
+                        return [(pt[0] - b[0]) * S + x, (pt[1] - b[1]) * S + (y - h)];
+                    });
+                    ctx.entities.push(dxfLwPolylineEntity(nextHandle(ctx), 'EQUIP_DRAWING', pts));
+                });
+                x += w + VIEW_GAP;
+            });
+            if (x > maxX) maxX = x;
+            y -= (rowH + UNIT_GAP);
+        });
+
+        return { width: maxX, height: topY - y };
+    }
+
     function fmt(n) {
         if (!isFinite(n)) return '0.0';
         var s = Number(n).toFixed(4);
@@ -2317,10 +2493,12 @@ WHAT'S IN THE GRID
     }
 
     function dxfLayerTable() {
-        return '  0\nTABLE\n  2\nLAYER\n  5\n2\n100\nAcDbSymbolTable\n 70\n3\n' +
+        return '  0\nTABLE\n  2\nLAYER\n  5\n2\n100\nAcDbSymbolTable\n 70\n5\n' +
                dxfLayerRecord('50', '0') +
                dxfLayerRecord('51', 'SCHEDULE_GRID') +
                dxfLayerRecord('52', 'SCHEDULE_TEXT') +
+               dxfLayerRecord('53', 'EQUIP_DRAWING') +
+               dxfLayerRecord('54', 'EQUIP_LABEL') +
                '  0\nENDTAB\n';
     }
 

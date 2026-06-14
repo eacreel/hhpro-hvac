@@ -3597,6 +3597,17 @@
                     if (!sections.length) {
                         return Promise.reject(new Error('No schedule data to combine.'));
                     }
+                    // The CAD export also embeds each unit's drawings below
+                    // the combined schedule; resolve them across every
+                    // product in the project first.
+                    if (fmt.ext === 'dxf' && HHpro.Export.prepareCadDrawings) {
+                        var groups = products.map(function (p) {
+                            return { items: p._rawItems, data: p._data };
+                        });
+                        return HHpro.Export.prepareCadDrawings(groups).then(function (draws) {
+                            return HHpro.Export.dxfBlobFromSections(sections, draws);
+                        });
+                    }
                     return HHpro.Export[fmt.blobFn](sections);
                 },
                 docTypeName: fmt.docType,
