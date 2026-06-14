@@ -27,11 +27,7 @@
     var RADIUS = 200;     // px reach of the pinch around the cursor
     var STRENGTH = 0.4;   // 0..1 pull at the cursor itself
     var EASE = 0.14;      // per-frame smoothing (position and fade)
-    var GLOW_RADIUS = 300; // px reach of the ambient cursor light
     var LINE_COLOR = 'rgba(255, 255, 255, 0.028)';
-    // Kept faint on purpose - the cursor light is a whisper of ambient
-    // glow under the grid, not a spotlight.
-    var GLOW_COLOR = 'rgba(91, 169, 216, 0.035)';
 
     // Lines bend only within this distance of the cursor; farther
     // ones draw as cheap straight segments. At 2.5x RADIUS the
@@ -173,22 +169,6 @@
 
     function draw() {
         ctx.clearRect(0, 0, width, height);
-
-        // Ambient cursor light: a soft radial pool centered on the eased
-        // pointer, scaled by the same fade envelope as the pinch so the
-        // light and the grid distortion swell and fade together. Painted
-        // before the lines so the grid reads as sitting inside the light.
-        if (fade > 0.01 && easedX > PARKED) {
-            var glow = ctx.createRadialGradient(
-                easedX, easedY, 0, easedX, easedY, GLOW_RADIUS);
-            glow.addColorStop(0, GLOW_COLOR);
-            glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.globalAlpha = fade;
-            ctx.fillStyle = glow;
-            ctx.fillRect(easedX - GLOW_RADIUS, easedY - GLOW_RADIUS,
-                         GLOW_RADIUS * 2, GLOW_RADIUS * 2);
-            ctx.globalAlpha = 1;
-        }
 
         ctx.strokeStyle = LINE_COLOR;
         ctx.lineWidth = 1;
