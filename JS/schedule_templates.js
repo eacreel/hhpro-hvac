@@ -67,6 +67,16 @@
         return [s(make), s(model)].filter(Boolean).join(' ');
     }
 
+    // Like combine() but stacks make over model on TWO lines (engineer
+    // sheets show the manufacturer on the first row and the model number on
+    // a second row within the same MANUF. MODEL cell). The "\n" is honoured
+    // by every renderer (screen <br>, xlsx wrapText, DXF \P, PDF stacked).
+    function combine2(make, model) {
+        var a = s(make), b = s(model);
+        if (a && b) return a + '\n' + b;
+        return a || b;
+    }
+
     // "208/60/1" -> "208/1" (drop the middle 60 Hz token). Leaves
     // already-2-part or non-slash values untouched.
     function voltPh(v) {
@@ -619,10 +629,12 @@
                 { r: 2, c: 20, label: 'MOCP (A)' }
             ],
             columns: [
-                // --- Air handling unit ---
-                { scope: 'item', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[0]); } },
-                { scope: 'item', derive: function (g) { return s(g.item.serves) || '-'; } },
-                { scope: 'item', derive: function (g) { return combine(g.cell('A'), g.cell('B')); } },
+                // --- Air handling unit --- (UNIT TAG + AREA SERVED render as
+                // editable text boxes; they pre-fill from the item's tag /
+                // serves but the engineer can type over them per their plans.)
+                { scope: 'item', editable: true, fieldKey: 'saber_ms_ahu_tag', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[0]); } },
+                { scope: 'item', editable: true, fieldKey: 'saber_ms_area', derive: function (g) { return s(g.item.serves); } },
+                { scope: 'item', derive: function (g) { return combine2(g.cell('A'), g.cell('B')); } },
                 { scope: 'item', capacityField: 'airflow', derive: function (g) { return g.cell('C'); } },
                 { scope: 'item', editable: true, fieldKey: 'saber_ms_esp' },
                 { scope: 'item', derive: function (g) { return g.cell('D'); } },
@@ -635,8 +647,8 @@
                 { scope: 'item', derive: function (g) { return g.cell('O'); } },
                 { scope: 'item', derive: function (g) { return g.cell('P'); } },
                 // --- Condensing unit ---
-                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return combine(g.cell('R'), g.cell('S')); } },
+                { scope: 'item', editable: true, fieldKey: 'saber_ms_cu_tag', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return combine2(g.cell('R'), g.cell('S')); } },
                 { scope: 'item', derive: function (g) { return g.filter('SIZE'); } },
                 { scope: 'item', derive: function (g) { return g.cell('AB'); } },
                 { scope: 'item', derive: function (g) { return voltPh(g.cell('W')); } },
@@ -702,8 +714,10 @@
                 { r: 1, c: 13, label: 'MOCP (A)' }
             ],
             columns: [
-                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return s(g.item.serves) || '-'; } },
+                // UNIT TAG + AREA SERVED render as editable text boxes,
+                // pre-filled from the item's tag / serves but overridable.
+                { scope: 'item', editable: true, fieldKey: 'saber_rtu_tag', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', editable: true, fieldKey: 'saber_rtu_area', derive: function (g) { return s(g.item.serves); } },
                 { scope: 'item', derive: function (g) { return g.cell('D'); } },
                 { scope: 'item', editable: true, fieldKey: 'saber_rtu_oa_cfm' },
                 { scope: 'item', derive: function (g) { return g.cell('E'); } },
@@ -716,7 +730,7 @@
                 { scope: 'item', derive: function (g) { return g.cell('U'); } },
                 { scope: 'item', derive: function (g) { return g.cell('W'); } },
                 { scope: 'item', derive: function (g) { return g.cell('X'); } },
-                { scope: 'item', derive: function (g) { return combine(g.cell('A'), g.cell('B')); } },
+                { scope: 'item', derive: function (g) { return combine2(g.cell('A'), g.cell('B')); } },
                 { scope: 'item', derive: function (g) { return g.cell('C'); } },
                 { scope: 'item', derive: function (g) { return g.cell('I'); } },
                 { scope: 'item', derive: function (g) { return g.cell('Y'); } },

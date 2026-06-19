@@ -615,10 +615,21 @@ WHAT'S IN THE GRID
     function resolveTemplateField(field, g) {
         if (field.editable) {
             var override = g.tf(field.fieldKey);
-            return { display: override || '-', editable: true, editValue: override };
+            // An editable field may also carry a derive() that supplies the
+            // DEFAULT value - shown in exports and pre-filled in the on-screen
+            // input - used until the engineer types an override. (e.g. UNIT TAG
+            // pre-fills from the item tag but stays a text box.) Editable fields
+            // with no derive fall back to the "-" placeholder.
+            var dflt = '';
+            if (!override && field.derive) {
+                var d = field.derive(g);
+                dflt = (d === null || d === undefined) ? '' : String(d);
+            }
+            var val = override || dflt;
+            return { display: val || '-', editable: true, editValue: val };
         }
-        var val = field.derive ? field.derive(g) : '';
-        return { display: (val === null || val === undefined) ? '' : String(val) };
+        var v = field.derive ? field.derive(g) : '';
+        return { display: (v === null || v === undefined) ? '' : String(v) };
     }
 
     function templateCellData(field, resolved, item) {
@@ -805,14 +816,21 @@ WHAT'S IN THE GRID
                 if (cell.title || cell.notesRow) continue;
                 if ((cell.colSpan || 1) > 1) continue;
                 var text = String(cell.value == null ? '' : cell.value);
+                // Size to the longest HARD LINE: cells may carry explicit "\n"
+                // breaks (e.g. the 2-line MANUF. MODEL = make over model), and
+                // the column only needs to fit the longer of the two lines.
                 // Each circled note ref renders as "(1)" (~3 chars) in the
                 // exports, so count it as 3 here - otherwise a REMARKS cell
                 // like "① ② ... ⑨" gets too narrow a column for "(1) ... (9)".
-                var len = text.length;
-                for (var k = 0; k < text.length; k++) {
-                    var cc = text.charCodeAt(k);
-                    if (cc >= 0x2460 && cc <= 0x2473) len += 2;
-                }
+                var len = 0;
+                text.split(/\r?\n/).forEach(function (seg) {
+                    var segLen = seg.length;
+                    for (var k = 0; k < seg.length; k++) {
+                        var cc = seg.charCodeAt(k);
+                        if (cc >= 0x2460 && cc <= 0x2473) segLen += 2;
+                    }
+                    if (segLen > len) len = segLen;
+                });
                 if (len + 1 > widths[c]) widths[c] = Math.min(len + 2, 40);
             }
         }
@@ -2132,7 +2150,13 @@ WHAT'S IN THE GRID
                     : cell.bold ? DXF_TXT_HEADER
                     : DXF_TXT_BODY;
         var availW = Math.max(1, cellWidthUnits - 2 * DXF_TXT_PAD);
-        var lines = wrapTextToWidth(value, availW).length;
+        // Count wrapped lines per HARD line ("\n" forces a break) so a 2-line
+        // MANUF. MODEL grows its data row tall enough to fit both lines.
+        var lines = 0;
+        String(value).split(/\r?\n/).forEach(function (hl) {
+            lines += wrapTextToWidth(hl, availW).length;
+        });
+        if (lines < 1) lines = 1;
         // Total cell height = lines * (height * 1.4 line-spacing) + pad
         return lines * textH * 1.4 + 2 * DXF_TXT_PAD;
     }
@@ -2237,9 +2261,12 @@ WHAT'S IN THE GRID
     function emitCellMText(cell, x1, y1, x2, y2, ctx) {
         var value = (cell.value === null || cell.value === undefined) ? '' : String(cell.value);
         if (!value) return;
-        var clean = value.replace(/[\r\n\t]+/g, ' ')
-                         .replace(/[\x00-\x1f\x7f]/g, '');
-        if (!clean) return;
+        // Preserve explicit "\n" breaks as separate lines (e.g. the 2-line
+        // MANUF. MODEL); collapse tabs / other control chars within a line.
+        var hardLines = value.split(/\r?\n/).map(function (ln) {
+            return ln.replace(/[\r\t]+/g, ' ').replace(/[\x00-\x1f\x7f]/g, '');
+        });
+        if (!hardLines.join('')) return;
 
         var height = DXF_TXT_BODY;
         if (cell.title) height = DXF_TXT_TITLE;
@@ -2278,10 +2305,15 @@ WHAT'S IN THE GRID
         var doWrap = (cell.bold || cell.notesRow) && !cell.title && !cell.watermark;
         var content;
         if (doWrap) {
-            content = wrapTextToWidth(clean, boxWidth)
-                          .map(mtextEscape).join('\\P');
+            // Width-wrap each hard line, then join all resulting lines.
+            var wrapped = [];
+            hardLines.forEach(function (ln) {
+                wrapped = wrapped.concat(wrapTextToWidth(ln, boxWidth));
+            });
+            content = wrapped.map(mtextEscape).join('\\P');
         } else {
-            content = mtextEscape(clean);
+            // Data cells: keep one run, but honour explicit "\n" breaks.
+            content = hardLines.map(mtextEscape).join('\\P');
         }
 
         var handle = nextHandle(ctx);
@@ -2825,23 +2857,32 @@ WHAT'S IN THE GRID
                 var leftAlign = (cell2.align === 'left') || (cell2.notesRow && !cell2.watermark);
                 var rightAlign = !!cell2.watermark;
                 var cellW = bx2 - bx1;
-                var textW = approxPdfTextWidth(value, size);
-                var tx, ty;
-                if (leftAlign) {
-                    tx = bx1 + 4;
-                } else if (rightAlign) {
-                    tx = bx2 - 4 - textW;
-                } else {
-                    tx = bx1 + (cellW - textW) / 2;
+                var midY = (by1 + by2) / 2;
+                // Honour explicit "\n" breaks (2-line MANUF. MODEL): draw each
+                // line stacked and vertically centered as a block. PDF Y is the
+                // text baseline, so each line sits ~30% of the font below its
+                // own center line.
+                var vlines = value.split(/\r?\n/);
+                var lineH = size * 1.2;
+                for (var li = 0; li < vlines.length; li++) {
+                    var ln = vlines[li];
+                    if (!ln) continue;
+                    var lw = approxPdfTextWidth(ln, size);
+                    var tx;
+                    if (leftAlign) {
+                        tx = bx1 + 4;
+                    } else if (rightAlign) {
+                        tx = bx2 - 4 - lw;
+                    } else {
+                        tx = bx1 + (cellW - lw) / 2;
+                    }
+                    var ty = midY - size * 0.3
+                             + ((vlines.length - 1) / 2 - li) * lineH;
+                    parts.push(tx.toFixed(2) + ' ' + ty.toFixed(2) + ' Td');
+                    parts.push('(' + pdfEscapeText(ln) + ') Tj');
+                    // Reset text position so the next absolute Td works correctly
+                    parts.push((-tx).toFixed(2) + ' ' + (-ty).toFixed(2) + ' Td');
                 }
-                // Vertical center: PDF Y is the text baseline, so put it
-                // just below cell midline by ~30% of font size.
-                ty = (by1 + by2) / 2 - size * 0.3;
-
-                parts.push(tx.toFixed(2) + ' ' + ty.toFixed(2) + ' Td');
-                parts.push('(' + pdfEscapeText(value) + ') Tj');
-                // Reset text position so next absolute Td works correctly
-                parts.push((-tx).toFixed(2) + ' ' + (-ty).toFixed(2) + ' Td');
             }
         }
         parts.push('ET');
@@ -2855,6 +2896,22 @@ WHAT'S IN THE GRID
         var headerRows = grid.numHeaderRows || 0;
         if (r < titleRows) return PDF_TITLE_H_PT;
         if (r < headerRows) return PDF_HEADER_H_PT;
+        // Data/notes rows grow to fit cells with explicit "\n" line breaks
+        // (e.g. the 2-line MANUF. MODEL). Single-line rows keep the default.
+        var maxLines = 1;
+        var row = grid.rows[r];
+        if (row) {
+            for (var c = 0; c < row.length; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered || (cell.rowSpan || 1) > 1) continue;
+                var v = (cell.value == null) ? '' : String(cell.value);
+                var n = v.split(/\r?\n/).length;
+                if (n > maxLines) maxLines = n;
+            }
+        }
+        if (maxLines > 1) {
+            return Math.max(PDF_DATA_H_PT, maxLines * PDF_TXT_BODY * 1.35 + 4);
+        }
         return PDF_DATA_H_PT;
     }
 

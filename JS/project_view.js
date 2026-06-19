@@ -2076,7 +2076,18 @@
                 } else if (cell.editable) {
                     el.appendChild(buildTemplateFieldInput(cell));
                 } else {
-                    el.textContent = (cell.value == null) ? '' : String(cell.value);
+                    var tplCellText = (cell.value == null) ? '' : String(cell.value);
+                    if (tplCellText.indexOf('\n') >= 0) {
+                        // Explicit line breaks (e.g. the 2-line MANUF. MODEL:
+                        // make over model) render as separate lines in the cell.
+                        var tplCellLines = tplCellText.split(/\r?\n/);
+                        for (var tplLi = 0; tplLi < tplCellLines.length; tplLi++) {
+                            if (tplLi) el.appendChild(document.createElement('br'));
+                            el.appendChild(document.createTextNode(tplCellLines[tplLi]));
+                        }
+                    } else {
+                        el.textContent = tplCellText;
+                    }
                 }
                 tr.appendChild(el);
             }
