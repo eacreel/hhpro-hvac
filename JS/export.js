@@ -1395,7 +1395,22 @@ WHAT'S IN THE GRID
             if (r === 0 && grid.titleRowCount) {
                 heightAttr = ' ht="30" customHeight="1"';
             } else if (r < grid.numHeaderRows) {
-                heightAttr = ' ht="24" customHeight="1"';
+                // Grow the header row to fit multi-line labels ("FAN\nCFM").
+                // Only single-row (rowSpan 1) cells force this row taller;
+                // rowspan labels draw their height from the rows they span.
+                // Columns are sized to the longest line, so labels break only
+                // at "\n" (Excel won't wrap them further).
+                var hLines = 1, hRow = grid.rows[r];
+                if (hRow) {
+                    for (var hc = 0; hc < hRow.length; hc++) {
+                        var hCell = hRow[hc];
+                        if (!hCell || hCell.covered || (hCell.rowSpan || 1) > 1) continue;
+                        var hVal = (hCell.value == null) ? '' : String(hCell.value);
+                        var hN = hVal.split(/\r?\n/).length;
+                        if (hN > hLines) hLines = hN;
+                    }
+                }
+                heightAttr = ' ht="' + Math.max(24, hLines * 13 + 6) + '" customHeight="1"';
             }
             if (!cellXmls.length) {
                 // Blank row (spacer between data and notes) - leave it truly empty
@@ -2770,10 +2785,11 @@ WHAT'S IN THE GRID
         }
         var natWidth = natColXs[colCount];
 
-        // Natural row edges
+        // Natural row edges (width-aware: header + notes rows grow to fit
+        // multi-line labels / wrapped notes)
         var natRowYs = [0];
         for (var r = 0; r < rows.length; r++) {
-            natRowYs.push(natRowYs[r] + pdfRowHeightFor(grid, r));
+            natRowYs.push(natRowYs[r] + pdfRowHeightFor(grid, r, natColXs, colCount));
         }
         var natHeight = natRowYs[rows.length];
 
@@ -2858,11 +2874,11 @@ WHAT'S IN THE GRID
                 var rightAlign = !!cell2.watermark;
                 var cellW = bx2 - bx1;
                 var midY = (by1 + by2) / 2;
-                // Honour explicit "\n" breaks (2-line MANUF. MODEL): draw each
-                // line stacked and vertically centered as a block. PDF Y is the
-                // text baseline, so each line sits ~30% of the font below its
-                // own center line.
-                var vlines = value.split(/\r?\n/);
+                // Physical lines: explicit "\n" breaks (2-line MANUF. MODEL)
+                // plus word-wrapping for bold headers + notes so long text
+                // stays inside the cell. Drawn stacked, vertically centered.
+                var doWrap = (cell2.bold || cell2.notesRow) && !cell2.title && !cell2.watermark;
+                var vlines = pdfPhysicalLines(value, doWrap, cellW, size);
                 var lineH = size * 1.2;
                 for (var li = 0; li < vlines.length; li++) {
                     var ln = vlines[li];
@@ -2891,28 +2907,35 @@ WHAT'S IN THE GRID
         return parts.join('\n');
     }
 
-    function pdfRowHeightFor(grid, r) {
+    function pdfRowHeightFor(grid, r, natColXs, colCount) {
         var titleRows = grid.titleRowCount || 0;
         var headerRows = grid.numHeaderRows || 0;
         if (r < titleRows) return PDF_TITLE_H_PT;
-        if (r < headerRows) return PDF_HEADER_H_PT;
-        // Data/notes rows grow to fit cells with explicit "\n" line breaks
-        // (e.g. the 2-line MANUF. MODEL). Single-line rows keep the default.
-        var maxLines = 1;
+        var isHeader = r < headerRows;
+        var base = isHeader ? PDF_HEADER_H_PT : PDF_DATA_H_PT;
         var row = grid.rows[r];
-        if (row) {
-            for (var c = 0; c < row.length; c++) {
-                var cell = row[c];
-                if (!cell || cell.covered || (cell.rowSpan || 1) > 1) continue;
-                var v = (cell.value == null) ? '' : String(cell.value);
-                var n = v.split(/\r?\n/).length;
-                if (n > maxLines) maxLines = n;
-            }
+        if (!row || !natColXs) return base;
+        // Grow the row to its tallest single-row cell: explicit "\n" breaks
+        // (2-line MANUF. MODEL, multi-line headers) plus word-wrapping for
+        // bold headers + notes. rowspan cells draw height from the rows they
+        // span, so they don't force a single row taller.
+        var maxLines = 1, lineFont = isHeader ? PDF_TXT_HEADER : PDF_TXT_BODY;
+        for (var c = 0; c < colCount; c++) {
+            var cell = row[c];
+            if (!cell || cell.covered || (cell.rowSpan || 1) > 1) continue;
+            var v = (cell.value == null) ? '' : String(cell.value);
+            if (!v) continue;
+            var span = cell.colSpan || 1;
+            var cw = natColXs[Math.min(c + span, colCount)] - natColXs[c];
+            var fp = cell.title ? PDF_TXT_TITLE
+                   : cell.notesRow ? PDF_TXT_NOTES
+                   : isHeader ? PDF_TXT_HEADER : PDF_TXT_BODY;
+            var doWrap = (cell.bold || cell.notesRow) && !cell.title && !cell.watermark;
+            var n = pdfPhysicalLines(v, doWrap, cw, fp).length;
+            if (n > maxLines) { maxLines = n; lineFont = fp; }
         }
-        if (maxLines > 1) {
-            return Math.max(PDF_DATA_H_PT, maxLines * PDF_TXT_BODY * 1.35 + 4);
-        }
-        return PDF_DATA_H_PT;
+        if (maxLines > 1) return Math.max(base, maxLines * lineFont * 1.3 + 5);
+        return base;
     }
 
     function pdfFontSizeForCell(cell, grid, r) {
@@ -2964,5 +2987,39 @@ WHAT'S IN THE GRID
     // a single-line cell value within a few points.
     function approxPdfTextWidth(text, size) {
         return text.length * size * 0.5;
+    }
+
+    // Greedy word-wrap to a width (pt) at a given font size, mirroring the
+    // DXF wrapTextToWidth but using the PDF 0.5em-per-char metric. Always
+    // returns at least one line. Scale-invariant (width and size scale
+    // together), so it yields the same break points at any zoom.
+    function pdfWrapWords(text, widthPt, size) {
+        var avail = Math.max(1, widthPt - 8);   // 4pt inner padding each side
+        var perLine = Math.max(1, Math.floor(avail / (size * 0.5)));
+        var words = String(text).split(/\s+/).filter(Boolean);
+        var lines = [], cur = '';
+        words.forEach(function (w) {
+            while (w.length > perLine) {
+                if (cur) { lines.push(cur); cur = ''; }
+                lines.push(w.slice(0, perLine));
+                w = w.slice(perLine);
+            }
+            if (!cur) cur = w;
+            else if ((cur.length + 1 + w.length) <= perLine) cur += ' ' + w;
+            else { lines.push(cur); cur = w; }
+        });
+        if (cur) lines.push(cur);
+        if (!lines.length) lines.push('');
+        return lines;
+    }
+
+    // Physical lines for a PDF cell: honour explicit "\n" breaks, then -
+    // for wrapping cells (bold headers + notes) - word-wrap each to width.
+    function pdfPhysicalLines(value, doWrap, widthPt, size) {
+        var hard = String(value).split(/\r?\n/);
+        if (!doWrap) return hard;
+        var out = [];
+        hard.forEach(function (h) { out = out.concat(pdfWrapWords(h, widthPt, size)); });
+        return out.length ? out : [''];
     }
 })();

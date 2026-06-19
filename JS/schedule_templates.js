@@ -591,16 +591,19 @@
         return {
             orientation: 'rows',
             title: 'SPLIT SYSTEM HEAT PUMP UNIT SCHEDULE',
+            // Header labels carry the SABER.xlsx's exact line breaks ("\n");
+            // every renderer honours them (screen <br>, xlsx wrapText, DXF \P,
+            // PDF stacked) and the rows auto-grow to fit.
             header: [
                 // Tier A - super groups over the two unit halves
                 { r: 0, c: 0, colspan: 14, label: 'AIR HANDLING UNIT DATA' },
                 { r: 0, c: 14, colspan: 7, label: 'CONDENSING UNIT' },
-                { r: 0, c: 21, rowspan: 3, label: 'WEIGHT (LBS) AH/HP' },
+                { r: 0, c: 21, rowspan: 3, label: 'WEIGHT (LBS)\nAH/HP' },
                 { r: 0, c: 22, rowspan: 3, label: 'NOTES' },
                 // Tier B - sub groups
-                { r: 1, c: 0, rowspan: 2, label: 'UNIT TAG' },
-                { r: 1, c: 1, rowspan: 2, label: 'AREA SERVED' },
-                { r: 1, c: 2, rowspan: 2, label: 'MANUF. MODEL' },
+                { r: 1, c: 0, rowspan: 2, label: 'UNIT\nTAG' },
+                { r: 1, c: 1, rowspan: 2, label: 'AREA\nSERVED' },
+                { r: 1, c: 2, rowspan: 2, label: 'MANUF.\nMODEL' },
                 { r: 1, c: 3, colspan: 4, label: 'FAN DATA' },
                 { r: 1, c: 7, colspan: 2, label: 'COOLING' },
                 { r: 1, c: 9, label: 'HEAT' },
@@ -609,24 +612,24 @@
                 { r: 1, c: 14, colspan: 4, label: 'GENERAL DATA' },
                 { r: 1, c: 18, colspan: 3, label: 'ELECTRICAL DATA' },
                 // Tier C - leaf labels
-                { r: 2, c: 3, label: 'FAN CFM' },
-                { r: 2, c: 4, label: 'ESP (WG)' },
-                { r: 2, c: 5, label: 'MOTOR HP' },
-                { r: 2, c: 6, label: 'OA (CFM)' },
-                { r: 2, c: 7, label: 'TOTAL (MBH)' },
-                { r: 2, c: 8, label: 'SENS. (MBH)' },
-                { r: 2, c: 9, label: 'TOTAL (MBH)' },
-                { r: 2, c: 10, label: 'HEAT (KW)' },
-                { r: 2, c: 11, label: 'VOLTAGE (V/PH)' },
-                { r: 2, c: 12, label: 'MCA (A)' },
-                { r: 2, c: 13, label: 'MOCP (A)' },
-                { r: 2, c: 14, label: 'UNIT TAG' },
-                { r: 2, c: 15, label: 'MANUF. MODEL' },
+                { r: 2, c: 3, label: 'FAN\nCFM' },
+                { r: 2, c: 4, label: 'ESP\n(WG)' },
+                { r: 2, c: 5, label: 'MOTOR\nHP' },
+                { r: 2, c: 6, label: 'OA\n(CFM)' },
+                { r: 2, c: 7, label: 'TOTAL\n(MBH)' },
+                { r: 2, c: 8, label: 'SENS.\n(MBH)' },
+                { r: 2, c: 9, label: 'TOTAL\n(MBH)' },
+                { r: 2, c: 10, label: 'HEAT\n(KW)' },
+                { r: 2, c: 11, label: 'VOLTAGE\n(V/PH)' },
+                { r: 2, c: 12, label: 'MCA\n(A)' },
+                { r: 2, c: 13, label: 'MOCP\n(A)' },
+                { r: 2, c: 14, label: 'UNIT\nTAG' },
+                { r: 2, c: 15, label: 'MANUF.\nMODEL' },
                 { r: 2, c: 16, label: 'TONNAGE' },
                 { r: 2, c: 17, label: 'EFFICIENCY' },
-                { r: 2, c: 18, label: 'VOLTAGE (V/PH)' },
-                { r: 2, c: 19, label: 'MCA (A)' },
-                { r: 2, c: 20, label: 'MOCP (A)' }
+                { r: 2, c: 18, label: 'VOLTAGE\n(V/PH)' },
+                { r: 2, c: 19, label: 'MCA\n(A)' },
+                { r: 2, c: 20, label: 'MOCP\n(A)' }
             ],
             columns: [
                 // --- Air handling unit --- (UNIT TAG + AREA SERVED render as
@@ -659,16 +662,16 @@
                 { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14'; } }
             ],
             notesTitle: 'NOTES:',
+            // One row per note (renderers word-wrap long notes within the row),
+            // matching the SABER.xlsx. Note 14 is the only one the Excel splits
+            // across two rows, so it is two entries here.
             notes: [
-                '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR',
-                '    TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
-                '2. REFRIGERANT PIPING TO BE SIZED PER TOTAL INSTALLATION EQUIVALENT LENGTH. LONG-LINE APPLICATION TO BE PROVIDED WHENEVER',
-                "    MANUFACTURER RECOMMENDED LENGTHS ARE EXCEEDED, INCLUDING LIQUID LINE SOLENOID VALVES, ACCUMULATOR, ETC. MAXIMUM T.E.L. IS 100'",
+                '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
+                "2. REFRIGERANT PIPING TO BE SIZED PER TOTAL INSTALLATION EQUIVALENT LENGTH. LONG-LINE APPLICATION TO BE PROVIDED WHENEVER MANUFACTURER RECOMMENDED LENGTHS ARE EXCEEDED, INCLUDING LIQUID LINE SOLENOID VALVES, ACCUMULATOR, ETC. MAXIMUM T.E.L. IS 100'",
                 '3. PROVIDE SINGLE POINT ELECTRICAL CONNECTION FOR AIR HANDLING UNIT.',
                 '4. PROVIDE NEW FILTER IN EACH UNIT AT TURNOVER TO OWNER.',
                 '5. OUTDOOR UNITS SHALL HAVE MINIMUM 14.0 SEER2 RATING',
-                '6. PROVIDE ON/AUTO FAN SWITCH AND HEAT-OF-COOL THERMOSTAT WITH SUBBASE FOR EACH UNIT. PROVIDE WITH OUTSIDE AIR TEMPERATURE',
-                '    SENSOR TO LOCKOUT ELECTRIC HEAT WHEN OUTSIDE AIR TEMPERATURE IS ABOVE 40 DEGREES.',
+                '6. PROVIDE ON/AUTO FAN SWITCH AND HEAT-OF-COOL THERMOSTAT WITH SUBBASE FOR EACH UNIT. PROVIDE WITH OUTSIDE AIR TEMPERATURE SENSOR TO LOCKOUT ELECTRIC HEAT WHEN OUTSIDE AIR TEMPERATURE IS ABOVE 40 DEGREES.',
                 '7. PROVIDE HEAT PUMP KIT WITH AIR HANDLER (IF REQUIRED).',
                 '8. PROVIDE A 24V MOTORIZED DAMPER ON FRESH AIR RUN-OUT TO UNIT. DAMPER IS TO OPEN WHEN FAN IS ENERGIZED.',
                 '9. ALL ACCESSORIES AND OPTIONS ARE TO BE FACTORY INSTALLED.',
@@ -676,9 +679,8 @@
                 '11. AHU TO USE UPFLOW APPLICATION.',
                 '12. AHU TO USE HORIZONTAL APPLICATION.',
                 '13. DRAIN CONDENSATE TO HUB DRAIN.',
-                '14. CATALOG NUMBERS AND MANUFACTURERS ARE TO INDICATE TYPE AND QUALITY OF UNIT DESIRED. SUBMIT CUTSHEETS OF THESE AND ALTERNATE',
-                '      MANUFACTURERS FOR ARCHITECT AND OWNER APPROVAL PRIOR TO PURCHASE OF ANY UNITS. INFORMATION ON ALTERNATE UNITS PROPOSED BY THE',
-                '      CONTRACTOR SHALL INCLUDE THE ADD/DEDUCT ASSOCIATED WITH ACCEPTANCE OF THAT UNIT (OR THE ALTERNATE PACKAGE AS A WHOLE).'
+                '14. CATALOG NUMBERS AND MANUFACTURERS ARE TO INDICATE TYPE AND QUALITY OF UNIT DESIRED. SUBMIT CUTSHEETS OF THESE AND ALTERNATE MANUFACTURERS FOR ARCHITECT AND OWNER APPROVAL PRIOR TO PURCHASE OF ANY UNITS. INFORMATION ON ALTERNATE UNITS PROPOSED BY THE',
+                'CONTRACTOR SHALL INCLUDE THE ADD/DEDUCT ASSOCIATED WITH ACCEPTANCE OF THAT UNIT (OR THE ALTERNATE PACKAGE AS A WHOLE).'
             ],
             manufacturers: null
         };
@@ -688,30 +690,31 @@
         return {
             orientation: 'rows',
             title: 'PACKAGED DX COOLING/GAS HEATING ROOF TOP UNIT SCHEDULE',
+            // Header labels carry the SABER.xlsx's exact line breaks ("\n").
             header: [
-                { r: 0, c: 0, rowspan: 2, label: 'UNIT TAG' },
-                { r: 0, c: 1, rowspan: 2, label: 'AREA SERVED' },
+                { r: 0, c: 0, rowspan: 2, label: 'UNIT\nTAG' },
+                { r: 0, c: 1, rowspan: 2, label: 'AREA\nSERVED' },
                 { r: 0, c: 2, colspan: 5, label: 'SUPPLY - FAN DATA' },
                 { r: 0, c: 7, colspan: 2, label: 'COOLING CAPACITY' },
                 { r: 0, c: 9, colspan: 2, label: 'HEATING CAPACITY' },
                 { r: 0, c: 11, colspan: 3, label: 'ELECTRICAL DATA' },
-                { r: 0, c: 14, rowspan: 2, label: 'MANUF. MODEL' },
+                { r: 0, c: 14, rowspan: 2, label: 'MANUF.\nMODEL' },
                 { r: 0, c: 15, rowspan: 2, label: 'TONNAGE' },
                 { r: 0, c: 16, rowspan: 2, label: 'EFFICIENCY' },
-                { r: 0, c: 17, rowspan: 2, label: 'UNIT WEIGHT (LBS)' },
+                { r: 0, c: 17, rowspan: 2, label: 'UNIT\nWEIGHT\n(LBS)' },
                 { r: 0, c: 18, rowspan: 2, label: 'NOTES' },
-                { r: 1, c: 2, label: 'TOTAL CFM' },
-                { r: 1, c: 3, label: 'OA (CFM)' },
-                { r: 1, c: 4, label: 'MIN. EXT. S.P. (IN. WG)' },
-                { r: 1, c: 5, label: 'MOTOR HP' },
-                { r: 1, c: 6, label: 'FAN RPM' },
-                { r: 1, c: 7, label: 'TOTAL (MBH)' },
-                { r: 1, c: 8, label: 'SENS. (MBH)' },
-                { r: 1, c: 9, label: 'INPUT (MBH)' },
-                { r: 1, c: 10, label: 'OUTPUT (MBH)' },
+                { r: 1, c: 2, label: 'TOTAL\nCFM' },
+                { r: 1, c: 3, label: 'OA\n(CFM)' },
+                { r: 1, c: 4, label: 'MIN. EXT.\nS.P. (IN. WG)' },
+                { r: 1, c: 5, label: 'MOTOR\nHP' },
+                { r: 1, c: 6, label: 'FAN\nRPM' },
+                { r: 1, c: 7, label: 'TOTAL\n(MBH)' },
+                { r: 1, c: 8, label: 'SENS.\n(MBH)' },
+                { r: 1, c: 9, label: 'INPUT\n(MBH)' },
+                { r: 1, c: 10, label: 'OUTPUT\n(MBH)' },
                 { r: 1, c: 11, label: 'VOLTAGE/PH' },
-                { r: 1, c: 12, label: 'MCA (A)' },
-                { r: 1, c: 13, label: 'MOCP (A)' }
+                { r: 1, c: 12, label: 'MCA\n(A)' },
+                { r: 1, c: 13, label: 'MOCP\n(A)' }
             ],
             columns: [
                 // UNIT TAG + AREA SERVED render as editable text boxes,
@@ -737,20 +740,18 @@
                 { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8'; } }
             ],
             notesTitle: 'NOTES:',
+            // One row per note (renderers word-wrap within the row). Note 8 is
+            // the only one the Excel splits across two rows -> two entries.
             notes: [
-                '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR',
-                '    TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
+                '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
                 '2. PROVIDE NEW FILTER IN EACH UNIT AT TURNOVER TO OWNER.',
-                '3. PROVIDE MANUFACTURER\'S 7-DAY PROGRAMMABLE AUTOMATIC CHANGEOVER HEAT/COOL THERMOSTAT. PROGRAM FAN SETTING TO BE IN "ON"',
-                '    POSITION DURING PERIODS OF OCCUPATION.',
+                '3. PROVIDE MANUFACTURER\'S 7-DAY PROGRAMMABLE AUTOMATIC CHANGEOVER HEAT/COOL THERMOSTAT. PROGRAM FAN SETTING TO BE IN "ON" POSITION DURING PERIODS OF OCCUPATION.',
                 '4. PROVIDE FACTORY ROOF CURB AND AIR SIDE ECONOMIZER SECTION WITH BAROMETRIC RELIEF DAMPER FOR EACH UNIT.',
                 '5. ALL ACCESSORIES AND OPTIONS ARE TO BE FACTORY INSTALLED.',
                 '6. PROVIDE SINGLE POINT ELECTRICAL CONNECTION.',
                 '7. DUCT SMOKE DETECTOR TO BE PROVIDED BY E.C. AND INSTALLED BY M.C.',
-                '8. UNLESS NOTED OTHERWISE, PRODUCTS SPECIFIED ON THESE PLANS ARE "BASIS OF DESIGN". SPECIFIC MANUFACTURER\'S PRODUCT IS NAMED,',
-                '    INCLUDING MAKE OR MODEL NUMBER OR OTHER DESIGNATION, IS TO ESTABLISH THE SIGNIFICANT QUALITIES RELATED TO TYPE, FUNCTION,',
-                '    DIMENSION, IN-SERVICE PERFORMANCE, PHYSICAL PROPERTIES, APPEARANCE, AND OTHER CHARACTERISTICS FOR PURPOSES OF EVALUATING',
-                '    COMPARABLE PRODUCTS OF OTHER MANUFACTURERS.'
+                '8. UNLESS NOTED OTHERWISE, PRODUCTS SPECIFIED ON THESE PLANS ARE "BASIS OF DESIGN". SPECIFIC MANUFACTURER\'S PRODUCT IS NAMED, INCLUDING MAKE OR MODEL NUMBER OR OTHER DESIGNATION, IS TO ESTABLISH THE SIGNIFICANT QUALITIES RELATED TO TYPE, FUNCTION,',
+                'DIMENSION, IN-SERVICE PERFORMANCE, PHYSICAL PROPERTIES, APPEARANCE, AND OTHER CHARACTERISTICS FOR PURPOSES OF EVALUATING COMPARABLE PRODUCTS OF OTHER MANUFACTURERS.'
             ],
             manufacturers: null
         };
