@@ -87,7 +87,10 @@
                 var hasRefrig = hasRefrigerantSystems(groups);
                 if (activeTab === 'refrigerant' && !hasRefrig) {
                     activeTab = productKeys[0];
+                } else if (activeTab === 'split_systems' && !showSplitSystemsTab(groups)) {
+                    activeTab = productKeys[0];
                 } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
+                           activeTab !== 'split_systems' &&
                            productKeys.indexOf(activeTab) < 0) {
                     activeTab = productKeys[0];
                 }
@@ -430,6 +433,18 @@
             ));
         });
 
+        // "Split Systems" tab: a Saber-only combined schedule that merges
+        // the multi-position-split and mini-split units into ONE table using
+        // the firm's shared split-system layout. Only appears when the
+        // project has BOTH product types AND the active engineer has a
+        // template for both (Saber). Sits right after the product tabs.
+        if (showSplitSystemsTab(groups)) {
+            var ssCount = groups['multi_position_splits'].length +
+                          groups['mini_splits'].length;
+            nav.appendChild(buildTabButton('split_systems',
+                'SPLIT SYSTEMS (' + ssCount + ')'));
+        }
+
         // Refrigerant tab only appears when the project has at least
         // one item from a product that uses refrigerant calculations
         // (mini splits or multi position splits today). Sits between
@@ -469,6 +484,15 @@
         return false;
     }
 
+    // The combined "Split Systems" tab shows only when the project has BOTH
+    // multi-position-split and mini-split items AND the active engineer has a
+    // template for both (today only Saber - it shares one layout for the two).
+    function showSplitSystemsTab(groups) {
+        return !!(groups['multi_position_splits'] && groups['multi_position_splits'].length &&
+                  groups['mini_splits'] && groups['mini_splits'].length &&
+                  activeTemplate('multi_position_splits') && activeTemplate('mini_splits'));
+    }
+
     function buildTabButton(tabKey, label) {
         var btn = document.createElement('button');
         btn.type = 'button';
@@ -506,6 +530,18 @@
         }
         if (activeTab === 'refrigerant') {
             renderRefrigerantTab(container, activeState);
+            syncHeaderWidthToSchedule();
+            return;
+        }
+        if (activeTab === 'split_systems') {
+            // Guard: the tab may have been active when the user removed one of
+            // the two product types - fall back to the first product tab.
+            if (!showSplitSystemsTab(groups)) {
+                activeTab = Object.keys(groups)[0] || 'files';
+                renderActiveTab(container, groups, activeState);
+                return;
+            }
+            renderSplitSystemsTab(container, activeState);
             syncHeaderWidthToSchedule();
             return;
         }
@@ -1779,6 +1815,103 @@
     HHpro.Views.project_view.openRefrigerantReport = openRefrigerantReport;
 
     // =================================================================
+    // Split Systems tab (Saber) - combined multi-position + mini split
+    // -----------------------------------------------------------------
+    // A read-only merged view: the firm's one split-system layout with the
+    // project's multi-position-split rows followed by its mini-split rows.
+    // Editing (tags, conditions, capacity) happens on the individual product
+    // tabs; this tab is for reviewing + exporting the combined schedule.
+    // =================================================================
+    function renderSplitSystemsTab(container, activeState) {
+        var items = activeState.items || [];
+        var mpsItems = items.filter(function (it) { return it.productKey === 'multi_position_splits'; });
+        var miniItems = items.filter(function (it) { return it.productKey === 'mini_splits'; });
+
+        var loading = document.createElement('div');
+        loading.className = 'project-loading';
+        loading.textContent = 'Loading...';
+        container.appendChild(loading);
+
+        Promise.all([
+            HHpro.Data.loadProduct('multi_position_splits'),
+            HHpro.Data.loadProduct('mini_splits')
+        ]).then(function (datas) {
+            // Multi position split rows can use capacity look-ups; ensure the
+            // capacity tables are loaded first (no-op for mini splits).
+            var ready = (HHpro.Capacity && HHpro.Capacity.ensureFor)
+                ? HHpro.Capacity.ensureFor('multi_position_splits') : Promise.resolve();
+            return ready.then(function () {
+                container.innerHTML = '';
+                container.appendChild(buildSplitSystemsTabBody(
+                    mpsItems, datas[0], miniItems, datas[1], activeState.name || ''));
+            });
+        }).catch(function (err) {
+            container.innerHTML = '';
+            var errEl = document.createElement('div');
+            errEl.className = 'product-message error';
+            errEl.textContent = 'Could not load product data: ' +
+                (err && err.message ? err.message : String(err));
+            container.appendChild(errEl);
+        });
+    }
+
+    function buildSplitSystemsTabBody(mpsItems, mpsData, miniItems, miniData, projectName) {
+        var wrap = document.createElement('div');
+        wrap.className = 'project-product-tab';
+
+        // Order: multi position splits, then mini splits.
+        var groups = [
+            { productKey: 'multi_position_splits', items: mpsItems, data: mpsData },
+            { productKey: 'mini_splits', items: miniItems, data: miniData }
+        ];
+
+        wrap.appendChild(buildSplitSystemsToolbar(groups, projectName));
+
+        var inner = document.createElement('div');
+        inner.className = 'project-product-inner';
+        wrap.appendChild(inner);
+
+        var grid = HHpro.Export.buildCombinedSplitSystemsGrid(groups);
+        if (!grid || !grid.rows.length) {
+            var msg = document.createElement('div');
+            msg.className = 'zero-results';
+            msg.textContent = 'No schedule data found for the split systems in this project.';
+            inner.appendChild(msg);
+            return wrap;
+        }
+        var schedWrap = document.createElement('div');
+        schedWrap.className = 'schedule-wrap project-schedule-wrap';
+        // Read-only (staticRender) - the merged grid mixes two products' cells,
+        // and edits belong on the individual product tabs.
+        schedWrap.appendChild(renderTemplateGridToDom(grid, null, null, true));
+        inner.appendChild(schedWrap);
+        return wrap;
+    }
+
+    function buildSplitSystemsToolbar(groups, projectName) {
+        var bar = document.createElement('div');
+        bar.className = 'project-toolbar';
+
+        function exportBtn(label, fmt) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'projects-btn projects-btn-secondary';
+            btn.textContent = label;
+            btn.addEventListener('click', function () {
+                if (HHpro.Export && typeof HHpro.Export.toSplitSystems === 'function') {
+                    HHpro.Export.toSplitSystems(fmt, groups, projectName);
+                    if (HHpro.FX) HHpro.FX.flashSuccess(btn);
+                }
+            });
+            return btn;
+        }
+        bar.appendChild(exportBtn('Excel', 'xlsx'));
+        bar.appendChild(exportBtn('CAD', 'dxf'));
+        bar.appendChild(exportBtn('PDF', 'pdf'));
+        return bar;
+    }
+
+    // =================================================================
     // Product tab body: toolbar + schedule
     // =================================================================
 
@@ -2032,7 +2165,10 @@
     // shape used by the xlsx/dxf/pdf emitters so the screen matches the
     // downloads; cells flagged `editable` become in-place inputs whose
     // values persist on the item as templateFields.
-    function renderTemplateGridToDom(grid, productKey, data) {
+    // staticRender = render every cell as plain text (no dropdowns / inputs).
+    // Used by the read-only combined "Split Systems" tab, which mixes two
+    // products' cells under one grid; editing happens on the product tabs.
+    function renderTemplateGridToDom(grid, productKey, data, staticRender) {
         var table = document.createElement('table');
         table.className = 'schedule-table project-schedule-table template-schedule';
         var numHeaderRows = grid.numHeaderRows || 0;
@@ -2063,7 +2199,7 @@
                 if (cell.align === 'left') cls.push('tpl-left');
                 if (cls.length) el.className = cls.join(' ');
 
-                if (cell.kwSelect) {
+                if (!staticRender && cell.kwSelect) {
                     var kwCtl = buildTemplateKwControl(cell, productKey, data);
                     if (kwCtl) {
                         el.classList.add('kw-variant-cell');
@@ -2071,7 +2207,7 @@
                     } else {
                         el.textContent = (cell.value == null) ? '' : String(cell.value);
                     }
-                } else if (cell.capacityField) {
+                } else if (!staticRender && cell.capacityField) {
                     var capCtl = buildTemplateCapacityControl(cell, productKey, data);
                     if (capCtl) {
                         el.classList.add('kw-variant-cell');
@@ -2079,7 +2215,7 @@
                     } else {
                         el.textContent = (cell.value == null) ? '' : String(cell.value);
                     }
-                } else if (cell.editable) {
+                } else if (!staticRender && cell.editable) {
                     el.appendChild(buildTemplateFieldInput(cell));
                 } else {
                     var tplCellText = (cell.value == null) ? '' : String(cell.value);

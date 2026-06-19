@@ -578,14 +578,87 @@
     // Saber templates (password Saber1)
     // Mapped from DATA/ENGINEER SCHEDULES/SABER.xlsx, using the user's
     // matching Hoffman Cart exports as a value-by-value Rosetta Stone.
-    // Both layouts are orientation 'rows'. Note refs are the firm's own
-    // plain comma lists ("1, 2, 3 ..."), not circled digits, so there are
-    // no DXF/PDF transliteration concerns. Fields with no native data
-    // source (AHU ESP, OUTSIDE AIR, FAN RPM) are inline-editable; AREA
-    // SERVED derives from the project schedule's Serves input. The MPS
-    // condensing-unit TONNAGE has no scheduleData letter - it comes from
-    // the SIZE filter value via g.filter('SIZE') (like Allied).
+    // Products: multi_position_splits, mini_splits, gas_packs (all
+    // orientation 'rows'). Note refs are the firm's own plain comma lists
+    // ("1, 2, 3 ..."), not circled digits, so there are no DXF/PDF
+    // transliteration concerns. Fields with no native data source (ESP,
+    // OUTSIDE AIR, FAN RPM, ...) are inline-editable; AREA SERVED + UNIT TAG
+    // pre-fill from the item but are editable.
+    //
+    // Mini splits + multi position splits use ONE identical layout (title
+    // "SPLIT SYSTEM HEAT PUMP UNIT SCHEDULE"). saberSplitHeader() and
+    // saberSplitNotes() are shared by both product templates so they stay
+    // byte-identical - and so the combined "Split Systems" view (built in
+    // export.js by merging both products' rows under this header) lines up.
+    // Only the per-product column derives differ, because the two products'
+    // scheduleData layouts differ (mini-split values live in different
+    // letters; mini-split indoor is powered from the outdoor single-point
+    // feed, so its MCA/MOCP read "NA").
     // =================================================================
+
+    // Shared header for the Saber split-system layout (23 leaf columns,
+    // 0-22). Labels carry the SABER.xlsx line breaks ("\n").
+    function saberSplitHeader() {
+        return [
+            // Tier A - super groups over the two unit halves
+            { r: 0, c: 0, colspan: 14, label: 'AIR HANDLING UNIT DATA' },
+            { r: 0, c: 14, colspan: 7, label: 'CONDENSING UNIT' },
+            { r: 0, c: 21, rowspan: 3, label: 'WEIGHT (LBS)\nAH/HP' },
+            { r: 0, c: 22, rowspan: 3, label: 'NOTES' },
+            // Tier B - sub groups
+            { r: 1, c: 0, rowspan: 2, label: 'UNIT\nTAG' },
+            { r: 1, c: 1, rowspan: 2, label: 'AREA\nSERVED' },
+            { r: 1, c: 2, rowspan: 2, label: 'MANUF.\nMODEL' },
+            { r: 1, c: 3, colspan: 4, label: 'FAN DATA' },
+            { r: 1, c: 7, colspan: 2, label: 'COOLING' },
+            { r: 1, c: 9, label: 'HEAT' },
+            { r: 1, c: 10, label: 'AUX.' },
+            { r: 1, c: 11, colspan: 3, label: 'ELECTRICAL DATA' },
+            { r: 1, c: 14, colspan: 4, label: 'GENERAL DATA' },
+            { r: 1, c: 18, colspan: 3, label: 'ELECTRICAL DATA' },
+            // Tier C - leaf labels
+            { r: 2, c: 3, label: 'FAN\nCFM' },
+            { r: 2, c: 4, label: 'ESP\n(WG)' },
+            { r: 2, c: 5, label: 'MOTOR\nHP' },
+            { r: 2, c: 6, label: 'OA\n(CFM)' },
+            { r: 2, c: 7, label: 'TOTAL\n(MBH)' },
+            { r: 2, c: 8, label: 'SENS.\n(MBH)' },
+            { r: 2, c: 9, label: 'TOTAL\n(MBH)' },
+            { r: 2, c: 10, label: 'HEAT\n(KW)' },
+            { r: 2, c: 11, label: 'VOLTAGE\n(V/PH)' },
+            { r: 2, c: 12, label: 'MCA\n(A)' },
+            { r: 2, c: 13, label: 'MOCP\n(A)' },
+            { r: 2, c: 14, label: 'UNIT\nTAG' },
+            { r: 2, c: 15, label: 'MANUF.\nMODEL' },
+            { r: 2, c: 16, label: 'TONNAGE' },
+            { r: 2, c: 17, label: 'EFFICIENCY' },
+            { r: 2, c: 18, label: 'VOLTAGE\n(V/PH)' },
+            { r: 2, c: 19, label: 'MCA\n(A)' },
+            { r: 2, c: 20, label: 'MOCP\n(A)' }
+        ];
+    }
+
+    // Shared notes for the Saber split-system layout. One row per note;
+    // note 14 is the only one the Excel splits across two rows (2 entries).
+    function saberSplitNotes() {
+        return [
+            '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
+            "2. REFRIGERANT PIPING TO BE SIZED PER TOTAL INSTALLATION EQUIVALENT LENGTH. LONG-LINE APPLICATION TO BE PROVIDED WHENEVER MANUFACTURER RECOMMENDED LENGTHS ARE EXCEEDED, INCLUDING LIQUID LINE SOLENOID VALVES, ACCUMULATOR, ETC. MAXIMUM T.E.L. IS 100'",
+            '3. PROVIDE SINGLE POINT ELECTRICAL CONNECTION FOR AIR HANDLING UNIT.',
+            '4. PROVIDE NEW FILTER IN EACH UNIT AT TURNOVER TO OWNER.',
+            '5. OUTDOOR UNITS SHALL HAVE MINIMUM 14.0 SEER2 RATING',
+            '6. PROVIDE ON/AUTO FAN SWITCH AND HEAT-OF-COOL THERMOSTAT WITH SUBBASE FOR EACH UNIT. PROVIDE WITH OUTSIDE AIR TEMPERATURE SENSOR TO LOCKOUT ELECTRIC HEAT WHEN OUTSIDE AIR TEMPERATURE IS ABOVE 40 DEGREES.',
+            '7. PROVIDE HEAT PUMP KIT WITH AIR HANDLER (IF REQUIRED).',
+            '8. PROVIDE A 24V MOTORIZED DAMPER ON FRESH AIR RUN-OUT TO UNIT. DAMPER IS TO OPEN WHEN FAN IS ENERGIZED.',
+            '9. ALL ACCESSORIES AND OPTIONS ARE TO BE FACTORY INSTALLED.',
+            '10. SUPPORT AHU ON REINFORCED SHEET METAL R.A. PLENUM.',
+            '11. AHU TO USE UPFLOW APPLICATION.',
+            '12. AHU TO USE HORIZONTAL APPLICATION.',
+            '13. DRAIN CONDENSATE TO HUB DRAIN.',
+            '14. CATALOG NUMBERS AND MANUFACTURERS ARE TO INDICATE TYPE AND QUALITY OF UNIT DESIRED. SUBMIT CUTSHEETS OF THESE AND ALTERNATE MANUFACTURERS FOR ARCHITECT AND OWNER APPROVAL PRIOR TO PURCHASE OF ANY UNITS. INFORMATION ON ALTERNATE UNITS PROPOSED BY THE',
+            'CONTRACTOR SHALL INCLUDE THE ADD/DEDUCT ASSOCIATED WITH ACCEPTANCE OF THAT UNIT (OR THE ALTERNATE PACKAGE AS A WHOLE).'
+        ];
+    }
 
     function saberMultiSplit() {
         return {
@@ -594,46 +667,7 @@
             // Keep each note on a single line (the firm's sheets are wide):
             // widen the columns so the full-width notes box never word-wraps.
             notesSingleLine: true,
-            // Header labels carry the SABER.xlsx's exact line breaks ("\n");
-            // every renderer honours them (screen <br>, xlsx wrapText, DXF \P,
-            // PDF stacked) and the rows auto-grow to fit.
-            header: [
-                // Tier A - super groups over the two unit halves
-                { r: 0, c: 0, colspan: 14, label: 'AIR HANDLING UNIT DATA' },
-                { r: 0, c: 14, colspan: 7, label: 'CONDENSING UNIT' },
-                { r: 0, c: 21, rowspan: 3, label: 'WEIGHT (LBS)\nAH/HP' },
-                { r: 0, c: 22, rowspan: 3, label: 'NOTES' },
-                // Tier B - sub groups
-                { r: 1, c: 0, rowspan: 2, label: 'UNIT\nTAG' },
-                { r: 1, c: 1, rowspan: 2, label: 'AREA\nSERVED' },
-                { r: 1, c: 2, rowspan: 2, label: 'MANUF.\nMODEL' },
-                { r: 1, c: 3, colspan: 4, label: 'FAN DATA' },
-                { r: 1, c: 7, colspan: 2, label: 'COOLING' },
-                { r: 1, c: 9, label: 'HEAT' },
-                { r: 1, c: 10, label: 'AUX.' },
-                { r: 1, c: 11, colspan: 3, label: 'ELECTRICAL DATA' },
-                { r: 1, c: 14, colspan: 4, label: 'GENERAL DATA' },
-                { r: 1, c: 18, colspan: 3, label: 'ELECTRICAL DATA' },
-                // Tier C - leaf labels
-                { r: 2, c: 3, label: 'FAN\nCFM' },
-                { r: 2, c: 4, label: 'ESP\n(WG)' },
-                { r: 2, c: 5, label: 'MOTOR\nHP' },
-                { r: 2, c: 6, label: 'OA\n(CFM)' },
-                { r: 2, c: 7, label: 'TOTAL\n(MBH)' },
-                { r: 2, c: 8, label: 'SENS.\n(MBH)' },
-                { r: 2, c: 9, label: 'TOTAL\n(MBH)' },
-                { r: 2, c: 10, label: 'HEAT\n(KW)' },
-                { r: 2, c: 11, label: 'VOLTAGE\n(V/PH)' },
-                { r: 2, c: 12, label: 'MCA\n(A)' },
-                { r: 2, c: 13, label: 'MOCP\n(A)' },
-                { r: 2, c: 14, label: 'UNIT\nTAG' },
-                { r: 2, c: 15, label: 'MANUF.\nMODEL' },
-                { r: 2, c: 16, label: 'TONNAGE' },
-                { r: 2, c: 17, label: 'EFFICIENCY' },
-                { r: 2, c: 18, label: 'VOLTAGE\n(V/PH)' },
-                { r: 2, c: 19, label: 'MCA\n(A)' },
-                { r: 2, c: 20, label: 'MOCP\n(A)' }
-            ],
+            header: saberSplitHeader(),
             columns: [
                 // --- Air handling unit --- (UNIT TAG + AREA SERVED render as
                 // editable text boxes; they pre-fill from the item's tag /
@@ -665,26 +699,58 @@
                 { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14'; } }
             ],
             notesTitle: 'NOTES:',
-            // One row per note (renderers word-wrap long notes within the row),
-            // matching the SABER.xlsx. Note 14 is the only one the Excel splits
-            // across two rows, so it is two entries here.
-            notes: [
-                '1. COOLING CAPACITIES ARE RATED IN ACCORDANCE WITH ARI STANDARD 210/290 AT 95 DEGREE FARENHEIT AMBIENT OUTDOOR AIR TEMPERATURE, 80 DEGREE FARENHEIT DRY BULB, AND 67 DEGREE FAHRENHEIT WET BULB ENTERING AIR TEMPERATURE, AND NORMAL AIR QUANTITY LISTED.',
-                "2. REFRIGERANT PIPING TO BE SIZED PER TOTAL INSTALLATION EQUIVALENT LENGTH. LONG-LINE APPLICATION TO BE PROVIDED WHENEVER MANUFACTURER RECOMMENDED LENGTHS ARE EXCEEDED, INCLUDING LIQUID LINE SOLENOID VALVES, ACCUMULATOR, ETC. MAXIMUM T.E.L. IS 100'",
-                '3. PROVIDE SINGLE POINT ELECTRICAL CONNECTION FOR AIR HANDLING UNIT.',
-                '4. PROVIDE NEW FILTER IN EACH UNIT AT TURNOVER TO OWNER.',
-                '5. OUTDOOR UNITS SHALL HAVE MINIMUM 14.0 SEER2 RATING',
-                '6. PROVIDE ON/AUTO FAN SWITCH AND HEAT-OF-COOL THERMOSTAT WITH SUBBASE FOR EACH UNIT. PROVIDE WITH OUTSIDE AIR TEMPERATURE SENSOR TO LOCKOUT ELECTRIC HEAT WHEN OUTSIDE AIR TEMPERATURE IS ABOVE 40 DEGREES.',
-                '7. PROVIDE HEAT PUMP KIT WITH AIR HANDLER (IF REQUIRED).',
-                '8. PROVIDE A 24V MOTORIZED DAMPER ON FRESH AIR RUN-OUT TO UNIT. DAMPER IS TO OPEN WHEN FAN IS ENERGIZED.',
-                '9. ALL ACCESSORIES AND OPTIONS ARE TO BE FACTORY INSTALLED.',
-                '10. SUPPORT AHU ON REINFORCED SHEET METAL R.A. PLENUM.',
-                '11. AHU TO USE UPFLOW APPLICATION.',
-                '12. AHU TO USE HORIZONTAL APPLICATION.',
-                '13. DRAIN CONDENSATE TO HUB DRAIN.',
-                '14. CATALOG NUMBERS AND MANUFACTURERS ARE TO INDICATE TYPE AND QUALITY OF UNIT DESIRED. SUBMIT CUTSHEETS OF THESE AND ALTERNATE MANUFACTURERS FOR ARCHITECT AND OWNER APPROVAL PRIOR TO PURCHASE OF ANY UNITS. INFORMATION ON ALTERNATE UNITS PROPOSED BY THE',
-                'CONTRACTOR SHALL INCLUDE THE ADD/DEDUCT ASSOCIATED WITH ACCEPTANCE OF THAT UNIT (OR THE ALTERNATE PACKAGE AS A WHOLE).'
+            notes: saberSplitNotes(),
+            manufacturers: null
+        };
+    }
+
+    // Mini splits - SAME layout as the multi position split (saberSplitHeader
+    // / saberSplitNotes), but mapped to the mini_splits scheduleData. Indoor
+    // fields are per-row (scope 'row') so a multi-zone system lists each head
+    // on its own row with the outdoor data row-spanned; the outdoor fields are
+    // scope 'item'. Mini-split indoor units are powered from the outdoor
+    // single-point feed, so indoor MCA/MOCP read "NA" and indoor VOLTAGE shows
+    // the outdoor feed voltage. EFFICIENCY appends "(SEER2/EER2/HSPF2)" on a
+    // 2nd line because the mini value (col R) carries no inline label (unlike
+    // the MPS "15.2/12.5 (SEER2/EER2)"). TONNAGE = the "SIZE (OUTDOOR UNIT)"
+    // filter. Mini splits have no motor HP / aux electric heat, so those are
+    // editable "-" placeholders.
+    function saberMiniSplit() {
+        return {
+            orientation: 'rows',
+            title: 'SPLIT SYSTEM HEAT PUMP UNIT SCHEDULE',
+            notesSingleLine: true,
+            header: saberSplitHeader(),
+            columns: [
+                // --- Indoor (air handling) unit: per indoor sub-row ---
+                { scope: 'row', editable: true, fieldKey: 'saber_min_idu_tag', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[g.rowIndex]); } },
+                { scope: 'row', editable: true, fieldKey: 'saber_min_area', derive: function (g) { return s(g.item.serves); } },
+                { scope: 'row', derive: function (g) { return combine2(g.cell('M'), g.cell('N')); } },
+                { scope: 'row', derive: function (g) { return g.cell('A'); } },
+                { scope: 'row', editable: true, fieldKey: 'saber_min_esp' },
+                { scope: 'row', editable: true, fieldKey: 'saber_min_motor_hp' },
+                { scope: 'row', editable: true, fieldKey: 'saber_min_oa_cfm' },
+                { scope: 'row', derive: function (g) { return div1000(g.cell('D')); } },
+                { scope: 'row', derive: function (g) { return div1000(g.cell('E')); } },
+                { scope: 'row', derive: function (g) { return div1000(g.cell('G')); } },
+                { scope: 'row', editable: true, fieldKey: 'saber_min_aux_kw' },
+                { scope: 'row', derive: function (g) { return voltPh(g.cell('S')); } },
+                { scope: 'row', derive: function () { return 'NA'; } },
+                { scope: 'row', derive: function () { return 'NA'; } },
+                // --- Condensing unit: shared across the indoor rows ---
+                { scope: 'item', editable: true, fieldKey: 'saber_min_odu_tag', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return combine2(g.cell('V'), g.cell('W')); } },
+                { scope: 'item', derive: function (g) { return g.filter('SIZE (OUTDOOR UNIT)'); } },
+                { scope: 'item', derive: function (g) { var r = g.cell('R'); return r ? r + '\n(SEER2/EER2/HSPF2)' : r; } },
+                { scope: 'item', derive: function (g) { return voltPh(g.cell('S')); } },
+                { scope: 'item', derive: function (g) { return g.cell('T'); } },
+                { scope: 'item', derive: function (g) { return g.cell('U'); } },
+                // --- Weight (indoor / outdoor, per row) + notes ---
+                { scope: 'row', derive: function (g) { return s(g.cell('H')) + '/' + s(g.cellAt('Q', 0)); } },
+                { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14'; } }
             ],
+            notesTitle: 'NOTES:',
+            notes: saberSplitNotes(),
             manufacturers: null
         };
     }
@@ -780,6 +846,7 @@
         },
         saber: {
             multi_position_splits: saberMultiSplit,
+            mini_splits: saberMiniSplit,
             gas_packs: saberRtu
         }
     };

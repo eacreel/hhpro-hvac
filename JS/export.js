@@ -76,7 +76,13 @@ WHAT'S IN THE GRID
         // Resolve + fetch the per-unit CAD drawings for a set of
         // {items, data} groups, so the combined Files-tab export can embed
         // them below the multi-product schedule too.
-        prepareCadDrawings:       prepareCadDrawings
+        prepareCadDrawings:       prepareCadDrawings,
+
+        // Saber "Split Systems" combined view: merges multi-position-split +
+        // mini-split rows under the one shared Saber split layout. The first
+        // is for the on-screen tab; the second downloads/prints it.
+        buildCombinedSplitSystemsGrid: buildCombinedSplitSystemsGrid,
+        toSplitSystems:                exportSplitSystems
     };
 
     // =================================================================
@@ -663,29 +669,14 @@ WHAT'S IN THE GRID
             : buildRowsTemplateGrid(productKey, template, items, data);
     }
 
-    function buildRowsTemplateGrid(productKey, template, items, data) {
+    // Emit one product's data rows (item-scope columns row-spanned over the
+    // selection's sub-rows; row-scope columns one cell per sub-row) starting
+    // at `startRow`. Shared by buildRowsTemplateGrid and the combined Saber
+    // "Split Systems" grid, which stacks rows from two products under one
+    // header. Returns the next free row index.
+    function emitTemplateDataRows(rows, merges, startRow, productKey, cols, items, data) {
         var entries = resolveTemplateEntries(items, data);
-        var cols = template.columns;
-        var colCount = cols.length;
-        var rows = [];
-        var merges = [];
-
-        // Title row
-        putCell(rows, merges, 0, 0,
-                { value: template.title, bold: true, title: true }, 1, colCount);
-        var titleRowCount = 1;
-
-        // Header bands (positioned over the leaf columns)
-        var headerRowSpan = 0;
-        (template.header || []).forEach(function (h) {
-            headerRowSpan = Math.max(headerRowSpan, h.r + (h.rowspan || 1));
-            putCell(rows, merges, titleRowCount + h.r, h.c,
-                    { value: h.label, bold: true }, h.rowspan || 1, h.colspan || 1);
-        });
-        var numHeaderRows = titleRowCount + headerRowSpan;
-
-        // Data rows - one block per unit, item-scope columns row-spanned
-        var curRow = numHeaderRows;
+        var curRow = startRow;
         entries.forEach(function (entry) {
             var item = entry.item;
             var sel = entry.selection;
@@ -693,20 +684,55 @@ WHAT'S IN THE GRID
             cols.forEach(function (col, ci) {
                 if (col.scope === 'item') {
                     var g = makeTemplateApi(productKey, item, sel, 0, data);
-                    var resolved = resolveTemplateField(col, g);
                     putCell(rows, merges, curRow, ci,
-                            templateCellData(col, resolved, item), numRows, 1);
+                            templateCellData(col, resolveTemplateField(col, g), item), numRows, 1);
                 } else {
                     for (var ri = 0; ri < numRows; ri++) {
                         var g2 = makeTemplateApi(productKey, item, sel, ri, data);
-                        var resolved2 = resolveTemplateField(col, g2);
                         putCell(rows, merges, curRow + ri, ci,
-                                templateCellData(col, resolved2, item), 1, 1);
+                                templateCellData(col, resolveTemplateField(col, g2), item), 1, 1);
                     }
                 }
             });
             curRow += numRows;
         });
+        return curRow;
+    }
+
+    // Build the title + header band rows for a rows-orientation template.
+    // Returns { rows, merges, numHeaderRows, titleRowCount } with the data
+    // rows not yet emitted. Shared by buildRowsTemplateGrid and the combined
+    // "Split Systems" grid so both produce an identical header.
+    function buildTemplateHeaderRows(template, colCount) {
+        var rows = [];
+        var merges = [];
+        putCell(rows, merges, 0, 0,
+                { value: template.title, bold: true, title: true }, 1, colCount);
+        var titleRowCount = 1;
+        var headerRowSpan = 0;
+        (template.header || []).forEach(function (h) {
+            headerRowSpan = Math.max(headerRowSpan, h.r + (h.rowspan || 1));
+            putCell(rows, merges, titleRowCount + h.r, h.c,
+                    { value: h.label, bold: true }, h.rowspan || 1, h.colspan || 1);
+        });
+        return {
+            rows: rows, merges: merges,
+            titleRowCount: titleRowCount,
+            numHeaderRows: titleRowCount + headerRowSpan
+        };
+    }
+
+    function buildRowsTemplateGrid(productKey, template, items, data) {
+        var cols = template.columns;
+        var colCount = cols.length;
+        var head = buildTemplateHeaderRows(template, colCount);
+        var rows = head.rows;
+        var merges = head.merges;
+        var titleRowCount = head.titleRowCount;
+        var numHeaderRows = head.numHeaderRows;
+
+        // Data rows - one block per unit, item-scope columns row-spanned
+        var curRow = emitTemplateDataRows(rows, merges, numHeaderRows, productKey, cols, items, data);
         var dataEndRow = curRow;
 
         appendTemplateNotes(rows, merges, colCount, template, curRow);
@@ -727,6 +753,86 @@ WHAT'S IN THE GRID
             // Tells the on-screen renderer to keep notes on one line too.
             notesSingleLine: !!template.notesSingleLine
         };
+    }
+
+    // Combined "Split Systems" grid: the shared Saber split layout (ONE title
+    // + header) with multiple products' data rows stacked beneath it. `groups`
+    // is an ordered list of { productKey, items, data }; each product's own
+    // engineer template (identical header, product-specific column derives)
+    // supplies its rows, so multi-position-split and mini-split units appear
+    // together in one schedule. Returns null when no template/rows apply.
+    function buildCombinedSplitSystemsGrid(groups) {
+        if (!groups || !groups.length) return null;
+        var engineer = (window.HHpro && HHpro.Cart && HHpro.Cart.getProjectEngineer)
+            ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+        function tplFor(pk) {
+            return (HHpro.Templates && HHpro.Templates.getTemplate)
+                ? HHpro.Templates.getTemplate(engineer, pk) : null;
+        }
+        // Header/title/notes come from any group's template (identical across
+        // the split products).
+        var layout = null;
+        for (var i = 0; i < groups.length; i++) {
+            var t = tplFor(groups[i].productKey);
+            if (t) { layout = t; break; }
+        }
+        if (!layout) return null;
+        var colCount = layout.columns.length;
+        var head = buildTemplateHeaderRows(layout, colCount);
+        var rows = head.rows;
+        var merges = head.merges;
+        var curRow = head.numHeaderRows;
+        groups.forEach(function (grp) {
+            var tpl = tplFor(grp.productKey);
+            if (!tpl || !grp.items || !grp.items.length) return;
+            curRow = emitTemplateDataRows(rows, merges, curRow, grp.productKey,
+                                          tpl.columns, grp.items, grp.data);
+        });
+        if (curRow === head.numHeaderRows) return null;   // no data rows
+        var dataEndRow = curRow;
+        appendTemplateNotes(rows, merges, colCount, layout, curRow);
+        var colWidths = computeTemplateColWidths(rows, colCount);
+        if (layout.notesSingleLine) colWidths = widenColsForNotes(colWidths, layout.notes);
+        return {
+            rows: rows,
+            merges: merges,
+            numHeaderRows: head.numHeaderRows,
+            titleRowCount: head.titleRowCount,
+            dataEndRow: dataEndRow,
+            colCount: colCount,
+            colWidths: colWidths,
+            notesSingleLine: !!layout.notesSingleLine
+        };
+    }
+
+    // Export the combined "Split Systems" schedule. format: 'xlsx'|'dxf'|'pdf'.
+    // groups = ordered [{ productKey, items, data }].
+    function exportSplitSystems(format, groups, projectName) {
+        var grid = buildCombinedSplitSystemsGrid(groups);
+        if (!grid || !grid.rows.length) {
+            alert('Select at least one mini split and one multi position split first.');
+            return;
+        }
+        if (format === 'pdf') {
+            openPrintWindow('Split Systems', projectName, grid);
+            return;
+        }
+        var sections = [{ title: 'SPLIT SYSTEMS', grid: grid }];
+        var base = (projectName ? projectName + ' - ' : '') + 'Split Systems';
+        if (format === 'xlsx') {
+            Promise.resolve(generateXlsxBlobMulti(sections)).then(function (b) {
+                downloadBlob(b, base + '.xlsx');
+            });
+        } else if (format === 'dxf') {
+            var cadGroups = groups.map(function (grp) {
+                return { items: grp.items, data: grp.data };
+            });
+            prepareCadDrawings(cadGroups).then(function (draws) {
+                return dxfBlobFromSections(sections, draws);
+            }).then(function (b) {
+                downloadBlob(b, base + '.dxf');
+            });
+        }
     }
 
     // For templates that want each note on a single line: widen the columns
