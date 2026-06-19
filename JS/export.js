@@ -711,6 +711,11 @@ WHAT'S IN THE GRID
 
         appendTemplateNotes(rows, merges, colCount, template, curRow);
 
+        var colWidths = computeTemplateColWidths(rows, colCount);
+        if (template.notesSingleLine) {
+            colWidths = widenColsForNotes(colWidths, template.notes);
+        }
+
         return {
             rows: rows,
             merges: merges,
@@ -718,8 +723,30 @@ WHAT'S IN THE GRID
             titleRowCount: titleRowCount,
             dataEndRow: dataEndRow,
             colCount: colCount,
-            colWidths: computeTemplateColWidths(rows, colCount)
+            colWidths: colWidths,
+            // Tells the on-screen renderer to keep notes on one line too.
+            notesSingleLine: !!template.notesSingleLine
         };
+    }
+
+    // For templates that want each note on a single line: widen the columns
+    // (proportionally) so the full-width notes box is at least as wide as the
+    // longest note line. DXF is the tightest renderer - its notes box holds
+    // ~sum(colWidths) characters per line - so sizing to the longest note + a
+    // small margin keeps every note (and each half of a 2-row note) unwrapped.
+    function widenColsForNotes(colWidths, notes) {
+        if (!notes || !notes.length || !colWidths.length) return colWidths;
+        var longest = 0;
+        notes.forEach(function (n) {
+            var len = String(n == null ? '' : n).length;
+            if (len > longest) longest = len;
+        });
+        var total = 0;
+        colWidths.forEach(function (w) { total += w; });
+        var needed = longest + 3;   // margin for the MTEXT/cell inner padding
+        if (total >= needed || total <= 0) return colWidths;
+        var factor = needed / total;
+        return colWidths.map(function (w) { return Math.ceil(w * factor); });
     }
 
     function buildTransposedTemplateGrid(productKey, template, items, data) {

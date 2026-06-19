@@ -591,6 +591,9 @@
         return {
             orientation: 'rows',
             title: 'SPLIT SYSTEM HEAT PUMP UNIT SCHEDULE',
+            // Keep each note on a single line (the firm's sheets are wide):
+            // widen the columns so the full-width notes box never word-wraps.
+            notesSingleLine: true,
             // Header labels carry the SABER.xlsx's exact line breaks ("\n");
             // every renderer honours them (screen <br>, xlsx wrapText, DXF \P,
             // PDF stacked) and the rows auto-grow to fit.
@@ -690,6 +693,9 @@
         return {
             orientation: 'rows',
             title: 'PACKAGED DX COOLING/GAS HEATING ROOF TOP UNIT SCHEDULE',
+            // Keep each note on a single line (the firm's sheets are wide):
+            // widen the columns so the full-width notes box never word-wraps.
+            notesSingleLine: true,
             // Header labels carry the SABER.xlsx's exact line breaks ("\n").
             header: [
                 { r: 0, c: 0, rowspan: 2, label: 'UNIT\nTAG' },

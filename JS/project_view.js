@@ -1978,6 +1978,9 @@
                 if (cell.title) cls.push('tpl-title');
                 else if (isHeader) cls.push('tpl-header');
                 if (cell.notesRow) cls.push('tpl-notes');
+                // Single-line-notes templates (Saber): don't wrap notes - let
+                // the table widen so each note sits on one row, like the export.
+                if (cell.notesRow && grid.notesSingleLine) cls.push('tpl-notes-nowrap');
                 if (cell.watermark) cls.push('tpl-watermark');
                 if (cell.bold && !isHeader && !cell.notesRow) cls.push('tpl-rowhead');
                 if (cell.align === 'left') cls.push('tpl-left');
@@ -2051,6 +2054,9 @@
                 if (cell.title) cls.push('tpl-title');
                 else if (isHeader) cls.push('tpl-header');
                 if (cell.notesRow) cls.push('tpl-notes');
+                // Single-line-notes templates (Saber): don't wrap notes - let
+                // the table widen so each note sits on one row, like the export.
+                if (cell.notesRow && grid.notesSingleLine) cls.push('tpl-notes-nowrap');
                 if (cell.watermark) cls.push('tpl-watermark');
                 // Bold non-header cells = transposed attribute row labels.
                 if (cell.bold && !isHeader && !cell.notesRow) cls.push('tpl-rowhead');

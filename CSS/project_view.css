@@ -1705,6 +1705,12 @@
     white-space: pre-wrap;
 }
 
+/* Single-line-notes templates (e.g. Saber): keep each note on one row and
+   let the table widen to fit, matching the firm's wide sheet + the exports. */
+.template-schedule .tpl-notes-nowrap {
+    white-space: nowrap;
+}
+
 .template-schedule .tpl-watermark {
     text-align: right;
     font-style: italic;
