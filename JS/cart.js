@@ -82,6 +82,21 @@
     // picked one yet (the original Hoffman & Hoffman layout).
     var DEFAULT_ENGINEER = 'hoffman';
 
+    // The engineer layout a fresh cart/project should adopt: the firm tied
+    // to the current login (its non-standard allowed engineer), falling back
+    // to the standard layout. So a Saber login lands on the Saber layout by
+    // default, while a standard (Mellon) login stays on Hoffman & Hoffman.
+    // An explicitly saved project.engineer still wins over this default.
+    function defaultEngineer() {
+        if (HHpro.State && typeof HHpro.State.getAllowedEngineers === 'function') {
+            var allowed = HHpro.State.getAllowedEngineers();
+            for (var i = 0; i < allowed.length; i++) {
+                if (allowed[i] && allowed[i] !== DEFAULT_ENGINEER) return allowed[i];
+            }
+        }
+        return DEFAULT_ENGINEER;
+    }
+
     // --- DOM refs (set during init) ----------------------------------
     var toggleBtn = null;
     var toggleLabel = null;
@@ -219,7 +234,7 @@
             try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
             state = {
                 mode: null, projectId: null, name: null,
-                items: [], extra: {}, engineer: DEFAULT_ENGINEER, nextInstanceNum: 1
+                items: [], extra: {}, engineer: defaultEngineer(), nextInstanceNum: 1
             };
             initialized = true;
         }
@@ -241,13 +256,13 @@
                 state.name = parsed.name || null;
                 state.items = Array.isArray(parsed.items) ? parsed.items : [];
                 state.extra = (parsed.extra && typeof parsed.extra === 'object') ? parsed.extra : {};
-                state.engineer = parsed.engineer || DEFAULT_ENGINEER;
+                state.engineer = parsed.engineer || defaultEngineer();
                 state.nextInstanceNum = parsed.nextInstanceNum || (state.items.length + 1);
             }
         } catch (e) {
             state = {
                 mode: null, projectId: null, name: null,
-                items: [], extra: {}, engineer: DEFAULT_ENGINEER, nextInstanceNum: 1
+                items: [], extra: {}, engineer: defaultEngineer(), nextInstanceNum: 1
             };
         }
     }
@@ -297,7 +312,7 @@
             name: name,
             items: [],
             extra: {},
-            engineer: DEFAULT_ENGINEER,
+            engineer: defaultEngineer(),
             createdAt: now,
             updatedAt: now
         };
@@ -316,7 +331,7 @@
         if (!existing) return;
         existing.items = state.items.slice();
         existing.extra = deepClone(state.extra);
-        existing.engineer = state.engineer || DEFAULT_ENGINEER;
+        existing.engineer = state.engineer || defaultEngineer();
         existing.updatedAt = new Date().toISOString();
         saveProjects(projects);
     }
@@ -419,7 +434,7 @@
         state.name = null;
         state.items = [];
         state.extra = {};
-        state.engineer = DEFAULT_ENGINEER;
+        state.engineer = defaultEngineer();
         state.nextInstanceNum = 1;
         try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* noop */ }
         renderPanel();
@@ -468,7 +483,7 @@
                 name: finalName,
                 items: Array.isArray(incoming.items) ? incoming.items.slice() : [],
                 extra: (incoming.extra && typeof incoming.extra === 'object') ? incoming.extra : {},
-                engineer: incoming.engineer || DEFAULT_ENGINEER,
+                engineer: incoming.engineer || defaultEngineer(),
                 createdAt: incoming.createdAt || nowIso,
                 updatedAt: incoming.updatedAt || nowIso
             };
@@ -504,7 +519,7 @@
             name: state.name,
             items: state.items.slice(),
             extra: deepClone(state.extra),
-            engineer: state.engineer || DEFAULT_ENGINEER
+            engineer: state.engineer || defaultEngineer()
         };
     }
 
@@ -514,11 +529,11 @@
      * on-screen schedule and the Excel/CAD/PDF exports use.
      */
     function getProjectEngineer() {
-        return state.engineer || DEFAULT_ENGINEER;
+        return state.engineer || defaultEngineer();
     }
 
     function setProjectEngineer(key) {
-        var next = key || DEFAULT_ENGINEER;
+        var next = key || defaultEngineer();
         if (next === state.engineer) return;
         // Layout selection is excluded from undo/redo (see
         // applyHistorySnapshot) - no pushUndo here.
@@ -579,6 +594,10 @@
         state.projectId = null;
         state.name = 'Cart';
         state.extra = {};
+        // A brand-new temporary cart adopts this login's firm layout (e.g.
+        // Saber), not whatever the pre-login init() seeded. The user can
+        // still switch layouts via the project header dropdown.
+        state.engineer = defaultEngineer();
         saveStateToSession();
     }
 
@@ -589,7 +608,7 @@
         state.items = Array.isArray(project.items) ? project.items.slice() : [];
         state.extra = (project.extra && typeof project.extra === 'object')
             ? deepClone(project.extra) : {};
-        state.engineer = project.engineer || DEFAULT_ENGINEER;
+        state.engineer = project.engineer || defaultEngineer();
         var maxNum = 0;
         state.items.forEach(function (it) {
             var n = parseInt((it.instanceId || '').replace(/\D/g, ''), 10);

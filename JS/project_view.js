@@ -85,14 +85,19 @@
             // fall back to the first available product tab.
             if (activeState.items.length) {
                 var hasRefrig = hasRefrigerantSystems(groups);
-                if (activeTab === 'refrigerant' && !hasRefrig) {
-                    activeTab = productKeys[0];
-                } else if (activeTab === 'split_systems' && !showSplitSystemsTab(groups)) {
-                    activeTab = productKeys[0];
+                var combined = showSplitSystemsTab(groups);
+                if (combined && SPLIT_SYSTEM_PRODUCT_KEYS.indexOf(activeTab) >= 0) {
+                    // The mini/MPS product tabs are folded into Split Systems,
+                    // so land on the combined tab instead of a hidden one.
+                    activeTab = 'split_systems';
+                } else if (activeTab === 'refrigerant' && !hasRefrig) {
+                    activeTab = firstVisibleTab(productKeys, groups);
+                } else if (activeTab === 'split_systems' && !combined) {
+                    activeTab = firstVisibleTab(productKeys, groups);
                 } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
                            activeTab !== 'split_systems' &&
                            productKeys.indexOf(activeTab) < 0) {
-                    activeTab = productKeys[0];
+                    activeTab = firstVisibleTab(productKeys, groups);
                 }
             }
 
@@ -262,8 +267,17 @@
         // regardless, so there's nothing to choose.
         if (activeTab && HHpro.Templates && HHpro.Templates.getTemplate) {
             engineers = engineers.filter(function (e) {
-                return e.key === 'hoffman' ||
-                    HHpro.Templates.getTemplate(e.key, activeTab);
+                if (e.key === 'hoffman') return true;
+                // The combined Split Systems tab belongs to a firm that has
+                // BOTH a mini-split and a multi-position-split layout, so it
+                // offers Hoffman (which unfolds it back to separate tabs) and
+                // that firm.
+                if (activeTab === 'split_systems') {
+                    return SPLIT_SYSTEM_PRODUCT_KEYS.every(function (k) {
+                        return HHpro.Templates.getTemplate(e.key, k);
+                    });
+                }
+                return HHpro.Templates.getTemplate(e.key, activeTab);
             });
         }
 
@@ -423,7 +437,13 @@
         var nav = document.createElement('nav');
         nav.className = 'project-tabs';
 
+        // Under a firm layout with a combined split-system schedule (Saber),
+        // the mini-split and multi-position-split units live in the single
+        // "SPLIT SYSTEMS" tab, so their individual product tabs are hidden.
+        var combined = showSplitSystemsTab(groups);
+
         productKeys.forEach(function (productKey) {
+            if (combined && SPLIT_SYSTEM_PRODUCT_KEYS.indexOf(productKey) >= 0) return;
             var product = HHpro.Data.getProduct(productKey);
             var displayName = product ? product.displayName : productKey.toUpperCase();
             var count = groups[productKey].length;
@@ -437,8 +457,9 @@
         // the multi-position-split and mini-split units into ONE table using
         // the firm's shared split-system layout. Only appears when the
         // project has BOTH product types AND the active engineer has a
-        // template for both (Saber). Sits right after the product tabs.
-        if (showSplitSystemsTab(groups)) {
+        // template for both (Saber). It REPLACES the two folded product tabs
+        // above and sits where they would have been.
+        if (combined) {
             var ssCount = groups['multi_position_splits'].length +
                           groups['mini_splits'].length;
             nav.appendChild(buildTabButton('split_systems',
@@ -476,6 +497,10 @@
     // start emitting refrigerantColumns for a new product type.
     var REFRIGERANT_PRODUCT_KEYS = ['mini_splits', 'multi_position_splits', 'gas_splits'];
 
+    // Product tabs that fold into the combined "Split Systems" schedule when
+    // it's active (see showSplitSystemsTab).
+    var SPLIT_SYSTEM_PRODUCT_KEYS = ['multi_position_splits', 'mini_splits'];
+
     function hasRefrigerantSystems(groups) {
         for (var i = 0; i < REFRIGERANT_PRODUCT_KEYS.length; i++) {
             var key = REFRIGERANT_PRODUCT_KEYS[i];
@@ -487,10 +512,30 @@
     // The combined "Split Systems" tab shows only when the project has BOTH
     // multi-position-split and mini-split items AND the active engineer has a
     // template for both (today only Saber - it shares one layout for the two).
+    // When it shows, the individual mini/MPS product tabs are folded into it,
+    // so the combined schedule is the ONLY split-system tab. Switching the
+    // layout dropdown back to Hoffman & Hoffman drops it and the separate
+    // mini/MPS tabs reappear.
     function showSplitSystemsTab(groups) {
-        return !!(groups['multi_position_splits'] && groups['multi_position_splits'].length &&
-                  groups['mini_splits'] && groups['mini_splits'].length &&
-                  activeTemplate('multi_position_splits') && activeTemplate('mini_splits'));
+        return SPLIT_SYSTEM_PRODUCT_KEYS.every(function (key) {
+            return !!(groups[key] && groups[key].length && activeTemplate(key));
+        });
+    }
+
+    // The first tab that's actually visible for the current layout. With the
+    // combined Split Systems tab active, the folded mini/MPS product keys are
+    // skipped (falling through to Split Systems itself when they're the only
+    // products); otherwise it's simply the first product tab.
+    function firstVisibleTab(productKeys, groups) {
+        if (showSplitSystemsTab(groups)) {
+            for (var i = 0; i < productKeys.length; i++) {
+                if (SPLIT_SYSTEM_PRODUCT_KEYS.indexOf(productKeys[i]) < 0) {
+                    return productKeys[i];
+                }
+            }
+            return 'split_systems';
+        }
+        return productKeys[0];
     }
 
     function buildTabButton(tabKey, label) {

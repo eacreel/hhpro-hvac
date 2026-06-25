@@ -2110,9 +2110,11 @@ WHAT'S IN THE GRID
     // so the engineer can isolate / freeze whichever they need.
     //
     // The grid sits at the origin going +X to the right and -Y down so
-    // the first row reads top-to-bottom in any CAD viewer. Drawing
-    // units are nominal "mm" but the file has no $INSUNITS so users
-    // can rescale freely on import.
+    // the first row reads top-to-bottom in any CAD viewer. The schedule
+    // grid uses nominal "mm" units (abstract - nobody measures it), while
+    // the equipment-drawings band below it is true 1:1 in INCHES. The file
+    // declares $INSUNITS = 1 (inches) so a block INSERT auto-scales into
+    // mm/feet drawings; users can still rescale freely after import.
     // =================================================================
 
     // Tuning constants (drawing units, ~ mm)
@@ -2125,6 +2127,7 @@ WHAT'S IN THE GRID
     var DXF_TXT_BODY     = 2.5;   // text height for body cells
     var DXF_TXT_PAD      = 1.0;   // padding inside cell for MTEXT box
     var DXF_GAP          = 12;    // vertical gap between stacked tables
+    var MM_TO_IN         = 1 / 25.4; // equipment-band emit scale: 1 unit = 1 inch
 
     // Fixed handles for the file's required boilerplate. Entity handles
     // (lines + MTEXTs we emit) start at DXF_ENTITY_HANDLE_BASE and
@@ -2524,13 +2527,85 @@ WHAT'S IN THE GRID
         return s + '\n';
     }
 
+    // Format a length in inches as feet-and-inches, e.g. 30.31 -> 2'-6",
+    // 8.86 -> 0'-9". Inches round to the nearest whole inch (with a 12"
+    // rollover) - enough precision for an overall-size callout.
+    function ftInLabel(inches) {
+        var totalIn = Math.round(inches);
+        var ft = Math.floor(totalIn / 12);
+        var inch = totalIn - ft * 12;
+        return ft + "'-" + inch + '"';
+    }
+
+    // Overall Width / Height / Depth callout lines for one unit, derived
+    // from its view bounding boxes (front = W x H, right = D x H, top =
+    // W x D). Each line shows inches AND feet, e.g. 'W 30.3" (2'-6")'.
+    // byName maps 'front'/'right'/'top' to the geometry object (bbox in mm).
+    function unitDimLines(byName) {
+        function span(name, axis) {
+            var g = byName[name];
+            if (!g || !g.bbox) return null;
+            return axis === 0 ? (g.bbox[2] - g.bbox[0]) : (g.bbox[3] - g.bbox[1]);
+        }
+        var W = span('front', 0); if (W == null) W = span('top', 0);
+        var H = span('front', 1); if (H == null) H = span('right', 1);
+        var D = span('right', 0); if (D == null) D = span('top', 1);
+        var lines = [];
+        [['W', W], ['H', H], ['D', D]].forEach(function (p) {
+            if (p[1] == null) return;
+            var inch = p[1] * MM_TO_IN;
+            lines.push(p[0] + ' ' + inch.toFixed(1) + '" (' + ftInLabel(inch) + ')');
+        });
+        return lines;
+    }
+
+    // Graphic scale bar for the equipment-drawings band, drawn true 1:1 in
+    // inches so it reads real size and rescales WITH the drawings if the
+    // engineer scales the whole block. A 2-foot bar split at each foot, with
+    // feet labels above and inch labels below, plus a 1:1 caption. topY = top
+    // of the block; returns {width, height} consumed.
+    function emitScaleBar(x0, topY, ctx) {
+        var TXT = 2.4, GAP = 1.2, BAR_H = 3, BAR_LEN = 24, SEG = 12;
+        var capTop  = topY;                       // caption (top-left)
+        var feetTop = capTop - TXT - GAP;         // feet labels (top-center)
+        var barTop  = feetTop - TXT - GAP;
+        var barBot  = barTop - BAR_H;
+        var inchTop = barBot - GAP;               // inch labels (top-center)
+        var bottom  = inchTop - TXT;
+
+        ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+            x0, capTop, TXT, 260, 1,
+            mtextEscape('GRAPHIC SCALE  1:1  -  1 DRAWING UNIT = 1 INCH (12 = 1 FT)')));
+
+        // Bar outline + a divider at each foot.
+        ctx.entities.push(dxfLwPolylineEntity(nextHandle(ctx), 'EQUIP_DRAWING', [
+            [x0, barTop], [x0 + BAR_LEN, barTop],
+            [x0 + BAR_LEN, barBot], [x0, barBot], [x0, barTop]
+        ]));
+        var t;
+        for (t = SEG; t < BAR_LEN; t += SEG) {
+            ctx.entities.push(dxfLwPolylineEntity(nextHandle(ctx), 'EQUIP_DRAWING', [
+                [x0 + t, barTop], [x0 + t, barBot]
+            ]));
+        }
+        // Feet labels above each foot tick; inch labels below. Attachment 2
+        // = top-center, so each label sits centered on its tick.
+        for (t = 0; t <= BAR_LEN; t += SEG) {
+            ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+                x0 + t, feetTop, TXT, 30, 2, mtextEscape((t / 12) + "'")));
+            ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+                x0 + t, inchTop, TXT, 30, 2, mtextEscape(t + '"')));
+        }
+        return { width: x0 + BAR_LEN, height: topY - bottom };
+    }
+
     // Equipment drawings band. topY = world Y of the band's top (negative,
-    // continuing below the schedule). Lays each unit out as [label | front
-    // | right | top] at one shared scale (true relative size across units),
-    // stacked downward. Returns {width, height}.
+    // continuing below the schedule). Lays each unit out as [label + overall
+    // W/H/D | front | right | top] at one shared 1:1 scale (true relative
+    // size across units), stacked downward. Returns {width, height}.
     function emitCadDrawings(drawings, topY, ctx) {
-        var TITLE_H = 4, LABEL_H = 3.5;
-        var VIEW_GAP = 10, LABEL_W = 40, UNIT_GAP = 14;
+        var TITLE_H = 4, LABEL_H = 3.5, DIM_H = 2.5;
+        var VIEW_GAP = 10, LABEL_W = 60, UNIT_GAP = 16;
         var VIEWS = ['front', 'right', 'top'];
         var y = topY;
         var maxX = 0;
@@ -2539,22 +2614,40 @@ WHAT'S IN THE GRID
             0, y, TITLE_H, 400, 1, mtextEscape('EQUIPMENT DRAWINGS')));
         y -= TITLE_H * 2.2;
 
+        // Graphic scale bar / note (inches and feet) just under the title.
+        var bar = emitScaleBar(0, y, ctx);
+        if (bar.width > maxX) maxX = bar.width;
+        y -= bar.height + UNIT_GAP;
+
         // True 1:1 scale: geometry is stored in mm; emit at 1 drawing unit =
         // 1 inch so a measurement in CAD reads the real dimension directly.
         // One fixed factor for every unit, so relative sizes stay correct.
-        var S = 1 / 25.4;   // mm -> inches
+        var S = MM_TO_IN;   // mm -> inches
 
         drawings.forEach(function (d) {
+            var byName = {};
             var views = VIEWS.map(function (v) { return [v, d.geom && d.geom[v]]; })
                              .filter(function (p) { return p[1]; });
             if (!views.length) return;
+            views.forEach(function (p) { byName[p[0]] = p[1]; });
+
             var rowH = 0;
             views.forEach(function (p) {
                 var h = (p[1].bbox[3] - p[1].bbox[1]) * S;
                 if (h > rowH) rowH = h;
             });
+
+            // Model label + overall W/H/D callout (inches & feet), top-aligned
+            // with the views in the left column.
             ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
-                0, y - rowH / 2 + LABEL_H / 2, LABEL_H, LABEL_W, 1, mtextEscape(d.label)));
+                0, y, LABEL_H, LABEL_W, 1, mtextEscape(d.label)));
+            var dimLines = unitDimLines(byName);
+            if (dimLines.length) {
+                var dimText = dimLines.map(mtextEscape).join('\\P');
+                ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
+                    0, y - LABEL_H - 2, DIM_H, LABEL_W, 1, dimText));
+            }
+
             var x = LABEL_W;
             views.forEach(function (p) {
                 var g = p[1], b = g.bbox;
@@ -2609,6 +2702,15 @@ WHAT'S IN THE GRID
         return '  0\nSECTION\n  2\nHEADER\n' +
                '  9\n$ACADVER\n  1\nAC1015\n' +
                '  9\n$HANDSEED\n  5\n' + handleSeed + '\n' +
+               // Declare the file's drawing units as INCHES. The equipment
+               // drawings are emitted true 1:1 in inches, so this makes a
+               // block INSERT / xref of this DXF auto-scale correctly into a
+               // drawing whose own units are mm or feet (AutoCAD compares the
+               // two files' $INSUNITS). $MEASUREMENT 0 = imperial. Plain
+               // clipboard paste is always unit-for-unit and ignores this, so
+               // an inch-based drawing still drops the geometry in at real size.
+               '  9\n$INSUNITS\n 70\n     1\n' +
+               '  9\n$MEASUREMENT\n 70\n     0\n' +
                '  9\n$INSBASE\n 10\n0.0\n 20\n0.0\n 30\n0.0\n' +
                '  9\n$EXTMIN\n 10\n' + fmt(minX) + '\n 20\n' + fmt(minY) + '\n 30\n0.0\n' +
                '  9\n$EXTMAX\n 10\n' + fmt(maxX) + '\n 20\n' + fmt(maxY) + '\n 30\n0.0\n' +
