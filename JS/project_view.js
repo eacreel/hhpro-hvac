@@ -1937,6 +1937,23 @@
         var bar = document.createElement('div');
         bar.className = 'project-toolbar';
 
+        // Auto Tag: numbers the air handlers (AHU-) and condensing units (CU-)
+        // continuously across BOTH the multi-position-split and mini-split units
+        // in the combined schedule, using the same default prefixes as the
+        // multi-position-split tab.
+        var autoTagBtn = document.createElement('button');
+        autoTagBtn.type = 'button';
+        autoTagBtn.className = 'projects-btn projects-btn-primary';
+        autoTagBtn.textContent = 'Auto Tag';
+        autoTagBtn.addEventListener('click', function () {
+            openSplitSystemsAutoTagModal(groups);
+        });
+        bar.appendChild(autoTagBtn);
+
+        var exportDivider = document.createElement('div');
+        exportDivider.className = 'project-toolbar-divider';
+        bar.appendChild(exportDivider);
+
         function exportBtn(label, fmt) {
             var btn = document.createElement('button');
             btn.type = 'button';
@@ -3089,16 +3106,64 @@
     // =================================================================
 
     function openAutoTagModal(productKey, items, data) {
-        var extra = HHpro.Cart.getProjectExtra(productKey) || {};
-        var last = extra.lastAutoTag || {};
-        var defaultPrefix = last.prefix !== undefined ? last.prefix : defaultPrefixFor(productKey);
-        var defaultStart = last.start !== undefined ? last.start : 1;
+        var last = (HHpro.Cart.getProjectExtra(productKey) || {}).lastAutoTag || {};
+        var subRowCount = 0;
+        items.forEach(function (it) {
+            var sel = findSelectionById(data, it.selectionId);
+            subRowCount += (sel && sel.rows) ? sel.rows.length : 1;
+        });
+        openAutoTagModalCore({
+            itemCount: items.length,
+            subRowCount: subRowCount,
+            supportsIndoor: hasIndoorTagColumn(productKey),
+            defaultPrefix: last.prefix !== undefined ? last.prefix : defaultPrefixFor(productKey),
+            defaultStart: last.start !== undefined ? last.start : 1,
+            defaultIndoorPrefix: last.indoorPrefix !== undefined ? last.indoorPrefix : (defaultIndoorPrefixFor(productKey) || ''),
+            defaultIndoorStart: last.indoorStart !== undefined ? last.indoorStart : 1,
+            placeholderPrefix: defaultPrefixFor(productKey),
+            placeholderIndoorPrefix: defaultIndoorPrefixFor(productKey) || '',
+            onApply: function (outdoor, indoor) {
+                applyAutoTag(productKey, items, outdoor, indoor, data);
+            }
+        });
+    }
 
-        var supportsIndoor = hasIndoorTagColumn(productKey);
-        var defaultIndoorPrefix = last.indoorPrefix !== undefined
-            ? last.indoorPrefix
-            : (defaultIndoorPrefixFor(productKey) || '');
-        var defaultIndoorStart = last.indoorStart !== undefined ? last.indoorStart : 1;
+    // Combined Saber "Split Systems" tab: tag the multi-position-split and
+    // mini-split units together with continuous numbering, defaulting to the
+    // multi-position-split prefixes (CU- outdoor, AHU- indoor). `groups` is the
+    // [{productKey, items, data}, ...] array the combined tab already holds.
+    function openSplitSystemsAutoTagModal(groups) {
+        var last = (HHpro.Cart.getProjectExtra('multi_position_splits') || {}).lastAutoTag || {};
+        var itemCount = 0, subRowCount = 0;
+        groups.forEach(function (gp) {
+            itemCount += gp.items.length;
+            gp.items.forEach(function (it) {
+                var sel = findSelectionById(gp.data, it.selectionId);
+                subRowCount += (sel && sel.rows) ? sel.rows.length : 1;
+            });
+        });
+        openAutoTagModalCore({
+            itemCount: itemCount,
+            subRowCount: subRowCount,
+            supportsIndoor: true,
+            defaultPrefix: last.prefix !== undefined ? last.prefix : defaultPrefixFor('multi_position_splits'),
+            defaultStart: last.start !== undefined ? last.start : 1,
+            defaultIndoorPrefix: last.indoorPrefix !== undefined ? last.indoorPrefix : defaultIndoorPrefixFor('multi_position_splits'),
+            defaultIndoorStart: last.indoorStart !== undefined ? last.indoorStart : 1,
+            placeholderPrefix: defaultPrefixFor('multi_position_splits'),
+            placeholderIndoorPrefix: defaultIndoorPrefixFor('multi_position_splits'),
+            onApply: function (outdoor, indoor) {
+                applyAutoTagAcrossGroups(groups, outdoor, indoor);
+            }
+        });
+    }
+
+    function openAutoTagModalCore(cfg) {
+        var supportsIndoor = cfg.supportsIndoor;
+        var defaultPrefix = cfg.defaultPrefix;
+        var defaultStart = cfg.defaultStart;
+        var defaultIndoorPrefix = cfg.defaultIndoorPrefix;
+        var defaultIndoorStart = cfg.defaultIndoorStart;
 
         var backdrop = document.createElement('div');
         backdrop.className = 'modal-backdrop';
@@ -3115,8 +3180,8 @@
 
         var desc = document.createElement('p');
         desc.className = 'modal-desc';
-        desc.textContent = 'Assigns tags to all ' + items.length + ' item' +
-            (items.length === 1 ? '' : 's') + ' in this schedule, in their current order. Existing tags will be overwritten.';
+        desc.textContent = 'Assigns tags to all ' + cfg.itemCount + ' item' +
+            (cfg.itemCount === 1 ? '' : 's') + ' in this schedule, in their current order. Existing tags will be overwritten.';
 
         var form = document.createElement('div');
         form.className = 'autotag-form';
@@ -3139,7 +3204,7 @@
         var prefixInput = document.createElement('input');
         prefixInput.type = 'text';
         prefixInput.className = 'modal-input';
-        prefixInput.placeholder = 'e.g. ' + defaultPrefixFor(productKey);
+        prefixInput.placeholder = 'e.g. ' + cfg.placeholderPrefix;
         prefixInput.value = defaultPrefix;
         prefixInput.maxLength = 20;
         prefixRow.appendChild(prefixLabel);
@@ -3182,7 +3247,7 @@
             indoorPrefixInput = document.createElement('input');
             indoorPrefixInput.type = 'text';
             indoorPrefixInput.className = 'modal-input';
-            indoorPrefixInput.placeholder = 'e.g. ' + (defaultIndoorPrefixFor(productKey) || '');
+            indoorPrefixInput.placeholder = 'e.g. ' + cfg.placeholderIndoorPrefix;
             indoorPrefixInput.value = defaultIndoorPrefix;
             indoorPrefixInput.maxLength = 20;
             iPrefixRow.appendChild(iPrefixLabel);
@@ -3215,8 +3280,8 @@
             var n = parseInt(startInput.value, 10);
             if (isNaN(n)) n = 1;
             var firstTag = p + n;
-            var lastTag = p + (n + items.length - 1);
-            var outdoorText = items.length === 1
+            var lastTag = p + (n + cfg.itemCount - 1);
+            var outdoorText = cfg.itemCount === 1
                 ? 'Outdoor: ' + firstTag
                 : 'Outdoor: ' + firstTag + ' \u2026 ' + lastTag;
 
@@ -3231,11 +3296,7 @@
                 var ip = indoorPrefixInput.value;
                 var iStart = parseInt(indoorStartInput.value, 10);
                 if (isNaN(iStart)) iStart = 1;
-                var totalSubRows = 0;
-                items.forEach(function (it) {
-                    var s = findSelectionById(data, it.selectionId);
-                    totalSubRows += (s && s.rows) ? s.rows.length : 1;
-                });
+                var totalSubRows = cfg.subRowCount;
                 var iFirst = ip + iStart;
                 var iLast  = ip + (iStart + totalSubRows - 1);
                 var indoorText = totalSubRows === 1
@@ -3284,7 +3345,7 @@
                 if (isNaN(indoor.start)) indoor.start = 1;
             }
 
-            applyAutoTag(productKey, items, outdoor, indoor, data);
+            cfg.onApply(outdoor, indoor);
             close();
             HHpro.App.showView('project_view');
         });
@@ -3385,6 +3446,47 @@
             saved.indoorStart = indoor.start;
         }
         HHpro.Cart.setProjectExtra(productKey, { lastAutoTag: saved });
+    }
+
+    /**
+     * Apply Auto Tag across several product groups as ONE sequence (the
+     * combined Saber Split Systems tab). Outdoor/condensing numbers run
+     * continuously per item and indoor/air-handler numbers run continuously
+     * per sub-row, across every group in order - so a CU-1..CU-N / AHU-1..AHU-N
+     * sweep reads straight down the merged schedule regardless of which product
+     * a row came from. Tags land on item.tag / item.indoorTags, which both the
+     * MPS and mini Saber templates derive their UNIT TAG cells from.
+     */
+    function applyAutoTagAcrossGroups(groups, outdoor, indoor) {
+        var outdoorNum = outdoor.start;
+        var indoorNum = indoor ? indoor.start : null;
+
+        groups.forEach(function (gp) {
+            gp.items.forEach(function (it) {
+                var patch = { tag: outdoor.prefix + outdoorNum };
+                outdoorNum++;
+
+                if (indoor) {
+                    var sel = findSelectionById(gp.data, it.selectionId);
+                    var numRows = (sel && Array.isArray(sel.rows)) ? sel.rows.length : 1;
+                    var tags = [];
+                    for (var i = 0; i < numRows; i++) {
+                        tags.push(indoor.prefix + indoorNum);
+                        indoorNum++;
+                    }
+                    patch.indoorTags = tags;
+                }
+
+                HHpro.Cart.updateItem(it.instanceId, patch);
+            });
+
+            var saved = { prefix: outdoor.prefix, start: outdoor.start };
+            if (indoor) {
+                saved.indoorPrefix = indoor.prefix;
+                saved.indoorStart = indoor.start;
+            }
+            HHpro.Cart.setProjectExtra(gp.productKey, { lastAutoTag: saved });
+        });
     }
 
     // =================================================================
