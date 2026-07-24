@@ -86,8 +86,8 @@
             // the dependent columns (MCA, MOCP) to the chosen variant's
             // values. See multi_position_splits above for details.
             kwVariants: {
-                variantColumn: 'I',
-                dependentColumns: ['K', 'L'],
+                variantColumn: 'K',
+                dependentColumns: ['M', 'N'],
                 filterName: 'ELECTRIC HEAT',
                 defaultValue: 0
             }
