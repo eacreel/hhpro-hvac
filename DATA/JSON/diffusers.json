@@ -64298,7 +64298,7 @@
         "models": [
           "ALL"
         ],
-        "text": "Finish shall be B12 standard white powder coat unless otherwise noted. Optional colors, custom colors, and Armstrong coordinated finishes are available; confirm lead time with the manufacturer."
+        "text": "Finish shall be B12 standard white unless otherwise noted. Optional colors, custom colors, and Armstrong coordinated finishes are available; confirm lead time with the manufacturer."
       },
       {
         "models": [
@@ -64310,25 +64310,25 @@
         "models": [
           "ALL"
         ],
-        "text": "Provide each diffuser with a volume control damper unless served by a terminal unit or otherwise noted. Provide radial or full flow damper (VCR7, VCR8, VCR8E, or VCR9) at round inlets and opposed blade damper (VCS3) at square or rectangular inlets."
+        "text": "Provide each diffuser with a volume control damper unless served by a terminal unit or otherwise noted. Provide radial or full flow damper (VCR7, VCR8, VCR8E, or VCR9) at round inlets and opposed blade damper (VCS3) at square or rectangular inlets. Some damper models are not available at all inlet sizes; verify availability with the submittal."
       },
       {
         "models": [
           "ALL"
         ],
-        "text": "Dampers, baffles, pattern controllers, and light shields ship loose and shall be field installed by the installing contractor."
+        "text": "Dampers, air baffles, and light shields ship loose and shall be field installed by the installing contractor."
       },
       {
         "models": [
           "ALL"
         ],
-        "text": "Provide insulated backpan where diffusers are located in unconditioned or high humidity plenums. Provide molded backpan insulation (R6) or foil faced fiberglass insulation with vapor barrier (AFI) as required by the application."
+        "text": "Provide insulated backpan where diffusers are located in unconditioned or high humidity plenums. Provide molded backpan insulation (R6, frame A profile only) or foil backed fiberglass insulation (AFI, frame B profile only) as required by the application."
       },
       {
         "models": [
           "ALL"
         ],
-        "text": "Provide beaded inlet neck with 2-1/2 in. extended depth (BN) where flexible duct connections are used."
+        "text": "Provide beaded inlet neck with 2-1/2 in. extended depth (BN) where flexible duct connections are used. Beaded neck is not available on aluminum construction units."
       },
       {
         "models": [
@@ -64366,7 +64366,7 @@
           "SMD/AMD",
           "SMD w/ SR"
         ],
-        "text": "Throw data is based on supply air and room air at isothermal conditions. Adjust listed throw for the scheduled heating or cooling temperature differential."
+        "text": "Throw data is based on supply air and room air at isothermal conditions, except SCDA vertical throw, which is based on a 20 deg F heating differential at 50 fpm terminal velocity. Adjust listed throw for the scheduled heating or cooling temperature differential."
       },
       {
         "models": [
@@ -64403,7 +64403,7 @@
         "models": [
           "SPD"
         ],
-        "text": "Where a 1-way, 2-way, 2-way corner, or 3-way discharge pattern is indicated on the drawings, provide factory installed air baffles (AB). Standard construction is 4-way."
+        "text": "Where a 1-way, 2-way, 2-way corner, or 3-way discharge pattern is indicated on the drawings, provide air baffles (AB); baffles ship loose for field installation. Standard construction without baffles discharges a 360 degree radial horizontal pattern."
       },
       {
         "models": [
@@ -64413,9 +64413,10 @@
       },
       {
         "models": [
-          "SCD"
+          "SCD",
+          "SCDA"
         ],
-        "text": "Where a 1-way, 2-way, or 3-way discharge pattern is indicated on the drawings, provide a sectorizing baffle (SB-270 for 1-way, SB-180 for 2-way, SB-90 for 3-way). Sectorizing baffles are not available in combination with a diffuser mounted damper; provide a duct mounted damper where both are required."
+        "text": "Where a 1-way, 2-way, or 3-way discharge pattern is indicated on the drawings, provide a sectorizing baffle (SB-270 for 1-way, SB-180 for 2-way, SB-90 for 3-way). Sectorizing baffles are not available in combination with any factory damper selection; provide a field furnished duct mounted damper where volume control is also required."
       },
       {
         "models": [
@@ -64440,7 +64441,7 @@
         "models": [
           "SCDA"
         ],
-        "text": "Provide removable core (RC) unless a fixed core (FC) is scheduled. Optional fourth cone (4C) is available on 24 in. x 24 in. units only."
+        "text": "Provide removable core (RC) unless a fixed core (FC) is scheduled. Fixed core is available on 24 in. x 24 in. lay-in (style 3) units only. Optional fourth cone (4C) is available on 24 in. x 24 in. units only."
       },
       {
         "models": [
@@ -64470,13 +64471,13 @@
         "models": [
           "SMD/AMD"
         ],
-        "text": "Where the diffuser is applied in return service, multiply the listed total pressure by the published return factor for the scheduled duct size and add the published NC correction."
+        "text": "Where the diffuser is applied in return service, multiply the listed total pressure by the published return factor for the scheduled duct size to obtain negative static pressure, and apply the published NC correction."
       },
       {
         "models": [
           "SMD/AMD"
         ],
-        "text": "Provide adjustable pattern deflectors (SMDA/AMDA) where field adjustment between horizontal and vertical discharge is required. Cores are fixed and not removable where throw reducing vanes (TRV) are provided."
+        "text": "Provide adjustable pattern deflectors (SMDA/AMDA) where field adjustment between horizontal and vertical discharge is required. Apply the manufacturer's published SMDA/AMDA performance correction factors."
       },
       {
         "models": [
@@ -64488,7 +64489,7 @@
         "models": [
           "SMD w/ SR"
         ],
-        "text": "Diffuser shall be furnished with a square to round transition adapter sized to the scheduled round inlet."
+        "text": "Diffuser shall be furnished with round inlet (SR) sized to the scheduled round duct. Performance for the SMD with SR is per the manufacturer's published SMD/AMD with SR data."
       },
       {
         "models": [
@@ -64500,7 +64501,7 @@
         "models": [
           "SMD w/ SR"
         ],
-        "text": "Where the adapter is furnished shipped loose (SR2), the installing contractor shall field mount the adapter to the diffuser backpan prior to setting the ceiling."
+        "text": "Coordinate the round duct connection to the SR inlet with the installing contractor prior to setting the ceiling."
       },
       {
         "models": [
@@ -64520,7 +64521,7 @@
         "models": [
           "SPD (Return)"
         ],
-        "text": "Return diffuser shall be the same square plaque face as the supply diffuser, furnished without pattern baffles."
+        "text": "Return diffuser shall be the same square plaque face as the supply diffuser, furnished without air baffles (AB)."
       },
       {
         "models": [
@@ -64544,25 +64545,25 @@
         "models": [
           "PDDR"
         ],
-        "text": "Provide a light shield (LS) at plenum return applications to minimize sightlines into the ceiling cavity. Light shield is not available in combination with a damper."
+        "text": "Provide a light shield (LS) at plenum return applications to minimize sightlines into the ceiling cavity. Light shield is available with square or rectangular inlets only, is not available in combination with a damper, and is not available on the 46 in. x 22 in. inlet size."
       },
       {
         "models": [
           "PDDR"
         ],
-        "text": "Provide extended face construction (PDDRE) where required to align the diffuser face with tegular ceiling tile."
+        "text": "Provide extended face construction (frame style 15) where required to align the diffuser face flush with tegular ceiling tile; the face extends 3/8 in. below the t-bar plane."
       },
       {
         "models": [
           "PDDR"
         ],
-        "text": "Provide equalizing grid where the return diffuser is mounted directly to a duct branch or where uneven face velocity is a concern."
+        "text": "Where the return diffuser is mounted directly to a duct branch or fitting, coordinate inlet conditions to provide uniform face velocity across the diffuser face."
       }
     ]
   },
   "_meta": {
     "sourceFile": "PRICE DIFFUSER DATA.xlsx",
-    "generatedAt": "2026-07-26T10:54:06",
+    "generatedAt": "2026-07-26T11:52:07",
     "dataRowCount": 1953,
     "selectionCount": 1953
   }

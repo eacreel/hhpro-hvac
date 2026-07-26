@@ -140,20 +140,36 @@
             // value in the Excel data exactly - clicking a card filters
             // the schedule to that model (via the DESCRIPTION filter).
             modelGallery: [
-                { model: 'SPD',          picture: 'DATA/PICTURES/Price SPD.jpg' },
-                { model: 'SCD',          picture: 'DATA/PICTURES/Price SCD.jpg' },
-                { model: 'SPD (Return)', picture: 'DATA/PICTURES/Price SPD.jpg' },
-                { model: 'SCDA',         picture: 'DATA/PICTURES/Price SCDA.jpg' },
-                { model: 'SMD/AMD',      picture: 'DATA/PICTURES/Price SMD.jpg' },
-                { model: 'SMD w/ SR',    picture: 'DATA/PICTURES/Price SMD.jpg' },
-                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR.jpg' }
+                { model: 'SPD',          picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
+                { model: 'SCD',          picture: 'DATA/PICTURES/Price SCD (Black).jpg' },
+                { model: 'SPD (Return)', picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
+                { model: 'SCDA',         picture: 'DATA/PICTURES/Price SCDA (Black).jpg' },
+                { model: 'SMD/AMD',      picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
+                { model: 'SMD w/ SR',    picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
+                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR (Black).jpg' }
             ],
-            // Core-style legend image shown beside the schedule notes
-            // (and embedded in the Excel / PDF exports) whenever any of
-            // the listed models is in the project schedule.
+            // Core-style icon row: shown under the model gallery on the
+            // browse page whenever an SMD-family model is selected.
+            // Each icon (sliced from the Price options sheet) acts as a
+            // CORE STYLE filter button - clicking selects the filter
+            // value containing that code. Icons whose code isn't in the
+            // data render dimmed as reference only.
+            coreStyles: {
+                folder: 'DATA/PICTURES/CORE STYLES',
+                codes: ['1S', '2S', '2G', '3A', '4A',
+                        '1A', '1B', '2A', '2B', '2C', '2D', '2E', '2F',
+                        '3A1', '3A2', '3B', '3C', '3E',
+                        '4B', '4C', '4E'],
+                descriptions: ['MODULAR LOUVERED FACE DIFFUSER',
+                               'MODULAR LOUVERED FACE DIFFUSER (SQUARE TO ROUND)']
+            },
+            // Core-style legend image embedded INSIDE the schedule frame
+            // (to the right of the schedule notes) on-screen and in the
+            // Excel / PDF exports whenever any of the listed models is
+            // in the project schedule.
             notesLegend: {
                 models: ['SMD/AMD', 'SMD w/ SR'],
-                title: 'SMD & AMD OPTIONS:',
+                title: 'SMD/AMD CORE STYLE LEGEND:',
                 picture: 'DATA/PICTURES/SMD & AMD Options.jpg',
                 width: 1064,
                 height: 616

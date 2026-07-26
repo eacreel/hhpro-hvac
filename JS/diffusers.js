@@ -45,6 +45,8 @@
             var cards = (product && product.modelGallery) || [];
             if (!cards.length) return null;
 
+            var container = document.createElement('div');
+
             var wrap = document.createElement('div');
             wrap.className = 'model-gallery';
 
@@ -95,9 +97,97 @@
                 wrap.appendChild(card);
             });
 
-            return wrap;
+            container.appendChild(wrap);
+
+            var coreRow = buildCoreStyleRow(product, data, api);
+            if (coreRow) container.appendChild(coreRow);
+
+            return container;
         }
     };
+
+    /**
+     * Core-style icon row (SMD/AMD family). One small card per Price
+     * core style code, in the legend's reading order. A card whose code
+     * appears in the data's CORE STYLE filter values acts as a filter
+     * button (the filter values are grouped codes like "2S, 2G", so
+     * clicking either icon selects that group); codes not in the data
+     * render dimmed as reference only. The row is visible only while an
+     * SMD-family DESCRIPTION is selected, since core styles don't apply
+     * to the other models.
+     */
+    function buildCoreStyleRow(product, data, api) {
+        var cfg = product && product.coreStyles;
+        if (!cfg || !cfg.codes || !cfg.codes.length) return null;
+
+        // code -> CORE STYLE filter value ("2G" -> "2S, 2G")
+        var codeToValue = {};
+        (data.selections || []).forEach(function (sel) {
+            var row = sel.rows && sel.rows[0];
+            var v = row && row.filterData && row.filterData['CORE STYLE'];
+            if (v === undefined || v === null) return;
+            String(v).split(',').forEach(function (part) {
+                var code = part.trim();
+                if (code && !codeToValue[code]) codeToValue[code] = String(v);
+            });
+        });
+
+        var smdDescriptions = {};
+        (cfg.descriptions || []).forEach(function (d) { smdDescriptions[d] = true; });
+
+        var row = document.createElement('div');
+        row.className = 'core-style-row';
+
+        var label = document.createElement('span');
+        label.className = 'core-style-row-label';
+        label.textContent = 'Core style';
+        row.appendChild(label);
+
+        var cardsByValue = [];
+        cfg.codes.forEach(function (code) {
+            var value = codeToValue[code] || null;
+
+            var card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'core-style-card';
+            card.disabled = !value;
+            card.title = value
+                ? 'Filter core style ' + value
+                : code + ' (not available in the schedule data)';
+
+            var img = new Image();
+            img.alt = 'Core style ' + code;
+            img.src = cfg.folder + '/' + code + '.jpg';
+            card.appendChild(img);
+
+            if (value) {
+                card.addEventListener('click', function () {
+                    var current = api.getFilterValue('CORE STYLE');
+                    api.setFilter('CORE STYLE',
+                        String(current || '') === value ? null : value);
+                });
+                cardsByValue.push({ card: card, value: value });
+            }
+
+            row.appendChild(card);
+        });
+
+        function sync() {
+            var descr = String(api.getFilterValue('DESCRIPTION') || '');
+            var coreActive = api.getFilterValue('CORE STYLE');
+            var visible = !!smdDescriptions[descr] ||
+                          (coreActive !== null && coreActive !== undefined);
+            row.style.display = visible ? '' : 'none';
+            cardsByValue.forEach(function (entry) {
+                entry.card.classList.toggle('is-active',
+                    String(coreActive || '') === entry.value);
+            });
+        }
+        sync();
+        api.onFilterChange(sync);
+
+        return row;
+    }
 
     /**
      * Resolve the DESCRIPTION filter value for a MODEL column value by

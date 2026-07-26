@@ -517,23 +517,9 @@ WHAT'S IN THE GRID
 
         var dataEndRow = curRow;   // first row NOT in data (i.e. notes start here)
 
-        // --- Schedule notes section ----------------------------------
-        // Notes section now embeds the watermark as the bottom row of
-        // the last notes box (it shares the box's border so it reads
-        // as part of the notes section rather than a stray footer).
-        appendNotesSection(rows, merges, colCount, productKey, data, curRow,
-                           notesCtx);
-
-        // Column width heuristics (Excel character units)
-        var colWidths = computeColumnWidths(
-            rows, colCount, tagCol, servesCol, indoorTagCol, dataStartCol,
-            dataEndCol, configCol, accCol, showServes, showIndoor,
-            showConfig, showAcc
-        );
-
-        // Legend image (e.g. "SMD & AMD Options"): attached to the grid
-        // so the XLSX and print-PDF renderers can embed it below the
-        // notes section. Only present when a trigger model is included.
+        // Legend image (e.g. the SMD/AMD core style legend): rendered
+        // INSIDE the schedule frame as a box to the right of the
+        // schedule notes. Only present when a trigger model is included.
         var legendProduct = HHpro.Data && HHpro.Data.getProduct
             ? HHpro.Data.getProduct(productKey) : null;
         var legendImage = null;
@@ -548,6 +534,23 @@ WHAT'S IN THE GRID
             };
         }
 
+        // --- Schedule notes section ----------------------------------
+        // Notes section now embeds the watermark as the bottom row of
+        // the last notes box (it shares the box's border so it reads
+        // as part of the notes section rather than a stray footer).
+        // When a legend applies, the notes box narrows and the legend
+        // occupies the right-hand columns of the same rows; the anchor
+        // tells the XLSX/PDF renderers where the image goes.
+        var legendAnchor = appendNotesSection(rows, merges, colCount,
+            productKey, data, curRow, notesCtx, legendImage);
+
+        // Column width heuristics (Excel character units)
+        var colWidths = computeColumnWidths(
+            rows, colCount, tagCol, servesCol, indoorTagCol, dataStartCol,
+            dataEndCol, configCol, accCol, showServes, showIndoor,
+            showConfig, showAcc
+        );
+
         return {
             rows: rows,
             merges: merges,
@@ -556,7 +559,8 @@ WHAT'S IN THE GRID
             dataEndRow: dataEndRow,
             colCount: colCount,
             colWidths: colWidths,
-            legendImage: legendImage
+            legendImage: legendImage,
+            legendAnchor: legendAnchor || null
         };
     }
 
@@ -1025,7 +1029,8 @@ WHAT'S IN THE GRID
     // included inline with continued numbering.
     // =================================================================
 
-    function appendNotesSection(rows, merges, colCount, productKey, data, startRow, notesCtx) {
+    function appendNotesSection(rows, merges, colCount, productKey, data,
+                                startRow, notesCtx, legendImage) {
         var notes = collectVisibleNotes(productKey, data);
         var r = startRow;
         // Cell descriptor for the watermark line. Always emitted as the
@@ -1076,7 +1081,10 @@ WHAT'S IN THE GRID
 
         // Model-mapped format (diffusers): only the notes applicable to
         // the models in the schedule, numbered to match the Accessories
-        // column. Custom notes continue the numbering.
+        // column. Custom notes continue the numbering. When the legend
+        // image applies, the notes box narrows and the legend box sits
+        // to its right inside the same schedule frame; the returned
+        // anchor tells the XLSX/PDF renderers where to place the image.
         if (notesCtx) {
             var mmLines = notesCtx.list.map(function (entry) {
                 return entry.num + '. ' + entry.text;
@@ -1086,11 +1094,27 @@ WHAT'S IN THE GRID
                 mmLines.push(nextNum + '. ' + text);
                 nextNum++;
             });
-            if (mmLines.length) {
-                emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:',
+            if (!mmLines.length) return null;
+
+            if (legendImage && colCount >= 6) {
+                // Legend takes roughly the right third of the width,
+                // spanning every row of the notes box.
+                var legendCols = Math.max(2, Math.round(colCount * 0.32));
+                var notesSpan = colCount - legendCols;
+                var totalRows = 1 + mmLines.length + 1;  // header + lines + watermark
+                putCell(rows, merges, r, notesSpan, {
+                    value: legendImage.title || 'LEGEND:',
+                    bold: true, notesRow: true, legendCell: true,
+                    borderPos: 'first', align: 'left'
+                }, totalRows, legendCols);
+                emitNotesBox(rows, merges, notesSpan, r, 'SCHEDULE NOTES:',
                              mmLines, watermarkFooter);
+                return { row: r + 1, col: notesSpan, cols: legendCols, rows: totalRows };
             }
-            return;
+
+            emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:',
+                         mmLines, watermarkFooter);
+            return null;
         }
 
         // Simple list format (Gas Packs, Mini Splits, Multi Position Splits)
@@ -1289,7 +1313,11 @@ WHAT'S IN THE GRID
             // Capacity-mapped field (on-screen renderer binds a dropdown).
             capacityField: cellData.capacityField || '',
             // kW-variant field (on-screen renderer binds the kW dropdown).
-            kwSelect: !!cellData.kwSelect
+            kwSelect: !!cellData.kwSelect,
+            // Legend box cell (diffusers): the HTML/PDF renderer puts
+            // the legend image inside this cell; XLSX anchors the
+            // drawing over it.
+            legendCell: !!cellData.legendCell
         };
         // Mark every covered position so neither the XLSX nor the
         // HTML-for-PDF renderer overwrites it later, AND so the XLSX
@@ -1333,6 +1361,9 @@ WHAT'S IN THE GRID
             for (var r = 0; r < rows.length; r++) {
                 var cell = rows[r] && rows[r][c];
                 if (!cell || !cell.value) continue;
+                // Notes-section cells (incl. the legend box title) span
+                // many columns; they must not inflate data columns.
+                if (cell.notesRow) continue;
                 var s = String(cell.value);
                 if (s.length > maxLen) maxLen = s.length;
             }
@@ -1440,18 +1471,36 @@ WHAT'S IN THE GRID
     // EMU per pixel (96 dpi): 914400 / 96
     var EMU_PER_PX = 9525;
 
+    // Approx pixels per Excel character-width unit (default font).
+    var PX_PER_CHAR = 7;
+
     /**
-     * Drawing part XML placing the grid's legend image one row below
-     * the last grid row, anchored at column B. Displayed at ~560 px
-     * wide (about 6 in.), preserving the image's aspect ratio.
+     * Drawing part XML for the grid's legend image. When the grid has
+     * a legendAnchor (diffusers: legend box to the right of the notes
+     * inside the schedule frame), the image is anchored inside that
+     * box, sized to its column span. Otherwise it falls back to one
+     * row below the grid at ~560 px wide. Aspect ratio is preserved.
      */
     function legendDrawingXml(grid) {
         var li = grid.legendImage;
+        var anchor = grid.legendAnchor;
         var dispW = 560;
+        var anchorRow = grid.rows.length + 1;   // 0-based row below the notes
+        var anchorCol = 1;
+        if (anchor) {
+            anchorRow = anchor.row;
+            anchorCol = anchor.col;
+            // Fit the image to the legend box's width (sum of its
+            // columns' widths), with a small inset.
+            var boxPx = 0;
+            for (var c = anchor.col; c < anchor.col + anchor.cols; c++) {
+                boxPx += ((grid.colWidths && grid.colWidths[c]) || 10) * PX_PER_CHAR;
+            }
+            dispW = Math.max(220, Math.min(700, Math.round(boxPx - 16)));
+        }
         var dispH = Math.round(dispW * (li.height || 600) / (li.width || 800));
         var cx = dispW * EMU_PER_PX;
         var cy = dispH * EMU_PER_PX;
-        var anchorRow = grid.rows.length + 1;   // 0-based row below the notes
 
         return XML_HEADER +
             '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"' +
@@ -1459,8 +1508,8 @@ WHAT'S IN THE GRID
                      ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
               '<xdr:oneCellAnchor>' +
                 '<xdr:from>' +
-                  '<xdr:col>1</xdr:col><xdr:colOff>0</xdr:colOff>' +
-                  '<xdr:row>' + anchorRow + '</xdr:row><xdr:rowOff>0</xdr:rowOff>' +
+                  '<xdr:col>' + anchorCol + '</xdr:col><xdr:colOff>76200</xdr:colOff>' +
+                  '<xdr:row>' + anchorRow + '</xdr:row><xdr:rowOff>19050</xdr:rowOff>' +
                 '</xdr:from>' +
                 '<xdr:ext cx="' + cx + '" cy="' + cy + '"/>' +
                 '<xdr:pic>' +
@@ -1980,25 +2029,30 @@ WHAT'S IN THE GRID
           '</body></html>';
     }
 
+    /** Absolute URL for the legend image - the print window's document
+     *  has no base URL of its own, so relative paths would break. */
+    function legendAbsUrl(li) {
+        try {
+            return new URL(li.url, window.location.href).href;
+        } catch (e) {
+            return li.url;
+        }
+    }
+
     /**
-     * Legend image block (diffusers "SMD & AMD Options") printed below
-     * the schedule notes. The image URL is absolutized because the
-     * print window's document has no base URL of its own.
+     * Fallback legend block below the table - used only when the grid
+     * has a legend image but no in-schedule legend box (non-modelmap
+     * grids). Diffuser grids render the legend inside the notes rows
+     * via the legendCell instead.
      */
     function renderLegendHtml(grid) {
         var li = grid && grid.legendImage;
-        if (!li || !li.url) return '';
-        var absUrl;
-        try {
-            absUrl = new URL(li.url, window.location.href).href;
-        } catch (e) {
-            absUrl = li.url;
-        }
+        if (!li || !li.url || grid.legendAnchor) return '';
         return '<div class="legend-print">' +
                  (li.title
                      ? '<div class="legend-print-title">' + xmlEscape(li.title) + '</div>'
                      : '') +
-                 '<img src="' + xmlEscape(absUrl) + '" alt="' +
+                 '<img src="' + xmlEscape(legendAbsUrl(li)) + '" alt="' +
                      xmlEscape(li.title || 'Legend') + '">' +
                '</div>';
     }
@@ -2065,6 +2119,14 @@ WHAT'S IN THE GRID
                   ' font-style: italic; font-size: 7pt;' +
                   ' color: #888 !important; padding: 3px 8px;' +
                   ' font-weight: normal !important; }' +
+
+            // Legend box inside the schedule (right of the notes).
+            'td.legend-cell { vertical-align: top; text-align: left;' +
+                  ' border: 1px solid #000 !important; padding: 4px 6px; }' +
+            'td.legend-cell .legend-cell-title { font-weight: bold;' +
+                  ' font-size: 8pt; margin-bottom: 4px; }' +
+            'td.legend-cell img { width: 100%; max-width: 4.5in;' +
+                  ' background: #fff; }' +
 
             // Legend image block (below the schedule notes box).
             '.legend-print { margin-top: 10px; }' +
@@ -2139,6 +2201,17 @@ WHAT'S IN THE GRID
                 var attrs = '';
                 if (cell.rowSpan > 1) attrs += ' rowspan="' + cell.rowSpan + '"';
                 if (cell.colSpan > 1) attrs += ' colspan="' + cell.colSpan + '"';
+                // Legend box cell (diffusers): title + the legend image
+                // inside the schedule frame, to the right of the notes.
+                if (cell.legendCell && grid.legendImage) {
+                    out.push('<td' + attrs + ' class="legend-cell">' +
+                               '<div class="legend-cell-title">' +
+                                 xmlEscape(String(cell.value || '')) + '</div>' +
+                               '<img src="' + xmlEscape(legendAbsUrl(grid.legendImage)) +
+                                 '" alt="' + xmlEscape(String(cell.value || 'Legend')) + '">' +
+                             '</td>');
+                    continue;
+                }
                 out.push('<' + tag + attrs + '>' +
                          xmlEscape(String(cell.value || '')) +
                          '</' + tag + '>');
