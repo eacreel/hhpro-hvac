@@ -213,6 +213,24 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    "PRICE GRILLE DATA.xlsx": {
+        "productType": "GRILLES",
+        "outputFileName": "grilles.json",
+        "headerRows": 2,
+        "dataStartRow": 4,
+        "supportsMultiRow": False,
+        "assetsFolder": "GRILLES",
+        # Same two-column SCHEDULE NOTES mapping as the diffusers (col A
+        # is "ALL" or a comma-separated MODEL list, col B is the note).
+        "notesFormat": "modelmap",
+        "searchSchema": {
+            "displayName": "Grilles",
+            "description": "Price supply, return, and transfer grilles. Enter a target airflow and/or use the filters to narrow by model, size, and application.",
+            "targets": [
+                {"label": "Airflow", "col": "I", "unit": "CFM", "defaultTolerance": 15},
+            ],
+        },
+    },
 }
 
 

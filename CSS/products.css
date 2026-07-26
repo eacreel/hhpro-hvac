@@ -157,6 +157,17 @@
     flex-shrink: 0;
 }
 
+/* Notice shown when a large product (grilles) caps how many rows the
+   browse table renders at once (data.js maxBrowseRows). */
+.schedule-row-cap-notice {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border);
+    border-radius: 4px;
+    padding: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-sm);
+}
+
 /* ---------- Active model-filter chip ---------- */
 
 /* Row that holds the model-filter chip when the user landed here from

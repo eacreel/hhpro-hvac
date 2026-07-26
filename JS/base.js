@@ -510,7 +510,22 @@
                 scheduleWrap.appendChild(zero);
                 return;
             }
-            var table = buildScheduleTable(data, visible, product);
+            // Products with very large datasets (grilles: 32k+ rows) cap
+            // how many rows the browse table renders at once; the status
+            // line still reports the true match count and a notice tells
+            // the user to narrow the filters to see the rest.
+            var renderList = visible;
+            var cap = product && product.maxBrowseRows;
+            if (cap && visible.length > cap) {
+                renderList = visible.slice(0, cap);
+                var notice = document.createElement('div');
+                notice.className = 'schedule-row-cap-notice';
+                notice.textContent = 'Showing the first ' + cap.toLocaleString() +
+                    ' of ' + visible.length.toLocaleString() +
+                    ' matching selections - use the filters or the model cards above to narrow the list.';
+                scheduleWrap.appendChild(notice);
+            }
+            var table = buildScheduleTable(data, renderList, product);
             scheduleWrap.appendChild(table);
             applyStickyHeaderOffsets(table);
             scheduleStickyRecomputes(table);

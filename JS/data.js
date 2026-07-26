@@ -174,6 +174,47 @@
                 width: 1064,
                 height: 616
             }
+        },
+        {
+            productKey: 'grilles',
+            displayName: 'GRILLES',
+            jsonFile: 'DATA/JSON/grilles.json',
+            pictureFile: 'DATA/PICTURES/GRILLES.jpg',
+            assetsFolder: 'ASSETS/GRILLES',
+            tileClass: 'tile-grilles',
+            autoTagPrefix: 'G-',
+            // 32 model groups from 13 catalogs share one sheet, so most
+            // columns only apply to some families (supply deflection
+            // columns, return neg. static pressure, linear-bar per-foot
+            // columns). Hide any data column empty for every row in view.
+            hideEmptyColumns: true,
+            // 32k+ selections - never render them all at once. The status
+            // line still shows the true match count; a notice asks the
+            // user to narrow filters past this many rows.
+            maxBrowseRows: 500,
+            // Family picker gallery (same mechanics as the diffusers,
+            // rendered by JS/grilles.js). `model` must match a MODEL
+            // column value; clicking a card filters via DESCRIPTION, so
+            // one representative model per family is enough. `label` is
+            // the card caption (family name instead of the long grouped
+            // model string).
+            modelGallery: [
+                { model: '150',                     label: '150',             picture: 'DATA/PICTURES/Price 150 (Black).jpg' },
+                { model: '21/22/31/32',             label: '20/30',           picture: 'DATA/PICTURES/Price 20-30 (Black).jpg' },
+                { model: '301/302',                 label: '300',             picture: 'DATA/PICTURES/Price 300 (Black).jpg' },
+                { model: '510/520/610/620/710/720', label: '500/600/700',     picture: 'DATA/PICTURES/Price 500-600-700 (Black).jpg' },
+                { model: '910/920',                 label: '900 GYM',         picture: 'DATA/PICTURES/Price 900 (Black).jpg' },
+                { model: '540/640',                 label: '540/640',         picture: 'DATA/PICTURES/Price 540-640 (Black).jpg' },
+                { model: 'LBP/LBPH',                label: 'LINEAR BAR',      picture: 'DATA/PICTURES/Price LBP (Black).jpg' },
+                { model: 'LBMH',                    label: 'LINEAR BAR HD',   picture: 'DATA/PICTURES/Price LBMH (Black).jpg' },
+                { model: '510Z/610Z/710Z',          label: '500/600/700 RTN', picture: 'DATA/PICTURES/Price 500-600-700 Return (Black).jpg' },
+                { model: '60/60FH',                 label: '60/70',           picture: 'DATA/PICTURES/Price Airfoil Return (Black).jpg' },
+                { model: '80/81/82',                label: 'EGG CRATE',       picture: 'DATA/PICTURES/Price Egg Crate (Black).jpg' },
+                { model: '10/10FF',                 label: 'PERFORATED',      picture: 'DATA/PICTURES/Price Perforated Return (Black).jpg' },
+                { model: '90/90FH',                 label: '90 GYM RTN',      picture: 'DATA/PICTURES/Price Return Gym (Black).jpg' },
+                { model: 'LG50',                    label: 'LATTICE',         picture: 'DATA/PICTURES/Price Lattice (Black).jpg' },
+                { model: 'STG',                     label: 'TRANSFER',        picture: 'DATA/PICTURES/Price Transfer (Black).jpg' }
+            ]
         }
     ];
 
