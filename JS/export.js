@@ -269,13 +269,23 @@ WHAT'S IN THE GRID
         var hidden;
         if (Array.isArray(extra.hiddenColumns)) {
             hidden = extra.hiddenColumns.slice();
-        } else if (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns) {
-            var hpSels = (items || []).map(function (it) {
+        } else {
+            var defSels = (items || []).map(function (it) {
                 return findSelectionById(data, it.selectionId);
             }).filter(Boolean);
-            hidden = HHpro.Capacity.scheduleHiddenColumns(productKey, data, hpSels);
-        } else {
-            hidden = [];
+            hidden = (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns)
+                ? HHpro.Capacity.scheduleHiddenColumns(productKey, data, defSels)
+                : [];
+            // hideEmptyColumns products (diffusers): mirror the on-screen
+            // default of dropping columns with no data for these items.
+            var hepProduct = HHpro.Data && HHpro.Data.getProduct
+                ? HHpro.Data.getProduct(productKey) : null;
+            if (hepProduct && hepProduct.hideEmptyColumns &&
+                HHpro.Schedule && HHpro.Schedule.emptyDataColumns) {
+                HHpro.Schedule.emptyDataColumns(data, defSels).forEach(function (l) {
+                    if (hidden.indexOf(l) < 0) hidden.push(l);
+                });
+            }
         }
         var hiddenSet = {};
         hidden.forEach(function (l) { hiddenSet[l] = true; });
@@ -413,6 +423,12 @@ WHAT'S IN THE GRID
         // --- Data rows ------------------------------------------------
         var curRow = numHeaderRows;
 
+        // Model-mapped notes context (diffusers): drives the auto note
+        // numbers in the Accessories column and the notes section below.
+        var notesCtx = (HHpro.ModelNotes && HHpro.ModelNotes.isModelMap(data))
+            ? HHpro.ModelNotes.buildContext(productKey, data, items)
+            : null;
+
         entries.forEach(function (entry) {
             var item = entry.item;
             var sel = entry.selection;
@@ -480,10 +496,19 @@ WHAT'S IN THE GRID
             }
 
             // Accessories (rowSpan over all sub-rows) - centered
-            // like every other data cell, not left-aligned.
+            // like every other data cell, not left-aligned. For
+            // model-mapped-notes products the applicable note numbers
+            // are generated automatically, with the user's free text
+            // appended after them.
             if (showAcc) {
+                var accValue = item.accessories || '';
+                if (notesCtx) {
+                    accValue = notesCtx.accessoriesText(
+                        HHpro.ModelNotes.modelOfSelection(data, sel),
+                        item.accessories);
+                }
                 putCell(rows, merges, curRow, accCol,
-                        { value: item.accessories || '', dataRow: true },
+                        { value: accValue, dataRow: true },
                         numItemRows, 1);
             }
 
@@ -496,7 +521,8 @@ WHAT'S IN THE GRID
         // Notes section now embeds the watermark as the bottom row of
         // the last notes box (it shares the box's border so it reads
         // as part of the notes section rather than a stray footer).
-        appendNotesSection(rows, merges, colCount, productKey, data, curRow);
+        appendNotesSection(rows, merges, colCount, productKey, data, curRow,
+                           notesCtx);
 
         // Column width heuristics (Excel character units)
         var colWidths = computeColumnWidths(
@@ -505,6 +531,23 @@ WHAT'S IN THE GRID
             showConfig, showAcc
         );
 
+        // Legend image (e.g. "SMD & AMD Options"): attached to the grid
+        // so the XLSX and print-PDF renderers can embed it below the
+        // notes section. Only present when a trigger model is included.
+        var legendProduct = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey) : null;
+        var legendImage = null;
+        if (notesCtx && legendProduct && HHpro.ModelNotes.legendApplies(
+                legendProduct, notesCtx.selectedModels)) {
+            var lg = legendProduct.notesLegend;
+            legendImage = {
+                url: lg.picture,
+                title: lg.title || '',
+                width: lg.width || 800,
+                height: lg.height || 600
+            };
+        }
+
         return {
             rows: rows,
             merges: merges,
@@ -512,7 +555,8 @@ WHAT'S IN THE GRID
             titleRowCount: titleRowCount,
             dataEndRow: dataEndRow,
             colCount: colCount,
-            colWidths: colWidths
+            colWidths: colWidths,
+            legendImage: legendImage
         };
     }
 
@@ -981,7 +1025,7 @@ WHAT'S IN THE GRID
     // included inline with continued numbering.
     // =================================================================
 
-    function appendNotesSection(rows, merges, colCount, productKey, data, startRow) {
+    function appendNotesSection(rows, merges, colCount, productKey, data, startRow, notesCtx) {
         var notes = collectVisibleNotes(productKey, data);
         var r = startRow;
         // Cell descriptor for the watermark line. Always emitted as the
@@ -1030,6 +1074,25 @@ WHAT'S IN THE GRID
             return;
         }
 
+        // Model-mapped format (diffusers): only the notes applicable to
+        // the models in the schedule, numbered to match the Accessories
+        // column. Custom notes continue the numbering.
+        if (notesCtx) {
+            var mmLines = notesCtx.list.map(function (entry) {
+                return entry.num + '. ' + entry.text;
+            });
+            var nextNum = notesCtx.customStartNum;
+            collectVisibleCustomNotes(productKey).forEach(function (text) {
+                mmLines.push(nextNum + '. ' + text);
+                nextNum++;
+            });
+            if (mmLines.length) {
+                emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:',
+                             mmLines, watermarkFooter);
+            }
+            return;
+        }
+
         // Simple list format (Gas Packs, Mini Splits, Multi Position Splits)
         if (notes.notes.length) {
             var lines = notes.notes.map(function (text, i) {
@@ -1037,6 +1100,20 @@ WHAT'S IN THE GRID
             });
             emitNotesBox(rows, merges, colCount, r, 'SCHEDULE NOTES:', lines, watermarkFooter);
         }
+    }
+
+    /** Visible user-added custom notes for a product tab, in order. */
+    function collectVisibleCustomNotes(productKey) {
+        var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
+            ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
+        var nstate = extra.scheduleNotesState || {};
+        var customAdded = Array.isArray(nstate.customAdded) ? nstate.customAdded : [];
+        var hidden = {};
+        (Array.isArray(nstate.deletedCustomIds) ? nstate.deletedCustomIds : [])
+            .forEach(function (id) { hidden[id] = true; });
+        return customAdded
+            .filter(function (a) { return a && a.id && !hidden[a.id]; })
+            .map(function (a) { return String(a.text || ''); });
     }
 
     /**
@@ -1170,7 +1247,8 @@ WHAT'S IN THE GRID
             'mini_splits':            'MINI SPLIT SCHEDULE',
             'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE',
             'gas_splits':             'GAS SPLIT SCHEDULE',
-            'vfds':                   'VFD SCHEDULE'
+            'vfds':                   'VFD SCHEDULE',
+            'diffusers':              'DIFFUSER SCHEDULE'
         };
         return titles[productKey] || 'SCHEDULE';
     }
@@ -1300,6 +1378,11 @@ WHAT'S IN THE GRID
     /**
      * Build a multi-sheet xlsx blob. sheets = [{title, grid}, ...].
      * Each section becomes its own worksheet in the workbook.
+     *
+     * Grids carrying a legendImage (diffusers "SMD & AMD Options") get
+     * the image embedded below the notes section via a per-sheet
+     * drawing part. Image bytes are fetched up front; a fetch failure
+     * simply drops the image rather than failing the export.
      */
     function generateXlsxBlobMulti(sheets) {
         var zip = new window.JSZip();
@@ -1307,19 +1390,114 @@ WHAT'S IN THE GRID
             return { title: sanitizeSheetName(s.title || 'Schedule'), grid: s.grid };
         }));
 
-        zip.file('[Content_Types].xml', contentTypesXmlMulti(safeSheets.length));
-        zip.file('_rels/.rels', rootRelsXml());
-        zip.file('xl/workbook.xml', workbookXmlMulti(safeSheets));
-        zip.file('xl/_rels/workbook.xml.rels', workbookRelsXmlMulti(safeSheets.length));
-        zip.file('xl/styles.xml', stylesXml());
-        safeSheets.forEach(function (s, i) {
-            zip.file('xl/worksheets/sheet' + (i + 1) + '.xml', sheetXml(s.grid));
+        var imagePromises = safeSheets.map(function (s) {
+            var li = s.grid && s.grid.legendImage;
+            if (!li || !li.url || typeof fetch !== 'function') {
+                return Promise.resolve(null);
+            }
+            return fetch(li.url)
+                .then(function (r) { return r.ok ? r.arrayBuffer() : null; })
+                .catch(function () { return null; });
         });
-        return zip.generateAsync({
-            type: 'blob',
-            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            compression: 'DEFLATE'
+
+        return Promise.all(imagePromises).then(function (imageBuffers) {
+            // Per-sheet drawing part index (1-based) or null.
+            var drawingCount = 0;
+            var sheetDrawing = safeSheets.map(function (s, i) {
+                if (!imageBuffers[i]) return null;
+                drawingCount++;
+                return drawingCount;
+            });
+
+            zip.file('[Content_Types].xml',
+                     contentTypesXmlMulti(safeSheets.length, drawingCount));
+            zip.file('_rels/.rels', rootRelsXml());
+            zip.file('xl/workbook.xml', workbookXmlMulti(safeSheets));
+            zip.file('xl/_rels/workbook.xml.rels', workbookRelsXmlMulti(safeSheets.length));
+            zip.file('xl/styles.xml', stylesXml());
+            safeSheets.forEach(function (s, i) {
+                var dIdx = sheetDrawing[i];
+                zip.file('xl/worksheets/sheet' + (i + 1) + '.xml',
+                         sheetXml(s.grid, !!dIdx));
+                if (dIdx) {
+                    zip.file('xl/media/image' + dIdx + '.jpg', imageBuffers[i]);
+                    zip.file('xl/drawings/drawing' + dIdx + '.xml',
+                             legendDrawingXml(s.grid));
+                    zip.file('xl/drawings/_rels/drawing' + dIdx + '.xml.rels',
+                             legendDrawingRelsXml(dIdx));
+                    zip.file('xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels',
+                             sheetDrawingRelsXml(dIdx));
+                }
+            });
+            return zip.generateAsync({
+                type: 'blob',
+                mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                compression: 'DEFLATE'
+            });
         });
+    }
+
+    // EMU per pixel (96 dpi): 914400 / 96
+    var EMU_PER_PX = 9525;
+
+    /**
+     * Drawing part XML placing the grid's legend image one row below
+     * the last grid row, anchored at column B. Displayed at ~560 px
+     * wide (about 6 in.), preserving the image's aspect ratio.
+     */
+    function legendDrawingXml(grid) {
+        var li = grid.legendImage;
+        var dispW = 560;
+        var dispH = Math.round(dispW * (li.height || 600) / (li.width || 800));
+        var cx = dispW * EMU_PER_PX;
+        var cy = dispH * EMU_PER_PX;
+        var anchorRow = grid.rows.length + 1;   // 0-based row below the notes
+
+        return XML_HEADER +
+            '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"' +
+                     ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"' +
+                     ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+              '<xdr:oneCellAnchor>' +
+                '<xdr:from>' +
+                  '<xdr:col>1</xdr:col><xdr:colOff>0</xdr:colOff>' +
+                  '<xdr:row>' + anchorRow + '</xdr:row><xdr:rowOff>0</xdr:rowOff>' +
+                '</xdr:from>' +
+                '<xdr:ext cx="' + cx + '" cy="' + cy + '"/>' +
+                '<xdr:pic>' +
+                  '<xdr:nvPicPr>' +
+                    '<xdr:cNvPr id="1" name="' + xmlEscape(li.title || 'Legend') + '"/>' +
+                    '<xdr:cNvPicPr/>' +
+                  '</xdr:nvPicPr>' +
+                  '<xdr:blipFill>' +
+                    '<a:blip r:embed="rId1"/>' +
+                    '<a:stretch><a:fillRect/></a:stretch>' +
+                  '</xdr:blipFill>' +
+                  '<xdr:spPr>' +
+                    '<a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm>' +
+                    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>' +
+                  '</xdr:spPr>' +
+                '</xdr:pic>' +
+                '<xdr:clientData/>' +
+              '</xdr:oneCellAnchor>' +
+            '</xdr:wsDr>';
+    }
+
+    function legendDrawingRelsXml(drawingIdx) {
+        return XML_HEADER +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+              '<Relationship Id="rId1"' +
+                ' Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"' +
+                ' Target="../media/image' + drawingIdx + '.jpg"/>' +
+            '</Relationships>';
+    }
+
+    function sheetDrawingRelsXml(drawingIdx) {
+        return XML_HEADER +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+              '<Relationship Id="rIdDrawing1"' +
+                ' Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing"' +
+                ' Target="../drawings/drawing' + drawingIdx + '.xml"/>' +
+            '</Relationships>';
     }
 
     /** Public blob factory for the Files-tab zip pipeline. */
@@ -1345,18 +1523,27 @@ WHAT'S IN THE GRID
         });
     }
 
-    function contentTypesXmlMulti(sheetCount) {
+    function contentTypesXmlMulti(sheetCount, drawingCount) {
         var overrides = '';
         for (var i = 1; i <= sheetCount; i++) {
             overrides += '<Override PartName="/xl/worksheets/sheet' + i +
                 '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
         }
+        var drawingParts = '';
+        for (var d = 1; d <= (drawingCount || 0); d++) {
+            drawingParts += '<Override PartName="/xl/drawings/drawing' + d +
+                '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>';
+        }
         return XML_HEADER +
             '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
               '<Default Extension="xml" ContentType="application/xml"/>' +
               '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+              ((drawingCount || 0) > 0
+                  ? '<Default Extension="jpg" ContentType="image/jpeg"/>'
+                  : '') +
               '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
               overrides +
+              drawingParts +
               '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
             '</Types>';
     }
@@ -1496,9 +1683,10 @@ WHAT'S IN THE GRID
             '</styleSheet>';
     }
 
-    function sheetXml(grid) {
+    function sheetXml(grid, hasDrawing) {
         var parts = [XML_HEADER,
-            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'];
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"' +
+                      ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'];
 
         // Column widths
         if (grid.colWidths && grid.colWidths.length) {
@@ -1562,6 +1750,11 @@ WHAT'S IN THE GRID
                 parts.push('<mergeCell ref="' + a1Range(m.r1, m.c1, m.r2, m.c2) + '"/>');
             });
             parts.push('</mergeCells>');
+        }
+
+        // Legend image drawing (relationship lives in the sheet's rels)
+        if (hasDrawing) {
+            parts.push('<drawing r:id="rIdDrawing1"/>');
         }
 
         parts.push('</worksheet>');
@@ -1718,16 +1911,30 @@ WHAT'S IN THE GRID
 
         // Wait for layout, then auto-fit to page width and fire print.
         // The delay gives the new window's stylesheet time to apply;
-        // without it Chrome can print a partially-unstyled page.
+        // without it Chrome can print a partially-unstyled page. If the
+        // page contains images (the notes legend), wait until they've
+        // loaded - capped at 2s - so they don't print as empty boxes.
         w.focus();
-        setTimeout(function () {
+        var waited = 0;
+        function printWhenReady() {
+            var imgs = w.document.images || [];
+            var pending = false;
+            for (var i = 0; i < imgs.length; i++) {
+                if (!imgs[i].complete) { pending = true; break; }
+            }
+            if (pending && waited < 2000) {
+                waited += 150;
+                setTimeout(printWhenReady, 150);
+                return;
+            }
             fitToPageWidth(w);
             try {
                 w.print();
             } catch (e) {
                 // Some browsers throw if the window was closed first
             }
-        }, 300);
+        }
+        setTimeout(printWhenReady, 300);
     }
 
     /**
@@ -1769,7 +1976,31 @@ WHAT'S IN THE GRID
             '<style>' + printCss() + '</style>' +
           '</head><body>' +
             renderGridAsHtmlTable(grid) +
+            renderLegendHtml(grid) +
           '</body></html>';
+    }
+
+    /**
+     * Legend image block (diffusers "SMD & AMD Options") printed below
+     * the schedule notes. The image URL is absolutized because the
+     * print window's document has no base URL of its own.
+     */
+    function renderLegendHtml(grid) {
+        var li = grid && grid.legendImage;
+        if (!li || !li.url) return '';
+        var absUrl;
+        try {
+            absUrl = new URL(li.url, window.location.href).href;
+        } catch (e) {
+            absUrl = li.url;
+        }
+        return '<div class="legend-print">' +
+                 (li.title
+                     ? '<div class="legend-print-title">' + xmlEscape(li.title) + '</div>'
+                     : '') +
+                 '<img src="' + xmlEscape(absUrl) + '" alt="' +
+                     xmlEscape(li.title || 'Legend') + '">' +
+               '</div>';
     }
 
     function printCss() {
@@ -1834,6 +2065,13 @@ WHAT'S IN THE GRID
                   ' font-style: italic; font-size: 7pt;' +
                   ' color: #888 !important; padding: 3px 8px;' +
                   ' font-weight: normal !important; }' +
+
+            // Legend image block (below the schedule notes box).
+            '.legend-print { margin-top: 10px; }' +
+            '.legend-print-title { font-weight: bold; font-size: 9pt;' +
+                  ' margin-bottom: 4px; }' +
+            '.legend-print img { width: 5.5in; max-width: 100%;' +
+                  ' border: 1px solid #000; background: #fff; }' +
 
             // Chrome/Edge: force backgrounds through to the print.
             '@media print {' +
@@ -2070,7 +2308,9 @@ WHAT'S IN THE GRID
             'marvair': 'Marvair Vertical Wall Mount',
             'mini_splits': 'Mini Splits',
             'multi_position_splits': 'Multi Position Splits',
-            'gas_splits': 'Gas Splits'
+            'gas_splits': 'Gas Splits',
+            'vfds': 'VFDs',
+            'diffusers': 'Diffusers'
         };
         return fallback[productKey] || productKey;
     }

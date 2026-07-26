@@ -2012,7 +2012,7 @@
 
         inner.appendChild(buildProjectSchedule(productKey, items, data, hidden));
         if (!tplActive) {
-            inner.appendChild(buildScheduleNotesSection(productKey, data));
+            inner.appendChild(buildScheduleNotesSection(productKey, data, items));
         }
 
         return wrap;
@@ -2024,11 +2024,25 @@
     // no heat-pump units are in the project (HHpro.Capacity.
     // scheduleHiddenColumns); [] for every other product.
     function scheduleHiddenDefaults(productKey, items, data) {
-        if (!(HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns)) return [];
         var sels = (items || []).map(function (it) {
             return findSelectionById(data, it.selectionId);
         }).filter(Boolean);
-        return HHpro.Capacity.scheduleHiddenColumns(productKey, data, sels);
+        var hidden = [];
+        if (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns) {
+            hidden = HHpro.Capacity.scheduleHiddenColumns(productKey, data, sels);
+        }
+        // hideEmptyColumns products (diffusers): also hide any data
+        // column that's empty for every item in the project, so the
+        // schedule only shows the columns relevant to its models.
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey) : null;
+        if (product && product.hideEmptyColumns &&
+            HHpro.Schedule && HHpro.Schedule.emptyDataColumns) {
+            HHpro.Schedule.emptyDataColumns(data, sels).forEach(function (l) {
+                if (hidden.indexOf(l) < 0) hidden.push(l);
+            });
+        }
+        return hidden;
     }
 
     function buildProductToolbar(productKey, items, data, tplActive, editing) {
@@ -2624,6 +2638,14 @@
     function buildProjectScheduleBody(productKey, selections, visibleLetters, data) {
         var tbody = document.createElement('tbody');
 
+        // Model-mapped notes context (diffusers): numbers the visible
+        // schedule notes once per render so each row's Accessories cell
+        // can cite the note numbers that apply to its model.
+        var notesCtx = (HHpro.ModelNotes && HHpro.ModelNotes.isModelMap(data))
+            ? HHpro.ModelNotes.buildContext(productKey, data,
+                selections.map(function (e) { return e.item; }))
+            : null;
+
         // kW-variant family lookup is needed for the dropdown -- one
         // call per render covers the whole tab. Null when the product
         // doesn't merge kW variants.
@@ -2773,7 +2795,11 @@
                         tr.appendChild(buildConfigCell(item, data, numRows));
                     }
                     if (hasAccessoriesColumn(productKey)) {
-                        tr.appendChild(buildAccessoriesCell(item, numRows));
+                        tr.appendChild(buildAccessoriesCell(item, numRows,
+                            notesCtx ? {
+                                ctx: notesCtx,
+                                model: HHpro.ModelNotes.modelOfSelection(data, sel)
+                            } : null));
                     }
                 }
 
@@ -2906,10 +2932,27 @@
         return wrap;
     }
 
-    function buildAccessoriesCell(item, numRows) {
+    function buildAccessoriesCell(item, numRows, modelNotes) {
         var td = document.createElement('td');
         td.className = 'project-sched-acc-cell';
         if (numRows > 1) td.rowSpan = numRows;
+
+        // Model-mapped notes (diffusers): the applicable schedule-note
+        // numbers are generated automatically and shown as a fixed
+        // prefix; the text input holds only the user's extra text
+        // (options like "BN, EHT"), appended after the numbers.
+        if (modelNotes && modelNotes.model) {
+            var nums = modelNotes.ctx.numbersForModel(modelNotes.model).join(', ');
+            if (nums) {
+                var prefix = document.createElement('span');
+                prefix.className = 'project-sched-acc-autonums';
+                prefix.title = 'Applicable schedule note numbers (automatic)';
+                prefix.textContent = nums;
+                td.appendChild(prefix);
+                td.classList.add('project-sched-acc-cell-auto');
+            }
+        }
+
         td.appendChild(makeScheduleTextInput({
             value: item.accessories || '',
             placeholder: 'Accessories',
@@ -4553,7 +4596,7 @@
     //   }
     // =================================================================
 
-    function buildScheduleNotesSection(productKey, data) {
+    function buildScheduleNotesSection(productKey, data, items) {
         var section = document.createElement('section');
         section.className = 'schedule-notes-section';
 
@@ -4570,7 +4613,10 @@
             return section;
         }
 
-        if (notes.format === 'marvair') {
+        if (notes.format === 'modelmap' && HHpro.ModelNotes) {
+            section.appendChild(
+                buildModelMapNotesArea(productKey, data, items || [], nstate));
+        } else if (notes.format === 'marvair') {
             section.appendChild(buildMarvairNotesBlocks(productKey, notes, nstate));
         } else {
             section.appendChild(buildListNotesBlock(productKey, notes, nstate));
@@ -4585,6 +4631,97 @@
         section.appendChild(buildCustomNotesBlock(productKey, nstate));
 
         return section;
+    }
+
+    // =================================================================
+    // Model-mapped notes layout (diffusers)
+    // -----------------------------------------------------------------
+    // Only the notes applicable to the models actually in the project
+    // are shown, numbered in sheet order. The numbers match what the
+    // Accessories column cites on each row. When any legend-trigger
+    // model (SMD/AMD, SMD w/ SR) is present, the product's notesLegend
+    // image renders to the right of the notes list.
+    // =================================================================
+
+    function buildModelMapNotesArea(productKey, data, items, nstate) {
+        var ctx = HHpro.ModelNotes.buildContext(productKey, data, items);
+
+        var wrap = document.createElement('div');
+        wrap.className = 'notes-with-legend';
+
+        var block = document.createElement('div');
+        block.className = 'notes-block notes-plain notes-modelmap';
+        block.appendChild(buildBlockHeader('SCHEDULE NOTES:'));
+
+        var addedVisible = visibleCustomAdded(nstate);
+
+        if (!items.length) {
+            block.appendChild(buildEmptyNotesHint(
+                'Notes appear once items are added to this schedule - only the '
+                + 'notes that apply to the selected models are shown.'
+            ));
+        } else if (!ctx.list.length && !addedVisible.length) {
+            block.appendChild(buildEmptyNotesHint(
+                'All notes removed. Click one below to add it back in.'
+            ));
+        } else {
+            var list = document.createElement('ol');
+            list.className = 'notes-list';
+
+            ctx.list.forEach(function (entry) {
+                var li = document.createElement('li');
+                li.className = 'notes-item notes-item-deletable';
+
+                var row = document.createElement('div');
+                row.className = 'notes-item-row';
+
+                var del = makeDelButton('Remove this note', (function (idx) {
+                    return function () {
+                        toggleBuiltInDeleted(productKey, idx, true);
+                        HHpro.App.showView('project_view');
+                    };
+                })(entry.originalIdx));
+                row.appendChild(del);
+
+                var span = document.createElement('span');
+                span.className = 'notes-item-text';
+                span.textContent = entry.text;
+                row.appendChild(span);
+
+                li.appendChild(row);
+                list.appendChild(li);
+            });
+
+            addedVisible.forEach(function (added) {
+                list.appendChild(buildCustomAddedNoteItem(productKey, added));
+            });
+
+            block.appendChild(list);
+        }
+
+        wrap.appendChild(block);
+
+        // Legend image (e.g. "SMD & AMD Options") beside the notes.
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey) : null;
+        if (product && HHpro.ModelNotes.legendApplies(product, ctx.selectedModels)) {
+            wrap.appendChild(buildNotesLegendBlock(product.notesLegend));
+        }
+
+        return wrap;
+    }
+
+    function buildNotesLegendBlock(legend) {
+        var block = document.createElement('div');
+        block.className = 'notes-block notes-legend-block';
+        block.appendChild(buildBlockHeader(legend.title || 'LEGEND:'));
+
+        var img = new Image();
+        img.className = 'notes-legend-image';
+        img.alt = legend.title || 'Schedule legend';
+        img.src = legend.picture;
+        block.appendChild(img);
+        return block;
     }
 
     /**
@@ -4727,6 +4864,19 @@
                         return {
                             text: (o && o.text) ? String(o.text) : '',
                             sub: (o && Array.isArray(o.sub)) ? o.sub.slice() : []
+                        };
+                    })
+                    : []
+            };
+        }
+        if (raw.format === 'modelmap') {
+            return {
+                format: 'modelmap',
+                notes: Array.isArray(raw.notes)
+                    ? raw.notes.map(function (n) {
+                        return {
+                            models: (n && Array.isArray(n.models)) ? n.models.slice() : [],
+                            text: (n && n.text) ? String(n.text) : ''
                         };
                     })
                     : []
@@ -4990,6 +5140,10 @@
                     subHint = ' (+ ' + opt.sub.length +
                         ' sub-item' + (opt.sub.length === 1 ? '' : 's') + ')';
                 }
+            } else if (notes.format === 'modelmap') {
+                var mm = notes.notes[idx];
+                if (!mm) return;
+                displayText = String(mm.text || '');
             } else {
                 var t = notes.notes[idx];
                 if (t === undefined) return;

@@ -1780,3 +1780,57 @@
 .tpl-editing .tpl-notes .tpl-edit-input {
     width: 100%;
 }
+/* ============================================================
+   Model-mapped notes (diffusers)
+   ------------------------------------------------------------
+   Notes list + optional legend image (SMD & AMD Options) side
+   by side. The legend wraps below the notes on narrow screens.
+   ============================================================ */
+
+.notes-with-legend {
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.notes-with-legend > .notes-modelmap {
+    flex: 1 1 480px;
+    min-width: 320px;
+}
+
+.notes-legend-block {
+    flex: 0 1 460px;
+    min-width: 280px;
+}
+
+/* The legend scan is dark-line-art on white; keep it on a white
+   well so it stays legible on the dark theme. */
+.notes-legend-image {
+    display: block;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-xs);
+}
+
+/* Auto note numbers in the Accessories column (diffusers).
+   The numbers are generated from the schedule notes; the text
+   input next to them holds the user's own additions. */
+.project-sched-acc-cell-auto {
+    white-space: nowrap;
+}
+
+.project-sched-acc-autonums {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-right: var(--space-xs);
+}
+
+.project-sched-acc-cell-auto .project-sched-input {
+    width: auto;
+    min-width: 90px;
+    display: inline-block;
+}

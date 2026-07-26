@@ -120,6 +120,44 @@
             hasServesColumn: true,
             // Auto Tag prefix default for this product.
             autoTagPrefix: 'VFD-'
+        },
+        {
+            productKey: 'diffusers',
+            displayName: 'DIFFUSERS',
+            jsonFile: 'DATA/JSON/diffusers.json',
+            pictureFile: 'DATA/PICTURES/DIFFUSERS.jpg',
+            assetsFolder: 'ASSETS/DIFFUSERS',
+            tileClass: 'tile-diffusers',
+            autoTagPrefix: 'D-',
+            // The diffuser schedule holds 8 model families in one sheet,
+            // so most columns only apply to some models. Hide any data
+            // column that is empty for every row currently in view
+            // (browse page respects the active filters; the project
+            // schedule + exports respect the items in the project).
+            hideEmptyColumns: true,
+            // Model picker gallery rendered above the filters/schedule
+            // on the browse page. `model` must match the MODEL column
+            // value in the Excel data exactly - clicking a card filters
+            // the schedule to that model (via the DESCRIPTION filter).
+            modelGallery: [
+                { model: 'SPD',          picture: 'DATA/PICTURES/Price SPD.jpg' },
+                { model: 'SCD',          picture: 'DATA/PICTURES/Price SCD.jpg' },
+                { model: 'SPD (Return)', picture: 'DATA/PICTURES/Price SPD.jpg' },
+                { model: 'SCDA',         picture: 'DATA/PICTURES/Price SCDA.jpg' },
+                { model: 'SMD/AMD',      picture: 'DATA/PICTURES/Price SMD.jpg' },
+                { model: 'SMD w/ SR',    picture: 'DATA/PICTURES/Price SMD.jpg' },
+                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR.jpg' }
+            ],
+            // Core-style legend image shown beside the schedule notes
+            // (and embedded in the Excel / PDF exports) whenever any of
+            // the listed models is in the project schedule.
+            notesLegend: {
+                models: ['SMD/AMD', 'SMD w/ SR'],
+                title: 'SMD & AMD OPTIONS:',
+                picture: 'DATA/PICTURES/SMD & AMD Options.jpg',
+                width: 1064,
+                height: 616
+            }
         }
     ];
 

@@ -100,8 +100,39 @@
         },
         findKwFamilyForSelection: function (data, productKey, selectionId) {
             return findKwFamilyForSelection(data, productKey, selectionId);
+        },
+        // Data columns with no value in any row of `selections`. Used by
+        // products flagged with hideEmptyColumns in data.js (diffusers)
+        // to drop the columns that don't apply to the models in view -
+        // on the browse page, the project schedule, and the exports.
+        emptyDataColumns: function (data, selections) {
+            return emptyDataColumns(data, selections);
         }
     };
+
+    /**
+     * Return the schedule column letters that have NO value in any row
+     * of the given selections. An empty selection list returns [] so a
+     * fresh/unfiltered view never hides everything by accident.
+     */
+    function emptyDataColumns(data, selections) {
+        var allLetters = (data && data.scheduleHeader &&
+                          data.scheduleHeader.columnLetters) || [];
+        if (!Array.isArray(selections) || !selections.length) return [];
+        var hasValue = {};
+        selections.forEach(function (sel) {
+            (sel.rows || []).forEach(function (row) {
+                var sd = row.scheduleData || {};
+                Object.keys(sd).forEach(function (k) {
+                    var v = sd[k];
+                    if (v !== null && v !== undefined && String(v) !== '') {
+                        hasValue[k] = true;
+                    }
+                });
+            });
+        });
+        return allLetters.filter(function (l) { return !hasValue[l]; });
+    }
 
     /**
      * Walk a product's scheduleHeader and return every column whose
@@ -294,6 +325,14 @@
             ? params.modelQuery.trim()
             : null;
 
+        // Optional per-product intro section (e.g. the diffuser model
+        // gallery) rendered between the title block and the filter bar.
+        // Populated after the filter callbacks below exist, since the
+        // section may drive the filters (see introApi).
+        var introContainer = document.createElement('div');
+        introContainer.className = 'product-intro';
+        main.appendChild(introContainer);
+
         var filterBarContainer = document.createElement('div');
         main.appendChild(filterBarContainer);
 
@@ -325,6 +364,23 @@
         var initialVisible = getVisibleFilters(product.productKey, data, filterValues);
         initialVisible.forEach(function (fc) { filterValues[fc.name] = null; });
 
+        // Per-product intro section (diffuser model gallery). The api
+        // lets the section read + drive the filter state and re-sync
+        // itself after every filter change.
+        var introListeners = [];
+        var introExt = HHpro.ProductExtensions &&
+                       HHpro.ProductExtensions[product.productKey];
+        if (introExt && typeof introExt.buildIntroSection === 'function') {
+            var intro = introExt.buildIntroSection(product, data, {
+                setFilter: function (name, value) { onUserFilterChange(name, value); },
+                getFilterValue: function (name) { return filterValues[name]; },
+                onFilterChange: function (cb) {
+                    if (typeof cb === 'function') introListeners.push(cb);
+                }
+            });
+            if (intro) introContainer.appendChild(intro);
+        }
+
         renderModelFilterChip();
         applyFilterChange();
 
@@ -342,6 +398,9 @@
             autoSelectSingleOptions();
             renderFilterBar();
             refreshSchedule();
+            // Let the intro section (model gallery) re-sync its active
+            // card against the new filter state.
+            introListeners.forEach(function (cb) { cb(); });
         }
 
         function onUserFilterChange(filterName, newValue) {
@@ -693,6 +752,15 @@
             HHpro.Capacity.scheduleHiddenColumns(
                 product && product.productKey, data, selections
             ).forEach(function (letter) { hiddenSet[letter] = true; });
+        }
+        // Products with hideEmptyColumns (diffusers): drop any data
+        // column that has no value in the rows currently in view, so
+        // e.g. filtering to SPD hides the columns that only apply to
+        // other models (APPLICATION, DUCT SIZE, CFM/SIDE, ...).
+        if (product && product.hideEmptyColumns) {
+            emptyDataColumns(data, selections).forEach(function (letter) {
+                hiddenSet[letter] = true;
+            });
         }
         table.appendChild(buildScheduleHead(data, hiddenSet));
         table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));

@@ -191,6 +191,28 @@ PRODUCT_CONFIGS = {
             "targets": [],
         },
     },
+    "PRICE DIFFUSER DATA.xlsx": {
+        "productType": "DIFFUSERS",
+        "outputFileName": "diffusers.json",
+        "headerRows": 2,
+        "dataStartRow": 4,
+        "supportsMultiRow": False,
+        "assetsFolder": "DIFFUSERS",
+        # The diffuser SCHEDULE NOTES tab has TWO columns: col A is the
+        # model list the note applies to ("ALL" or a comma-separated
+        # list like "SPD, SCD"), col B is the note text. The site uses
+        # this mapping to show only the notes that apply to the models
+        # actually selected, and to auto-number each schedule row's
+        # applicable notes in its Accessories column.
+        "notesFormat": "modelmap",
+        "searchSchema": {
+            "displayName": "Diffusers",
+            "description": "Price ceiling diffusers (supply + return). Enter a target airflow and/or use the filters to narrow by model, size, and application.",
+            "targets": [
+                {"label": "Airflow", "col": "U", "unit": "CFM", "defaultTolerance": 15},
+            ],
+        },
+    },
 }
 
 
@@ -715,27 +737,53 @@ def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
 # SCHEDULE NOTES
 # -----------------------------------------------------------------------------
 
-def extract_schedule_notes(wb):
+def extract_schedule_notes(wb, notes_format=None):
     """Read the SCHEDULE NOTES tab and return a structured notes object.
 
-    Auto-detects the Marvair three-section layout by checking cell A1:
-    if it starts with 'STANDARD OPTIONS', parse as Marvair; otherwise
-    parse as a flat one-note-per-row list.
+    `notes_format` comes from the product config:
+      "modelmap"  - two-column layout (col A = model list or "ALL",
+                    col B = note text). Used by DIFFUSERS.
+      None        - auto-detect: the Marvair three-section layout is
+                    recognized by cell A1 starting with 'STANDARD
+                    OPTIONS'; otherwise a flat one-note-per-row list.
 
     Output shape:
-      {"format": "list",    "notes": [...]}
-      {"format": "marvair", "standard": [...], "configuration": [...],
-                            "optional":  [{"text": ..., "sub": [...]}, ...]}
+      {"format": "list",     "notes": [...]}
+      {"format": "modelmap", "notes": [{"models": [...], "text": ...}, ...]}
+      {"format": "marvair",  "standard": [...], "configuration": [...],
+                             "optional":  [{"text": ..., "sub": [...]}, ...]}
     """
     if "SCHEDULE NOTES" not in wb.sheetnames:
         return {"format": "list", "notes": []}
     ws = wb["SCHEDULE NOTES"]
+
+    if notes_format == "modelmap":
+        return _parse_modelmap_notes(ws)
 
     a1 = ws.cell(row=1, column=1).value
     a1_str = str(a1).strip().upper() if a1 is not None else ""
     if a1_str.startswith("STANDARD OPTIONS"):
         return _parse_marvair_notes(ws)
     return _parse_simple_notes(ws)
+
+
+def _parse_modelmap_notes(ws):
+    """Parse the two-column model-mapped SCHEDULE NOTES layout.
+
+    Col A: "ALL" or a comma-separated model list ("SPD, SCD, SCDA").
+    Col B: the note text. Rows missing either cell are skipped.
+    Note order in the sheet is preserved - it drives the numbering
+    on the site.
+    """
+    notes = []
+    for r in range(1, ws.max_row + 1):
+        models_raw = clean_value(ws.cell(row=r, column=1).value)
+        text = clean_value(ws.cell(row=r, column=2).value)
+        if not models_raw or not text:
+            continue
+        models = [m.strip() for m in str(models_raw).split(",") if m.strip()]
+        notes.append({"models": models, "text": str(text)})
+    return {"format": "modelmap", "notes": notes}
 
 
 def _parse_simple_notes(ws):
@@ -896,7 +944,7 @@ def convert_file(input_path, config, output_path):
         refrigerant_columns_meta=refrigerant_columns or None,
     )
 
-    schedule_notes = extract_schedule_notes(wb)
+    schedule_notes = extract_schedule_notes(wb, config.get("notesFormat"))
 
     schedule_col_letters = [
         get_column_letter(c) for c in range(schedule_cols[0], schedule_cols[1] + 1)
