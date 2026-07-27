@@ -560,7 +560,14 @@ WHAT'S IN THE GRID
             colCount: colCount,
             colWidths: colWidths,
             legendImage: legendImage,
-            legendAnchor: legendAnchor || null
+            legendAnchor: legendAnchor || null,
+            // Core-style icon catalog (folder + canonical code order) for
+            // renderers that can't embed the legend JPG - the DXF export
+            // vector-traces the icons of the codes actually scheduled.
+            coreStyleIcons: (legendImage && legendProduct.coreStyles)
+                ? { folder: legendProduct.coreStyles.folder,
+                    codes: (legendProduct.coreStyles.codes || []).slice() }
+                : null
         };
     }
 
@@ -2450,13 +2457,160 @@ WHAT'S IN THE GRID
     var DXF_ENTITY_HANDLE_BASE = 0x100;
 
     function dxfBlobFromSections(sections, drawings) {
-        try {
+        // DXF can't embed the legend JPG (IMAGEDEF references an external
+        // file that wouldn't ship with the download), so grids with a
+        // legend box get their used core-style icons vector-traced first;
+        // buildDxfText then draws them as SOLID entities inside the box.
+        var preps = (sections || []).map(function (s) {
+            return (s && s.grid) ? prepareLegendIconVectors(s.grid)
+                                 : Promise.resolve(null);
+        });
+        return Promise.all(preps).then(function () {
             var text = buildDxfText(sections, drawings);
-            var blob = new Blob([text], { type: 'application/dxf' });
-            return Promise.resolve(blob);
-        } catch (e) {
-            return Promise.reject(e);
+            return new Blob([text], { type: 'application/dxf' });
+        });
+    }
+
+    /**
+     * Which core-style codes does this grid actually schedule? Read the
+     * CORE STYLE column straight out of the built grid (values are the
+     * grouped codes shown on the sheet, e.g. "2S, 2G"), ordered by the
+     * catalog's canonical code order so the legend reads predictably.
+     */
+    function collectCoreStyleCodesFromGrid(grid) {
+        var rows = grid.rows || [];
+        var headerRows = grid.numHeaderRows || 0;
+        var col = -1;
+        for (var r = 0; r < headerRows && col < 0; r++) {
+            var row = rows[r] || [];
+            for (var c = 0; c < row.length; c++) {
+                var cell = row[c];
+                if (!cell || cell.covered) continue;
+                var v = String(cell.value || '')
+                    .replace(/\s+/g, ' ').trim().toUpperCase();
+                if (v === 'CORE STYLE') { col = c; break; }
+            }
         }
+        if (col < 0) return [];
+
+        var seen = {};
+        var codes = [];
+        var end = grid.dataEndRow || rows.length;
+        for (var dr = headerRows; dr < end; dr++) {
+            var dcell = rows[dr] && rows[dr][col];
+            if (!dcell || dcell.covered || !dcell.value) continue;
+            String(dcell.value).split(',').forEach(function (part) {
+                var code = part.trim().toUpperCase();
+                if (code && !seen[code]) {
+                    seen[code] = true;
+                    codes.push(code);
+                }
+            });
+        }
+
+        var order = (grid.coreStyleIcons && grid.coreStyleIcons.codes) || [];
+        if (order.length) {
+            codes.sort(function (a, b) {
+                var ia = order.indexOf(a);
+                var ib = order.indexOf(b);
+                return (ia < 0 ? 1e3 : ia) - (ib < 0 ? 1e3 : ib);
+            });
+        }
+        return codes;
+    }
+
+    /**
+     * Load + vector-trace the legend icons for a grid: each icon JPG
+     * (white background, dark line art with the code label baked in) is
+     * downsampled, thresholded to ink/no-ink, and run-length encoded
+     * into filled rectangles (px units). Results land on
+     * grid._legendIconVectors; any load/decode failure just leaves the
+     * grid without vectors (the DXF falls back to the title-only box).
+     */
+    function prepareLegendIconVectors(grid) {
+        grid._legendIconVectors = null;
+        if (!grid.coreStyleIcons || !grid.legendImage || !grid.legendAnchor) {
+            return Promise.resolve(null);
+        }
+        var codes = collectCoreStyleCodesFromGrid(grid);
+        if (!codes.length) return Promise.resolve(null);
+
+        return Promise.all(codes.map(function (code) {
+            var url = grid.coreStyleIcons.folder + '/' + code + '.jpg';
+            return traceIconToRects(url, code);
+        })).then(function (list) {
+            var ok = list.filter(Boolean);
+            if (ok.length) grid._legendIconVectors = ok;
+            return null;
+        });
+    }
+
+    function traceIconToRects(url, code) {
+        return new Promise(function (resolve) {
+            if (typeof Image === 'undefined' ||
+                typeof document === 'undefined') {
+                resolve(null);
+                return;
+            }
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var TARGET_W = 96;
+                    var w = TARGET_W;
+                    var h = Math.max(8, Math.round(
+                        img.naturalHeight / img.naturalWidth * TARGET_W));
+                    var cv = document.createElement('canvas');
+                    cv.width = w;
+                    cv.height = h;
+                    var cx = cv.getContext('2d');
+                    cx.fillStyle = '#fff';
+                    cx.fillRect(0, 0, w, h);
+                    cx.drawImage(img, 0, 0, w, h);
+                    var d = cx.getImageData(0, 0, w, h).data;
+
+                    // Horizontal ink runs per row...
+                    var runs = [];
+                    for (var y = 0; y < h; y++) {
+                        var start = -1;
+                        for (var x = 0; x <= w; x++) {
+                            var ink = false;
+                            if (x < w) {
+                                var i = (y * w + x) * 4;
+                                var lum = 0.299 * d[i] + 0.587 * d[i + 1] +
+                                          0.114 * d[i + 2];
+                                ink = lum < 150;
+                            }
+                            if (ink && start < 0) start = x;
+                            if (!ink && start >= 0) {
+                                runs.push({ x: start, y: y, w: x - start, h: 1 });
+                                start = -1;
+                            }
+                        }
+                    }
+                    // ...then merge vertically-stacked identical runs so
+                    // long straight edges become one rectangle instead of
+                    // one per pixel row.
+                    var open = {};
+                    var rects = [];
+                    runs.forEach(function (run) {
+                        var key = run.x + '/' + run.w;
+                        var prev = open[key];
+                        if (prev && prev.y + prev.h === run.y) {
+                            prev.h += 1;
+                        } else {
+                            var r = { x: run.x, y: run.y, w: run.w, h: 1 };
+                            rects.push(r);
+                            open[key] = r;
+                        }
+                    });
+                    resolve({ code: code, w: w, h: h, rects: rects });
+                } catch (e) {
+                    resolve(null);
+                }
+            };
+            img.onerror = function () { resolve(null); };
+            img.src = url;
+        });
     }
 
     function buildDxfText(sections, drawings) {
@@ -2553,11 +2707,81 @@ WHAT'S IN THE GRID
                 var y2 = rowYs[Math.min(rr + rowSpan, rows.length)];
 
                 registerCellBorders(cell, x1, y1, x2, y2, ctx);
-                emitCellMText(cell, x1, y1, x2, y2, ctx);
+                // The legend box gets real geometry (title pinned top-left
+                // + vector-traced core-style icons) when icon vectors were
+                // prepared; otherwise it falls through to the plain
+                // title-only MTEXT like any other cell.
+                if (cell.legendCell && grid._legendIconVectors &&
+                        grid._legendIconVectors.length) {
+                    emitLegendBox(cell, x1, y1, x2, y2,
+                                  grid._legendIconVectors, ctx);
+                } else {
+                    emitCellMText(cell, x1, y1, x2, y2, ctx);
+                }
             }
         }
 
         return { width: tableWidth, height: tableHeight };
+    }
+
+    // Draw the core-style legend inside its box: the title at the top
+    // (the default path would center it vertically in the tall spanned
+    // cell), then the traced icons flowing left-to-right, sized to fit
+    // the box. Icons are filled SOLID rectangles from the run-length
+    // trace; the code label is baked into each icon's artwork.
+    var DXF_LEGEND_ICON_W = 26;   // preferred icon width, shrinks to fit
+
+    function emitLegendBox(cell, x1, y1, x2, y2, icons, ctx) {
+        var pad = DXF_TXT_PAD * 2;
+
+        var title = (cell.value === null || cell.value === undefined)
+            ? '' : String(cell.value);
+        if (title) {
+            var th = nextHandle(ctx);
+            ctx.entities.push(dxfMTextEntity(th, 'SCHEDULE_TEXT',
+                x1 + pad, y1 - pad, DXF_TXT_HEADER,
+                Math.max(1, (x2 - x1) - 2 * pad),
+                1 /* top-left */, mtextEscape(title)));
+        }
+
+        var topY = y1 - pad - DXF_TXT_HEADER * 1.4 - pad;
+        var boxW = (x2 - x1) - 2 * pad;
+        var boxH = topY - y2 - pad;
+        if (boxW <= 6 || boxH <= 6) return;
+
+        var maxAspect = 1;
+        icons.forEach(function (ic) {
+            var a = ic.h / ic.w;
+            if (a > maxAspect) maxAspect = a;
+        });
+
+        var gap = 3;
+        var iconW = DXF_LEGEND_ICON_W;
+        var perRow, rowsNeeded;
+        for (;;) {
+            perRow = Math.max(1, Math.floor((boxW + gap) / (iconW + gap)));
+            rowsNeeded = Math.ceil(icons.length / perRow);
+            var needH = rowsNeeded * (iconW * maxAspect + gap) - gap;
+            if (needH <= boxH || iconW <= 8) break;
+            iconW -= 2;
+        }
+
+        icons.forEach(function (ic, idx) {
+            var row = Math.floor(idx / perRow);
+            var col = idx % perRow;
+            var ox = x1 + pad + col * (iconW + gap);
+            var oy = topY - row * (iconW * maxAspect + gap);
+            var s = iconW / ic.w;
+            ic.rects.forEach(function (r) {
+                var rx1 = ox + r.x * s;
+                var ry1 = oy - r.y * s;
+                var rx2 = rx1 + r.w * s;
+                var ry2 = ry1 - r.h * s;
+                var sh = nextHandle(ctx);
+                ctx.entities.push(dxfSolidEntity(sh, 'SCHEDULE_TEXT',
+                    rx1, ry1, rx2, ry2));
+            });
+        });
     }
 
     function rowHeightFor(grid, r) {
@@ -2760,13 +2984,16 @@ WHAT'S IN THE GRID
             insY = midY;
         }
 
-        // Hard-wrap headers AND notes here (explicit MTEXT \P line breaks)
-        // rather than relying on the CAD renderer's own width-based
-        // word-wrap, which varies between viewers and let long text -
-        // headers like "MAX ALLOWABLE LINE-SET LENGTHS" and long schedule
-        // notes - spill outside the cell. Data cells and the short
-        // single-line title / watermark stay as one run.
-        var doWrap = (cell.bold || cell.notesRow) && !cell.title && !cell.watermark;
+        // Hard-wrap everything except the single-line title / watermark
+        // here (explicit MTEXT \P line breaks) rather than relying on the
+        // CAD renderer's own width-based word-wrap, which varies between
+        // viewers and let long text spill outside the cell. That includes
+        // DATA cells: values like a 30-char diffuser DESCRIPTION or the
+        // auto-numbered Accessories list ("1, 2, 3, ... 22") are wider
+        // than their column and overflowed into the neighbours in
+        // AutoCAD/LibreCAD. computeRowHeights already wraps every cell
+        // when sizing rows, so the pre-wrapped text always has room.
+        var doWrap = !cell.title && !cell.watermark;
         var content;
         if (doWrap) {
             // Width-wrap each hard line, then join all resulting lines.
@@ -2823,6 +3050,21 @@ WHAT'S IN THE GRID
                '\n 73\n1' +                          // line spacing style: at-least
                '\n 44\n1.0' +                       // line spacing factor
                '\n';
+    }
+
+    // Axis-aligned filled rectangle. SOLID takes its 3rd/4th corners in
+    // zigzag order (top-left, top-right, bottom-left, bottom-right) -
+    // ring order would draw a bowtie. Supported by AutoCAD and LibreCAD.
+    function dxfSolidEntity(handle, layer, x1, yTop, x2, yBot) {
+        return '  0\nSOLID\n  5\n' + handle +
+               '\n330\n' + DXF_MODEL_SPACE_RECORD +
+               '\n100\nAcDbEntity' +
+               '\n  8\n' + layer +
+               '\n100\nAcDbTrace' +
+               '\n 10\n' + fmt(x1) + '\n 20\n' + fmt(yTop) + '\n 30\n0.0' +
+               '\n 11\n' + fmt(x2) + '\n 21\n' + fmt(yTop) + '\n 31\n0.0' +
+               '\n 12\n' + fmt(x1) + '\n 22\n' + fmt(yBot) + '\n 32\n0.0' +
+               '\n 13\n' + fmt(x2) + '\n 23\n' + fmt(yBot) + '\n 33\n0.0\n';
     }
 
     function dxfLwPolylineEntity(handle, layer, pts) {
