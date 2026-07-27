@@ -11,7 +11,12 @@
     flex-direction: column;
     align-items: center;          /* center the inner block on the page */
     padding: var(--space-md);
-    overflow: hidden;
+    /* Tall-enough windows behave as before (schedule scrolls inside its
+       own card). When the window is too short to fit header + gallery +
+       filters + a usable slice of schedule, the view itself scrolls
+       vertically instead of clipping the schedule out of reach. */
+    overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
 }
 
@@ -28,6 +33,26 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
+}
+
+/* Short windows (unmaximized / low-res screens): the pinned-header
+   layout above would crush or clip the schedule once the title +
+   gallery + filter rows eat most of the height. Switch to a scrolling
+   page instead: the inner column takes its natural height, the
+   schedule card gets a viewport-relative height (still scrolling
+   internally with sticky headers), and .product-view's overflow-y
+   scrolls everything into reach. */
+@media (max-height: 840px) {
+    .product-view-inner {
+        flex: none;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .product-view .schedule-wrap {
+        flex: none;
+        height: max(360px, 64vh);
+    }
 }
 
 /* Title row at the top of the product page */
@@ -540,15 +565,30 @@
     display: none;
 }
 
+/* Always a single row: cards shrink evenly below their 128px ideal so
+   the strip fits the window (freeing vertical space for the schedule on
+   small screens). If the window is narrower than the cards' floor, the
+   strip scrolls horizontally rather than wrapping. */
 .model-gallery {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--space-sm);
-    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 2px;
 }
 
+/* Center the row when it fits without clipping the left edge when it
+   overflows (the `justify-content: center` + overflow combo would make
+   the leftmost cards unreachable). */
+.model-card:first-child { margin-left: auto; }
+.model-card:last-child { margin-right: auto; }
+
 .model-card {
-    width: 128px;
+    flex: 0 1 128px;
+    min-width: 82px;
+    /* Size container so the caption text can adapt to how far the card
+       was squeezed (see @container rules below). */
+    container-type: inline-size;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -604,6 +644,35 @@
     color: var(--color-text-muted);
     padding: 2px var(--space-xs) 0;
     text-transform: capitalize;
+}
+
+/* Narrower windows: tighten the strip so even the 15-card grille
+   gallery fits a ~1200px window without resorting to horizontal
+   scrolling. */
+@media (max-width: 1440px) {
+    .model-gallery {
+        gap: var(--space-xs);
+    }
+
+    .model-card {
+        min-width: 72px;
+    }
+}
+
+/* Squeezed cards (single-row gallery on narrow windows): drop the
+   long-form description first, then step the family label down so
+   grouped names like "500/600/700 RTN" still fit. */
+@container (max-width: 112px) {
+    .model-card-desc {
+        display: none;
+    }
+}
+
+@container (max-width: 96px) {
+    .model-card-label {
+        font-size: 10px;
+        overflow-wrap: break-word;
+    }
 }
 
 /* ============================================================

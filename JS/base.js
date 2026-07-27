@@ -638,6 +638,18 @@
         bar.className = 'filter-bar';
 
         visibleFilters.forEach(function (fc) {
+            var options = getUniqueFilterValues(data, fc.name, filterValues, visibleFilters);
+            var current = filterValues[fc.name];
+            var hasValue = current !== null && current !== undefined;
+
+            // Multi-model sheets leave many columns blank for most models
+            // (e.g. CORE STYLE only applies to SMD diffusers). Once the
+            // current selection has no values for a filter, its dropdown
+            // would offer nothing but "All" - hide it instead of showing
+            // a dead control. It reappears as soon as the selection
+            // changes to rows that carry values for it.
+            if (!options.length && !hasValue) return;
+
             var group = document.createElement('div');
             group.className = 'filter-group';
 
@@ -653,15 +665,14 @@
             allOpt.textContent = 'All';
             select.appendChild(allOpt);
 
-            getUniqueFilterValues(data, fc.name, filterValues, visibleFilters).forEach(function (v) {
+            options.forEach(function (v) {
                 var opt = document.createElement('option');
                 opt.value = String(v);
                 opt.textContent = String(v);
                 select.appendChild(opt);
             });
 
-            var current = filterValues[fc.name];
-            if (current !== null && current !== undefined) {
+            if (hasValue) {
                 select.value = String(current);
                 // Mark constraining filters so the bar shows at a glance
                 // which dropdowns are set vs. on "All" (styled in
