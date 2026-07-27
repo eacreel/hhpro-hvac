@@ -255,8 +255,33 @@
                     return resp.json();
                 })
                 .then(function (data) {
-                    productDataCache[productKey] = data;
-                    return data;
+                    // Very large products (grilles) are split across
+                    // multiple JSON files to stay under Cloudflare
+                    // Pages' 25 MiB per-file limit. The main file lists
+                    // its continuation files (selections-only chunks in
+                    // the same folder); fetch them all and re-join the
+                    // selections in order before caching.
+                    var cont = data.continuationFiles;
+                    if (!cont || !cont.length) {
+                        productDataCache[productKey] = data;
+                        return data;
+                    }
+                    var dir = product.jsonFile.slice(0, product.jsonFile.lastIndexOf('/') + 1);
+                    return Promise.all(cont.map(function (name) {
+                        var url = dir + name;
+                        return fetch(url).then(function (resp) {
+                            if (!resp.ok) {
+                                throw new Error('Failed to load ' + url + ' (HTTP ' + resp.status + ')');
+                            }
+                            return resp.json();
+                        });
+                    })).then(function (partList) {
+                        partList.forEach(function (part) {
+                            data.selections = data.selections.concat(part.selections || []);
+                        });
+                        productDataCache[productKey] = data;
+                        return data;
+                    });
                 });
         }
     };

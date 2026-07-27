@@ -223,6 +223,10 @@ PRODUCT_CONFIGS = {
         # Same two-column SCHEDULE NOTES mapping as the diffusers (col A
         # is "ALL" or a comma-separated MODEL list, col B is the note).
         "notesFormat": "modelmap",
+        # The full grille JSON is ~27 MB and Cloudflare Pages caps files
+        # at 25 MiB, so split the selections across two files
+        # (grilles.json + grilles-2.json); the site re-joins them.
+        "splitParts": 2,
         "searchSchema": {
             "displayName": "Grilles",
             "description": "Price supply, return, and transfer grilles. Enter a target airflow and/or use the filters to narrow by model, size, and application.",
@@ -999,6 +1003,40 @@ def convert_file(input_path, config, output_path):
             "selectionCount": len(selections),
         },
     }
+
+    # Cloudflare Pages rejects any single file over 25 MiB. Products
+    # whose JSON would exceed that (grilles: 32k+ selections) set
+    # "splitParts" in PRODUCT_CONFIGS: the selections array is split
+    # into that many contiguous chunks. The main file keeps everything
+    # else (header, filters, docs, notes, searchSchema) plus chunk 1
+    # and lists the continuation files in "continuationFiles"; each
+    # continuation file holds only its chunk of selections. The site
+    # (JS/data.js loadProduct) fetches the continuations and re-joins
+    # the selections transparently.
+    parts = int(config.get("splitParts") or 1)
+    if parts > 1:
+        stem, ext = os.path.splitext(output_path)
+        chunk_size = (len(selections) + parts - 1) // parts
+        chunks = [selections[i:i + chunk_size]
+                  for i in range(0, len(selections), chunk_size)]
+        cont_names = [f"{os.path.basename(stem)}-{i + 2}{ext}"
+                      for i in range(len(chunks) - 1)]
+        payload["selections"] = chunks[0]
+        payload["continuationFiles"] = cont_names
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+        for name, chunk in zip(cont_names, chunks[1:]):
+            part_path = os.path.join(os.path.dirname(output_path), name)
+            with open(part_path, "w", encoding="utf-8") as f:
+                json.dump({"selections": chunk}, f, indent=2, ensure_ascii=False)
+        sizes = ", ".join(
+            f"{os.path.basename(p)} ({os.path.getsize(p) / 1048576:.1f} MiB)"
+            for p in [output_path] + [
+                os.path.join(os.path.dirname(output_path), n) for n in cont_names]
+        )
+        print(f"  -> {len(selections)} selections written across "
+              f"{len(chunks)} files: {sizes}")
+        return
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
