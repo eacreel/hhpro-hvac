@@ -630,16 +630,27 @@
     object-fit: contain;
 }
 
-/* Light image well for galleries whose photos sit on white backgrounds
-   (mini-split submittal shots) instead of the processed black renders. */
-.model-card-image-light {
-    background-color: #fff;
+/* Compact gallery variant (mini-split type picker): smaller cards, and a
+   reserved two-line caption block so cards whose label fits on one line
+   stay the same height as the rest (images aligned across the row). */
+.model-gallery-compact .model-card {
+    flex: 0 1 100px;
+    min-width: 72px;
+    /* Buttons vertically center their content by default; column-flex
+       pins the image to the top so all images align regardless of how
+       many caption lines follow. */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
-.model-card-image-light img {
-    /* A touch of padding so the photo doesn't touch the card edges. */
-    width: 88%;
-    height: 88%;
+.model-gallery-compact .model-card-label {
+    /* Fill the leftover card height and center the caption within it. */
+    flex: 1;
+    min-height: 2.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .model-card-label {

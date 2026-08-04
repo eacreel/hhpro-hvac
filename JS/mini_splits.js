@@ -72,17 +72,16 @@
 
         /**
          * Indoor-unit-type picker gallery above the filter bar (same look
-         * and mechanics as the diffuser model gallery). Clicking a card
-         * sets TYPE (INDOOR UNIT #1) to that type; clicking the active
-         * card clears it. Cards use the light image well - the submittal
-         * photos are on white, unlike the black-background Price renders.
+         * and mechanics as the diffuser model gallery, in the compact
+         * size). Clicking a card sets TYPE (INDOOR UNIT #1) to that type;
+         * clicking the active card clears it.
          */
         buildIntroSection: function (product, data, api) {
             var cards = (product && product.typeGallery) || [];
             if (!cards.length) return null;
 
             var wrap = document.createElement('div');
-            wrap.className = 'model-gallery';
+            wrap.className = 'model-gallery model-gallery-compact';
 
             cards.forEach(function (cardDef) {
                 var type = String(cardDef.type);
@@ -94,7 +93,7 @@
                              ' first indoor unit';
 
                 var imgBox = document.createElement('div');
-                imgBox.className = 'model-card-image model-card-image-light';
+                imgBox.className = 'model-card-image';
                 var img = new Image();
                 img.alt = type;
                 img.src = cardDef.picture;

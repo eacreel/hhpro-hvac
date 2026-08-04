@@ -49,9 +49,8 @@
             // on the browse page (see JS/mini_splits.js). `type` must
             // match a TYPE (INDOOR UNIT #1) filter value exactly -
             // clicking a card filters the schedule to that indoor type.
-            // Photos are the indoor-unit shots from the listed models'
-            // submittal PDFs (white background, so the cards use the
-            // light image well).
+            // Photos are the indoor-unit shots from the submittal PDFs,
+            // flood-filled onto black like the Price "(Black)" renders.
             typeGallery: [
                 { type: 'Wall Mounted',          picture: 'DATA/PICTURES/MINI SPLIT TYPES/Wall Mounted.jpg' },
                 { type: 'Cassette',              picture: 'DATA/PICTURES/MINI SPLIT TYPES/Cassette.jpg' },
