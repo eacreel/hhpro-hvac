@@ -394,8 +394,29 @@
             applyStickyHeaderOffsets(table);
         }
 
-        function applyFilterChange() {
+        function applyFilterChange(preserve) {
             autoSelectSingleOptions();
+            // A just-set user value can be wiped by the visibility prune when
+            // its filter is only visible because of an AUTO-selected driver:
+            // e.g. TYPE (INDOOR UNIT #1) only shows while NUMBER OF INDOOR
+            // UNITS has a value. onUserFilterChange resets auto-selected
+            // values, hiding the dependent filter for one pass - the prune
+            // deletes the user's new value, then auto-select restores the
+            // driver, so the choice silently vanished. If the filter is
+            // visible again after auto-select, re-assert the user's value
+            // and let auto-select re-evaluate around it.
+            if (preserve && preserve.value !== null &&
+                (filterValues[preserve.name] === null ||
+                 filterValues[preserve.name] === undefined)) {
+                var visibleNow = getVisibleFilters(product.productKey, data, filterValues);
+                var stillThere = visibleNow.some(function (fc) {
+                    return fc.name === preserve.name;
+                });
+                if (stillThere) {
+                    filterValues[preserve.name] = preserve.value;
+                    autoSelectSingleOptions();
+                }
+            }
             renderFilterBar();
             refreshSchedule();
             // Let the intro section (model gallery) re-sync its active
@@ -414,7 +435,7 @@
             });
             autoSelectedNames = {};
 
-            applyFilterChange();
+            applyFilterChange({ name: filterName, value: newValue });
         }
 
         function onClearAllFilters() {
