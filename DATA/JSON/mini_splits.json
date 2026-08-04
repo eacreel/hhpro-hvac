@@ -54071,6 +54071,302 @@
           }
         }
       ]
+    },
+    {
+      "id": "sel_0391",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": 378,
+            "B": 80,
+            "C": 67,
+            "D": 9100,
+            "E": 8250,
+            "F": 70,
+            "G": 10000,
+            "H": 36,
+            "I": "Cassette",
+            "J": "Indoor Powered From Outdoor Unit",
+            "M": "DAIKIN",
+            "N": "FFA09AVJU9",
+            "O": 95,
+            "P": 47,
+            "Q": 63,
+            "R": "19.8 / 12.0 / 9.4",
+            "S": "208/60/1",
+            "T": 11.6,
+            "U": 15,
+            "V": "DAIKIN",
+            "W": "RXV09AVJU9",
+            "X": "R32",
+            "Y": "49' Vertical / 66' Total"
+          },
+          "filterData": {
+            "SIZE (OUTDOOR UNIT)": 0.75,
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
+            "ELECTRICAL": "208/60/1 (SINGLE POINT POWER)",
+            "NUMBER OF INDOOR UNITS": 1,
+            "SIZE (INDOOR UNIT #1)": 0.75,
+            "SIZE (INDOOR UNIT #2)": "-",
+            "SIZE (INDOOR UNIT #3)": "-",
+            "SIZE (INDOOR UNIT #4)": "-",
+            "SIZE (INDOOR UNIT #5)": "-",
+            "TYPE (INDOOR UNIT #1)": "Cassette",
+            "TYPE (INDOOR UNIT #2)": "-",
+            "TYPE (INDOOR UNIT #3)": "-",
+            "TYPE (INDOOR UNIT #4)": "-",
+            "TYPE (INDOOR UNIT #5)": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FFA09AVJU9-RXV09AVJU9",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - VISTA CASSETTE",
+            "INSTALLATION MANUAL (OUTDOOR)": "IM - VISTA CASSETTE OUTDOOR (09-12)",
+            "INSTALLATION MANUAL (INDOOR)": "IM - VISTA CASSETTE IDU",
+            "REVIT (OUTDOOR)": "RXV09AVJU9",
+            "REVIT (INDOOR)": "FFA09AVJU9",
+            "CAD (OUTDOOR)": "RXV09AVJU9",
+            "CAD (INDOOR)": "FFA09AVJU9",
+            "OPERATION MANUAL": "OM - VISTA CASSETTE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "R-32",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": 49,
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": 66,
+            "LIQUID LINE CONNECTION (IN)": 0.25,
+            "SUCTION LINE CONNECTION (IN)": 0.375,
+            "PRE-CHARGE PIPING LENGTH (FT)": 49,
+            "FACTORY CHARGE (LBS)": 1.65,
+            "FACTORY CHARGE (OZ)": 26.4,
+            "ADDITIONAL CHARGE (OZ/FT)": 0.22
+          },
+          "scheduleCellSpans": {
+            "J": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0392",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": 406,
+            "B": 80,
+            "C": 67,
+            "D": 10800,
+            "E": 9730,
+            "F": 70,
+            "G": 13500,
+            "H": 36,
+            "I": "Cassette",
+            "J": "Indoor Powered From Outdoor Unit",
+            "M": "DAIKIN",
+            "N": "FFA12AVJU9",
+            "O": 95,
+            "P": 47,
+            "Q": 63,
+            "R": "19.5 / 11.5 / 9.0",
+            "S": "208/60/1",
+            "T": 14.6,
+            "U": 15,
+            "V": "DAIKIN",
+            "W": "RXV12AVJU9",
+            "X": "R32",
+            "Y": "49' Vertical / 66' Total"
+          },
+          "filterData": {
+            "SIZE (OUTDOOR UNIT)": 1,
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
+            "ELECTRICAL": "208/60/1 (SINGLE POINT POWER)",
+            "NUMBER OF INDOOR UNITS": 1,
+            "SIZE (INDOOR UNIT #1)": 1,
+            "SIZE (INDOOR UNIT #2)": "-",
+            "SIZE (INDOOR UNIT #3)": "-",
+            "SIZE (INDOOR UNIT #4)": "-",
+            "SIZE (INDOOR UNIT #5)": "-",
+            "TYPE (INDOOR UNIT #1)": "Cassette",
+            "TYPE (INDOOR UNIT #2)": "-",
+            "TYPE (INDOOR UNIT #3)": "-",
+            "TYPE (INDOOR UNIT #4)": "-",
+            "TYPE (INDOOR UNIT #5)": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FFA12AVJU9-RXV12AVJU9",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - VISTA CASSETTE",
+            "INSTALLATION MANUAL (OUTDOOR)": "IM - VISTA CASSETTE OUTDOOR (09-12)",
+            "INSTALLATION MANUAL (INDOOR)": "IM - VISTA CASSETTE IDU",
+            "REVIT (OUTDOOR)": "RXV12AVJU9",
+            "REVIT (INDOOR)": "FFA12AVJU9",
+            "CAD (OUTDOOR)": "RXV12AVJU9",
+            "CAD (INDOOR)": "FFA12AVJU9",
+            "OPERATION MANUAL": "OM - VISTA CASSETTE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "R-32",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": 49,
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": 66,
+            "LIQUID LINE CONNECTION (IN)": 0.25,
+            "SUCTION LINE CONNECTION (IN)": 0.375,
+            "PRE-CHARGE PIPING LENGTH (FT)": 49,
+            "FACTORY CHARGE (LBS)": 1.65,
+            "FACTORY CHARGE (OZ)": 26.4,
+            "ADDITIONAL CHARGE (OZ/FT)": 0.22
+          },
+          "scheduleCellSpans": {
+            "J": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0393",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": 420,
+            "B": 80,
+            "C": 67,
+            "D": 14400,
+            "E": 10540,
+            "F": 70,
+            "G": 16200,
+            "H": 36,
+            "I": "Cassette",
+            "J": "Indoor Powered From Outdoor Unit",
+            "M": "DAIKIN",
+            "N": "FFA15AVJU9",
+            "O": 95,
+            "P": 47,
+            "Q": 113,
+            "R": "19.6 / 11.5 / 8.8",
+            "S": "208/60/1",
+            "T": 16,
+            "U": 20,
+            "V": "DAIKIN",
+            "W": "RXV15AVJU9",
+            "X": "R32",
+            "Y": "66' Vertical / 99' Total"
+          },
+          "filterData": {
+            "SIZE (OUTDOOR UNIT)": 1.25,
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
+            "ELECTRICAL": "208/60/1 (SINGLE POINT POWER)",
+            "NUMBER OF INDOOR UNITS": 1,
+            "SIZE (INDOOR UNIT #1)": 1.25,
+            "SIZE (INDOOR UNIT #2)": "-",
+            "SIZE (INDOOR UNIT #3)": "-",
+            "SIZE (INDOOR UNIT #4)": "-",
+            "SIZE (INDOOR UNIT #5)": "-",
+            "TYPE (INDOOR UNIT #1)": "Cassette",
+            "TYPE (INDOOR UNIT #2)": "-",
+            "TYPE (INDOOR UNIT #3)": "-",
+            "TYPE (INDOOR UNIT #4)": "-",
+            "TYPE (INDOOR UNIT #5)": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FFA15AVJU9-RXV15AVJU9",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - VISTA CASSETTE",
+            "INSTALLATION MANUAL (OUTDOOR)": "IM - VISTA CASSETTE OUTDOOR (15-18)",
+            "INSTALLATION MANUAL (INDOOR)": "IM - VISTA CASSETTE IDU",
+            "REVIT (OUTDOOR)": "RXV15AVJU9",
+            "REVIT (INDOOR)": "FFA15AVJU9",
+            "CAD (OUTDOOR)": "RXV15AVJU9",
+            "CAD (INDOOR)": "FFA15AVJU9",
+            "OPERATION MANUAL": "OM - VISTA CASSETTE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "R-32",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": 66,
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": 99,
+            "LIQUID LINE CONNECTION (IN)": 0.25,
+            "SUCTION LINE CONNECTION (IN)": 0.5,
+            "PRE-CHARGE PIPING LENGTH (FT)": 49,
+            "FACTORY CHARGE (LBS)": 2.45,
+            "FACTORY CHARGE (OZ)": 39.2,
+            "ADDITIONAL CHARGE (OZ/FT)": 0.22
+          },
+          "scheduleCellSpans": {
+            "J": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0394",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": 508,
+            "B": 80,
+            "C": 67,
+            "D": 17400,
+            "E": 12270,
+            "F": 70,
+            "G": 21600,
+            "H": 36,
+            "I": "Cassette",
+            "J": "Indoor Powered From Outdoor Unit",
+            "M": "DAIKIN",
+            "N": "FFA18AVJU9",
+            "O": 95,
+            "P": 47,
+            "Q": 113,
+            "R": "18.2 / 11.5 / 8.5",
+            "S": "208/60/1",
+            "T": 17.9,
+            "U": 20,
+            "V": "DAIKIN",
+            "W": "RXV18AVJU9",
+            "X": "R32",
+            "Y": "66' Vertical / 99' Total"
+          },
+          "filterData": {
+            "SIZE (OUTDOOR UNIT)": 1.5,
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
+            "ELECTRICAL": "208/60/1 (SINGLE POINT POWER)",
+            "NUMBER OF INDOOR UNITS": 1,
+            "SIZE (INDOOR UNIT #1)": 1.5,
+            "SIZE (INDOOR UNIT #2)": "-",
+            "SIZE (INDOOR UNIT #3)": "-",
+            "SIZE (INDOOR UNIT #4)": "-",
+            "SIZE (INDOOR UNIT #5)": "-",
+            "TYPE (INDOOR UNIT #1)": "Cassette",
+            "TYPE (INDOOR UNIT #2)": "-",
+            "TYPE (INDOOR UNIT #3)": "-",
+            "TYPE (INDOOR UNIT #4)": "-",
+            "TYPE (INDOOR UNIT #5)": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FFA18AVJU9-RXV18AVJU9",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - VISTA CASSETTE",
+            "INSTALLATION MANUAL (OUTDOOR)": "IM - VISTA CASSETTE OUTDOOR (15-18)",
+            "INSTALLATION MANUAL (INDOOR)": "IM - VISTA CASSETTE IDU",
+            "REVIT (OUTDOOR)": "RXV18AVJU9",
+            "REVIT (INDOOR)": "FFA18AVJU9",
+            "CAD (OUTDOOR)": "RXV18AVJU9",
+            "CAD (INDOOR)": "FFA18AVJU9",
+            "OPERATION MANUAL": "OM - VISTA CASSETTE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "R-32",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": 66,
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": 99,
+            "LIQUID LINE CONNECTION (IN)": 0.25,
+            "SUCTION LINE CONNECTION (IN)": 0.5,
+            "PRE-CHARGE PIPING LENGTH (FT)": 49,
+            "FACTORY CHARGE (LBS)": 2.45,
+            "FACTORY CHARGE (OZ)": 39.2,
+            "ADDITIONAL CHARGE (OZ/FT)": 0.22
+          },
+          "scheduleCellSpans": {
+            "J": 3
+          }
+        }
+      ]
     }
   ],
   "scheduleNotes": {
@@ -54085,8 +54381,8 @@
   },
   "_meta": {
     "sourceFile": "MINI SPLIT DATA.xlsx",
-    "generatedAt": "2026-07-26T21:30:47",
-    "dataRowCount": 1251,
-    "selectionCount": 390
+    "generatedAt": "2026-08-04T11:04:23",
+    "dataRowCount": 1255,
+    "selectionCount": 394
   }
 }
