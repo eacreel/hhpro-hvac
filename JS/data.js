@@ -44,7 +44,21 @@
             jsonFile: 'DATA/JSON/mini_splits.json',
             pictureFile: 'DATA/PICTURES/MINI SPLITS.jpg',
             assetsFolder: 'ASSETS/MINI SPLITS',
-            tileClass: 'tile-mini-splits'
+            tileClass: 'tile-mini-splits',
+            // Indoor-unit-type picker gallery rendered above the filters
+            // on the browse page (see JS/mini_splits.js). `type` must
+            // match a TYPE (INDOOR UNIT #1) filter value exactly -
+            // clicking a card filters the schedule to that indoor type.
+            // Photos are the indoor-unit shots from the listed models'
+            // submittal PDFs (white background, so the cards use the
+            // light image well).
+            typeGallery: [
+                { type: 'Wall Mounted',          picture: 'DATA/PICTURES/MINI SPLIT TYPES/Wall Mounted.jpg' },
+                { type: 'Cassette',              picture: 'DATA/PICTURES/MINI SPLIT TYPES/Cassette.jpg' },
+                { type: 'Ducted Concealed',      picture: 'DATA/PICTURES/MINI SPLIT TYPES/Ducted Concealed.jpg' },
+                { type: 'Floor Mounted (Black)', picture: 'DATA/PICTURES/MINI SPLIT TYPES/Floor Mounted (Black).jpg' },
+                { type: 'Floor Mounted (White)', picture: 'DATA/PICTURES/MINI SPLIT TYPES/Floor Mounted (White).jpg' }
+            ]
         },
         {
             productKey: 'multi_position_splits',

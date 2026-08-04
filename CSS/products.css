@@ -630,6 +630,18 @@
     object-fit: contain;
 }
 
+/* Light image well for galleries whose photos sit on white backgrounds
+   (mini-split submittal shots) instead of the processed black renders. */
+.model-card-image-light {
+    background-color: #fff;
+}
+
+.model-card-image-light img {
+    /* A touch of padding so the photo doesn't touch the card edges. */
+    width: 88%;
+    height: 88%;
+}
+
 .model-card-label {
     font-size: var(--font-size-sm);
     font-weight: 700;

@@ -23,6 +23,8 @@
     // Detects filter names like "SIZE (INDOOR UNIT #1)" or "TYPE (INDOOR UNIT #3)"
     var PER_UNIT_FILTER_RE = /INDOOR UNIT #\d/;
 
+    var TYPE_1_FILTER = 'TYPE (INDOOR UNIT #1)';
+
     HHpro.ProductExtensions.mini_splits = {
         /**
          * Return the subset of filter columns that should be shown right now
@@ -53,7 +55,74 @@
                     if (type) base.push(type);
                 }
             }
+
+            // Step 3: any per-unit filter that already HOLDS a value stays
+            // visible even when NUMBER OF INDOOR UNITS is "All" - the type
+            // gallery sets TYPE (INDOOR UNIT #1) directly, and hiding a
+            // filter would clear its value (base.js prunes hidden filters).
+            allFilters.forEach(function (fc) {
+                if (!PER_UNIT_FILTER_RE.test(fc.name)) return;
+                if (base.indexOf(fc) !== -1) return;
+                var v = currentFilters[fc.name];
+                if (v !== null && v !== undefined) base.push(fc);
+            });
+
             return base;
+        },
+
+        /**
+         * Indoor-unit-type picker gallery above the filter bar (same look
+         * and mechanics as the diffuser model gallery). Clicking a card
+         * sets TYPE (INDOOR UNIT #1) to that type; clicking the active
+         * card clears it. Cards use the light image well - the submittal
+         * photos are on white, unlike the black-background Price renders.
+         */
+        buildIntroSection: function (product, data, api) {
+            var cards = (product && product.typeGallery) || [];
+            if (!cards.length) return null;
+
+            var wrap = document.createElement('div');
+            wrap.className = 'model-gallery';
+
+            cards.forEach(function (cardDef) {
+                var type = String(cardDef.type);
+
+                var card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'model-card';
+                card.title = 'Show only systems with a ' + type +
+                             ' first indoor unit';
+
+                var imgBox = document.createElement('div');
+                imgBox.className = 'model-card-image model-card-image-light';
+                var img = new Image();
+                img.alt = type;
+                img.src = cardDef.picture;
+                imgBox.appendChild(img);
+                card.appendChild(imgBox);
+
+                var label = document.createElement('div');
+                label.className = 'model-card-label';
+                label.textContent = type;
+                card.appendChild(label);
+
+                function syncActive() {
+                    var active =
+                        String(api.getFilterValue(TYPE_1_FILTER) || '') === type;
+                    card.classList.toggle('is-active', active);
+                }
+                syncActive();
+                api.onFilterChange(syncActive);
+
+                card.addEventListener('click', function () {
+                    var current = String(api.getFilterValue(TYPE_1_FILTER) || '');
+                    api.setFilter(TYPE_1_FILTER, current === type ? null : type);
+                });
+
+                wrap.appendChild(card);
+            });
+
+            return wrap;
         }
     };
 
