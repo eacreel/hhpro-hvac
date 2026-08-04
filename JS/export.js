@@ -821,8 +821,12 @@ WHAT'S IN THE GRID
         var engineer = (window.HHpro && HHpro.Cart && HHpro.Cart.getProjectEngineer)
             ? HHpro.Cart.getProjectEngineer() : 'hoffman';
         function tplFor(pk) {
-            return (HHpro.Templates && HHpro.Templates.getTemplate)
+            var tpl = (HHpro.Templates && HHpro.Templates.getTemplate)
                 ? HHpro.Templates.getTemplate(engineer, pk) : null;
+            // Only templates built around a shared split-system layout may be
+            // merged under one header (Saber). Firms with per-product layouts
+            // (e.g. MSWG) never produce a combined grid.
+            return (tpl && tpl.combinedSplitSystems) ? tpl : null;
         }
         // Header/title/notes come from any group's template (identical across
         // the split products).

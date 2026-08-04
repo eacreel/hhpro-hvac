@@ -510,15 +510,19 @@
     }
 
     // The combined "Split Systems" tab shows only when the project has BOTH
-    // multi-position-split and mini-split items AND the active engineer has a
-    // template for both (today only Saber - it shares one layout for the two).
+    // multi-position-split and mini-split items AND the active engineer's
+    // templates for both are flagged combinedSplitSystems (today only Saber -
+    // it shares ONE layout for the two products; firms like MSWG have a
+    // template for each but with different layouts, so they can't merge).
     // When it shows, the individual mini/MPS product tabs are folded into it,
     // so the combined schedule is the ONLY split-system tab. Switching the
     // layout dropdown back to Hoffman & Hoffman drops it and the separate
     // mini/MPS tabs reappear.
     function showSplitSystemsTab(groups) {
         return SPLIT_SYSTEM_PRODUCT_KEYS.every(function (key) {
-            return !!(groups[key] && groups[key].length && activeTemplate(key));
+            var tpl = activeTemplate(key);
+            return !!(groups[key] && groups[key].length &&
+                      tpl && tpl.combinedSplitSystems);
         });
     }
 
