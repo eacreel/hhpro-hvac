@@ -39333,6 +39333,7 @@
       "rows": [
         {
           "scheduleData": {
+            "A": "DAIKIN",
             "B": "AWVE12SU1300",
             "C": 450,
             "D": 0.25,
@@ -39400,6 +39401,7 @@
       "rows": [
         {
           "scheduleData": {
+            "A": "DAIKIN",
             "B": "AWVE18SU1300",
             "C": 610,
             "D": 0.33,
@@ -39467,6 +39469,7 @@
       "rows": [
         {
           "scheduleData": {
+            "A": "DAIKIN",
             "B": "AWVE24SU1300",
             "C": 830,
             "D": 0.5,
@@ -39534,6 +39537,7 @@
       "rows": [
         {
           "scheduleData": {
+            "A": "DAIKIN",
             "B": "AWVE30LU1300",
             "C": 1000,
             "D": 0.5,
@@ -39601,6 +39605,7 @@
       "rows": [
         {
           "scheduleData": {
+            "A": "DAIKIN",
             "B": "AWVE36LU1300",
             "C": 1150,
             "D": 0.5,
@@ -39670,12 +39675,13 @@
       "Provide with 7-day programmable thermostat",
       "Provide with 7-day programmable BACnet thermostat",
       "Provide with field installed disconnect. Disconnect shall be provided and installed by electrical contractor",
-      "Electric heat, if scheduled, shall be single point power.  kW listed is at 240V"
+      "Electric heat, if scheduled, shall be single point power.  kW listed is at 240V",
+      "Heat pump heating capacity based on 70 F entering air temperature"
     ]
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-08-11T17:20:09",
+    "generatedAt": "2026-08-11T17:23:27",
     "dataRowCount": 567,
     "selectionCount": 567
   }
