@@ -1,5 +1,5 @@
 HHpro - Asset validation report
-Generated: 2026-07-26T10:54:17
+Generated: 2026-08-11T17:12:08
 HHpro root: D:\HHpro
 ======================================================================
 
@@ -94,6 +94,28 @@ HHpro root: D:\HHpro
     ASSETS\GAS SPLITS\SUBMITTALS\DM96VC1205DN.pdf
 
 
+=== (unknown) ===
+  Assets folder     : None
+  Selections        : 16100
+  References total  : 0
+  Missing files     : 0
+  Orphan files      : 0
+
+
+=== GRILLES ===
+  Assets folder     : GRILLES
+  Selections        : 16100
+  References total  : 13
+  Missing files     : 0
+  Orphan files      : 4
+
+  ORPHAN FILES (not referenced):
+    ASSETS\GRILLES\CAPACITY TABLES\Price Heavy Duty Return Gym Grille - Catalog.pdf
+    ASSETS\GRILLES\CAPACITY TABLES\Price Lattice Grille - Catalog.pdf
+    ASSETS\GRILLES\CAPACITY TABLES\Price Perforated Return Grille - Catalog.pdf
+    ASSETS\GRILLES\CAPACITY TABLES\Price STG ATG Transfer Grille - Catalog.pdf
+
+
 === MARVAIR VERTICAL WALL MOUNT ===
   Assets folder     : MARVAIR
   Selections        : 490
@@ -107,10 +129,10 @@ HHpro root: D:\HHpro
 
 === MINI SPLITS ===
   Assets folder     : MINI SPLITS
-  Selections        : 390
-  References total  : 209
+  Selections        : 394
+  References total  : 234
   Missing files     : 0
-  Orphan files      : 21
+  Orphan files      : 22
 
   ORPHAN FILES (not referenced):
     ASSETS\MINI SPLITS\INSTALLATION MANUALS\CTXV07AVJU9.pdf
@@ -134,6 +156,7 @@ HHpro root: D:\HHpro
     ASSETS\MINI SPLITS\OPERATION MANUALS\OM - OTERRA INDOOR (09-12).pdf
     ASSETS\MINI SPLITS\OPERATION MANUALS\OM - OTERRA INDOOR (18-24).pdf
     ASSETS\MINI SPLITS\OPERATION MANUALS\OM - POLARA INDOOR (30-36).pdf
+    ASSETS\MINI SPLITS\OPERATION MANUALS\OM - VISTA CASSETTE.pdf
 
 
 === (unknown) ===
@@ -146,8 +169,8 @@ HHpro root: D:\HHpro
 
 === MULTI POSITION SPLITS ===
   Assets folder     : MULTI POSITION SPLITS
-  Selections        : 562
-  References total  : 263
+  Selections        : 567
+  References total  : 277
   Missing files     : 1
   Orphan files      : 2
 
@@ -171,4 +194,4 @@ HHpro root: D:\HHpro
 
 ======================================================================
 TOTAL missing files: 1
-TOTAL orphan files : 87
+TOTAL orphan files : 92

@@ -271,6 +271,27 @@ def _num_key(v):
     return str(v)
 
 
+_HP_TEXT_NUM = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _scale_hp_text(text):
+    """Scale the MBH numbers inside a TEXT heat-pump capacity cell to BTU/h.
+
+    Some heat pumps list two capacities per ambient, e.g.
+    "15.9 (standard), 22.5 (boost)". The site shows the cell text as-is,
+    so keep the wording and just scale each number x1000:
+    -> "15900 (standard), 22500 (boost)".
+
+    Returns None when the text holds no numbers at all (e.g. "-"), so the
+    row is omitted exactly like an invalid numeric row.
+    """
+    s = str(text).strip()
+    if not _HP_TEXT_NUM.search(s):
+        return None
+    return _HP_TEXT_NUM.sub(
+        lambda m: str(int(round(float(m.group()) * 1000))), s)
+
+
 def convert_capacity_tables(input_path, output_path):
     """Convert the capacity-tables workbook to a JSON keyed by matchup.
 
@@ -281,7 +302,9 @@ def convert_capacity_tables(input_path, output_path):
             "axes":    {"eatDb":[...], "eatWb":[...], "oaCooling":[...], "airflow":[...]},
             "cooling": {"<eatDb>|<eatWb>|<oaCooling>|<airflow>": {"ct":N,"cs":N,"lat":N}, ...},
             "hpAxis":  [65, 60, ... -5],     # only when a heat-pump table exists
-            "hp":      {"47": 17400, ...}    # outdoor ambient -> total cap (BTU/h)
+            "hp":      {"47": 17400, ...}    # outdoor ambient -> total cap (BTU/h);
+                                             # boosted units hold a text value, e.g.
+                                             # "15900 (standard), 22500 (boost)"
           }, ...
         }
       }
@@ -319,11 +342,19 @@ def convert_capacity_tables(input_path, output_path):
                     axes["oaCooling"].add(oa)
                     axes["airflow"].add(cfm)
                     axes["eatWb"].add(wbv)
-            # Heat-pump table (H-I)
+            # Heat-pump table (H-I). Most cells are a plain MBH number;
+            # boosted heat pumps use a text cell listing both modes
+            # ("15.9 (standard), 22.5 (boost)") which is scaled to BTU/h
+            # but kept as text (see _scale_hp_text).
             amb = ws.cell(row=r, column=8).value
             cap = ws.cell(row=r, column=9).value
-            if isinstance(amb, (int, float)) and isinstance(cap, (int, float)):
-                hp[_num_key(amb)] = int(round(cap * 1000))
+            if isinstance(amb, (int, float)):
+                if isinstance(cap, (int, float)):
+                    hp[_num_key(amb)] = int(round(cap * 1000))
+                elif isinstance(cap, str) and str(cap).strip().upper() != "MBH":
+                    scaled = _scale_hp_text(cap)
+                    if scaled is not None:
+                        hp[_num_key(amb)] = scaled
 
         # Keep only fully-valid cooling combos.
         cooling = {}
@@ -359,7 +390,8 @@ def convert_capacity_tables(input_path, output_path):
             "matchupCount":  len(matchups),
             "coolingKey":    "eatDb|eatWb|oaCooling|airflow",
             "coolingValue":  "[total BTU/h, sensible BTU/h, LAT degF]",
-            "hp":            "outdoor ambient (degF) -> heat-pump total BTU/h",
+            "hp":            "outdoor ambient (degF) -> heat-pump total BTU/h "
+                             "(text when standard/boost modes are listed)",
         },
     }
     # Pure lookup data (not hand-edited) - written compact to keep the
@@ -1049,6 +1081,46 @@ def convert_file(input_path, config, output_path):
               f"{len(selections) - multi} single-row selections)")
 
 
+def choose_files(candidates):
+    """Ask which of the convertible files to run this time.
+
+    Converting everything takes a long while (the grille/diffuser files
+    alone are ~30 minutes), so the script lists what it found and lets
+    you convert just the file(s) you actually changed.
+
+    Press Enter (or type "all") to convert everything; otherwise type the
+    numbers of the files you want, separated by commas/spaces (e.g. "2"
+    or "2, 5"). If no console input is available (e.g. run headless),
+    every file is converted, matching the old behavior.
+    """
+    print("\nFiles available to convert:")
+    for i, fname in enumerate(candidates, start=1):
+        print(f"  {i}. {fname}")
+    while True:
+        try:
+            raw = input("\nWhich file(s)? Numbers separated by commas, "
+                        "or Enter for ALL: ").strip()
+        except EOFError:
+            print("  (no console input available - converting ALL files)")
+            return candidates
+        if raw == "" or raw.lower() == "all":
+            return candidates
+        chosen, bad = [], []
+        for p in re.split(r"[,\s]+", raw):
+            if not p:
+                continue
+            if p.isdigit() and 1 <= int(p) <= len(candidates):
+                fname = candidates[int(p) - 1]
+                if fname not in chosen:
+                    chosen.append(fname)
+            else:
+                bad.append(p)
+        if chosen and not bad:
+            return chosen
+        print(f"  Didn't understand {', '.join(bad) if bad else repr(raw)}. "
+              f"Use numbers 1-{len(candidates)}, e.g. '2' or '1, 3'.")
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.abspath(os.path.join(script_dir, "..", "JSON"))
@@ -1057,28 +1129,30 @@ def main():
     print(f"Input folder : {script_dir}")
     print(f"Output folder: {output_dir}")
 
+    all_xlsx = [f for f in sorted(os.listdir(script_dir))
+                if f.lower().endswith(".xlsx") and not f.startswith("~$")]
+    candidates = [f for f in all_xlsx
+                  if f == CAPACITY_FILE or f in PRODUCT_CONFIGS]
+    skipped = [f for f in all_xlsx if f not in candidates]
+
+    if not candidates:
+        print("\nNo convertible .xlsx files found in this folder.")
+    to_convert = choose_files(candidates) if candidates else []
+
     converted = 0
-    skipped = []
-    for fname in sorted(os.listdir(script_dir)):
-        if not fname.lower().endswith(".xlsx"):
-            continue
-        if fname.startswith("~$"):  # Excel lock files
-            continue
+    for fname in to_convert:
+        input_path = os.path.join(script_dir, fname)
         if fname == CAPACITY_FILE:
             try:
                 convert_capacity_tables(
-                    os.path.join(script_dir, fname),
+                    input_path,
                     os.path.join(output_dir, CAPACITY_OUTPUT),
                 )
                 converted += 1
             except Exception as e:
                 print(f"  ERROR processing {fname}: {e}")
             continue
-        if fname not in PRODUCT_CONFIGS:
-            skipped.append(fname)
-            continue
         config = PRODUCT_CONFIGS[fname]
-        input_path = os.path.join(script_dir, fname)
         output_path = os.path.join(output_dir, config["outputFileName"])
         try:
             convert_file(input_path, config, output_path)
@@ -1086,7 +1160,7 @@ def main():
         except Exception as e:
             print(f"  ERROR processing {fname}: {e}")
 
-    print(f"\nDone. Converted {converted} file(s).")
+    print(f"\nDone. Converted {converted} of {len(to_convert)} selected file(s).")
     if skipped:
         print("Skipped (no config entry in PRODUCT_CONFIGS):")
         for f in skipped:

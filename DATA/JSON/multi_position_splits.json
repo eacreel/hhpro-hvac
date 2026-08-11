@@ -39327,6 +39327,336 @@
           }
         }
       ]
+    },
+    {
+      "id": "sel_0563",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "AWVE12SU1300",
+            "C": 450,
+            "D": 0.25,
+            "E": "Variable Speed ECM",
+            "F": 80,
+            "G": 67,
+            "H": 61,
+            "I": 11500,
+            "J": 8740,
+            "K": 12000,
+            "L": "-",
+            "M": "-",
+            "N": "208/1",
+            "O": 2.6,
+            "P": 15,
+            "Q": 87,
+            "R": "DAIKIN",
+            "S": "DH6VSA121M",
+            "T": 47,
+            "U": 12000,
+            "W": "208/1",
+            "X": 12.8,
+            "Y": 15,
+            "Z": 95,
+            "AA": "R32",
+            "AB": "16.5/11.0 (SEER2/EER2)",
+            "AC": 123,
+            "AD": "Inverter"
+          },
+          "filterData": {
+            "SIZE": 1,
+            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "ELECTRICAL": "208/1",
+            "KW": "-",
+            "STAGES": "Inverter",
+            "FAN TYPE": "Variable Speed ECM"
+          },
+          "documentationData": {
+            "SUBMITTAL (OUTDOOR UNIT)": "DH6VSA121M",
+            "SUBMITTAL (INDOOR UNIT)": "AWVE12SU1300",
+            "ENGINEERING MANUAL (OUTDOOR UNIT)": "ENGINEERING MANUAL - DH6VSA (Apt Style)",
+            "ENGINEERING MANUAL (INDOOR UNIT)": "ENGINEERING MANUAL - AWVE",
+            "INSTALLATION MANUAL (OUTDOOR)": "INSTALLATION MANUAL - DH6VSA (Apt Style)",
+            "INSTALLATION MANUAL (INDOOR)": "INSTALLATION MANUAL - AWVE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "-",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": "-",
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": "-",
+            "LIQUID LINE CONNECTION (IN)": "-",
+            "SUCTION LINE CONNECTION (IN)": "-",
+            "PRE-CHARGE PIPING LENGTH (FT)": "-",
+            "FACTORY CHARGE (LBS)": "-",
+            "FACTORY CHARGE (OZ)": "-",
+            "ADDITIONAL CHARGE (OZ/FT)": "-"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0564",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "AWVE18SU1300",
+            "C": 610,
+            "D": 0.33,
+            "E": "Variable Speed ECM",
+            "F": 80,
+            "G": 67,
+            "H": 61,
+            "I": 17000,
+            "J": 12920,
+            "K": 17200,
+            "L": "-",
+            "M": "-",
+            "N": "208/1",
+            "O": 3.5,
+            "P": 15,
+            "Q": 100,
+            "R": "DAIKIN",
+            "S": "DH6VSA181M",
+            "T": 47,
+            "U": 17200,
+            "W": "208/1",
+            "X": 12.8,
+            "Y": 15,
+            "Z": 95,
+            "AA": "R32",
+            "AB": "16.5/11.0 (SEER2/EER2)",
+            "AC": 123,
+            "AD": "Inverter"
+          },
+          "filterData": {
+            "SIZE": 1.5,
+            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "ELECTRICAL": "208/1",
+            "KW": "-",
+            "STAGES": "Inverter",
+            "FAN TYPE": "Variable Speed ECM"
+          },
+          "documentationData": {
+            "SUBMITTAL (OUTDOOR UNIT)": "DH6VSA181M",
+            "SUBMITTAL (INDOOR UNIT)": "AWVE18SU1300",
+            "ENGINEERING MANUAL (OUTDOOR UNIT)": "ENGINEERING MANUAL - DH6VSA (Apt Style)",
+            "ENGINEERING MANUAL (INDOOR UNIT)": "ENGINEERING MANUAL - AWVE",
+            "INSTALLATION MANUAL (OUTDOOR)": "INSTALLATION MANUAL - DH6VSA (Apt Style)",
+            "INSTALLATION MANUAL (INDOOR)": "INSTALLATION MANUAL - AWVE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "-",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": "-",
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": "-",
+            "LIQUID LINE CONNECTION (IN)": "-",
+            "SUCTION LINE CONNECTION (IN)": "-",
+            "PRE-CHARGE PIPING LENGTH (FT)": "-",
+            "FACTORY CHARGE (LBS)": "-",
+            "FACTORY CHARGE (OZ)": "-",
+            "ADDITIONAL CHARGE (OZ/FT)": "-"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0565",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "AWVE24SU1300",
+            "C": 830,
+            "D": 0.5,
+            "E": "Variable Speed ECM",
+            "F": 80,
+            "G": 67,
+            "H": 60,
+            "I": 21600,
+            "J": 16632,
+            "K": 21600,
+            "L": "-",
+            "M": "-",
+            "N": "208/1",
+            "O": 4.9,
+            "P": 15,
+            "Q": 114,
+            "R": "DAIKIN",
+            "S": "DH6VSA241M",
+            "T": 47,
+            "U": 21600,
+            "W": "208/1",
+            "X": 16.8,
+            "Y": 20,
+            "Z": 95,
+            "AA": "R32",
+            "AB": "16.5/9.8 (SEER2/EER2)",
+            "AC": 124,
+            "AD": "Inverter"
+          },
+          "filterData": {
+            "SIZE": 2,
+            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "ELECTRICAL": "208/1",
+            "KW": "-",
+            "STAGES": "Inverter",
+            "FAN TYPE": "Variable Speed ECM"
+          },
+          "documentationData": {
+            "SUBMITTAL (OUTDOOR UNIT)": "DH6VSA241M",
+            "SUBMITTAL (INDOOR UNIT)": "AWVE24SU1300",
+            "ENGINEERING MANUAL (OUTDOOR UNIT)": "ENGINEERING MANUAL - DH6VSA (Apt Style)",
+            "ENGINEERING MANUAL (INDOOR UNIT)": "ENGINEERING MANUAL - AWVE",
+            "INSTALLATION MANUAL (OUTDOOR)": "INSTALLATION MANUAL - DH6VSA (Apt Style)",
+            "INSTALLATION MANUAL (INDOOR)": "INSTALLATION MANUAL - AWVE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "-",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": "-",
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": "-",
+            "LIQUID LINE CONNECTION (IN)": "-",
+            "SUCTION LINE CONNECTION (IN)": "-",
+            "PRE-CHARGE PIPING LENGTH (FT)": "-",
+            "FACTORY CHARGE (LBS)": "-",
+            "FACTORY CHARGE (OZ)": "-",
+            "ADDITIONAL CHARGE (OZ/FT)": "-"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0566",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "AWVE30LU1300",
+            "C": 1000,
+            "D": 0.5,
+            "E": "Variable Speed ECM",
+            "F": 80,
+            "G": 67,
+            "H": 60,
+            "I": 28400,
+            "J": 21584,
+            "K": 25600,
+            "L": "-",
+            "M": "-",
+            "N": "208/1",
+            "O": 4.9,
+            "P": 15,
+            "Q": 127,
+            "R": "DAIKIN",
+            "S": "DH6VSA301M",
+            "T": 47,
+            "U": 25600,
+            "W": "208/1",
+            "X": 22.4,
+            "Y": 25,
+            "Z": 95,
+            "AA": "R32",
+            "AB": "16.5/9.8 (SEER2/EER2)",
+            "AC": 133,
+            "AD": "Inverter"
+          },
+          "filterData": {
+            "SIZE": 2.5,
+            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "ELECTRICAL": "208/1",
+            "KW": "-",
+            "STAGES": "Inverter",
+            "FAN TYPE": "Variable Speed ECM"
+          },
+          "documentationData": {
+            "SUBMITTAL (OUTDOOR UNIT)": "DH6VSA301M",
+            "SUBMITTAL (INDOOR UNIT)": "AWVE30LU1300",
+            "ENGINEERING MANUAL (OUTDOOR UNIT)": "ENGINEERING MANUAL - DH6VSA (Apt Style)",
+            "ENGINEERING MANUAL (INDOOR UNIT)": "ENGINEERING MANUAL - AWVE",
+            "INSTALLATION MANUAL (OUTDOOR)": "INSTALLATION MANUAL - DH6VSA (Apt Style)",
+            "INSTALLATION MANUAL (INDOOR)": "INSTALLATION MANUAL - AWVE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "-",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": "-",
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": "-",
+            "LIQUID LINE CONNECTION (IN)": "-",
+            "SUCTION LINE CONNECTION (IN)": "-",
+            "PRE-CHARGE PIPING LENGTH (FT)": "-",
+            "FACTORY CHARGE (LBS)": "-",
+            "FACTORY CHARGE (OZ)": "-",
+            "ADDITIONAL CHARGE (OZ/FT)": "-"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0567",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "AWVE36LU1300",
+            "C": 1150,
+            "D": 0.5,
+            "E": "Variable Speed ECM",
+            "F": 80,
+            "G": 67,
+            "H": 59,
+            "I": 34000,
+            "J": 25840,
+            "K": 34400,
+            "L": "-",
+            "M": "-",
+            "N": "208/1",
+            "O": 4.9,
+            "P": 15,
+            "Q": 141,
+            "R": "DAIKIN",
+            "S": "DH6VSA361M",
+            "T": 47,
+            "U": 34400,
+            "W": "208/1",
+            "X": 22.4,
+            "Y": 25,
+            "Z": 95,
+            "AA": "R32",
+            "AB": "16.5/9.8 (SEER2/EER2)",
+            "AC": 127,
+            "AD": "Inverter"
+          },
+          "filterData": {
+            "SIZE": 3,
+            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "ELECTRICAL": "208/1",
+            "KW": "-",
+            "STAGES": "Inverter",
+            "FAN TYPE": "Variable Speed ECM"
+          },
+          "documentationData": {
+            "SUBMITTAL (OUTDOOR UNIT)": "DH6VSA361M",
+            "SUBMITTAL (INDOOR UNIT)": "AWVE36LU1300",
+            "ENGINEERING MANUAL (OUTDOOR UNIT)": "ENGINEERING MANUAL - DH6VSA (Apt Style)",
+            "ENGINEERING MANUAL (INDOOR UNIT)": "ENGINEERING MANUAL - AWVE",
+            "INSTALLATION MANUAL (OUTDOOR)": "INSTALLATION MANUAL - DH6VSA (Apt Style)",
+            "INSTALLATION MANUAL (INDOOR)": "INSTALLATION MANUAL - AWVE"
+          },
+          "refrigerantData": {
+            "REFRIGERANT": "-",
+            "MAX VERTICAL SEPARATION (ODU TO IDU) (FT)": "-",
+            "MAX VERTICAL SEPARATION (IDU TO IDU) (FT)": "-",
+            "MAX TOTAL LINE SET (FT)": "-",
+            "LIQUID LINE CONNECTION (IN)": "-",
+            "SUCTION LINE CONNECTION (IN)": "-",
+            "PRE-CHARGE PIPING LENGTH (FT)": "-",
+            "FACTORY CHARGE (LBS)": "-",
+            "FACTORY CHARGE (OZ)": "-",
+            "ADDITIONAL CHARGE (OZ/FT)": "-"
+          }
+        }
+      ]
     }
   ],
   "scheduleNotes": {
@@ -39340,8 +39670,8 @@
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-08-04T11:04:25",
-    "dataRowCount": 562,
-    "selectionCount": 562
+    "generatedAt": "2026-08-11T17:14:56",
+    "dataRowCount": 567,
+    "selectionCount": 567
   }
 }
