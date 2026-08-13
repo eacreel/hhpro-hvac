@@ -224,11 +224,12 @@
     // Condition-aware lookups (Design Search)
     // -----------------------------------------------------------------
     // Where a Design Search input lands between two rated points, the
-    // policy is WORST-CASE: evaluate at every bracketing rated point and
-    // keep the one delivering the least capacity, so a system only
-    // passes if it meets the load even at the harsher rated condition.
-    // Values outside the table range are never extrapolated - they come
-    // back flagged outOfRange instead.
+    // policy is WORST-CASE PER AXIS: snap each condition to its harsher
+    // bracketing rated point - cooling EAT (DB/WB) and cooling OA round
+    // UP, heat-pump OA rounds DOWN - so results reflect the toughest
+    // rated conditions surrounding the design point. Values outside the
+    // table range are never extrapolated - they come back flagged
+    // outOfRange instead.
 
     // Bracketing rated points for x on an axis. One of:
     //   { exact: x } | { lo, hi } | { outOfRange: true, min, max } | null
@@ -283,10 +284,10 @@
                 ambientUsed: only.ambient, capacity: only.capacity
             };
         }
-        var worst = (lo.capacity <= hi.capacity) ? lo : hi;
+        // Worst case for heating = the COLDER bracketing ambient.
         return {
             applicable: true, offGrid: true, lo: lo, hi: hi,
-            ambientUsed: worst.ambient, capacity: worst.capacity
+            ambientUsed: lo.ambient, capacity: lo.capacity
         };
     }
 
@@ -311,8 +312,10 @@
         });
         if (out) return { applicable: true, outOfRange: true, ranges: ranges };
 
-        function pts(b) { return (b.exact != null) ? [b.exact] : [b.lo, b.hi]; }
-        var dbs = pts(br.eatDb), wbs = pts(br.eatWb), oas = pts(br.oaCooling);
+        // Worst case per axis: entering air and cooling ambient snap UP
+        // to the harsher (higher) bracketing rated point.
+        function harsher(b) { return (b.exact != null) ? b.exact : b.hi; }
+        var db = harsher(br.eatDb), wb = harsher(br.eatWb), oa = harsher(br.oaCooling);
         var offGrid = {};
         ['eatDb', 'eatWb', 'oaCooling'].forEach(function (f) {
             if (br[f].exact == null) offGrid[f] = { lo: br[f].lo, hi: br[f].hi };
@@ -320,45 +323,28 @@
 
         var best = null;
         ((axes.airflow || []).map(Number)).forEach(function (cfm) {
-            // Worst-case corner (lowest total) among the rated combos
-            // that exist for this airflow. Sparse tables: corners that
-            // aren't valid rated combos are skipped, and partial=true
-            // records that not every bracket corner was available.
-            var worst = null, found = 0, corners = 0;
-            dbs.forEach(function (db) {
-                wbs.forEach(function (wb) {
-                    oas.forEach(function (oa) {
-                        corners++;
-                        var r = matchup.cooling[[db, wb, oa, cfm].map(numStr).join('|')];
-                        if (!r || !isFinite(capNum(r[0]))) return;
-                        found++;
-                        var c = {
-                            eatDb: db, eatWb: wb, oaCooling: oa, airflow: cfm,
-                            total: capNum(r[0]), sensible: capNum(r[1]), lat: r[2]
-                        };
-                        if (!worst || c.total < worst.total) worst = c;
-                    });
-                });
-            });
-            if (!worst) return;
+            // Sparse tables: an airflow whose worst-case combo isn't a
+            // valid rated combination is skipped.
+            var r = matchup.cooling[[db, wb, oa, cfm].map(numStr).join('|')];
+            if (!r || !isFinite(capNum(r[0]))) return;
+            var c = {
+                eatDb: db, eatWb: wb, oaCooling: oa, airflow: cfm,
+                total: capNum(r[0]), sensible: capNum(r[1]), lat: r[2]
+            };
             var dev = 0;
             if (targets && targets.total > 0) {
-                dev += Math.abs(worst.total - targets.total) / targets.total;
+                dev += Math.abs(c.total - targets.total) / targets.total;
             }
             if (targets && targets.sensible > 0) {
-                dev += Math.abs(worst.sensible - targets.sensible) / targets.sensible;
+                dev += Math.abs(c.sensible - targets.sensible) / targets.sensible;
             }
-            var cand = { worst: worst, dev: dev, partial: found < corners };
-            if (!best || cand.dev < best.dev ||
-                (cand.dev === best.dev && cand.worst.total > best.worst.total)) {
-                best = cand;
+            if (!best || dev < best.dev ||
+                (dev === best.dev && c.total > best.result.total)) {
+                best = { result: c, dev: dev };
             }
         });
         if (!best) return { applicable: true, noData: true, offGrid: offGrid };
-        return {
-            applicable: true, offGrid: offGrid, partial: best.partial,
-            result: best.worst
-        };
+        return { applicable: true, offGrid: offGrid, result: best.result };
     }
 
     // -----------------------------------------------------------------
