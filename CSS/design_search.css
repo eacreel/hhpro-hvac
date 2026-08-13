@@ -364,7 +364,14 @@
     flex-direction: column;
     gap: var(--space-sm);
     min-height: 0;
-    overflow: hidden;
+    /* The pane itself scrolls: with BOTH result groups (verified +
+       nominal) plus the off-grid flags on screen, splitting the fixed
+       viewport left each table a sliver shorter than its own sticky
+       header on 1080p-class screens. Each schedule-wrap below instead
+       gets a guaranteed useful height and this column scrolls between
+       the groups. */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .design-search-results-header {
@@ -547,8 +554,8 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md);
+    gap: 2px;
+    padding: var(--space-xs) var(--space-md);
     border: 1px solid var(--color-warning);
     border-left-width: 4px;
     border-radius: var(--radius-sm);
@@ -557,7 +564,7 @@
 
 .design-search-flag {
     margin: 0;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text);
 }
 
@@ -582,8 +589,34 @@
     margin: var(--space-sm) 0 0 0;
 }
 
-/* Two stacked tables must share the vertical space instead of the
-   first one swallowing it (the plain layout lets one wrap flex-grow). */
+/* Every result table is guaranteed enough height for its sticky
+   header plus a real set of data rows; a lone group still flex-grows
+   to fill the pane. When two groups exceed the pane, the results
+   column scrolls (see .design-search-results). */
 .design-search-results .design-search-schedule-wrap {
-    min-height: 120px;
+    flex-shrink: 0;
+    min-height: min(60vh, 520px);
+}
+
+/* Shortish windows (1080p with OS display scaling, small laptops):
+   tighten the page chrome so the results tables keep their rows --
+   same treatment as the product pages in products.css. */
+@media (max-height: 820px) {
+    .design-search-page {
+        padding: var(--space-sm) var(--space-xl);
+        gap: var(--space-sm);
+    }
+
+    .design-search-title {
+        font-size: var(--font-size-lg);
+        margin-bottom: 0;
+    }
+
+    .design-search-sub {
+        font-size: var(--font-size-sm);
+    }
+
+    .design-search-results .design-search-schedule-wrap {
+        min-height: min(64vh, 440px);
+    }
 }
