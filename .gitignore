@@ -1,0 +1,6 @@
+# Claude Code session worktrees (temporary per-session repo copies;
+# never commit these)
+.claude/worktrees/
+
+# Office lock files
+~$*
