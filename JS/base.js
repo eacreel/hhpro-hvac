@@ -1138,7 +1138,10 @@
                 productKey: product && product.productKey,
                 data: data,
                 scheduleData: (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {},
-                initial: null,
+                // Design Search stamps __capacitySeed on verified results
+                // so their dropdowns open at the evaluated design
+                // conditions instead of the schedule defaults.
+                initial: getCurrentSel().__capacitySeed || null,
                 onChange: null
             }) : null;
 
