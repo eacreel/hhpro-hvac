@@ -842,6 +842,23 @@
         };
     }
 
+    // True when the selection is a heat pump: any row carries a numeric
+    // value in the heat-pump total column (cooling-only systems show
+    // "-"). Falls back to the capacity table's hp block when the column
+    // couldn't be resolved.
+    function hasHeatPumpData(sel, capQ, matchup) {
+        var col = capQ.ncols.hpHeating;
+        if (!col) return !!(matchup && matchup.hp);
+        var rows = sel.rows || [];
+        for (var i = 0; i < rows.length; i++) {
+            var sd = rows[i] && rows[i].scheduleData;
+            if (!sd) continue;
+            var v = parseFloat(String(sd[col]).replace(/,/g, ''));
+            if (isFinite(v) && v > 0) return true;
+        }
+        return false;
+    }
+
     // Capacity targets that are being evaluated against curves, expressed
     // as nominal-column targets -- the fallback comparison for systems
     // whose tables are missing or don't cover the entered conditions.
@@ -895,6 +912,12 @@
             var sd = (sel.rows && sel.rows[0] && sel.rows[0].scheduleData) || {};
             var matchup = HHpro.Capacity.matchupForRow(sd, data);
 
+            // Heat-pump conditions entered -> heat pumps ONLY, in both
+            // result groups. Cooling-only systems (DC/other non-HP
+            // pairings) show "-" in the heat-pump total column and have
+            // no hp table, so they can't answer a heating question.
+            if (capQ.useHp && !hasHeatPumpData(sel, capQ, matchup)) return;
+
             var coolRes = (matchup && capQ.useCool)
                 ? HHpro.Capacity.coolingAt(matchup,
                     { oa: c.coolOa, eatDb: c.coolDb, eatWb: c.coolWb },
@@ -903,11 +926,6 @@
             var hpRes = (matchup && capQ.useHp)
                 ? HHpro.Capacity.hpAt(matchup, c.hpOa)
                 : null;
-
-            // A heating target only fits systems that can heat: a
-            // cooling-only pairing fails it outright (its nominal HP
-            // column is "-", so the nominal path would drop it too).
-            if (capQ.useHp && t.hpHeating != null && hpRes && !hpRes.applicable) return;
 
             var verifiable = !!matchup;
             if (coolRes && coolRes.outOfRange) { verifiable = false; flags.coolOutOfRange++; }
