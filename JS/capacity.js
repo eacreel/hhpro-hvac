@@ -221,6 +221,147 @@
     }
 
     // -----------------------------------------------------------------
+    // Condition-aware lookups (Design Search)
+    // -----------------------------------------------------------------
+    // Where a Design Search input lands between two rated points, the
+    // policy is WORST-CASE: evaluate at every bracketing rated point and
+    // keep the one delivering the least capacity, so a system only
+    // passes if it meets the load even at the harsher rated condition.
+    // Values outside the table range are never extrapolated - they come
+    // back flagged outOfRange instead.
+
+    // Bracketing rated points for x on an axis. One of:
+    //   { exact: x } | { lo, hi } | { outOfRange: true, min, max } | null
+    function bracketOn(axis, x) {
+        var vals = (axis || []).map(Number).filter(isFinite)
+            .sort(function (a, b) { return a - b; });
+        if (!vals.length || !isFinite(x)) return null;
+        if (x < vals[0] || x > vals[vals.length - 1]) {
+            return { outOfRange: true, min: vals[0], max: vals[vals.length - 1] };
+        }
+        var lo = null;
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i] === x) return { exact: x };
+            if (vals[i] < x) lo = vals[i];
+            else return { lo: lo, hi: vals[i] };
+        }
+        return null;
+    }
+
+    // Some heat-pump tables hold text like "15900 (standard), 22500
+    // (boost)" (DH6VSA wall mounts). For search math the leading number
+    // -- the standard, non-boost rating -- is the conservative pick; the
+    // schedule cell still displays the full string.
+    function capNum(v) {
+        if (v == null) return NaN;
+        return parseFloat(String(v).replace(/,/g, ''));
+    }
+
+    // Heat-pump heating capacity at an outdoor ambient (tables rated at
+    // 70F coil EAT). Returns { applicable: false } when the matchup has
+    // no heat-pump table; otherwise ambientUsed/capacity hold the
+    // worst-case rated point, with lo/hi both reported when off-grid.
+    function hpAt(matchup, ambient) {
+        if (!matchup || !matchup.hp) return { applicable: false };
+        var br = bracketOn(matchup.hpAxis, ambient);
+        if (!br) return { applicable: false };
+        if (br.outOfRange) {
+            return { applicable: true, outOfRange: true, min: br.min, max: br.max };
+        }
+        function point(a) { return { ambient: a, capacity: capNum(matchup.hp[numStr(a)]) }; }
+        if (br.exact != null) {
+            var p = point(br.exact);
+            if (!isFinite(p.capacity)) return { applicable: true, noData: true };
+            return { applicable: true, ambientUsed: p.ambient, capacity: p.capacity };
+        }
+        var lo = point(br.lo), hi = point(br.hi);
+        if (!isFinite(lo.capacity) || !isFinite(hi.capacity)) {
+            var only = isFinite(lo.capacity) ? lo : (isFinite(hi.capacity) ? hi : null);
+            if (!only) return { applicable: true, noData: true };
+            return {
+                applicable: true, offGrid: true, lo: only, hi: only,
+                ambientUsed: only.ambient, capacity: only.capacity
+            };
+        }
+        var worst = (lo.capacity <= hi.capacity) ? lo : hi;
+        return {
+            applicable: true, offGrid: true, lo: lo, hi: hi,
+            ambientUsed: worst.ambient, capacity: worst.capacity
+        };
+    }
+
+    // Cooling performance at design conditions. cond = { oa, eatDb,
+    // eatWb }; targets = { total, sensible } (either may be null) steer
+    // which rated airflow is chosen - the CFM whose worst-case corner
+    // best matches the targets wins, ties going to the higher capacity
+    // (so with no targets the max-capacity airflow is reported).
+    function coolingAt(matchup, cond, targets) {
+        if (!matchup || !matchup.cooling) return { applicable: false };
+        var axes = matchup.axes || {};
+        var br = {
+            eatDb: bracketOn(axes.eatDb, cond.eatDb),
+            eatWb: bracketOn(axes.eatWb, cond.eatWb),
+            oaCooling: bracketOn(axes.oaCooling, cond.oa)
+        };
+        if (!br.eatDb || !br.eatWb || !br.oaCooling) return { applicable: false };
+        var ranges = {};
+        var out = false;
+        ['eatDb', 'eatWb', 'oaCooling'].forEach(function (f) {
+            if (br[f].outOfRange) { out = true; ranges[f] = br[f]; }
+        });
+        if (out) return { applicable: true, outOfRange: true, ranges: ranges };
+
+        function pts(b) { return (b.exact != null) ? [b.exact] : [b.lo, b.hi]; }
+        var dbs = pts(br.eatDb), wbs = pts(br.eatWb), oas = pts(br.oaCooling);
+        var offGrid = {};
+        ['eatDb', 'eatWb', 'oaCooling'].forEach(function (f) {
+            if (br[f].exact == null) offGrid[f] = { lo: br[f].lo, hi: br[f].hi };
+        });
+
+        var best = null;
+        ((axes.airflow || []).map(Number)).forEach(function (cfm) {
+            // Worst-case corner (lowest total) among the rated combos
+            // that exist for this airflow. Sparse tables: corners that
+            // aren't valid rated combos are skipped, and partial=true
+            // records that not every bracket corner was available.
+            var worst = null, found = 0, corners = 0;
+            dbs.forEach(function (db) {
+                wbs.forEach(function (wb) {
+                    oas.forEach(function (oa) {
+                        corners++;
+                        var r = matchup.cooling[[db, wb, oa, cfm].map(numStr).join('|')];
+                        if (!r || !isFinite(capNum(r[0]))) return;
+                        found++;
+                        var c = {
+                            eatDb: db, eatWb: wb, oaCooling: oa, airflow: cfm,
+                            total: capNum(r[0]), sensible: capNum(r[1]), lat: r[2]
+                        };
+                        if (!worst || c.total < worst.total) worst = c;
+                    });
+                });
+            });
+            if (!worst) return;
+            var dev = 0;
+            if (targets && targets.total > 0) {
+                dev += Math.abs(worst.total - targets.total) / targets.total;
+            }
+            if (targets && targets.sensible > 0) {
+                dev += Math.abs(worst.sensible - targets.sensible) / targets.sensible;
+            }
+            var cand = { worst: worst, dev: dev, partial: found < corners };
+            if (!best || cand.dev < best.dev ||
+                (cand.dev === best.dev && cand.worst.total > best.worst.total)) {
+                best = cand;
+            }
+        });
+        if (!best) return { applicable: true, noData: true, offGrid: offGrid };
+        return {
+            applicable: true, offGrid: offGrid, partial: best.partial,
+            result: best.worst
+        };
+    }
+
+    // -----------------------------------------------------------------
     // Per-row controller
     // -----------------------------------------------------------------
     function createController(matchup, cols, scheduleData, initial, onChange) {
@@ -364,6 +505,17 @@
         load: load,
         ensureFor: ensureFor,
         isProduct: function (productKey) { return productKey === CAPACITY_PRODUCT; },
+        hasTables: function () {
+            return !!(cache && cache.matchups && Object.keys(cache.matchups).length);
+        },
+
+        // ----- Condition-aware lookups (Design Search) -----
+        columnsFor: function (data) { return resolveColumns(data); },
+        matchupForRow: function (scheduleData, data) {
+            return matchupFor(scheduleData || {}, resolveColumns(data));
+        },
+        hpAt: hpAt,
+        coolingAt: coolingAt,
 
         /**
          * Native-schedule column letters hidden by DEFAULT, given the
