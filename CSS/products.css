@@ -27,7 +27,10 @@
 .product-view-inner {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    /* Tighter than --space-md: five stacked bands sit above the schedule
+       (title, gallery, filters, chips, status), so each gap pixel is
+       paid five times in lost schedule height. */
+    gap: 10px;
     width: fit-content;
     max-width: 100%;
     flex: 1;
@@ -42,7 +45,38 @@
    schedule card gets a viewport-relative height (still scrolling
    internally with sticky headers), and .product-view's overflow-y
    scrolls everything into reach. */
-@media (max-height: 840px) {
+/* Shortish windows (1080p with OS display scaling, small laptops):
+   keep the pinned no-scroll layout but squeeze the non-schedule bands
+   harder so the table keeps a workable number of visible rows. */
+@media (max-height: 820px) {
+    .app-header {
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+
+    .product-view-inner {
+        gap: var(--space-sm);
+    }
+
+    .product-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .model-card {
+        flex-basis: 72px;
+        min-width: 56px;
+    }
+
+    .model-gallery-compact .model-card {
+        flex-basis: 64px;
+    }
+
+    .model-card-desc {
+        display: none;
+    }
+}
+
+@media (max-height: 720px) {
     .product-view-inner {
         flex: none;
         min-height: auto;
@@ -51,7 +85,9 @@
 
     .product-view .schedule-wrap {
         flex: none;
-        height: max(360px, 64vh);
+        /* Nearly a full viewport once the page chrome is scrolled away
+           (170px ~= app header + page padding + a sliver of context). */
+        height: max(360px, calc(100vh - 170px));
     }
 }
 
@@ -65,7 +101,7 @@
 }
 
 .product-title {
-    font-size: var(--font-size-xxl);
+    font-size: var(--font-size-xl);
     color: var(--color-text);
 }
 
@@ -106,7 +142,7 @@
        shadow alone is too subtle at this elevation. */
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-wrap: wrap;
@@ -130,7 +166,7 @@
 }
 
 .filter-select {
-    padding: 8px 10px;
+    padding: 6px 10px;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
     /* Inset "well" tone (one step below the filter-bar surface) so the
@@ -139,7 +175,7 @@
     color: var(--color-text);
     font-size: var(--font-size-sm);
     cursor: pointer;
-    min-height: 36px;
+    min-height: 32px;
 }
 
 .filter-select:focus {
@@ -160,7 +196,7 @@
 }
 
 .filter-clear {
-    padding: 8px 14px;
+    padding: 6px 14px;
     background-color: transparent;
     border: 1px solid var(--color-border-strong);
     color: var(--color-text);
@@ -168,7 +204,7 @@
     font-size: var(--font-size-sm);
     transition: background-color var(--transition-fast),
                 border-color var(--transition-fast);
-    min-height: 36px;
+    min-height: 32px;
 }
 
 .filter-clear:hover {
@@ -272,12 +308,14 @@
     width: min-content;
 }
 
-/* Common cell styles - center both horizontally and vertically */
+/* Common cell styles - center both horizontally and vertically.
+   4px vertical padding (was 6) buys back one to two visible data rows
+   on 1080p-class screens across the multi-tier sticky header + body. */
 .schedule-table th,
 .schedule-table td {
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
-    padding: 6px 10px;
+    padding: 4px 8px;
     text-align: center;
     vertical-align: middle;
     background-color: var(--color-surface);
@@ -584,7 +622,7 @@
 .model-card:last-child { margin-right: auto; }
 
 .model-card {
-    flex: 0 1 128px;
+    flex: 0 1 104px;
     min-width: 82px;
     /* Size container so the caption text can adapt to how far the card
        was squeezed (see @container rules below). */
@@ -634,8 +672,8 @@
    reserved two-line caption block so cards whose label fits on one line
    stay the same height as the rest (images aligned across the row). */
 .model-gallery-compact .model-card {
-    flex: 0 1 100px;
-    min-width: 72px;
+    flex: 0 1 84px;
+    min-width: 64px;
     /* Buttons vertically center their content by default; column-flex
        pins the image to the top so all images align regardless of how
        many caption lines follow. */

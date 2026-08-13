@@ -344,7 +344,10 @@ input[type="checkbox"], input[type="radio"] {
 .app-header {
     background-color: var(--color-primary);
     color: var(--color-text-inverse);
-    padding: var(--space-md) var(--space-xl);
+    /* Slimmer than the generic --space-md band: every pixel of chrome
+       height comes straight out of the schedule's visible rows on
+       1080p-class screens. */
+    padding: 10px var(--space-xl);
     display: flex;
     align-items: center;
     justify-content: space-between;
