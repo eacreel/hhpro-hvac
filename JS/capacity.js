@@ -33,6 +33,29 @@
     var loadPromise = null;
 
     var COOL_AXES = ['eatDb', 'eatWb', 'oaCooling', 'airflow'];
+
+    // Aux. electric heat temperature rise. kW is sized from
+    //     kW = (CFM x deltaT) / 3193
+    // so the rise a row should show is the inverse of that. It has to be
+    // computed live because BOTH of its inputs are dropdowns: airflow (a
+    // capacity axis, below) and kW (the variant dropdown - see kwVariants
+    // in data.js). The value baked into the schedule JSON is only correct
+    // at the airflow the source workbook used for that row, so it used to
+    // sit unchanged while the user moved the CFM dropdown.
+    //
+    // Verified against the shipped data: this reproduces the stored
+    // TEMPERATURE RISE (DB) for all 491 rows that carry one, so nothing
+    // changes at a row's baseline airflow - only off-baseline airflows,
+    // which were previously wrong.
+    var TEMP_RISE_K = 3193;
+
+    function tempRise(kw, cfm) {
+        var k = Number(kw);
+        var c = Number(cfm);
+        if (!isFinite(k) || !isFinite(c) || c <= 0) return null;
+        return k * TEMP_RISE_K / c;
+    }
+
     var ARIA = {
         eatDb:     'Entering air dry bulb (°F)',
         eatWb:     'Entering air wet bulb (°F)',
@@ -199,6 +222,8 @@
             coolTotal:    find('TOTAL CAPACITY', 'COOLING'),
             coolSensible: find('SENSIBLE CAPACITY'),
             airflow:      find('AIRFLOW (CFM)'),
+            auxKw:        find('kW', 'AUX. ELECTRIC HEAT'),
+            tempRise:     find('TEMPERATURE RISE (DB)'),
             oaCooling:    find('OUTDOOR AMBIENT (COOLING)'),
             hpAmbient:    find('OUTDOOR AMBIENT (DB)', 'HEAT PUMP HEATING DATA'),
             hpTotalCols:  hpTotal,
@@ -356,6 +381,26 @@
         var st = seedCapacityState(matchup, cols, scheduleData, initial);
         function coolResult() { return matchup.cooling[coolKeyOf(st)]; }
 
+        // Aux electric heat kW. Owned by the kW variant dropdown, which
+        // lives in the row renderers (base.js / project_view.js) - they
+        // push the new value in via setAuxKw() so the derived temperature
+        // rise below follows both dropdowns. Seeded from the current
+        // variant's row so the first paint is right.
+        var auxKw = cols.auxKw != null ? scheduleData[cols.auxKw] : null;
+        // Static fallback: shown when kW is blank or "-" (no aux heat), so
+        // those rows render exactly as they always have.
+        var staticRise = cols.tempRise != null ? scheduleData[cols.tempRise] : null;
+
+        function riseText() {
+            var v = tempRise(auxKw, st.airflow);
+            if (v == null) {
+                return (staticRise == null || staticRise === '') ? '-' : String(staticRise);
+            }
+            // Match the 2-decimal rounding the schedule applies to this
+            // column (see ProductExtensions.multi_position_splits).
+            return String(Number(v.toFixed(2)));
+        }
+
         var selects = {};      // field -> <select>
         var outCells = {};     // field -> [td, ...]
 
@@ -368,6 +413,10 @@
         if (cols.coolTotal) outputCols[cols.coolTotal] = 'coolTotal';
         if (cols.coolSensible) outputCols[cols.coolSensible] = 'coolSensible';
         if (hasHp) (cols.hpTotalCols || []).forEach(function (c) { outputCols[c] = 'hpTotal'; });
+        // Claiming the temperature-rise column here also takes it OUT of the
+        // kW dropdown's "dependent columns" path in the row renderers (they
+        // check capCtrl.handles() first), so there's only one writer.
+        if (cols.tempRise) outputCols[cols.tempRise] = 'tempRise';
 
         function validValues(field) {
             return validAxisValues(matchup, st, field);
@@ -417,6 +466,10 @@
             setOut('hpTotal', cap == null ? '-' : cap);
         }
 
+        function updateTempRise() {
+            setOut('tempRise', riseText());
+        }
+
         function persist() {
             if (typeof onChange === 'function') onChange(getState());
         }
@@ -425,6 +478,7 @@
             // Other cooling menus' valid options depend on this one.
             COOL_AXES.forEach(populate);
             updateCooling();
+            updateTempRise();   // airflow may have moved
             persist();
         }
 
@@ -451,7 +505,9 @@
         function buildOutput(td, field) {
             td.classList.add('capacity-output-cell');
             (outCells[field] = outCells[field] || []).push(td);
-            if (field === 'hpTotal') {
+            if (field === 'tempRise') {
+                td.textContent = riseText();
+            } else if (field === 'hpTotal') {
                 var cap = matchup.hp[numStr(st.hpAmbient)];
                 td.textContent = (cap == null) ? '-' : String(cap);
             } else {
@@ -479,7 +535,10 @@
             },
             // Run once after all cells are placed so initial invalid-state
             // styling reflects the seeded combo.
-            finalize: function () { updateCooling(); updateHp(); },
+            finalize: function () { updateCooling(); updateHp(); updateTempRise(); },
+            // Called by the row renderers when the kW variant dropdown
+            // changes - the other half of the temperature-rise inputs.
+            setAuxKw: function (kw) { auxKw = kw; updateTempRise(); },
             getState: getState
         };
     }
@@ -627,6 +686,14 @@
                 (cols.hpTotalCols || []).forEach(function (c) {
                     if (c) out[c] = (cap == null) ? '-' : cap;
                 });
+            }
+            // Temperature rise follows the chosen airflow. kW comes from
+            // scheduleData because the cart item's selection IS the chosen
+            // kW variant. Left alone (static value stands) when there's no
+            // aux heat. Rounding is applied downstream by formatCellValue.
+            if (cols.tempRise && cols.auxKw) {
+                var rise = tempRise(scheduleData[cols.auxKw], ci.airflow);
+                if (rise != null) out[cols.tempRise] = rise;
             }
             return out;
         }

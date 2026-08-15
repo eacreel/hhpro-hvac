@@ -2780,7 +2780,7 @@
                         td.classList.add('kw-variant-cell');
                         td.appendChild(buildProjectKwSelect(
                             kwFamilyInfo, item, productKey, data,
-                            depCells, kwVariants));
+                            depCells, kwVariants, capCtrl));
                     } else {
                         td.textContent = formatCellValue(cell.value, colLetter, productKey);
                         if (depColSet[colLetter]) depCells[colLetter] = td;
@@ -2875,10 +2875,14 @@
      * kW dropdown for the project schedule. Same shape as the browse
      * page (select + chevron) but on change the new variant's
      * selection.id is persisted to the cart item, the dependent
-     * cells (Temp Rise / MCA / MOP / etc.) update in place, and the
-     * cart-panel label is recomputed.
+     * cells (MCA / MOP / etc.) update in place, and the cart-panel
+     * label is recomputed.
+     *
+     * Temperature rise is NOT a dependent cell: it's derived from kW and
+     * the airflow dropdown together, so the capacity controller owns it
+     * and just gets told the new kW (see capacity.js).
      */
-    function buildProjectKwSelect(familyInfo, item, productKey, data, depCells, kwVariants) {
+    function buildProjectKwSelect(familyInfo, item, productKey, data, depCells, kwVariants, capCtrl) {
         var family = familyInfo.family;
         var variants = family.variants;
         var currentIdx = familyInfo.variantIdx;
@@ -2913,6 +2917,7 @@
                 var td = depCells[col];
                 if (td) td.textContent = formatCellValue(sd[col], col, productKey);
             });
+            if (capCtrl) capCtrl.setAuxKw(variants[idx].kw);
 
             // Persist the new variant on the cart item. Recompute the
             // label so the cart panel stays in sync.

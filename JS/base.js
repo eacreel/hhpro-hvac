@@ -1171,6 +1171,10 @@
                 td.appendChild(buildKwSelect(fam, currentIdx, function (newIdx) {
                     currentIdx = newIdx;
                     refreshDependents();
+                    // Temperature rise is derived from kW AND the airflow
+                    // dropdown, so the capacity controller owns that cell
+                    // (it isn't in depCells) - hand it the new kW.
+                    if (capCtrl) capCtrl.setAuxKw(fam.variants[newIdx].kw);
                 }));
             } else {
                 var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
