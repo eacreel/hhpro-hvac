@@ -408,6 +408,285 @@ def convert_capacity_tables(input_path, output_path):
 
 
 # -----------------------------------------------------------------------------
+# GAS PACK RTU CAPACITY TABLES
+# -----------------------------------------------------------------------------
+# "Daikin LC RTU Capacity Tables.xlsx" - four sheets covering the DSG
+# (standard efficiency) and DHG (high efficiency) packaged rooftops, extracted
+# from Daikin's spec sheets. It drives the condition-aware Gas Pack RTU section
+# of Design Search, which is why the output is keyed by CABINET (DSG036,
+# DHG090, ...) rather than by schedule model number: a cooling table is
+# published per cabinet and applies to every voltage and motor built on it.
+#
+#   Cooling         long form, one row per EAT-DB / EAT-WB / OA-DB / CFM combo
+#                   -> MBh, S/T, delta-T. Rows whose model name carries
+#                   "(70% - Low Stage)" are the two-stage units' low-stage
+#                   table and are stored separately under "lowStage".
+#   Gas Heating     one row per cabinet + heat size (Low/Medium/High).
+#   Electrical Data one row per full model number (cabinet + voltage digit +
+#                   motor code), holding MCA/MOP for all four
+#                   convenience-outlet / power-exhaust combinations plus the
+#                   indoor motor HP.
+#
+# Only 208/230-3-60 (voltage digit 3) and 460-3-60 (digit 4) are carried; the
+# workbook never held 575V or single phase. Combinations printed "-" in the
+# spec sheet - and the three cells Daikin misprinted as 240.0, which are blank
+# in the workbook - are simply omitted, so the site only ever sees rated data.
+# -----------------------------------------------------------------------------
+
+GAS_PACK_CAPACITY_FILE = "Daikin LC RTU Capacity Tables.xlsx"
+GAS_PACK_CAPACITY_OUTPUT = "gas_pack_capacity.json"
+
+# Model-number voltage digit -> the VOLT/PH spelling used by GAS PACKS DATA.
+GAS_PACK_VOLTAGES = {"3": "208/3", "4": "460/3"}
+# Cabinet prefix -> the Efficiency filter value on the Design Search form.
+# DSG is Daikin's standard-efficiency line, DHG the high-efficiency one.
+GAS_PACK_EFFICIENCY = {"DSG": "LOW", "DHG": "HIGH"}
+
+_RANGE_RE = re.compile(r"^\s*(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)\s*$")
+
+
+def _gp_first_num(v):
+    """First number out of an electrical cell.
+
+    208/230V rows print both ratings as "19.9/19.9" (208V then 230V) and some
+    FLA cells carry a parenthetical variant, e.g. "2.2/1.9 (1.7/1.5)". The
+    schedule shows a single 208V figure, so keep the leading number and drop
+    the rest. 460V rows are already scalar and pass straight through.
+    """
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).split("(")[0].split("/")[0].strip()
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def _gp_range(v):
+    """Temperature-rise range "25-55" -> [25, 55]; anything else -> None."""
+    if v is None:
+        return None
+    m = _RANGE_RE.match(str(v))
+    if not m:
+        return None
+    return [float(m.group(1)), float(m.group(2))]
+
+
+def _gp_trim(x):
+    """Drop a pointless trailing .0 so JSON numbers stay compact."""
+    return int(x) if isinstance(x, float) and x.is_integer() else x
+
+
+def _gp_headers(ws):
+    """Header label -> column index, so column letters can move freely."""
+    out = {}
+    for i, cell in enumerate(ws[1], start=1):
+        if cell.value is not None:
+            out[str(cell.value).strip()] = i
+    return out
+
+
+def _gp_cabinet(model):
+    """'DSG036*D' / 'DHG036* (70% - Low Stage)' / 'DSG0363D' -> 'DSG036'."""
+    return str(model).split("*")[0].strip()[:6]
+
+
+def convert_gas_pack_capacity(input_path, output_path):
+    """Convert the LC RTU capacity workbook to a cabinet-keyed JSON.
+
+    Output shape:
+      {
+        "cabinets": {
+          "DSG036": {
+            "family": "DSG", "efficiency": "LOW", "tons": 3,
+            "axes":    {"eatDb":[...], "eatWb":[...], "oaCooling":[...], "airflow":[...]},
+            "cooling": {"<eatDb>|<eatWb>|<oaCooling>|<airflow>": [total, sensible, LAT], ...},
+            "lowStage": {"axes": {...}, "cooling": {...}},   # two-stage cabinets only
+            "heat": [{"size": "Low", "inputHigh": 45, "outputHigh": 36.45,
+                      "inputLow": 33.75, "outputLow": 27.38,
+                      "riseHigh": [15,45], "riseLow": [5,35], "thermalEff": 80}, ...],
+            "electrical": {"208/3": {"D": {...}, "W": {...}}, "460/3": {...}}
+          }, ...
+        }
+      }
+    Capacities are BTU/h (the workbook is MBh) to match the schedule columns.
+    LAT is EAT-DB minus the published delta-T.
+    """
+    print(f"\nConverting: {os.path.basename(input_path)}")
+    wb = openpyxl.load_workbook(input_path, data_only=True)
+
+    cabinets = {}
+
+    def cab(name):
+        e = cabinets.get(name)
+        if e is None:
+            e = cabinets[name] = {
+                "family": name[:3],
+                "efficiency": GAS_PACK_EFFICIENCY.get(name[:3], "LOW"),
+                "tons": None,
+                "axes": {"eatDb": set(), "eatWb": set(),
+                         "oaCooling": set(), "airflow": set()},
+                "cooling": {},
+                "_lowAxes": {"eatDb": set(), "eatWb": set(),
+                             "oaCooling": set(), "airflow": set()},
+                "_lowCooling": {},
+                "heat": [],
+                "electrical": {},
+            }
+        return e
+
+    # ----- Cooling -------------------------------------------------------
+    ws = wb["Cooling"]
+    h = _gp_headers(ws)
+    need = ["Model", "Tons", "CFM", "EAT DB (°F)", "EAT WB (°F)",
+            "OA DB (°F)", "MBh", "S/T", "∆T (°F)"]
+    missing = [n for n in need if n not in h]
+    if missing:
+        raise ValueError(f"Cooling sheet is missing column(s): {missing}")
+
+    skipped_cells = 0
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        model = row[h["Model"] - 1]
+        if not model:
+            continue
+        name = _gp_cabinet(model)
+        low_stage = "70%" in str(model)
+        entry = cab(name)
+        entry["tons"] = row[h["Tons"] - 1]
+
+        mbh = row[h["MBh"] - 1]
+        st = row[h["S/T"] - 1]
+        dt = row[h["∆T (°F)"] - 1]
+        if not all(isinstance(x, (int, float)) for x in (mbh, st, dt)):
+            skipped_cells += 1      # blank misprint cell - never invent a value
+            continue
+
+        db = row[h["EAT DB (°F)"] - 1]
+        wbt = row[h["EAT WB (°F)"] - 1]
+        oa = row[h["OA DB (°F)"] - 1]
+        cfm = row[h["CFM"] - 1]
+
+        axes = entry["_lowAxes"] if low_stage else entry["axes"]
+        table = entry["_lowCooling"] if low_stage else entry["cooling"]
+        axes["eatDb"].add(db)
+        axes["eatWb"].add(wbt)
+        axes["oaCooling"].add(oa)
+        axes["airflow"].add(cfm)
+
+        key = "|".join(_num_key(v) for v in (db, wbt, oa, cfm))
+        lat_raw = db - dt
+        table[key] = [
+            int(round(mbh * 1000)),
+            int(round(round(mbh * st, 3) * 1000)),
+            int(lat_raw) if float(lat_raw).is_integer() else round(lat_raw, 2),
+        ]
+
+    # ----- Gas heating ---------------------------------------------------
+    ws = wb["Gas Heating"]
+    h = _gp_headers(ws)
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        model = row[h["Model"] - 1]
+        if not model:
+            continue
+        entry = cab(str(model).strip())
+        if entry["tons"] is None:
+            entry["tons"] = row[h["Tons"] - 1]
+        entry["heat"].append({
+            "size": row[h["Gas Heat"] - 1],
+            "inputHigh": _gp_trim(row[h["Input - High Stage (MBH)"] - 1]),
+            "outputHigh": _gp_trim(row[h["Output - High Stage (MBH)"] - 1]),
+            "inputLow": _gp_trim(row[h["Input - Low Stage (MBH)"] - 1]),
+            "outputLow": _gp_trim(row[h["Output - Low Stage (MBH)"] - 1]),
+            "riseHigh": _gp_range(row[h["Temp Rise - High Stage (°F)"] - 1]),
+            "riseLow": _gp_range(row[h["Temp Rise - Low Stage (°F)"] - 1]),
+            "thermalEff": _gp_trim(row[h["Thermal Efficiency (%)"] - 1]),
+        })
+
+    # ----- Electrical ----------------------------------------------------
+    ws = wb["Electrical Data"]
+    h = _gp_headers(ws)
+    no_hp = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        model = row[h["Model"] - 1]
+        if not model:
+            continue
+        model = str(model).strip()
+        volt = GAS_PACK_VOLTAGES.get(model[6:7])
+        motor = model[7:8]
+        if not volt or not motor:
+            continue
+        entry = cab(_gp_cabinet(model))
+        if entry["tons"] is None:
+            entry["tons"] = row[h["Tons"] - 1]
+        hp = row[h["Indoor Motor HP"] - 1] if "Indoor Motor HP" in h else None
+        if hp is None:
+            no_hp.append(model)
+        entry["electrical"].setdefault(volt, {})[motor] = {
+            "model": model,
+            "mca": _gp_first_num(row[h["MCA - Base Unit"] - 1]),
+            "mop": _gp_first_num(row[h["MOP - Base Unit"] - 1]),
+            "hp": _gp_trim(hp) if hp is not None else None,
+            "convFla": _gp_first_num(row[h["Conv. Outlet FLA"] - 1]),
+            "peFla": _gp_first_num(row[h["Power Exhaust FLA"] - 1]),
+            "mcaConv": _gp_first_num(row[h["MCA - w/ Conv. Outlet"] - 1]),
+            "mopConv": _gp_first_num(row[h["MOP - w/ Conv. Outlet"] - 1]),
+            "mcaPe": _gp_first_num(row[h["MCA - w/ Power Exhaust"] - 1]),
+            "mopPe": _gp_first_num(row[h["MOP - w/ Power Exhaust"] - 1]),
+            "mcaBoth": _gp_first_num(row[h["MCA - w/ Conv. Outlet + Pwr Exhaust"] - 1]),
+            "mopBoth": _gp_first_num(row[h["MOP - w/ Conv. Outlet + Pwr Exhaust"] - 1]),
+        }
+
+    # ----- Finalise ------------------------------------------------------
+    no_cooling = []
+    for name, entry in cabinets.items():
+        entry["axes"] = {k: sorted(v) for k, v in entry["axes"].items()}
+        low_axes = {k: sorted(v) for k, v in entry.pop("_lowAxes").items()}
+        low_cooling = entry.pop("_lowCooling")
+        if low_cooling:
+            entry["lowStage"] = {"axes": low_axes, "cooling": low_cooling}
+        entry["motors"] = sorted({m for v in entry["electrical"].values() for m in v})
+        if not entry["cooling"]:
+            # DSG150 today: SS-DSG7-R32 reprints the DSG120 tables under the
+            # DSG150 heading, so no real 12.5-ton standard-efficiency cooling
+            # data exists. Keep the cabinet (its heating and electrical are
+            # sound) and flag it so the UI can say why rather than go quiet.
+            entry["coolingUnavailable"] = True
+            no_cooling.append(name)
+
+    payload = {
+        "cabinets": cabinets,
+        "_meta": {
+            "sourceFile": os.path.basename(input_path),
+            "generatedAt": datetime.now().isoformat(timespec="seconds"),
+            "cabinetCount": len(cabinets),
+            "coolingKey": "eatDb|eatWb|oaCooling|airflow",
+            "coolingValue": "[total BTU/h, sensible BTU/h, LAT degF]",
+            "heat": "MBH input/output per stage; rise ranges as [min, max] degF",
+            "electrical": "208V figure of each 208/230V pair; MCA/MOP per "
+                          "convenience-outlet / power-exhaust combination",
+        },
+    }
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, separators=(",", ":"), ensure_ascii=False)
+
+    cool_n = sum(len(e["cooling"]) for e in cabinets.values())
+    low_n = sum(len(e["lowStage"]["cooling"]) for e in cabinets.values()
+                if "lowStage" in e)
+    print(f"  -> {len(cabinets)} cabinets written to {os.path.basename(output_path)} "
+          f"({cool_n} cooling points, {low_n} low-stage, "
+          f"{sum(len(e['heat']) for e in cabinets.values())} heat sizes)")
+    if skipped_cells:
+        print(f"     ({skipped_cells} cooling row(s) skipped - blank/misprinted "
+              f"in the source spec sheet)")
+    if no_cooling:
+        print(f"     (no cooling data: {', '.join(sorted(no_cooling))})")
+    if no_hp:
+        print(f"     (no indoor motor HP: {', '.join(sorted(no_hp))})")
+
+
+# -----------------------------------------------------------------------------
 # DOCUMENTATION COLUMN -> FOLDER / EXTENSION MAP
 # -----------------------------------------------------------------------------
 # Maps the column-name prefix (e.g. "SUBMITTAL (SYSTEM)" -> "SUBMITTAL") to
@@ -1132,7 +1411,8 @@ def main():
     all_xlsx = [f for f in sorted(os.listdir(script_dir))
                 if f.lower().endswith(".xlsx") and not f.startswith("~$")]
     candidates = [f for f in all_xlsx
-                  if f == CAPACITY_FILE or f in PRODUCT_CONFIGS]
+                  if f in (CAPACITY_FILE, GAS_PACK_CAPACITY_FILE)
+                  or f in PRODUCT_CONFIGS]
     skipped = [f for f in all_xlsx if f not in candidates]
 
     if not candidates:
@@ -1147,6 +1427,16 @@ def main():
                 convert_capacity_tables(
                     input_path,
                     os.path.join(output_dir, CAPACITY_OUTPUT),
+                )
+                converted += 1
+            except Exception as e:
+                print(f"  ERROR processing {fname}: {e}")
+            continue
+        if fname == GAS_PACK_CAPACITY_FILE:
+            try:
+                convert_gas_pack_capacity(
+                    input_path,
+                    os.path.join(output_dir, GAS_PACK_CAPACITY_OUTPUT),
                 )
                 converted += 1
             except Exception as e:

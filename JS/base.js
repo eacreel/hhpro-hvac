@@ -346,6 +346,13 @@
         statusLine.className = 'filter-status';
         main.appendChild(statusLine);
 
+        // Standing warning while any row on this schedule is showing
+        // capacity-table values instead of the selection run by hand.
+        if (HHpro.GasPackDesign &&
+            product.productKey === HHpro.GasPackDesign.PRODUCT) {
+            main.appendChild(HHpro.GasPackDesign.buildWarningBanner());
+        }
+
         var scheduleWrap = document.createElement('div');
         scheduleWrap.className = 'schedule-wrap';
         main.appendChild(scheduleWrap);
@@ -550,6 +557,24 @@
             scheduleWrap.appendChild(table);
             applyStickyHeaderOffsets(table);
             scheduleStickyRecomputes(table);
+            focusRequestedSelection(table);
+        }
+
+        // Arriving from Design Search: bring the matched row into view and
+        // mark it, so the schedule doesn't dump the user at row 1 of 162.
+        function focusRequestedSelection(table) {
+            var wantId = params && params.focusSelectionId;
+            if (!wantId) return;
+            var visible = applyFilters(data.selections || [], filterValues);
+            var idx = visible.findIndex(function (s) { return s.id === wantId; });
+            if (idx < 0) return;
+            var rows = table.querySelectorAll('tbody tr');
+            var tr = rows[idx];
+            if (!tr) return;
+            tr.classList.add('row-focused');
+            requestAnimationFrame(function () {
+                if (tr.isConnected) tr.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            });
         }
 
         // Schedule belt-and-suspenders re-runs of the sticky offset pass:
@@ -896,8 +921,19 @@
             if (!sel.rows || !sel.rows.length) return;
             var layout = computeCellLayout(sel, colLetters, colIndexMap);
 
+            // Gas Pack rows that a Design Search result was selected onto
+            // carry a standard/design values toggle. Null everywhere else.
+            var gpCtrl = (HHpro.GasPackDesign && HHpro.GasPackDesign.rowController)
+                ? HHpro.GasPackDesign.rowController({
+                    productKey: product && product.productKey,
+                    data: data,
+                    selection: sel
+                }) : null;
+            var gpCells = {};   // letter -> td, so the toggle can repaint
+
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
+                if (gpCtrl) tr.classList.add('gp-design-row');
                 // Boundary border only matters when a selection spans
                 // multiple rows; on single-row selections it would stack a
                 // 2px rule onto every row's 1px bottom border.
@@ -911,15 +947,29 @@
                     var td = document.createElement('td');
                     td.className = 'actions-cell';
                     if (sel.rows.length > 1) td.rowSpan = sel.rows.length;
-                    td.appendChild(buildActionButtons(function () { return sel; }, product, data));
+                    var actions = buildActionButtons(function () { return sel; }, product, data);
+                    if (gpCtrl) actions.appendChild(gpCtrl.button(repaintGpCells));
+                    td.appendChild(actions);
                     tr.appendChild(td);
                 }
+
+                var gpOv = gpCtrl ? gpCtrl.overrides() : null;
 
                 colLetters.forEach(function (colLetter) {
                     var cell = layout[rowIndex][colLetter];
                     if (cell === null) return; // covered by rowSpan/colSpan from earlier
                     var td = document.createElement('td');
-                    td.textContent = formatCellValue(cell.value, colLetter, product && product.productKey);
+                    var value = cell.value;
+                    if (gpOv && Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
+                        value = gpOv[colLetter];
+                        td.classList.add('gp-design-cell');
+                        gpCells[colLetter] = td;
+                    } else if (gpCtrl && gpCtrl.handles(colLetter)) {
+                        // Toggle is off: still track the cell so flipping it
+                        // on repaints without rebuilding the whole table.
+                        gpCells[colLetter] = td;
+                    }
+                    td.textContent = formatCellValue(value, colLetter, product && product.productKey);
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
                     tr.appendChild(td);
@@ -927,6 +977,21 @@
 
                 tbody.appendChild(tr);
             });
+
+            // Repaint just the swapped cells when the toggle flips, so the
+            // table (and the user's scroll position) stays put.
+            function repaintGpCells() {
+                if (!gpCtrl) return;
+                var ov = gpCtrl.overrides();
+                var sd = (sel.rows[0] && sel.rows[0].scheduleData) || {};
+                Object.keys(gpCells).forEach(function (L) {
+                    var td = gpCells[L];
+                    var useDesign = Object.prototype.hasOwnProperty.call(ov, L);
+                    td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
+                        product && product.productKey);
+                    td.classList.toggle('gp-design-cell', useDesign);
+                });
+            }
         });
 
         return tbody;

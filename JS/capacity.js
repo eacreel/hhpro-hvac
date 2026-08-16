@@ -94,10 +94,12 @@
     // -----------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------
-    function numStr(v) {
-        var n = Number(v);
-        return isFinite(n) ? String(n) : String(v);
-    }
+    // Product-neutral table math lives in capacity_core.js so the Gas Pack
+    // RTU tables get the identical off-grid policy (see the note there).
+    var numStr = HHpro.CapacityCore.numStr;
+    var capNum = HHpro.CapacityCore.capNum;
+    var bracketOn = HHpro.CapacityCore.bracketOn;
+
     function el(tag, cls) {
         var e = document.createElement(tag);
         if (cls) e.className = cls;
@@ -248,40 +250,16 @@
     // -----------------------------------------------------------------
     // Condition-aware lookups (Design Search)
     // -----------------------------------------------------------------
-    // Where a Design Search input lands between two rated points, the
-    // policy is WORST-CASE PER AXIS: snap each condition to its harsher
-    // bracketing rated point - cooling EAT (DB/WB) and cooling OA round
-    // UP, heat-pump OA rounds DOWN - so results reflect the toughest
-    // rated conditions surrounding the design point. Values outside the
-    // table range are never extrapolated - they come back flagged
-    // outOfRange instead.
-
-    // Bracketing rated points for x on an axis. One of:
-    //   { exact: x } | { lo, hi } | { outOfRange: true, min, max } | null
-    function bracketOn(axis, x) {
-        var vals = (axis || []).map(Number).filter(isFinite)
-            .sort(function (a, b) { return a - b; });
-        if (!vals.length || !isFinite(x)) return null;
-        if (x < vals[0] || x > vals[vals.length - 1]) {
-            return { outOfRange: true, min: vals[0], max: vals[vals.length - 1] };
-        }
-        var lo = null;
-        for (var i = 0; i < vals.length; i++) {
-            if (vals[i] === x) return { exact: x };
-            if (vals[i] < x) lo = vals[i];
-            else return { lo: lo, hi: vals[i] };
-        }
-        return null;
-    }
-
-    // Some heat-pump tables hold text like "15900 (standard), 22500
-    // (boost)" (DH6VSA wall mounts). For search math the leading number
-    // -- the standard, non-boost rating -- is the conservative pick; the
-    // schedule cell still displays the full string.
-    function capNum(v) {
-        if (v == null) return NaN;
-        return parseFloat(String(v).replace(/,/g, ''));
-    }
+    // The worst-case off-grid policy and the cooling lookup itself live in
+    // capacity_core.js (bracketOn / capNum / coolingAt, aliased above), so
+    // Multi Position Splits and Gas Pack RTUs cannot drift apart. The
+    // heat-pump side below is MPS-only and stays here - note it snaps the
+    // ambient DOWN, the opposite of cooling, because the COLDER bracketing
+    // ambient is the harsher heating condition.
+    //
+    // Some heat-pump tables hold text like "15900 (standard), 22500 (boost)"
+    // (DH6VSA wall mounts); capNum takes the leading standard rating for
+    // search math while the schedule cell still displays the full string.
 
     // Heat-pump heating capacity at an outdoor ambient (tables rated at
     // 70F coil EAT). Returns { applicable: false } when the matchup has
@@ -316,61 +294,10 @@
         };
     }
 
-    // Cooling performance at design conditions. cond = { oa, eatDb,
-    // eatWb }; targets = { total, sensible } (either may be null) steer
-    // which rated airflow is chosen - the CFM whose worst-case corner
-    // best matches the targets wins, ties going to the higher capacity
-    // (so with no targets the max-capacity airflow is reported).
-    function coolingAt(matchup, cond, targets) {
-        if (!matchup || !matchup.cooling) return { applicable: false };
-        var axes = matchup.axes || {};
-        var br = {
-            eatDb: bracketOn(axes.eatDb, cond.eatDb),
-            eatWb: bracketOn(axes.eatWb, cond.eatWb),
-            oaCooling: bracketOn(axes.oaCooling, cond.oa)
-        };
-        if (!br.eatDb || !br.eatWb || !br.oaCooling) return { applicable: false };
-        var ranges = {};
-        var out = false;
-        ['eatDb', 'eatWb', 'oaCooling'].forEach(function (f) {
-            if (br[f].outOfRange) { out = true; ranges[f] = br[f]; }
-        });
-        if (out) return { applicable: true, outOfRange: true, ranges: ranges };
-
-        // Worst case per axis: entering air and cooling ambient snap UP
-        // to the harsher (higher) bracketing rated point.
-        function harsher(b) { return (b.exact != null) ? b.exact : b.hi; }
-        var db = harsher(br.eatDb), wb = harsher(br.eatWb), oa = harsher(br.oaCooling);
-        var offGrid = {};
-        ['eatDb', 'eatWb', 'oaCooling'].forEach(function (f) {
-            if (br[f].exact == null) offGrid[f] = { lo: br[f].lo, hi: br[f].hi };
-        });
-
-        var best = null;
-        ((axes.airflow || []).map(Number)).forEach(function (cfm) {
-            // Sparse tables: an airflow whose worst-case combo isn't a
-            // valid rated combination is skipped.
-            var r = matchup.cooling[[db, wb, oa, cfm].map(numStr).join('|')];
-            if (!r || !isFinite(capNum(r[0]))) return;
-            var c = {
-                eatDb: db, eatWb: wb, oaCooling: oa, airflow: cfm,
-                total: capNum(r[0]), sensible: capNum(r[1]), lat: r[2]
-            };
-            var dev = 0;
-            if (targets && targets.total > 0) {
-                dev += Math.abs(c.total - targets.total) / targets.total;
-            }
-            if (targets && targets.sensible > 0) {
-                dev += Math.abs(c.sensible - targets.sensible) / targets.sensible;
-            }
-            if (!best || dev < best.dev ||
-                (dev === best.dev && c.total > best.result.total)) {
-                best = { result: c, dev: dev };
-            }
-        });
-        if (!best) return { applicable: true, noData: true, offGrid: offGrid };
-        return { applicable: true, offGrid: offGrid, result: best.result };
-    }
+    // Cooling performance at design conditions. A matchup already carries
+    // { axes, cooling } in the core's shape, so this is the core lookup
+    // unchanged - kept as a named alias because it is part of the public API.
+    var coolingAt = HHpro.CapacityCore.coolingAt;
 
     // -----------------------------------------------------------------
     // Per-row controller
@@ -698,6 +625,8 @@
             return out;
         }
     };
+
+    HHpro.CapacityCore.register(CAPACITY_PRODUCT, HHpro.Capacity);
 
     // Warm the cache in the background so the dropdowns are ready by the
     // time the user opens a Multi Position Split schedule.

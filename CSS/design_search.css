@@ -620,3 +620,72 @@
         min-height: min(64vh, 440px);
     }
 }
+
+/* ============================================================
+   Gas Pack RTUs -- condition-aware form + result schedule
+   ------------------------------------------------------------
+   The Gas Pack page replaces the schema-driven form entirely, so
+   it reuses the shared .design-* primitives and only adds what is
+   genuinely new: the electrical-option checkboxes, the two-row
+   grouped result header, and the "-> schedule row" hint under
+   each Select button.
+   ============================================================ */
+
+.design-gp-options {
+    margin-top: var(--space-md);
+}
+
+.design-gp-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.design-gp-check input {
+    accent-color: var(--color-primary-light);
+    cursor: pointer;
+}
+
+/* Group header row: the ungrouped leading columns get no rule so the
+   band reads as "Cooling / Heating / Electrical" and nothing else. */
+.design-gp-table thead th.design-gp-group-blank {
+    background-color: transparent;
+    border-bottom-color: transparent;
+}
+
+.design-gp-table .gp-col-model {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* A row evaluated at a harsher bracketing point rather than an exact
+   rated one. Marked, not hidden -- the number is still conservative. */
+.design-gp-table tbody tr.design-gp-offgrid .gp-col-model::after {
+    content: '*';
+    color: var(--color-warning);
+    margin-left: 2px;
+    font-weight: 700;
+}
+
+.design-gp-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.design-gp-match {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.design-search-note {
+    margin: 0 0 var(--space-xs);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-style: italic;
+}

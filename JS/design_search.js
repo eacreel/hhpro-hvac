@@ -40,8 +40,33 @@
         loading: false,
         error: null,
         capacity: freshCapacityState(), // condition-aware inputs (products with capacity tables)
-        capacityError: null             // validation message for the capacity section
+        capacityError: null,            // validation message for the capacity section
+        gasPack: freshGasPackState(),   // Gas Pack RTU inputs (replaces the form entirely)
+        gasPackError: null
     };
+
+    // Gas Pack RTUs get a purpose-built form rather than the schema-driven
+    // one: every number on their schedule came from a selection run by hand
+    // at one condition, so the useful question is "what does this cabinet do
+    // at MY condition", not "which stored row is closest". The defaults are
+    // the conditions those manual selections used, so an untouched form
+    // reproduces the schedule.
+    function freshGasPackState() {
+        return {
+            tons: null, electrical: null, motor: null,
+            efficiency: null, hgrh: null,          // null = All
+            ambient: 95, eatDb: 80, eatWb: 67,     // degF
+            cfm: null, coolTotal: null, coolSensible: null, heatRise: null,
+            tols: { cfm: 10, coolTotal: 10, coolSensible: 10, heatRise: 10 },
+            convOutlet: false, powerExhaust: false
+        };
+    }
+
+    function gasPackUiActive() {
+        return !!(HHpro.GasPackCapacity &&
+                  HHpro.GasPackCapacity.isProduct(state.productKey) &&
+                  HHpro.GasPackCapacity.hasTables() && state.productData);
+    }
 
     // Condition-aware search inputs. Only rendered for products backed by
     // HHpro.Capacity tables (Multi Position Splits today). The three
@@ -174,6 +199,8 @@
             state.error = null;
             state.capacity = freshCapacityState();
             state.capacityError = null;
+            state.gasPack = freshGasPackState();
+            state.gasPackError = null;
             if (key) loadProductData(key);
             else rerenderWorkArea();
         });
@@ -191,8 +218,11 @@
             .then(function (data) {
                 // Capacity tables must be resolved before the form renders
                 // so the condition-aware section knows whether it applies.
-                if (HHpro.Capacity && HHpro.Capacity.ensureFor) {
-                    return HHpro.Capacity.ensureFor(productKey).then(function () { return data; });
+                // Routed through the registry so any product with tables --
+                // Multi Position Splits, Gas Pack RTUs -- resolves here.
+                if (HHpro.CapacityCore && HHpro.CapacityCore.ensureFor) {
+                    return HHpro.CapacityCore.ensureFor(productKey)
+                        .then(function () { return data; });
                 }
                 return data;
             })
@@ -311,6 +341,20 @@
             form.appendChild(desc);
         }
 
+        // Gas Pack RTUs replace the whole schema-driven form -- targets AND
+        // filter dropdowns -- with one condition-aware panel. Their schedule
+        // filters still exist on the product page; this page is a different
+        // question. (Everything below this block is skipped for them.)
+        if (gasPackUiActive()) {
+            form.appendChild(buildGasPackSection());
+            form.appendChild(buildFormActions(function () {
+                state.gasPack = freshGasPackState();
+                state.gasPackError = null;
+                state.results = null;
+            }));
+            return form;
+        }
+
         // Condition-aware capacity section (products with capacity
         // tables). Its three capacity targets replace the nominal
         // cooling/sensible/heat-pump schema targets, so those are hidden
@@ -382,7 +426,23 @@
             form.appendChild(filtersBox);
         }
 
-        // Action buttons
+        form.appendChild(buildFormActions(function () {
+            state.targetValues = {};
+            state.filterValues = {};
+            state.results = null;
+            state.capacity = freshCapacityState();
+            state.capacityError = null;
+            // Re-seed default tolerances
+            schema.targets.forEach(function (t) {
+                state.tolerances[t.col] = (t.defaultTolerance != null ? t.defaultTolerance : 10);
+            });
+        }));
+
+        return form;
+    }
+
+    // Find matches / Reset. clearState wipes whatever the active form owns.
+    function buildFormActions(clearState) {
         var actions = document.createElement('div');
         actions.className = 'design-search-actions';
 
@@ -397,22 +457,11 @@
         reset.className = 'projects-btn projects-btn-secondary';
         reset.textContent = 'Reset';
         reset.addEventListener('click', function () {
-            state.targetValues = {};
-            state.filterValues = {};
-            state.results = null;
-            state.capacity = freshCapacityState();
-            state.capacityError = null;
-            // Re-seed default tolerances
-            schema.targets.forEach(function (t) {
-                state.tolerances[t.col] = (t.defaultTolerance != null ? t.defaultTolerance : 10);
-            });
+            clearState();
             rerenderWorkArea();
         });
         actions.appendChild(reset);
-
-        form.appendChild(actions);
-
-        return form;
+        return actions;
     }
 
     function buildTargetRow(target) {
@@ -638,6 +687,230 @@
         return row;
     }
 
+    // -----------------------------------------------------------------
+    // Gas Pack RTUs -- condition-aware form
+    // -----------------------------------------------------------------
+
+    var GP_NUMERIC = [
+        { key: 'cfm', label: 'Supply CFM', unit: 'CFM' },
+        { key: 'coolTotal', label: 'Cooling Total Capacity', unit: 'BTU/h' },
+        { key: 'coolSensible', label: 'Cooling Sensible Capacity', unit: 'BTU/h' },
+        { key: 'heatRise', label: 'Gas Heating High Stage Temp Rise', unit: '°F' }
+    ];
+
+    function buildGasPackSection() {
+        var G = HHpro.GasPackCapacity;
+        var opts = G.formOptions();
+        var gp = state.gasPack;
+
+        var box = document.createElement('section');
+        box.className = 'design-search-section design-capacity-section';
+
+        var hdr = document.createElement('h2');
+        hdr.className = 'design-search-section-title';
+        hdr.textContent = 'Performance at design conditions';
+        box.appendChild(hdr);
+
+        var hint = document.createElement('p');
+        hint.className = 'design-search-hint';
+        hint.textContent = 'Results come from Daikin’s published capacity tables, not from the ' +
+            'schedule’s stored selection. A condition between rated points is evaluated at the ' +
+            'harsher bracketing point, so the capacity shown is never optimistic.';
+        box.appendChild(hint);
+
+        // ----- Unit constraints -----
+        var fgrid = document.createElement('div');
+        fgrid.className = 'design-filter-grid';
+        fgrid.appendChild(gpSelect('Nominal Tons', 'tons',
+            opts.tons.map(function (t) { return { value: String(t), label: String(t) }; })));
+        fgrid.appendChild(gpSelect('Efficiency', 'efficiency', opts.efficiencies));
+        fgrid.appendChild(gpSelect('Electrical', 'electrical',
+            opts.electrical.map(function (v) { return { value: v, label: v }; })));
+        fgrid.appendChild(gpSelect('Motor', 'motor', opts.motors));
+        fgrid.appendChild(gpSelect('Hot Gas Reheat', 'hgrh', [
+            { value: 'YES', label: 'Yes' }, { value: 'NO', label: 'No' }
+        ]));
+        fgrid.appendChild(gpSelect('Outdoor Ambient (°F)', 'ambient',
+            opts.ambients.map(function (a) { return { value: String(a), label: String(a) }; }),
+            true));
+        box.appendChild(fgrid);
+
+        // ----- Entering air -----
+        var condGrid = document.createElement('div');
+        condGrid.className = 'design-cond-grid';
+        condGrid.appendChild(buildCondGroup('Cooling entering air', [
+            gpCondField('Cooling EAT (DB)', 'eatDb'),
+            gpCondField('Cooling EAT (WB)', 'eatWb')
+        ]));
+        box.appendChild(condGrid);
+
+        // ----- Targets -----
+        var thint = document.createElement('p');
+        thint.className = 'design-search-hint';
+        thint.textContent = 'Leave a row blank to skip it. Tolerance is the +/- percent the result ' +
+            'can differ from your target.';
+        box.appendChild(thint);
+
+        var grid = document.createElement('div');
+        grid.className = 'design-target-grid';
+        GP_NUMERIC.forEach(function (def) { grid.appendChild(gpTargetRow(def)); });
+        box.appendChild(grid);
+
+        // ----- Electrical options -----
+        var optBox = document.createElement('div');
+        optBox.className = 'design-cond-group design-gp-options';
+        var optTitle = document.createElement('div');
+        optTitle.className = 'design-cond-group-title';
+        optTitle.textContent = 'Electrical options';
+        optBox.appendChild(optTitle);
+        var optRow = document.createElement('div');
+        optRow.className = 'design-cond-fields';
+        optRow.appendChild(gpCheckbox('Powered Convenience Outlet', 'convOutlet'));
+        optRow.appendChild(gpCheckbox('Power Exhaust', 'powerExhaust'));
+        optBox.appendChild(optRow);
+        box.appendChild(optBox);
+
+        if (state.gasPackError) {
+            var err = document.createElement('p');
+            err.className = 'design-search-status design-search-error';
+            err.textContent = state.gasPackError;
+            box.appendChild(err);
+        }
+        return box;
+    }
+
+    // Dropdown bound to a gasPack state key. `required` drops the "All"
+    // option (outdoor ambient always has to resolve to a rated column).
+    function gpSelect(labelText, key, choices, required) {
+        var group = document.createElement('div');
+        group.className = 'filter-group';
+
+        var label = document.createElement('label');
+        label.className = 'filter-label';
+        label.textContent = labelText;
+        group.appendChild(label);
+
+        var select = document.createElement('select');
+        select.className = 'filter-select';
+        select.setAttribute('aria-label', labelText);
+
+        if (!required) {
+            var all = document.createElement('option');
+            all.value = '';
+            all.textContent = 'All';
+            select.appendChild(all);
+        }
+        var current = state.gasPack[key];
+        choices.forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = c.value;
+            opt.textContent = c.label;
+            if (current != null && String(current) === String(c.value)) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.addEventListener('change', function () {
+            var raw = select.value;
+            if (raw === '') { state.gasPack[key] = null; return; }
+            var n = parseFloat(raw);
+            state.gasPack[key] = (String(n) === raw) ? n : raw;
+        });
+        group.appendChild(select);
+        return group;
+    }
+
+    function gpCondField(labelText, key) {
+        var wrap = document.createElement('div');
+        wrap.className = 'design-cond-field';
+        var label = document.createElement('label');
+        label.className = 'design-cond-label';
+        label.textContent = labelText;
+        wrap.appendChild(label);
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'design-cond-value';
+        input.step = 'any';
+        input.setAttribute('aria-label', labelText + ' (°F)');
+        if (state.gasPack[key] != null) input.value = state.gasPack[key];
+        input.addEventListener('input', function () {
+            var raw = input.value.trim();
+            state.gasPack[key] = raw === '' ? null : parseFloat(raw);
+        });
+        wrap.appendChild(input);
+        var unit = document.createElement('span');
+        unit.className = 'design-cond-unit';
+        unit.textContent = '°F';
+        wrap.appendChild(unit);
+        return wrap;
+    }
+
+    function gpTargetRow(def) {
+        var row = document.createElement('div');
+        row.className = 'design-target-row';
+
+        var label = document.createElement('label');
+        label.className = 'design-target-label';
+        label.textContent = def.label;
+        row.appendChild(label);
+
+        var valueInput = document.createElement('input');
+        valueInput.type = 'number';
+        valueInput.className = 'design-target-value';
+        valueInput.step = 'any';
+        valueInput.placeholder = '—';
+        valueInput.setAttribute('aria-label', def.label + ' (' + def.unit + ')');
+        if (state.gasPack[def.key] != null) valueInput.value = state.gasPack[def.key];
+        valueInput.addEventListener('input', function () {
+            var raw = valueInput.value.trim();
+            state.gasPack[def.key] = raw === '' ? null : parseFloat(raw);
+        });
+        row.appendChild(valueInput);
+
+        var unit = document.createElement('span');
+        unit.className = 'design-target-unit';
+        unit.textContent = def.unit;
+        row.appendChild(unit);
+
+        var pm = document.createElement('span');
+        pm.className = 'design-target-plusminus';
+        pm.textContent = '±';
+        row.appendChild(pm);
+
+        var tolInput = document.createElement('input');
+        tolInput.type = 'number';
+        tolInput.className = 'design-target-tolerance';
+        tolInput.step = 'any';
+        tolInput.min = '0';
+        tolInput.setAttribute('aria-label', def.label + ' tolerance (%)');
+        tolInput.value = state.gasPack.tols[def.key];
+        tolInput.addEventListener('input', function () {
+            var raw = tolInput.value.trim();
+            state.gasPack.tols[def.key] = raw === '' ? 0 : parseFloat(raw);
+        });
+        row.appendChild(tolInput);
+
+        var pct = document.createElement('span');
+        pct.className = 'design-target-pct';
+        pct.textContent = '%';
+        row.appendChild(pct);
+        return row;
+    }
+
+    function gpCheckbox(labelText, key) {
+        var wrap = document.createElement('label');
+        wrap.className = 'design-gp-check';
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = !!state.gasPack[key];
+        input.addEventListener('change', function () {
+            state.gasPack[key] = input.checked;
+        });
+        wrap.appendChild(input);
+        var text = document.createElement('span');
+        text.textContent = labelText;
+        wrap.appendChild(text);
+        return wrap;
+    }
+
     function buildFilterDropdown(filterCol, data) {
         var group = document.createElement('div');
         group.className = 'filter-group';
@@ -705,6 +978,8 @@
         var data = state.productData;
         if (!data) return;
         state.capacityError = null;
+
+        if (gasPackUiActive()) { runGasPackSearch(); return; }
 
         // 1. Hard constraints first (existing filter logic).
         var afterFilters = HHpro.Schedule.applyFilters(
@@ -1076,7 +1351,304 @@
     // Results
     // -----------------------------------------------------------------
 
+    // -----------------------------------------------------------------
+    // Gas Pack RTUs -- search + results
+    // -----------------------------------------------------------------
+
+    function runGasPackSearch() {
+        var gp = state.gasPack;
+        state.gasPackError = null;
+
+        var missing = [];
+        if (gp.ambient == null) missing.push('Outdoor Ambient');
+        if (gp.eatDb == null || isNaN(gp.eatDb)) missing.push('Cooling EAT (DB)');
+        if (gp.eatWb == null || isNaN(gp.eatWb)) missing.push('Cooling EAT (WB)');
+        if (missing.length) {
+            state.gasPackError = 'Enter ' + missing.join(', ') +
+                ' — capacity can only be read at a stated condition.';
+            state.results = null;
+            rerenderWorkArea();
+            return;
+        }
+        if (gp.eatWb > gp.eatDb) {
+            state.gasPackError = 'Wet bulb cannot exceed dry bulb.';
+            state.results = null;
+            rerenderWorkArea();
+            return;
+        }
+
+        function target(key) {
+            return { value: gp[key], tol: gp.tols[key] };
+        }
+        var criteria = {
+            tons: gp.tons, electrical: gp.electrical, motor: gp.motor,
+            efficiency: gp.efficiency, hgrh: gp.hgrh,
+            ambient: gp.ambient, eatDb: gp.eatDb, eatWb: gp.eatWb,
+            cfm: target('cfm'),
+            coolTotal: target('coolTotal'),
+            coolSensible: target('coolSensible'),
+            heatRise: target('heatRise'),
+            convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust
+        };
+        var out = HHpro.GasPackCapacity.search(criteria);
+        state.results = {
+            mode: 'gasPack',
+            results: out.results,
+            skipped: out.skipped,
+            criteria: criteria
+        };
+        rerenderWorkArea();
+    }
+
+    // Columns of the Design Search result schedule. Deliberately NOT the
+    // product schedule: this table reports only what was asked for plus the
+    // values derived from it, so nothing here can be mistaken for the
+    // manually-run selection stored on the product page.
+    var GP_COLUMNS = [
+        { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
+        { label: 'Nom Tons', get: function (r) { return r.tons; } },
+        { label: 'Efficiency', get: function (r) { return r.efficiency === 'HIGH' ? 'High' : 'Low'; } },
+        { label: 'Volt/PH', get: function (r) { return r.voltage; } },
+        { label: 'Motor', get: function (r) { return r.motorLabel; } },
+        { label: 'HGRH', get: function (r) { return r.hgrh; } },
+        { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling' },
+        { label: 'OA DB (°F)', get: function (r) { return r.cooling.ambient; }, group: 'Cooling' },
+        { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling' },
+        { label: 'EWB (°F)', get: function (r) { return r.cooling.eatWb; }, group: 'Cooling' },
+        { label: 'LDB (°F)', get: function (r) { return fmt(r.cooling.lat, 1); }, group: 'Cooling' },
+        { label: 'Total (BTU/h)', get: function (r) { return fmtInt(r.cooling.total); }, group: 'Cooling' },
+        { label: 'Sensible (BTU/h)', get: function (r) { return fmtInt(r.cooling.sensible); }, group: 'Cooling' },
+        { label: 'Gas Heat', get: function (r) { return r.heat.size; }, group: 'Heating' },
+        { label: 'High In (MBH)', get: function (r) { return r.heat.inputHigh; }, group: 'Heating' },
+        { label: 'High Out (MBH)', get: function (r) { return r.heat.outputHigh; }, group: 'Heating' },
+        { label: 'High Rise (°F)', get: function (r) { return fmt(r.heat.riseHigh, 1); }, group: 'Heating' },
+        { label: 'Low In (MBH)', get: function (r) { return r.heat.inputLow; }, group: 'Heating' },
+        { label: 'Low Out (MBH)', get: function (r) { return r.heat.outputLow; }, group: 'Heating' },
+        { label: 'Low Rise (°F)', get: function (r) { return fmt(r.heat.riseLow, 1); }, group: 'Heating' },
+        { label: 'T.E. (%)', get: function (r) { return r.heat.thermalEff; }, group: 'Heating' },
+        { label: 'MCA', get: function (r) { return r.electrical.mca; }, group: 'Electrical' },
+        { label: 'MOP', get: function (r) { return r.electrical.mop; }, group: 'Electrical' },
+        { label: 'Motor HP', get: function (r) { return r.electrical.hp == null ? '—' : r.electrical.hp; },
+          group: 'Electrical' }
+    ];
+
+    function fmt(v, places) {
+        if (v == null || isNaN(v)) return '—';
+        return String(Number(Number(v).toFixed(places)));
+    }
+    function fmtInt(v) {
+        if (v == null || isNaN(v)) return '—';
+        return Math.round(v).toLocaleString();
+    }
+
+    // Select hands the result to the Gas Pack schedule: the closest stored
+    // row is found, stamped with the design payload, and the user is taken
+    // there with that row focused and the toggle already on.
+    function buildGasPackActions(r) {
+        var wrap = document.createElement('div');
+        wrap.className = 'actions-row design-gp-actions';
+
+        var match = HHpro.GasPackDesign.matchSelection(state.productData, r);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'action-btn action-btn-select';
+        btn.textContent = 'Select';
+        btn.disabled = !match;
+        btn.addEventListener('click', function () {
+            if (!match) return;
+            HHpro.GasPackDesign.set(match.selection.id, HHpro.GasPackDesign.payloadFor(r));
+            HHpro.App.showView('product', {
+                productKey: state.productKey,
+                focusSelectionId: match.selection.id
+            });
+        });
+        wrap.appendChild(btn);
+
+        // The schedule row is keyed on the standard-static model, so when a
+        // high-static result is selected the row it lands on is spelled
+        // differently. Say so here rather than let it surprise them.
+        var note = document.createElement('span');
+        note.className = 'design-gp-match';
+        if (!match) {
+            note.textContent = 'no schedule row';
+            note.title = 'This combination has no row in the Gas Pack schedule.';
+        } else {
+            var schedModel = match.selection.rows[0].scheduleData[
+                HHpro.GasPackDesign.resolveColumns(state.productData).model];
+            note.textContent = '→ ' + schedModel;
+            note.title = (schedModel === r.model)
+                ? 'Selects this row on the Gas Pack RTU schedule.'
+                : 'Selects schedule row ' + schedModel + '; switching to design values ' +
+                  'renames it ' + r.model + ' for the high-static motor.';
+        }
+        wrap.appendChild(note);
+        return wrap;
+    }
+
+    function buildGasPackResults() {
+        var res = state.results;
+        var rows = res.results;
+        var wrap = document.createElement('section');
+        wrap.className = 'design-search-results';
+
+        var hdr = document.createElement('div');
+        hdr.className = 'design-search-results-header';
+        var title = document.createElement('h2');
+        title.className = 'design-search-section-title design-search-results-title';
+        var titleText = document.createElement('span');
+        titleText.textContent = 'Results';
+        title.appendChild(titleText);
+        var count = document.createElement('span');
+        count.className = 'design-search-count';
+        count.textContent = rows.length + ' match' + (rows.length === 1 ? '' : 'es');
+        title.appendChild(count);
+        hdr.appendChild(title);
+
+        var chips = gasPackChips(res.criteria);
+        if (chips.length) {
+            var chipRow = document.createElement('div');
+            chipRow.className = 'design-search-chip-row';
+            var lead = document.createElement('span');
+            lead.className = 'design-search-chip-lead';
+            lead.textContent = 'Evaluated at:';
+            chipRow.appendChild(lead);
+            chips.forEach(function (t) {
+                var chip = document.createElement('span');
+                chip.className = 'design-search-chip';
+                chip.textContent = t;
+                chipRow.appendChild(chip);
+            });
+            hdr.appendChild(chipRow);
+        }
+        wrap.appendChild(hdr);
+
+        // Anything the tables could not answer for is said out loud rather
+        // than silently missing from the list.
+        (res.skipped || []).forEach(function (s) {
+            var note = document.createElement('p');
+            note.className = 'design-search-note';
+            note.textContent = s.cabinet + ' (' + s.tons + ' ton) was not evaluated: ' + s.reason + '.';
+            wrap.appendChild(note);
+        });
+
+        if (!rows.length) {
+            var empty = document.createElement('div');
+            empty.className = 'hh-empty design-search-empty';
+            empty.appendChild(HHpro.UI.icon('search'));
+            var et = document.createElement('div');
+            et.className = 'hh-empty-title';
+            et.textContent = 'No units meet those targets at that condition.';
+            empty.appendChild(et);
+            var eh = document.createElement('div');
+            eh.className = 'hh-empty-hint';
+            eh.textContent = 'Try widening a tolerance, or relaxing the tons / electrical / motor constraints.';
+            empty.appendChild(eh);
+            wrap.appendChild(empty);
+            return wrap;
+        }
+
+        wrap.appendChild(buildGasPackTable(rows));
+        return wrap;
+    }
+
+    function gasPackChips(c) {
+        var chips = [
+            c.eatDb + '/' + c.eatWb + ' °F EAT DB/WB',
+            c.ambient + ' °F ambient'
+        ];
+        GP_NUMERIC.forEach(function (def) {
+            var t = c[def.key];
+            if (t && t.value != null && !isNaN(t.value)) {
+                chips.push(def.label + ' ' + t.value + ' ' + def.unit + ' ±' + t.tol + '%');
+            }
+        });
+        if (c.convOutlet) chips.push('powered convenience outlet');
+        if (c.powerExhaust) chips.push('power exhaust');
+        return chips;
+    }
+
+    function buildGasPackTable(rows) {
+        var tableWrap = document.createElement('div');
+        tableWrap.className = 'schedule-wrap design-search-schedule-wrap';
+        var table = document.createElement('table');
+        table.className = 'schedule-table design-gp-table';
+
+        var thead = document.createElement('thead');
+        var groupRow = document.createElement('tr');
+        var headRow = document.createElement('tr');
+
+        var actionsHead = document.createElement('th');
+        actionsHead.className = 'actions-head';
+        actionsHead.rowSpan = 2;
+        actionsHead.textContent = '';
+        groupRow.appendChild(actionsHead);
+
+        // Group header: one merged cell per run of columns sharing a group.
+        var i = 0;
+        while (i < GP_COLUMNS.length) {
+            var g = GP_COLUMNS[i].group || null;
+            var span = 1;
+            while (i + span < GP_COLUMNS.length &&
+                   (GP_COLUMNS[i + span].group || null) === g) span++;
+            var th = document.createElement('th');
+            th.colSpan = span;
+            th.textContent = g || '';
+            if (!g) th.className = 'design-gp-group-blank';
+            groupRow.appendChild(th);
+            i += span;
+        }
+        GP_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            th.textContent = col.label;
+            headRow.appendChild(th);
+        });
+        thead.appendChild(groupRow);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        rows.forEach(function (r) {
+            var tr = document.createElement('tr');
+
+            var actionsTd = document.createElement('td');
+            actionsTd.className = 'actions-cell';
+            actionsTd.appendChild(buildGasPackActions(r));
+            tr.appendChild(actionsTd);
+
+            GP_COLUMNS.forEach(function (col) {
+                var td = document.createElement('td');
+                if (col.cls) td.className = col.cls;
+                var v = col.get(r);
+                td.textContent = (v == null || v === '') ? '—' : String(v);
+                tr.appendChild(td);
+            });
+
+            // A row evaluated off-grid says so on the row itself, not just
+            // in a summary line that scrolls away.
+            if (r.offGrid) {
+                tr.title = 'Evaluated at the harsher bracketing rated point: ' +
+                    Object.keys(r.offGrid).map(function (k) {
+                        return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
+                    }).join(', ');
+                tr.classList.add('design-gp-offgrid');
+            }
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+
+        HHpro.Schedule.applyStickyHeaderOffsets(table);
+        requestAnimationFrame(function () {
+            if (table.isConnected) HHpro.Schedule.applyStickyHeaderOffsets(table);
+        });
+        return tableWrap;
+    }
+
     function buildResults() {
+        if (state.results && state.results.mode === 'gasPack') {
+            return buildGasPackResults();
+        }
         if (state.results && state.results.mode === 'capacity') {
             return buildCapacityResults();
         }

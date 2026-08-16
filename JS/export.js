@@ -469,6 +469,12 @@ WHAT'S IN THE GRID
             var capOverrides = (HHpro.Capacity && HHpro.Capacity.overridesFor)
                 ? HHpro.Capacity.overridesFor(item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data)
                 : {};
+            // Gas Pack rows switched to design values export those values too.
+            if (HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
+                var gpOv = HHpro.GasPackDesign.exportOverridesFor(
+                    item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data);
+                Object.keys(gpOv).forEach(function (L) { capOverrides[L] = gpOv[L]; });
+            }
 
             // Data cells (use computeCellLayout to preserve the same
             // merge pattern the on-screen schedule shows)
@@ -640,6 +646,12 @@ WHAT'S IN THE GRID
         var capOverrides = (data && HHpro.Capacity && HHpro.Capacity.overridesFor)
             ? HHpro.Capacity.overridesFor(item, (srows[0] && srows[0].scheduleData) || {}, data)
             : {};
+        // Gas Pack design-values toggle, same treatment (see above).
+        if (data && HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
+            var gpOv2 = HHpro.GasPackDesign.exportOverridesFor(
+                item, (srows[0] && srows[0].scheduleData) || {}, data);
+            Object.keys(gpOv2).forEach(function (L) { capOverrides[L] = gpOv2[L]; });
+        }
         function valAt(letter, i) {
             if (capOverrides[letter] !== undefined) {
                 return formatCellValue(capOverrides[letter], letter, productKey);

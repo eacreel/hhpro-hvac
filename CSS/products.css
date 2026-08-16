@@ -803,3 +803,82 @@
     opacity: 0.45;
     cursor: default;
 }
+
+/* ============================================================
+   Gas Pack RTUs -- design-values toggle
+   ------------------------------------------------------------
+   A row that a Design Search result was selected onto can show
+   either the selection Eric ran by hand or the capacity-table
+   values at the searched condition. The swapped cells are tinted
+   so it is obvious at a glance which numbers moved, and a
+   standing banner explains the Submittal PDF mismatch for as
+   long as any row is switched over.
+   ============================================================ */
+
+.action-btn-design {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+}
+
+.action-btn-design:hover {
+    background-color: var(--color-row-hover);
+    border-color: var(--color-primary-light);
+}
+
+.action-btn-design.is-on {
+    background-color: var(--color-warning);
+    border-color: var(--color-warning);
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.schedule-table tbody td.gp-design-cell {
+    background-color: color-mix(in srgb, var(--color-warning) 16%, transparent);
+    font-weight: 600;
+}
+
+/* The row Design Search sent the user to. */
+.schedule-table tbody tr.row-focused > td {
+    box-shadow: inset 0 1px 0 var(--color-primary-light),
+                inset 0 -1px 0 var(--color-primary-light);
+}
+
+.gp-design-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    font-size: var(--font-size-sm);
+    line-height: 1.45;
+    color: var(--color-text);
+}
+
+.gp-design-warning[hidden] {
+    display: none;
+}
+
+.gp-design-warning-icon {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--color-warning);
+    color: #1f2937;
+    font-weight: 700;
+    text-align: center;
+    line-height: 20px;
+}
+
+.gp-design-warning-text {
+    flex: 1 1 auto;
+}
+
+.gp-design-warning-reset {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
