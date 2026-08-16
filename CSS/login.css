@@ -12,6 +12,8 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-xl);
+    /* Anchor for the bottom-right privacy link (.app-footer-corner). */
+    position: relative;
 }
 
 /* Dark surfaces need three elevation cues to read as raised: a

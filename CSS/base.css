@@ -5,6 +5,47 @@
    across every view. All other CSS files build on these.
    ============================================================ */
 
+/* ---------- Inter (self-hosted) ----------
+   Previously loaded from fonts.googleapis.com, which handed every
+   visitor's IP address and User-Agent to Google on page load - the
+   only third-party request the site made, and the one thing that
+   stopped "HHpro sends nothing anywhere" from being literally true.
+   The files now live in ASSETS/FONTS and are served from our own
+   origin, so the app makes zero external requests.
+
+   Inter v20 ships as a VARIABLE font: one file covers the whole
+   100-900 weight axis, which is why a single @font-face with a
+   weight RANGE replaces the four fixed-weight rules Google served.
+   Both subsets are declared; the browser downloads latin-ext only
+   if a glyph on the page actually needs it.
+
+   Licence: SIL Open Font License 1.1 - see ASSETS/FONTS/OFL.txt.
+   To update: refetch from Google Fonts with a modern browser UA,
+   which is what serves woff2 rather than the legacy formats. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../ASSETS/FONTS/inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                   U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+                   U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+                   U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('../ASSETS/FONTS/inter-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+                   U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+                   U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                   U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
     /* Tell the browser this is a dark UI so native chrome (scrollbars,
        checkbox wells, select dropdowns, date pickers) renders dark
@@ -720,3 +761,91 @@ input[type="checkbox"], input[type="radio"] {
     .hh-check .icon { animation: none; stroke-dashoffset: 0; }
 }
 
+
+/* ============================================================
+   Privacy & Data page + footer link
+   ============================================================ */
+
+.app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-lg, 24px);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--font-size-xs);
+}
+
+.app-footer-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-primary-light);
+    font-size: inherit;
+    font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.app-footer-link:hover {
+    color: var(--color-text);
+}
+
+/* Bottom-right corner variant (login page). The login view centres its
+   card with flexbox, so the footer has to leave the flow entirely or it
+   lands beside the card instead of under it. */
+.app-footer-corner {
+    position: absolute;
+    right: var(--space-lg);
+    bottom: var(--space-md);
+    margin: 0;
+    padding: 0;
+    border-top: none;
+}
+
+/* Readable measure: legal-ish prose is unusable at full schedule width. */
+.privacy-view {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-md);
+}
+
+.privacy-title {
+    margin: 0 0 4px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.privacy-lede {
+    margin: 0 0 var(--space-lg, 24px);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.privacy-section-title {
+    margin: var(--space-lg, 24px) 0 var(--space-xs);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-primary-light);
+}
+
+.privacy-text {
+    margin: 0 0 var(--space-sm);
+    font-size: var(--font-size-sm);
+    line-height: 1.65;
+    color: var(--color-text);
+}
+
+.privacy-updated {
+    margin-top: var(--space-lg, 24px);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}

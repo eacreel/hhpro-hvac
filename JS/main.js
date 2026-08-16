@@ -93,6 +93,10 @@
             HHpro.FX.staggerReveal(grid);
         }
 
+        if (HHpro.UI.buildPrivacyFooter) {
+            main.appendChild(HHpro.UI.buildPrivacyFooter());
+        }
+
         return main;
     }
 

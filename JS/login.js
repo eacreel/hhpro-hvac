@@ -88,6 +88,12 @@
             card.appendChild(subtitle);
             card.appendChild(form);
             view.appendChild(card);
+            // Reachable before sign-in too: someone who can't get past the
+            // password should still be able to read what the site does with
+            // their data.
+            if (HHpro.UI.buildPrivacyFooter) {
+                view.appendChild(HHpro.UI.buildPrivacyFooter({ corner: true }));
+            }
             root.appendChild(view);
 
             // Focus the input immediately for keyboard users

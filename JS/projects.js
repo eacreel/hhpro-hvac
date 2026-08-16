@@ -57,9 +57,61 @@
 
         main.appendChild(buildTitleBar());
         main.appendChild(buildToolbar());
+        main.appendChild(buildStorageNotice());
         main.appendChild(buildProjectsList());
 
         return main;
+    }
+
+    /**
+     * Standing notice about where projects actually live.
+     *
+     * They are held in this browser's localStorage (see cart.js,
+     * 'hhpro_projects') - one copy, on one machine, with no server behind
+     * it. Clearing site data or browsing history wipes them, and nothing
+     * about the UI hints at that, so the page says it plainly and points at
+     * the CSV export sitting directly above as the backup.
+     *
+     * Deliberately not dismissable: the risk lasts as long as the storage
+     * does, and a notice the user dismissed six months ago is no warning at
+     * all on the day their cache gets cleared.
+     */
+    function buildStorageNotice() {
+        var box = document.createElement('aside');
+        box.className = 'projects-notice';
+
+        var icon = document.createElement('span');
+        icon.className = 'projects-notice-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.appendChild(HHpro.UI.icon('alert-triangle'));
+        box.appendChild(icon);
+
+        var body = document.createElement('div');
+        body.className = 'projects-notice-body';
+
+        var title = document.createElement('p');
+        title.className = 'projects-notice-title';
+        title.textContent = 'Projects are saved in this browser only';
+        body.appendChild(title);
+
+        var text = document.createElement('p');
+        text.className = 'projects-notice-text';
+        text.appendChild(document.createTextNode(
+            'They live on this computer only — not on a server. Clearing your browsing ' +
+            'data deletes them for good.'));
+        body.appendChild(text);
+
+        var action = document.createElement('p');
+        action.className = 'projects-notice-text';
+        var strong = document.createElement('strong');
+        strong.textContent = 'Export anything you can’t afford to lose.';
+        action.appendChild(strong);
+        action.appendChild(document.createTextNode(
+            ' “Export All to CSV” saves a backup; “Import from CSV” restores it.'));
+        body.appendChild(action);
+
+        box.appendChild(body);
+        return box;
     }
 
     function buildTitleBar() {

@@ -96,6 +96,69 @@
 }
 
 /* ---------- Project list ---------- */
+/* ---------- Storage disclaimer ----------
+   Sits between the toolbar and the project cards so the CSV buttons it
+   refers to are directly above it. Amber-keyed like the other cautions in
+   the app, but low-contrast body text so permanent page furniture doesn't
+   read as an unresolved error. */
+.projects-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid color-mix(in srgb, var(--color-warning) 55%, transparent);
+    border-left-width: 3px;
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-warning) 8%, transparent);
+}
+
+.projects-notice-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    margin-top: 1px;
+    color: var(--color-warning);
+}
+
+.projects-notice-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.projects-notice-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.projects-notice-title {
+    margin: 0 0 2px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.projects-notice-text {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.projects-notice-text + .projects-notice-text {
+    margin-top: 4px;
+}
+
+.projects-notice-text strong {
+    color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+    .projects-notice {
+        padding: var(--space-sm);
+    }
+}
+
 .projects-list-wrap {
     flex: 1;
     min-height: 0;
