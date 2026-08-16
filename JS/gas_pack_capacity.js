@@ -258,8 +258,16 @@
             }
             if (c.tons != null && Number(cab.tons) !== Number(c.tons)) return;
             if (c.efficiency && cab.efficiency !== c.efficiency) return;
-            if (c.hgrh === 'YES' &&
-                (cab.family !== 'DHG' || Number(cab.tons) > HGRH_MAX_TONS)) return;
+
+            // Hot gas reheat is not in the capacity tables at all - it is a
+            // factory option that exists as its own row in the schedule, and
+            // it does not change cooling capacity. So it is expanded here
+            // rather than filtered: a cabinet that can be built either way
+            // yields BOTH variants when the filter is left on All, because
+            // both are genuinely orderable units.
+            var hgrhCapable = (cab.family === 'DHG' && Number(cab.tons) <= HGRH_MAX_TONS);
+            if (c.hgrh === 'YES' && !hgrhCapable) return;
+            var hgrhOptions = c.hgrh ? [c.hgrh] : (hgrhCapable ? ['NO', 'YES'] : ['NO']);
 
             var cfmTarget = (c.cfm && c.cfm.value) || null;
             var cfmTol = (c.cfm && c.cfm.tol);
@@ -309,33 +317,34 @@
                             deviation(r.airflow, cfmTarget) +
                             deviation(heat.riseHigh, c.heatRise && c.heatRise.value);
 
-                        results.push({
-                            cabinet: name,
-                            family: cab.family,
-                            efficiency: cab.efficiency,
-                            tons: cab.tons,
-                            model: buildModel({ cabinet: name, voltage: voltage,
-                                                motor: motor, heat: heat.size }),
-                            voltage: voltage,
-                            motor: motor,
-                            motorLabel: MOTOR_LABELS[motor],
-                            hgrh: (cab.family === 'DHG' &&
-                                   Number(cab.tons) <= HGRH_MAX_TONS)
-                                ? (c.hgrh || 'NO') : 'NO',
-                            cooling: {
-                                airflow: r.airflow,
-                                eatDb: r.eatDb, eatWb: r.eatWb,
-                                ambient: r.oaCooling,
-                                total: r.total, sensible: r.sensible,
-                                lat: r.lat
-                            },
-                            // Which axes were snapped to a harsher rated point
-                            // (null when the design point was rated exactly).
-                            offGrid: Object.keys(cool.offGrid || {}).length
-                                ? cool.offGrid : null,
-                            heat: heat,
-                            electrical: elec,
-                            score: score
+                        hgrhOptions.forEach(function (hgrh) {
+                            results.push({
+                                cabinet: name,
+                                family: cab.family,
+                                efficiency: cab.efficiency,
+                                tons: cab.tons,
+                                model: buildModel({ cabinet: name, voltage: voltage,
+                                                    motor: motor, heat: heat.size }),
+                                voltage: voltage,
+                                motor: motor,
+                                motorLabel: MOTOR_LABELS[motor],
+                                hgrh: hgrh,
+                                cooling: {
+                                    airflow: r.airflow,
+                                    eatDb: r.eatDb, eatWb: r.eatWb,
+                                    ambient: r.oaCooling,
+                                    total: r.total, sensible: r.sensible,
+                                    lat: r.lat
+                                },
+                                // Which axes were snapped to a harsher rated
+                                // point (null when the design point was rated
+                                // exactly).
+                                offGrid: Object.keys(cool.offGrid || {}).length
+                                    ? cool.offGrid : null,
+                                heat: heat,
+                                electrical: elec,
+                                score: score
+                            });
                         });
                     });
                 });
@@ -344,7 +353,10 @@
 
         results.sort(function (a, b) {
             if (a.score !== b.score) return a.score - b.score;
-            return a.model < b.model ? -1 : (a.model > b.model ? 1 : 0);
+            if (a.model !== b.model) return a.model < b.model ? -1 : 1;
+            // Same cabinet built both ways: plain unit before the reheat one,
+            // so the pair is ordered rather than arbitrary.
+            return (a.hgrh === b.hgrh) ? 0 : (a.hgrh === 'NO' ? -1 : 1);
         });
         return { results: results, skipped: skipped };
     }
