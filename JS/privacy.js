@@ -111,7 +111,7 @@
 
             var lede = document.createElement('p');
             lede.className = 'privacy-lede';
-            lede.textContent = 'How HHpro handles information — in plain terms.';
+            lede.textContent = 'How HHpro handles information.';
             main.appendChild(lede);
 
             SECTIONS.forEach(function (section) {

@@ -5,6 +5,24 @@
    then one per product type.
    ============================================================ */
 
+/* Column layout so the privacy footer can be pushed to the bottom of the
+   page with margin-top:auto rather than floating directly under the last
+   tile row. Children are pinned at flex-shrink:0 because this element is
+   also the scroll container (.app-main) - without it a tall tile grid
+   would compress instead of scrolling. */
+.main-view {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-view > * {
+    flex-shrink: 0;
+}
+
+.main-view > .app-footer {
+    margin-top: auto;
+}
+
 /* The title is instructional guidance, not a heading competing with
    the tile labels - centered to sit on the same axis as the tile
    grid, and muted so the action tiles stay the loudest elements. */
