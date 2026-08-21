@@ -39366,7 +39366,7 @@
           },
           "filterData": {
             "SIZE": 1,
-            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
             "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
@@ -39434,7 +39434,7 @@
           },
           "filterData": {
             "SIZE": 1.5,
-            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
             "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
@@ -39502,7 +39502,7 @@
           },
           "filterData": {
             "SIZE": 2,
-            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
             "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
@@ -39570,7 +39570,7 @@
           },
           "filterData": {
             "SIZE": 2.5,
-            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
             "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
@@ -39638,7 +39638,7 @@
           },
           "filterData": {
             "SIZE": 3,
-            "COOLING ONLY OR HEAT PUMP": "Heat Pump",
+            "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
             "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
@@ -40565,7 +40565,7 @@
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-08-12T08:39:02",
+    "generatedAt": "2026-08-21T13:52:19",
     "dataRowCount": 580,
     "selectionCount": 580
   }
