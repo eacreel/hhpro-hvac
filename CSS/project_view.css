@@ -1853,3 +1853,11 @@
 .project-product-inner > .project-sub-schedule-title:first-child {
     margin-top: 0;
 }
+
+/* Long GPS note lines contribute 0 to the inner column's intrinsic
+   width, then fill and wrap - the notes box never widens the block
+   past the schedule above it (same trick as .schedule-notes-section). */
+.project-product-inner > .gps-notes-wrap {
+    width: 0;
+    min-width: 100%;
+}

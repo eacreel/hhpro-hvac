@@ -198,6 +198,8 @@
             assetsFolder: 'ASSETS/GPS',
             tileClass: 'tile-gps',
             autoTagPrefix: 'AI-',
+            // Pre-fill each selected item's Accessories box with "All".
+            defaultAccessories: 'All',
             // The GPS JSON holds SEVEN independent sub-schedules (see
             // subSchedules in gps.json); JS/gps.js renders the photo
             // gallery + per-sub-schedule pages, and export.js /

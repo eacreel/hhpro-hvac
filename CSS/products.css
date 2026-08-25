@@ -1004,3 +1004,24 @@
 .product-view-inner.gps-inner-gallery {
     width: 100%;
 }
+
+/* The GPS tile photo is a small 140x40 logo - cover-cropping it to the
+   4:3 tile box makes it an illegible zoom. Contain it (with breathing
+   room) on the black well instead so the whole logo reads. */
+.tile.tile-gps .tile-image img {
+    object-fit: contain;
+    padding: 18% 14%;
+}
+
+/* GPS schedule pages put the notes directly under the schedule, so the
+   schedule card hugs its table instead of stretching to fill the page
+   (overriding .schedule-wrap's flex:1/min-height and the short-window
+   fixed height). Tall tables still cap near the viewport and scroll
+   inside with sticky headers. */
+.schedule-wrap.gps-schedule-wrap,
+.product-view .schedule-wrap.gps-schedule-wrap {
+    flex: 0 1 auto;
+    height: auto;
+    min-height: 0;
+    max-height: max(360px, calc(100vh - 230px));
+}

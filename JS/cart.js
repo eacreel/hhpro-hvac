@@ -646,6 +646,16 @@
                     if (extra[k] != null) item[k] = extra[k];
                 });
             }
+            // Products can pre-fill the Accessories text box (GPS: "All")
+            // via defaultAccessories in data.js. The user can still edit
+            // or clear it per item on the project view.
+            if (item.accessories == null) {
+                var prod = HHpro.Data && HHpro.Data.getProduct
+                    ? HHpro.Data.getProduct(productKey) : null;
+                if (prod && prod.defaultAccessories) {
+                    item.accessories = prod.defaultAccessories;
+                }
+            }
             state.items.push(item);
             saveStateToSession();
             renderPanel();

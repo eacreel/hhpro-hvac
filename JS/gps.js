@@ -358,7 +358,9 @@
                     : 'Showing ' + visible.length + ' of ' + total + ' items';
 
                 var scheduleWrap = document.createElement('div');
-                scheduleWrap.className = 'schedule-wrap';
+                // gps-schedule-wrap: hug the table's height (notes sit
+                // directly below) instead of stretching to fill the page.
+                scheduleWrap.className = 'schedule-wrap gps-schedule-wrap';
                 var table = HHpro.Schedule.buildTable(sd, visible, product);
                 scheduleWrap.appendChild(table);
                 container.appendChild(scheduleWrap);

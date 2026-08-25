@@ -2022,8 +2022,11 @@
 
                 var subHidden = scheduleHiddenDefaults(
                     productKey, group.items, group.subData);
-                inner.appendChild(buildProjectSchedule(
-                    productKey, group.items, group.subData, subHidden));
+                var subWrap = buildProjectSchedule(
+                    productKey, group.items, group.subData, subHidden);
+                // Hug the table height so the notes sit directly below.
+                subWrap.classList.add('gps-schedule-wrap');
+                inner.appendChild(subWrap);
 
                 var subNotes = (group.subData.scheduleNotes &&
                                 group.subData.scheduleNotes.notes) || [];
