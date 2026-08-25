@@ -237,7 +237,6 @@
         "7. Formaldehyde generation validated by 3rd party to ASTM D8407 emission rate less than 5μg/h (micro grams per hour) (ASHRAE Standard 241 Appendix A).",
         "8. Particle Generation validated by ISO14644 - results shall not exceed one cleanliness class greater than the empty chamber (ASHRAE Standard 241 Appendix A).",
         "9. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
-        "-- optional specifications --",
         "10. Powered by 277V, single phase, 60Hz via remote power supply.",
         "11. Powered by 347V, single phase, 60Hz via remote power supply."
       ]
@@ -1564,7 +1563,7 @@
   },
   "_meta": {
     "sourceFile": "GPS DATA.xlsx",
-    "generatedAt": "2026-08-25T15:27:39",
+    "generatedAt": "2026-08-25T16:00:34",
     "subScheduleCount": 7,
     "selectionCount": 23
   }

@@ -189,37 +189,6 @@
             }
         },
         {
-            productKey: 'gps',
-            displayName: 'Bipolar Ionization',
-            // Short label used in export filenames (productTabLabel).
-            name: 'Bipolar Ionization',
-            jsonFile: 'DATA/JSON/gps.json',
-            pictureFile: 'DATA/PICTURES/GPS/GPS.webp',
-            assetsFolder: 'ASSETS/GPS',
-            tileClass: 'tile-gps',
-            autoTagPrefix: 'AI-',
-            // Pre-fill each selected item's Accessories box with "All".
-            defaultAccessories: 'All',
-            // The GPS JSON holds SEVEN independent sub-schedules (see
-            // subSchedules in gps.json); JS/gps.js renders the photo
-            // gallery + per-sub-schedule pages, and export.js /
-            // project_view.js stack one section per sub-schedule.
-            // ZONE TAG (col A) is blank in the data - hideEmptyColumns
-            // drops it (the project view's own Tag column takes over),
-            // along with any column empty for the models in view.
-            hideEmptyColumns: true,
-            // Notes are the authoritative pre-numbered lists under each
-            // schedule in the Excel; data rows cite the numbers, so no
-            // editing/renumbering is allowed anywhere.
-            scheduleNotesReadOnly: true,
-            // Mixed per-schedule columns make tolerance targets
-            // meaningless here - keep GPS out of Design Search.
-            excludeFromDesignSearch: true,
-            // Where the sub-schedule gallery photos live: each card's
-            // image is '<folder>/GPS - <photoKey>.webp'.
-            photoFolder: 'DATA/PICTURES/GPS'
-        },
-        {
             productKey: 'grilles',
             displayName: 'GRILLES',
             jsonFile: 'DATA/JSON/grilles.json',
@@ -259,6 +228,37 @@
                 { model: 'LG50',                    label: 'LATTICE',         picture: 'DATA/PICTURES/Price Lattice (Black).jpg' },
                 { model: 'STG',                     label: 'TRANSFER',        picture: 'DATA/PICTURES/Price Transfer (Black).jpg' }
             ]
+        },
+        {
+            productKey: 'gps',
+            displayName: 'Bipolar Ionization',
+            // Short label used in export filenames (productTabLabel).
+            name: 'Bipolar Ionization',
+            jsonFile: 'DATA/JSON/gps.json',
+            pictureFile: 'DATA/PICTURES/GPS/GPS.webp',
+            assetsFolder: 'ASSETS/GPS',
+            tileClass: 'tile-gps',
+            autoTagPrefix: 'AI-',
+            // Pre-fill each selected item's Accessories box with "All".
+            defaultAccessories: 'All',
+            // The GPS JSON holds SEVEN independent sub-schedules (see
+            // subSchedules in gps.json); JS/gps.js renders the photo
+            // gallery + per-sub-schedule pages, and export.js /
+            // project_view.js stack one section per sub-schedule.
+            // ZONE TAG (col A) is blank in the data - hideEmptyColumns
+            // drops it (the project view's own Tag column takes over),
+            // along with any column empty for the models in view.
+            hideEmptyColumns: true,
+            // Notes are the authoritative pre-numbered lists under each
+            // schedule in the Excel; data rows cite the numbers, so no
+            // editing/renumbering is allowed anywhere.
+            scheduleNotesReadOnly: true,
+            // Mixed per-schedule columns make tolerance targets
+            // meaningless here - keep GPS out of Design Search.
+            excludeFromDesignSearch: true,
+            // Where the sub-schedule gallery photos live: each card's
+            // image is '<folder>/GPS - <photoKey>.webp'.
+            photoFolder: 'DATA/PICTURES/GPS'
         }
     ];
 
