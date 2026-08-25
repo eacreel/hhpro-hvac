@@ -1,0 +1,1571 @@
+{
+  "productType": "BIPOLAR IONIZATION",
+  "assetsFolder": "GPS",
+  "scheduleTitle": "AIR IONIZATION DEVICE SCHEDULES",
+  "supportsMultiRowSelections": false,
+  "multiSchedule": true,
+  "searchSchema": {
+    "displayName": "Bipolar Ionization",
+    "description": "GPS air ionization devices.",
+    "targets": []
+  },
+  "filterColumns": [
+    {
+      "name": "LOCATION",
+      "col": "N"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "P",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "Q",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "R",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "S",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "T",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "U",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "V",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "W",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "X",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "Y",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "Z",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AA",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AB",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AC",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AD",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AE",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AF",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AG",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "refrigerantColumns": [],
+  "subSchedules": [
+    {
+      "index": 0,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - SELF-CLEANING - IN ROOM CEILING MOUNTED FAN",
+      "filterValue": "CEILING MOUNTED FAN",
+      "photoKey": "IDF-2",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "TYPE",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "COVERAGE",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "CLEAN/OP WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "SOUND LEVEL, MAX  (dBA)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "NOISE CRITERION LEVEL (NC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MIN ION DENSITY, DEVICE (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "AVG ION DENSITY, COVERAGE AREA (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0001"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) whereindicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Safety Tested by 3rd party laboratory to UL2998 Zero Ozone (ASHRAE Standard 241 Appendix A).",
+        "7. Formaldehyde generation validated by 3rd party to ASTM D8407 emission rate less than 5μg/h (micro grams per hour) (ASHRAE Standard 241 Appendix A).",
+        "8. Particle Generation validated by ISO14644 - results shall not exceed one cleanliness class greater than the empty chamber (ASHRAE Standard 241 Appendix A).",
+        "9. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
+        "-- optional specifications --",
+        "10. Powered by 277V, single phase, 60Hz via remote power supply.",
+        "11. Powered by 347V, single phase, 60Hz via remote power supply."
+      ]
+    },
+    {
+      "index": 1,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - SELF-CLEANING - DUCT MOUNTED",
+      "filterValue": "DUCT MOUNTED",
+      "photoKey": "DM48",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW (CFM)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW (CFM)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "PRESSURE DROP",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "CLEAN/OP WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "MIN ION DENSITY (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0002",
+        "sel_0003",
+        "sel_0004",
+        "sel_0005"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Safety Tested by 3rd party laboratory to UL2998 Zero Ozone (ASHRAE Standard 241 Appendix A).",
+        "7. Formaldehyde generation validated by 3rd party to ASTM D8407 emission rate less than 5μg/h (micro grams per hour) (ASHRAE Standard 241 Appendix A).",
+        "8. Particle Generation validated by ISO14644 - results shall not exceed one cleanliness class greater than the empty chamber (ASHRAE Standard 241 Appendix A).",
+        "9. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
+        "10. Provide integral BAS alarm contacts within the air cleaner.",
+        "11. Powered by 277V, single phase, 60Hz via remote power supply (DM-2 only.)",
+        "12. Must be NEMA-3R rated for outdoor application or provide suitable enclosure (GPS-DM48-AC only)",
+        "13. For round duct mounting: use duct mounting saddle accessory without hardware fasteners into ductwork. (DM-2 only.)"
+      ]
+    },
+    {
+      "index": 2,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - SELF-CLEANING - FAN COIL MOUNTED",
+      "filterValue": "FAN COIL MOUNTED",
+      "photoKey": "FC48",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW (CFM)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW (CFM)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "PRESSURE DROP",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "CLEAN/OP WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "ION DENSITY (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0006",
+        "sel_0007",
+        "sel_0008",
+        "sel_0009",
+        "sel_0010",
+        "sel_0011"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Safety Tested by 3rd party laboratory to UL2998 Zero Ozone (ASHRAE Standard 241 Appendix A).",
+        "7. Formaldehyde generation validated by 3rd party to ASTM D8407 emission rate less than 5μg/h (micro grams per hour) (ASHRAE Standard 241 Appendix A).",
+        "8. Particle Generation validated by ISO14644 - results shall not exceed one cleanliness class greater than the empty chamber (ASHRAE Standard 241 Appendix A).",
+        "9. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
+        "10. Provide integral BAS alarm contacts within the air cleaner.",
+        "11. Powered by 110-277V, single phase, 60Hz via remote power supply (CI-2 only.)"
+      ]
+    },
+    {
+      "index": 3,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - FAN COIL MOUNTED",
+      "filterValue": "FAN COIL MOUNTED",
+      "photoKey": "FC-3-BAS",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "PRESSURE DROP",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "ION DENSITY (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0012",
+        "sel_0013",
+        "sel_0014",
+        "sel_0015"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Provide integral BAS alarm contacts within the air cleaner.",
+        "7. Powered by 110-230V, single phase, 60Hz via remote power supply"
+      ]
+    },
+    {
+      "index": 4,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - MODULAR COIL CLEANING",
+      "filterValue": "COIL MOUNTED",
+      "photoKey": "IMOD",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "ION EMITTERS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "ION DENSITY (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0016",
+        "sel_0017"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Safety Tested by 3rd party laboratory to UL2998 Zero Ozone (ASHRAE Standard 241 Appendix A).",
+        "7. Mount GPS-iMOD to air inlet side of cooling coil between 1/8\" and 1/2\" from grounded coil surface.",
+        "8. Provide with integral BAS alarm contacts.",
+        "9. Ionization bar to have a minimum of 1 needlepoint every 0.50\" of coil width. Systems with needles further apart shall not be acceptable (or shall require additional bars).",
+        "10. Ionization systems with multiple ion modules mounted to a bar shall not be an acceptable substitute.",
+        "11. Ionization output shall be a minimum of 70 million ions/cc for every 0.50\" of coil width.",
+        "12. Ionization power supply shall have power on and plasma on indication light.",
+        "13. Ionization bars shall be provided with magnets for ease of mounting.",
+        "14. Ionization bars shall be modular and designed to cover the entire coil width in 6 inch increments.",
+        "15. Provide stand-alone ion field detector to communicate with the BAS. (GPS-iDETECT-P Accessory)",
+        "16. Must provide NEMA-4X rated enclosure for outdoor application.",
+        "17. HCAI Seismic Compliance: Must be certified to HCAI Seismic Compliance standards."
+      ]
+    },
+    {
+      "index": 5,
+      "title": "AIR IONIZATION DEVICE SCHEDULE - SPECIALIZED RIBBON",
+      "filterValue": "COIL MOUNTED (DUCTLESS OR PTAC)",
+      "photoKey": "IRIB-18",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW (cfm)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "ION EMITTERS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "ION DENSITY (IONS/CC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0018",
+        "sel_0019"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic air cleaners shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Safety Tested by 3rd party laboratory to UL2998 Zero Ozone (ASHRAE Standard 241 Appendix A).",
+        "7. Formaldehyde generation validated by 3rd party to ASTM D8407 emission rate less than 5μg/h (micro grams per hour) (ASHRAE Standard 241 Appendix A).",
+        "8. Particle Generation validated by ISO14644 - results shall not exceed one cleanliness class greater than the empty chamber (ASHRAE Standard 241 Appendix A).",
+        "9. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
+        "10. Provide integral BAS alarm contacts within the air cleaner.",
+        "11. Mount GPS-iRIB to top of cooling coil on air inlet side.",
+        "12. Provide flexible ion ribbon with self-sealing adhesive back."
+      ]
+    },
+    {
+      "index": 6,
+      "title": "Filter Enhancement System Device Schedule",
+      "filterValue": "PRE-FILTER",
+      "photoKey": "PF-E",
+      "scheduleHeader": {
+        "columnLetters": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K"
+        ],
+        "rows": [
+          [
+            {
+              "col": "A",
+              "value": "ZONE TAG",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "B",
+              "value": "FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "C",
+              "value": "MAX FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "D",
+              "value": "O/A FLOW",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "E",
+              "value": "GPS MODEL",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "F",
+              "value": "GPS QUANTITY",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "G",
+              "value": "PRESSURE DROP",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "H",
+              "value": "VOLTAGE (AC)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "I",
+              "value": "WATTS",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "J",
+              "value": "MOUNTING LOCATION",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "K",
+              "value": "NOTES",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_0020",
+        "sel_0021",
+        "sel_0022",
+        "sel_0023"
+      ],
+      "notes": [
+        "1. Install Ionizations device(s) where indicated on drawings.",
+        "2. Basis of Design: GPS Air. Substitutions must be approved by engineer, any mechanical or electrical modifications are the responsibility of the contractor.",
+        "3. Ionizer has a self-cleaning feature to maintain ion output over 10 years, substitute products must document ionization output over time.",
+        "4. Electronic filter enahncement systems shall not have service parts, products that require replacement parts like glass tubes, UV lamps, catalysts, etc. are not acceptable.",
+        "5. Must be listed to UL-2998 by either UL or ETL. Listing on UL and ETL website must include specific product family.",
+        "6. Provide with integral BAS alarm contacts.",
+        "7. Mount GPS-Opti Lok 3 feet before the filter.",
+        "8. Ion output is measured in ions per cubic centimeter (ions/cc) are verifiable with field instruments. Devices with ratings of ions/second are not acceptable.",
+        "9. Provide integral BAS alarm contacts within the air cleaner."
+      ]
+    }
+  ],
+  "selections": [
+    {
+      "id": "sel_0001",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "Ceiling Mounted",
+            "C": "IDF-2",
+            "D": 1,
+            "E": "1,500 SQFT",
+            "F": "120-240",
+            "G": "15 / 12",
+            "H": 39,
+            "I": 34,
+            "J": "160 Million",
+            "K": 20000,
+            "L": "1 to 9"
+          },
+          "filterData": {
+            "LOCATION": "CEILING MOUNTED FAN"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "IDF-2",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - IDF-2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0002",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 4800,
+            "D": 150,
+            "E": "GPS-DM48-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 12,
+            "J": "Duct",
+            "K": "400 Million",
+            "L": "1 to 10, 12"
+          },
+          "filterData": {
+            "LOCATION": "DUCT MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "DM48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - DM48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0003",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 2400,
+            "D": 150,
+            "E": "DM-2",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": "14 / 11",
+            "J": "Duct",
+            "K": "200 Million",
+            "L": "1 to 10, 11, 13"
+          },
+          "filterData": {
+            "LOCATION": "DUCT MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "DM-2",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - DM-2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0004",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 4800,
+            "D": 150,
+            "E": "GPS-DM48-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 12,
+            "J": "Duct",
+            "K": "400 Million",
+            "L": "1 to 10, 12"
+          },
+          "filterData": {
+            "LOCATION": "DUCT MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "DM48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - DM48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0005",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 2400,
+            "D": 150,
+            "E": "DM-2",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": "14 / 11",
+            "J": "Duct",
+            "K": "200 Million",
+            "L": "1 to 10, 11, 13"
+          },
+          "filterData": {
+            "LOCATION": "DUCT MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "DM-2",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - DM-2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0006",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 4800,
+            "D": 150,
+            "E": "GPS-FC48-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 10,
+            "J": "AHU, RTU & FCU",
+            "K": "400 Million",
+            "L": "1 to 10"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0007",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 2400,
+            "D": 150,
+            "E": "GPS-FC24-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 8,
+            "J": "AHU, RTU & FCU",
+            "K": "300 Million",
+            "L": "1 to 10"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0008",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 2400,
+            "D": 150,
+            "E": "CI-2",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": 24,
+            "I": "7.0 / 4.0",
+            "J": "AHU, RTU & FCU",
+            "K": "160 Million",
+            "L": "1 to 10, 11"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "CI-2",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - CI-2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0009",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 4800,
+            "D": 150,
+            "E": "GPS-FC48-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 10,
+            "J": "AHU, RTU & FCU",
+            "K": "400 Million",
+            "L": "1 to 10"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0010",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 2400,
+            "D": 150,
+            "E": "GPS-FC24-AC",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 8,
+            "J": "AHU, RTU & FCU",
+            "K": "300 Million",
+            "L": "1 to 10"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC48",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC48"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0011",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 2400,
+            "D": 150,
+            "E": "CI-2",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": 24,
+            "I": "7.0 / 4.0",
+            "J": "AHU, RTU & FCU",
+            "K": "160 Million",
+            "L": "1 to 10, 11"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "CI-2",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - CI-2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0012",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 3000,
+            "D": 150,
+            "E": "GPS-FC-3-BAS",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": 24,
+            "I": 1.2,
+            "J": "FCU",
+            "K": "350 Million",
+            "L": "1 to 6"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC-3-BAS",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC-3-BAS"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0013",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 3000,
+            "D": 150,
+            "E": "GPS-FC-3T-BAS",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "110-240",
+            "I": 1.2,
+            "J": "FCU",
+            "K": "350 Million",
+            "L": "1 to 6, 7"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC-3-BAS",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC-3T-BAS"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0014",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 3000,
+            "D": 150,
+            "E": "GPS-FC-3-BAS",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": 24,
+            "I": 1.2,
+            "J": "FCU",
+            "K": "350 Million",
+            "L": "1 to 6"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC-3-BAS",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC-3-BAS"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0015",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 3000,
+            "D": 150,
+            "E": "GPS-FC-3T-BAS",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "110-240",
+            "I": 1.2,
+            "J": "FCU",
+            "K": "350 Million",
+            "L": "1 to 6, 7"
+          },
+          "filterData": {
+            "LOCATION": "FAN COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "FC-3-BAS",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - FC-3T-BAS"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0016",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 10000,
+            "D": 150,
+            "E": "GPS-iMOD",
+            "F": "1 Per Cooling Coil",
+            "G": "1 every 1/2 inch",
+            "H": "24-240",
+            "I": 15,
+            "J": "AHU",
+            "K": "140 Million per 1.0\"",
+            "L": "1 to 14, 15, 16, 17"
+          },
+          "filterData": {
+            "LOCATION": "COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "IMOD",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - IMOD"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0017",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 10000,
+            "D": 150,
+            "E": "GPS-iMOD",
+            "F": "1 Per Cooling Coil",
+            "G": "1 every 1/2 inch",
+            "H": "24-240",
+            "I": 15,
+            "J": "AHU",
+            "K": "140 Million per 1.0\"",
+            "L": "1 to 14, 15, 16, 17"
+          },
+          "filterData": {
+            "LOCATION": "COIL MOUNTED"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "IMOD",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - IMOD"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0018",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 1600,
+            "D": 10,
+            "E": "GPS-iRIB-18",
+            "F": "1 Per Cooling Coil",
+            "G": "1 every 2 inches",
+            "H": "110-240",
+            "I": 5,
+            "J": "AHU",
+            "K": "52.5 Million",
+            "L": "1 to 12"
+          },
+          "filterData": {
+            "LOCATION": "COIL MOUNTED (DUCTLESS OR PTAC)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "IRIB-18",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - IRIB-18"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0019",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 1600,
+            "D": 10,
+            "E": "GPS-iRIB-18",
+            "F": "1 Per Cooling Coil",
+            "G": "1 every 2 inches",
+            "H": "110-240",
+            "I": 5,
+            "J": "AHU",
+            "K": "52.5 Million",
+            "L": "1 to 12"
+          },
+          "filterData": {
+            "LOCATION": "COIL MOUNTED (DUCTLESS OR PTAC)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "IRIB-18",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - IRIB-18"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0020",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 3800,
+            "D": "0-100",
+            "E": "PF-e",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 11,
+            "J": "pre-filter",
+            "K": "1 to 9"
+          },
+          "filterData": {
+            "LOCATION": "PRE-FILTER"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "PF-E",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - PF-E"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0021",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "VAV",
+            "C": 3800,
+            "D": "0-100",
+            "E": "PF-i",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 11,
+            "J": "pre-filter",
+            "K": "1 to 9"
+          },
+          "filterData": {
+            "LOCATION": "PRE-FILTER"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "PF-I",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - PF-I"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0022",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 3800,
+            "D": "0-100",
+            "E": "PF-e",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 11,
+            "J": "pre-filter",
+            "K": "1 to 9"
+          },
+          "filterData": {
+            "LOCATION": "PRE-FILTER"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "PF-E",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - PF-E"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0023",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "CV",
+            "C": 3800,
+            "D": "0-100",
+            "E": "PF-i",
+            "F": 1,
+            "G": "0.05\" W.C.",
+            "H": "24-240",
+            "I": 11,
+            "J": "pre-filter",
+            "K": "1 to 9"
+          },
+          "filterData": {
+            "LOCATION": "PRE-FILTER"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "PF-I",
+            "INSTALLATION MANUAL (SYSTEM)": "IOM - PF-I"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": []
+  },
+  "_meta": {
+    "sourceFile": "GPS DATA.xlsx",
+    "generatedAt": "2026-08-25T15:27:39",
+    "subScheduleCount": 7,
+    "selectionCount": 23
+  }
+}

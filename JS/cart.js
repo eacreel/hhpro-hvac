@@ -750,7 +750,8 @@
                 var cell = row[ci];
                 var val = (cell && cell.value !== undefined && cell.value !== null)
                     ? String(cell.value).trim().toUpperCase() : '';
-                if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' || val === 'MODEL #') {
+                if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' ||
+                    val === 'MODEL #' || val === 'GPS MODEL') {
                     found = cell.col;
                 }
             }

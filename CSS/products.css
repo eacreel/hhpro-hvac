@@ -882,3 +882,125 @@
     flex: 0 0 auto;
     white-space: nowrap;
 }
+
+/* ============================================================
+   GPS (Bipolar Ionization) - product-type gallery + notes
+   ------------------------------------------------------------
+   The GPS page opens on a gallery of the seven ionizer product
+   types (one card per sub-schedule: photo + the schedule's
+   LOCATION filter text). Clicking a card swaps the page to that
+   type's full schedule, with its pre-numbered notes below.
+   ============================================================ */
+
+.gps-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 240px));
+    gap: var(--space-lg);
+    justify-content: center;
+    margin-top: var(--space-md);
+}
+
+/* Cards echo the home-page product tiles (black photo well over a
+   label strip) so the gallery reads as "pick a product type". */
+.gps-type-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding: 0;
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.gps-type-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--color-primary-light);
+    border-color: transparent;
+}
+
+.gps-type-card:active {
+    transform: translateY(0) scale(0.99);
+}
+
+.gps-type-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #000;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0;
+}
+
+.gps-type-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: tile-img-fade 250ms ease;
+    transition: transform var(--transition-med);
+}
+
+.gps-type-card:hover .gps-type-card-image img {
+    transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gps-type-card-image img {
+        animation: none;
+        transition: none;
+    }
+
+    .gps-type-card:hover .gps-type-card-image img {
+        transform: none;
+    }
+}
+
+/* The filter text under the photo (e.g. "CEILING MOUNTED FAN"). */
+.gps-type-card-label {
+    padding: var(--space-md) var(--space-sm);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--color-text);
+}
+
+/* ---------- Pre-numbered notes under a GPS schedule ---------- */
+/* Lines are verbatim from the Excel (numbering included), so this
+   is a plain line list inside the shared .notes-block shell - no
+   <ol> numbering anywhere. */
+.gps-notes-wrap {
+    margin-top: var(--space-md);
+}
+
+.gps-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.gps-notes-line {
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+/* Gallery mode: the inner column takes the full page width (instead
+   of shrink-wrapping) so the auto-fill card grid can form multiple
+   centered columns. */
+.product-view-inner.gps-inner-gallery {
+    width: 100%;
+}

@@ -255,6 +255,14 @@ WHAT'S IN THE GRID
     }
 
     function buildScheduleGridRaw(productKey, items, data) {
+        // Multi-schedule products (GPS): the payload holds several
+        // independent sub-schedules with different column sets. Build
+        // one native section per sub-schedule that has items and stack
+        // them (each with its own title, headers, data, and notes).
+        if (data && data.subSchedules && HHpro.GPS) {
+            return buildMultiScheduleGrid(productKey, items, data);
+        }
+
         // Engineer-specific layout override. When the active project's
         // selected firm has a template for this product, build the grid
         // from that template instead of the native scheduleHeader. The
@@ -574,6 +582,93 @@ WHAT'S IN THE GRID
                 ? { folder: legendProduct.coreStyles.folder,
                     codes: (legendProduct.coreStyles.codes || []).slice() }
                 : null
+        };
+    }
+
+    // =================================================================
+    // Multi-schedule grid builder (GPS)
+    // -----------------------------------------------------------------
+    // Groups the tab's items by the sub-schedule their selection came
+    // from, builds a full native section for each (recursing into
+    // buildScheduleGridRaw with the sub-schedule's standard-shaped
+    // pseudo-data), then stacks the sections with a blank spacer row
+    // between them. Because the stacked grid breaks the "title rows,
+    // then header rows, then data, then notes" index bands the
+    // renderers assume, a per-row `rowKinds` array records each row's
+    // role; gridRowKind() consults it before falling back to the
+    // index bands, so single-section grids behave exactly as before.
+    // =================================================================
+
+    function gridRowKind(grid, r) {
+        if (grid.rowKinds && grid.rowKinds[r]) return grid.rowKinds[r];
+        if (r < (grid.titleRowCount || 0)) return 'title';
+        if (r < (grid.numHeaderRows || 0)) return 'header';
+        var end = (grid.dataEndRow != null) ? grid.dataEndRow : grid.rows.length;
+        if (r < end) return 'data';
+        return 'notes';
+    }
+
+    function buildMultiScheduleGrid(productKey, items, data) {
+        var empty = { rows: [], merges: [], numHeaderRows: 0, dataEndRow: 0,
+                      colCount: 0, colWidths: [] };
+        if (!HHpro.GPS || !HHpro.GPS.groupItems) return empty;
+
+        var sections = [];
+        HHpro.GPS.groupItems(items, data).forEach(function (group) {
+            var grid = buildScheduleGridRaw(productKey, group.items, group.subData);
+            if (!grid || !grid.rows.length) return;
+            // The native builder stamps the generic product title;
+            // each section carries its own schedule title instead.
+            if (grid.titleRowCount && grid.rows[0] && grid.rows[0][0]) {
+                grid.rows[0][0].value = group.sub.title || grid.rows[0][0].value;
+            }
+            sections.push(grid);
+        });
+        if (!sections.length) return empty;
+
+        var rows = [];
+        var merges = [];
+        var rowKinds = [];
+        var colWidths = [];
+        var colCount = 0;
+
+        sections.forEach(function (grid, si) {
+            if (si > 0) {
+                // Spacer between sections (truly empty row).
+                rows.push([]);
+                rowKinds.push('blank');
+            }
+            var offset = rows.length;
+            for (var r = 0; r < grid.rows.length; r++) {
+                rows.push(grid.rows[r]);
+                rowKinds.push(gridRowKind(grid, r));
+            }
+            grid.merges.forEach(function (m) {
+                merges.push({ r1: m.r1 + offset, c1: m.c1,
+                              r2: m.r2 + offset, c2: m.c2 });
+            });
+            if (grid.colCount > colCount) colCount = grid.colCount;
+            (grid.colWidths || []).forEach(function (w, i) {
+                if (!(colWidths[i] >= w)) colWidths[i] = w;
+            });
+        });
+        while (colWidths.length < colCount) colWidths.push(10);
+
+        return {
+            rows: rows,
+            merges: merges,
+            // Index bands describe the FIRST section; every renderer
+            // that styles by row role goes through gridRowKind, which
+            // prefers the per-row kinds below.
+            numHeaderRows: sections[0].numHeaderRows,
+            titleRowCount: sections[0].titleRowCount,
+            dataEndRow: sections[0].dataEndRow,
+            colCount: colCount,
+            colWidths: colWidths,
+            rowKinds: rowKinds,
+            legendImage: null,
+            legendAnchor: null,
+            coreStyleIcons: null
         };
     }
 
@@ -1102,6 +1197,16 @@ WHAT'S IN THE GRID
             return;
         }
 
+        // Preformatted format (GPS): verbatim pre-numbered lines under
+        // the section header used in the source Excel.
+        if (notes.format === 'preformatted') {
+            if (notes.notes.length) {
+                emitNotesBox(rows, merges, colCount, r, 'NOTES:',
+                             notes.notes, watermarkFooter);
+            }
+            return;
+        }
+
         // Model-mapped format (diffusers): only the notes applicable to
         // the models in the schedule, numbered to match the Accessories
         // column. Custom notes continue the numbering. When the legend
@@ -1250,6 +1355,16 @@ WHAT'S IN THE GRID
             .filter(function (a) { return a && a.id && !hiddenCustom[a.id]; })
             .map(function (a) { return String(a.text || ''); });
 
+        // Preformatted notes (GPS): the lines are already numbered in
+        // the text (and the data rows cite those numbers), so they pass
+        // through verbatim - never renumbered, never editable.
+        if (sn && sn.format === 'preformatted') {
+            return {
+                format: 'preformatted',
+                notes: (sn.notes || []).map(function (x) { return String(x); })
+            };
+        }
+
         if (sn && sn.format === 'marvair') {
             return {
                 format: 'marvair',
@@ -1295,7 +1410,8 @@ WHAT'S IN THE GRID
             'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE',
             'gas_splits':             'GAS SPLIT SCHEDULE',
             'vfds':                   'VFD SCHEDULE',
-            'diffusers':              'DIFFUSER SCHEDULE'
+            'diffusers':              'DIFFUSER SCHEDULE',
+            'gps':                    'AIR IONIZATION DEVICE SCHEDULES'
         };
         return titles[productKey] || 'SCHEDULE';
     }
@@ -1785,9 +1901,10 @@ WHAT'S IN THE GRID
             //   column header rows        - a bit taller so wrapped text fits
             //   everything else (data, notes) - default Excel row height
             var heightAttr = '';
-            if (r === 0 && grid.titleRowCount) {
+            var rowKind = gridRowKind(grid, r);
+            if (rowKind === 'title') {
                 heightAttr = ' ht="30" customHeight="1"';
-            } else if (r < grid.numHeaderRows) {
+            } else if (rowKind === 'header') {
                 // Grow the header row to fit multi-line labels ("FAN\nCFM").
                 // Only single-row (rowSpan 1) cells force this row taller;
                 // rowspan labels draw their height from the rows they span.
@@ -2178,13 +2295,11 @@ WHAT'S IN THE GRID
      */
     function renderGridAsHtmlTable(grid) {
         var out = ['<table>'];
-        var titleRowCount = grid.titleRowCount || 0;
-        var numHeaderRows = grid.numHeaderRows || 0;
-        var dataEndRow = (grid.dataEndRow != null) ? grid.dataEndRow : grid.rows.length;
 
         for (var r = 0; r < grid.rows.length; r++) {
             var row = grid.rows[r];
             var anchor = rowAnchor(row);
+            var rowKind = gridRowKind(grid, r);
             var rowClass;
             var extraClasses = '';
 
@@ -2197,11 +2312,11 @@ WHAT'S IN THE GRID
                 rowClass = 'notes-row watermark-row';
                 if (anchor.borderPos === 'last') extraClasses += ' notes-last';
                 else if (anchor.borderPos === 'only') extraClasses += ' notes-only';
-            } else if (r < titleRowCount) {
+            } else if (rowKind === 'title') {
                 rowClass = 'title-row';
-            } else if (r < numHeaderRows) {
+            } else if (rowKind === 'header') {
                 rowClass = 'header-row';
-            } else if (r < dataEndRow) {
+            } else if (rowKind === 'data' || rowKind === 'blank') {
                 rowClass = 'data-row';
             } else {
                 rowClass = 'notes-row';
@@ -2220,7 +2335,7 @@ WHAT'S IN THE GRID
                 // Title rows use <th>, header rows use <th>, everything
                 // else is <td>. Notes rows are left-aligned prose so
                 // they stay <td>.
-                var tag = (r < numHeaderRows) ? 'th' : 'td';
+                var tag = (rowKind === 'title' || rowKind === 'header') ? 'th' : 'td';
                 var attrs = '';
                 if (cell.rowSpan > 1) attrs += ' rowspan="' + cell.rowSpan + '"';
                 if (cell.colSpan > 1) attrs += ' colspan="' + cell.colSpan + '"';
@@ -2801,10 +2916,9 @@ WHAT'S IN THE GRID
     }
 
     function rowHeightFor(grid, r) {
-        var titleRows = grid.titleRowCount || 0;
-        var headerRows = grid.numHeaderRows || 0;
-        if (r < titleRows) return DXF_TITLE_H;
-        if (r < headerRows) return DXF_HEADER_H;
+        var kind = gridRowKind(grid, r);
+        if (kind === 'title') return DXF_TITLE_H;
+        if (kind === 'header') return DXF_HEADER_H;
         return DXF_DATA_H;
     }
 
@@ -3714,10 +3828,9 @@ WHAT'S IN THE GRID
     }
 
     function pdfRowHeightFor(grid, r, natColXs, colCount) {
-        var titleRows = grid.titleRowCount || 0;
-        var headerRows = grid.numHeaderRows || 0;
-        if (r < titleRows) return PDF_TITLE_H_PT;
-        var isHeader = r < headerRows;
+        var rowKind = gridRowKind(grid, r);
+        if (rowKind === 'title') return PDF_TITLE_H_PT;
+        var isHeader = rowKind === 'header';
         var base = isHeader ? PDF_HEADER_H_PT : PDF_DATA_H_PT;
         var row = grid.rows[r];
         if (!row || !natColXs) return base;
@@ -3746,7 +3859,7 @@ WHAT'S IN THE GRID
 
     function pdfFontSizeForCell(cell, grid, r) {
         if (cell.title) return PDF_TXT_TITLE;
-        if (r < (grid.numHeaderRows || 0)) return PDF_TXT_HEADER;
+        if (gridRowKind(grid, r) === 'header') return PDF_TXT_HEADER;
         if (cell.notesRow) return PDF_TXT_NOTES;
         return PDF_TXT_BODY;
     }

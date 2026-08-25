@@ -2005,7 +2005,35 @@
         if (editing) {
             // Edit mode replaces the normal schedule with a fully
             // editable grid (every cell). Notes live inside that grid.
+            // (GPS included: its export grid stacks one section per
+            // sub-schedule, and the overrides apply to that grid.)
             inner.appendChild(buildEditableSchedule(productKey, items, data));
+            return wrap;
+        }
+
+        // Multi-schedule products (GPS): one native schedule + its
+        // read-only, pre-numbered notes per sub-schedule with items.
+        if (HHpro.GPS && HHpro.GPS.isMulti && HHpro.GPS.isMulti(data)) {
+            HHpro.GPS.groupItems(items, data).forEach(function (group) {
+                var subTitle = document.createElement('h3');
+                subTitle.className = 'project-sub-schedule-title';
+                subTitle.textContent = group.sub.title || '';
+                inner.appendChild(subTitle);
+
+                var subHidden = scheduleHiddenDefaults(
+                    productKey, group.items, group.subData);
+                inner.appendChild(buildProjectSchedule(
+                    productKey, group.items, group.subData, subHidden));
+
+                var subNotes = (group.subData.scheduleNotes &&
+                                group.subData.scheduleNotes.notes) || [];
+                if (subNotes.length) {
+                    var notesWrap = document.createElement('div');
+                    notesWrap.className = 'gps-notes-wrap';
+                    notesWrap.appendChild(HHpro.GPS.buildNotesBlock(subNotes));
+                    inner.appendChild(notesWrap);
+                }
+            });
             return wrap;
         }
 
@@ -2063,8 +2091,12 @@
         bar.appendChild(autoTagBtn);
 
         // Column hiding only applies to the native layout; an engineer
-        // template defines a fixed column set.
-        if (!tplActive) {
+        // template defines a fixed column set. Multi-schedule products
+        // (GPS) have a different column set per sub-schedule, so one
+        // shared per-product hidden-letters list can't apply either.
+        var isMultiSchedule = !!(HHpro.GPS && HHpro.GPS.isMulti &&
+                                 HHpro.GPS.isMulti(data));
+        if (!tplActive && !isMultiSchedule) {
             var colsBtn = document.createElement('button');
             colsBtn.type = 'button';
             colsBtn.className = 'projects-btn projects-btn-secondary';

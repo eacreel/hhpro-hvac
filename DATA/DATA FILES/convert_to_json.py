@@ -1,4 +1,4 @@
-r"""
+﻿r"""
 HHpro - Excel to JSON Converter
 ================================
 
@@ -176,6 +176,30 @@ PRODUCT_CONFIGS = {
                 {"label": "AFUE",                   "col": "L", "unit": "%",      "defaultTolerance": 5},
                 {"label": "Compressor Stages",      "col": "Z", "unit": "stages", "defaultTolerance": 0},
             ],
+        },
+    },
+    "GPS DATA.xlsx": {
+        "productType": "BIPOLAR IONIZATION",
+        "outputFileName": "gps.json",
+        # The GPS SCHEDULE tab is unlike every other product file: it
+        # stacks SEVEN independent schedules (each with its own title
+        # row, header row, data rows, and NOTES block directly under
+        # the data) on the one tab. multiSchedule routes the file to
+        # convert_multi_schedule_file below, which emits a JSON with a
+        # subSchedules list the site renders one-at-a-time (photo
+        # gallery first, then the chosen product type's full schedule).
+        "multiSchedule": True,
+        "headerRows": 1,
+        "dataStartRow": 6,
+        "supportsMultiRow": False,
+        "assetsFolder": "GPS",
+        # Kept for shape-consistency with the other products; the site
+        # excludes GPS from Design Search (mixed per-schedule columns
+        # make tolerance targets meaningless for ionizers).
+        "searchSchema": {
+            "displayName": "Bipolar Ionization",
+            "description": "GPS air ionization devices.",
+            "targets": [],
         },
     },
     "VFD DATA.xlsx": {
@@ -1234,6 +1258,230 @@ def _parse_marvair_notes(ws):
 
 
 # -----------------------------------------------------------------------------
+# MULTI-SCHEDULE CONVERSION (GPS)
+# -----------------------------------------------------------------------------
+# The GPS DATA file stacks several independent schedules on the one
+# SCHEDULE tab. Each block looks like:
+#
+#   <title row>     merged across the schedule width (A:L or A:K)
+#   <header row>    col A = "ZONE TAG"; cells merged vertically over
+#                   1-2 spacer rows below
+#   <data rows>     one selection per row
+#   NOTES:          marker row
+#   <note lines>    one per row in col A, pre-numbered in the text
+#                   ("1. Install...", "-- optional specifications --", ...)
+#
+# Row 1 still carries the SCHEDULE RANGE / FILTERS / DOCUMENTATION
+# sections, but FILTERS is a single (unmerged) cell, so this parser
+# resolves the sections itself instead of using find_row1_sections.
+#
+# Output: the standard payload fields (filterColumns, documentation-
+# Columns, selections with globally-unique ids) PLUS a subSchedules
+# list: [{index, title, filterValue, photoKey, scheduleHeader,
+# selectionIds, notes}]. Note text keeps its own numbering verbatim -
+# the data rows' NOTES column cites those numbers, so the site and the
+# exports must never renumber them.
+# -----------------------------------------------------------------------------
+
+def _ms_clean_text(val):
+    """Note/title text: normalize NBSP + collapse runs of whitespace."""
+    if val is None:
+        return None
+    s = str(val).replace("\u00a0", " ")
+    s = re.sub(r"[ \t]+", " ", s).strip()
+    return s or None
+
+
+def _ms_row1_sections(ws):
+    """Resolve the row-1 section column ranges, allowing single-cell
+    (unmerged) sections. Returns {label: (min_col, max_col)}."""
+    KNOWN = ("SCHEDULE RANGE", "FILTERS", "DOCUMENTATION")
+    sections = {}
+    merged = {}
+    for mr in ws.merged_cells.ranges:
+        if mr.min_row == 1 and mr.max_row == 1:
+            merged[mr.min_col] = (mr.min_col, mr.max_col)
+    for c in range(1, ws.max_column + 1):
+        label = clean_value(ws.cell(row=1, column=c).value)
+        if label in KNOWN and label not in sections:
+            sections[label] = merged.get(c, (c, c))
+    missing = [k for k in KNOWN if k not in sections]
+    if missing:
+        raise ValueError("Row 1 is missing section label(s): " + ", ".join(missing))
+    return sections
+
+
+def convert_multi_schedule_file(input_path, config, output_path):
+    """Convert a stacked-multi-schedule Excel file (GPS) to JSON."""
+    print(f"\nConverting: {os.path.basename(input_path)}")
+    wb = openpyxl.load_workbook(input_path, data_only=True)
+
+    if "SCHEDULE" not in wb.sheetnames:
+        raise ValueError(f"'{os.path.basename(input_path)}' has no SCHEDULE tab.")
+    ws = wb["SCHEDULE"]
+
+    sections = _ms_row1_sections(ws)
+    schedule_cols = sections["SCHEDULE RANGE"]
+    filter_cols = sections["FILTERS"]
+    doc_cols = sections["DOCUMENTATION"]
+
+    filter_columns = extract_filter_columns(ws, filter_cols)
+    doc_columns = extract_doc_columns(ws, doc_cols)
+
+    cell_to_merge, _anchors = merge_lookup(ws)
+
+    def cellv(r, c):
+        return clean_value(ws.cell(row=r, column=c).value)
+
+    # --- Locate every schedule block: a non-empty row whose NEXT row
+    # --- starts with "ZONE TAG" in column A is a schedule title row.
+    title_rows = []
+    for r in range(2, ws.max_row + 1):
+        if cellv(r, 1) is None:
+            continue
+        below = cellv(r + 1, 1)
+        if below is not None and str(below).strip().upper() == "ZONE TAG":
+            title_rows.append(r)
+    if not title_rows:
+        raise ValueError("No schedule blocks found (title + ZONE TAG header rows).")
+
+    sub_schedules = []
+    selections = []
+    sel_num = 0
+
+    for title_row in title_rows:
+        title = _ms_clean_text(ws.cell(row=title_row, column=1).value)
+
+        # Schedule width: the title row's merged span (falls back to the
+        # row-1 SCHEDULE RANGE width for an unmerged title).
+        mr = cell_to_merge.get((title_row, 1))
+        width = (mr.max_col if mr is not None else schedule_cols[1])
+
+        # Header row + how far its vertical merges extend (spacer rows).
+        header_row = title_row + 1
+        header_end = header_row
+        for c in range(1, width + 1):
+            hm = cell_to_merge.get((header_row, c))
+            if hm is not None and hm.max_row > header_end:
+                header_end = hm.max_row
+
+        column_letters = [get_column_letter(c) for c in range(1, width + 1)]
+        header_cells = []
+        for c in range(1, width + 1):
+            header_cells.append({
+                "col":     get_column_letter(c),
+                "value":   cellv(header_row, c),
+                "colspan": 1,
+                "rowspan": 1,
+            })
+
+        # Data rows: everything between the header block and the NOTES:
+        # marker (or the first fully-blank row, as a safety stop).
+        sel_ids = []
+        row = header_end + 1
+        notes_marker_row = None
+        while row <= ws.max_row:
+            a_val = cellv(row, 1)
+            if a_val is not None and str(a_val).strip().upper().startswith("NOTES"):
+                notes_marker_row = row
+                break
+            has_value = any(cellv(row, c) is not None for c in range(1, width + 1))
+            if not has_value:
+                break
+            sel_num += 1
+            sel_id = f"sel_{sel_num:04d}"
+            row_entry = {
+                "scheduleData":      row_data_for_range(ws, row, 1, width),
+                "filterData":        row_data_for_range_by_name(ws, row, filter_columns),
+                "documentationData": row_data_for_range_by_name(ws, row, doc_columns),
+            }
+            selections.append({"id": sel_id, "rows": [row_entry]})
+            sel_ids.append(sel_id)
+            row += 1
+
+        # Notes: one line per row in column A until the first blank row.
+        notes = []
+        if notes_marker_row is not None:
+            r = notes_marker_row + 1
+            while r <= ws.max_row:
+                text = _ms_clean_text(ws.cell(row=r, column=1).value)
+                if text is None:
+                    break
+                notes.append(text)
+                r += 1
+
+        # First row's filter value labels the gallery card; the first
+        # SUBMITTAL doc value keys the card photo (DATA/PICTURES/GPS/
+        # "GPS - <photoKey>.webp").
+        filter_value = None
+        photo_key = None
+        if sel_ids:
+            first = selections[len(selections) - len(sel_ids)]["rows"][0]
+            for fc in filter_columns:
+                v = first["filterData"].get(fc["name"])
+                if v is not None:
+                    filter_value = v
+                    break
+            doc_data = first["documentationData"]
+            for dc in doc_columns:
+                if dc["name"].upper().startswith("SUBMITTAL") and doc_data.get(dc["name"]):
+                    photo_key = str(doc_data[dc["name"]])
+                    break
+            if photo_key is None:
+                for dc in doc_columns:
+                    if doc_data.get(dc["name"]):
+                        photo_key = str(doc_data[dc["name"]])
+                        break
+
+        sub_schedules.append({
+            "index":       len(sub_schedules),
+            "title":       title,
+            "filterValue": filter_value,
+            "photoKey":    photo_key,
+            "scheduleHeader": {
+                "columnLetters": column_letters,
+                "rows":          [header_cells],
+            },
+            "selectionIds": sel_ids,
+            # Verbatim, pre-numbered lines (data rows cite these
+            # numbers) - rendered without renumbering everywhere.
+            "notes":        notes,
+        })
+
+    payload = {
+        "productType":                config["productType"],
+        "assetsFolder":               config.get("assetsFolder"),
+        "scheduleTitle":              "AIR IONIZATION DEVICE SCHEDULES",
+        "supportsMultiRowSelections": False,
+        "multiSchedule":              True,
+        "searchSchema":               config["searchSchema"],
+        "filterColumns":              filter_columns,
+        "documentationColumns":       doc_columns,
+        "refrigerantColumns":         [],
+        "subSchedules":               sub_schedules,
+        "selections":                 selections,
+        # Notes live per sub-schedule (see subSchedules[].notes).
+        "scheduleNotes":              {"format": "list", "notes": []},
+        "_meta": {
+            "sourceFile":       os.path.basename(input_path),
+            "generatedAt":      datetime.now().isoformat(timespec="seconds"),
+            "subScheduleCount": len(sub_schedules),
+            "selectionCount":   len(selections),
+        },
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    print(f"  -> {len(sub_schedules)} sub-schedules / {len(selections)} selections "
+          f"written to {os.path.basename(output_path)}")
+    for sub in sub_schedules:
+        print(f"     [{sub['index']}] {sub['title']}")
+        print(f"         filter={sub['filterValue']!r} photo={sub['photoKey']!r} "
+              f"rows={len(sub['selectionIds'])} notes={len(sub['notes'])}")
+
+
+# -----------------------------------------------------------------------------
 # MAIN CONVERSION
 # -----------------------------------------------------------------------------
 
@@ -1445,7 +1693,10 @@ def main():
         config = PRODUCT_CONFIGS[fname]
         output_path = os.path.join(output_dir, config["outputFileName"])
         try:
-            convert_file(input_path, config, output_path)
+            if config.get("multiSchedule"):
+                convert_multi_schedule_file(input_path, config, output_path)
+            else:
+                convert_file(input_path, config, output_path)
             converted += 1
         except Exception as e:
             print(f"  ERROR processing {fname}: {e}")

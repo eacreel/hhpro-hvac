@@ -275,6 +275,17 @@
     }
 
     function buildEntriesFor(product, data, out, seen) {
+        // Multi-schedule products (GPS) keep their headers per
+        // sub-schedule - index each sub-schedule's standard-shaped
+        // pseudo-data instead. Navigation still lands on the product
+        // page, which opens the sub-schedule containing the model.
+        if (HHpro.GPS && HHpro.GPS.isMulti && HHpro.GPS.isMulti(data)) {
+            HHpro.GPS.getSubSchedules(data).forEach(function (sub) {
+                buildEntriesFor(product, HHpro.GPS.subData(data, sub.index), out, seen);
+            });
+            return;
+        }
+
         // Defer to the shared HHpro.Schedule.findModelColumns so adding a
         // new "model"-style header synonym is a one-place change.
         var modelCols = (HHpro.Schedule && HHpro.Schedule.findModelColumns)

@@ -1834,3 +1834,22 @@
     min-width: 90px;
     display: inline-block;
 }
+
+/* ============================================================
+   GPS (Bipolar Ionization) - per-sub-schedule sections on the
+   project view: each sub-schedule with items renders its own
+   title, schedule table, and read-only notes block.
+   ============================================================ */
+
+.project-sub-schedule-title {
+    margin: var(--space-lg) 0 var(--space-sm) 0;
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text);
+}
+
+.project-product-inner > .project-sub-schedule-title:first-child {
+    margin-top: 0;
+}

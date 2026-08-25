@@ -65,7 +65,8 @@
         'MODEL': true,
         'MODEL NUMBER': true,
         'MODEL#': true,
-        'MODEL #': true
+        'MODEL #': true,
+        'GPS MODEL': true
     };
 
     // Reusable schedule pieces. Other views (design_search, etc.) build
@@ -198,6 +199,15 @@
                     var ready = (HHpro.Capacity && HHpro.Capacity.ensureFor)
                         ? HHpro.Capacity.ensureFor(productKey) : Promise.resolve();
                     return ready.then(function () {
+                        // Products with a fully custom page (GPS's
+                        // gallery-first multi-schedule layout) take
+                        // over rendering entirely via this hook.
+                        var ext = HHpro.ProductExtensions &&
+                                  HHpro.ProductExtensions[productKey];
+                        if (ext && typeof ext.renderProductPage === 'function') {
+                            ext.renderProductPage(root, product, data, params);
+                            return;
+                        }
                         renderPage(root, product, data, params);
                     });
                 })
