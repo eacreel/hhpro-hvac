@@ -268,7 +268,12 @@
             }
 
             function buildTypeCard(sub) {
-                var caption = sub.filterValue || sub.title || '';
+                // Caption = the schedule's filter text, unless data.js
+                // overrides it (two schedules share "FAN COIL MOUNTED";
+                // the BAS one is disambiguated there).
+                var override = product.subScheduleLabels &&
+                               product.subScheduleLabels[sub.title];
+                var caption = override || sub.filterValue || sub.title || '';
 
                 var card = document.createElement('button');
                 card.type = 'button';

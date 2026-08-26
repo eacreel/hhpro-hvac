@@ -258,7 +258,15 @@
             excludeFromDesignSearch: true,
             // Where the sub-schedule gallery photos live: each card's
             // image is '<folder>/GPS - <photoKey>.webp'.
-            photoFolder: 'DATA/PICTURES/GPS'
+            photoFolder: 'DATA/PICTURES/GPS',
+            // Gallery card captions default to the sub-schedule's
+            // LOCATION filter value; override per schedule TITLE (must
+            // match the Excel title row exactly) when two schedules
+            // share a filter value and need distinct captions.
+            subScheduleLabels: {
+                'AIR IONIZATION DEVICE SCHEDULE - FAN COIL MOUNTED':
+                    'FAN COIL MOUNTED (BAS COMPATIBLE)'
+            }
         }
     ];
 
