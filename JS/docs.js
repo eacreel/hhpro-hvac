@@ -25,6 +25,11 @@
      HHpro.Docs.openDocsModal(product, selection, data)
          Opens a popup with every available document for the
          selection, deduplicated across rows.
+
+     HHpro.Docs.hasSubmittal(selection, data)
+         True when at least one submittal filename exists in the
+         selection's documentation data. Lets the schedule mark
+         the Submittal button as unavailable at render time.
    ============================================================ */
 
 (function () {
@@ -33,7 +38,8 @@
 
     HHpro.Docs = {
         openSubmittal: openSubmittal,
-        openDocsModal: openDocsModal
+        openDocsModal: openDocsModal,
+        hasSubmittal: hasSubmittal
     };
 
     // =================================================================
@@ -51,6 +57,16 @@
             var url = buildDocUrl(product, item.docColumn, item.filename);
             openInNewTab(url);
         });
+    }
+
+    /**
+     * True when the selection has at least one submittal filename in its
+     * documentation data. Same check openSubmittal uses before alerting,
+     * so button state and click behavior can never disagree.
+     */
+    function hasSubmittal(sel, data) {
+        var docColumns = (data && data.documentationColumns) || [];
+        return collectSelectionSubmittals(sel, docColumns).length > 0;
     }
 
     /**

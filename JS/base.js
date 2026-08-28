@@ -1175,6 +1175,20 @@
             }
         });
 
+        // Strike through the button when the selection has no submittal
+        // file. Clicking still shows the "no submittal" alert. Exposed on
+        // the row as refreshDocState so kW-variant rows can re-check when
+        // the dropdown swaps the selection.
+        function refreshDocState() {
+            var has = !(HHpro.Docs && typeof HHpro.Docs.hasSubmittal === 'function')
+                || HHpro.Docs.hasSubmittal(getSel(), data);
+            subBtn.classList.toggle('action-btn-no-file', !has);
+            if (has) subBtn.removeAttribute('title');
+            else subBtn.title = 'No submittal available for this item';
+        }
+        refreshDocState();
+        row.refreshDocState = refreshDocState;
+
         // ----- Docs (popup with all available documents) -----
         var docsBtn = document.createElement('button');
         docsBtn.type = 'button';
@@ -1224,8 +1238,9 @@
         // capacity conditions chosen here ride along into the cart on Select.
         var actionsTd = document.createElement('td');
         actionsTd.className = 'actions-cell';
-        actionsTd.appendChild(buildActionButtons(getCurrentSel, product, data,
-            capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null));
+        var actionsRow = buildActionButtons(getCurrentSel, product, data,
+            capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
+        actionsTd.appendChild(actionsRow);
         tr.appendChild(actionsTd);
 
         // Track tds for the variant column + dependent columns so we
@@ -1268,6 +1283,8 @@
                 var td = depCells[col];
                 if (td) td.textContent = formatCellValue(sd[col], col, product && product.productKey);
             });
+            // Variants can differ in submittal availability
+            if (actionsRow.refreshDocState) actionsRow.refreshDocState();
         }
 
         return tr;

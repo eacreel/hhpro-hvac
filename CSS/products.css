@@ -460,6 +460,15 @@
     border-color: var(--color-primary-light);
 }
 
+/* Submittal button when the selection has no submittal file yet: a
+   hairline strikethrough + muted text marks it unavailable at a
+   glance. The button stays clickable (shows the standard alert). */
+.action-btn-no-file {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
 /* ---------- kW variant cell (dropdown + chevron) ----------
    Used on products that merge same-system / different-kW rows into
    one row with a dropdown (multi_position_splits, marvair). The
