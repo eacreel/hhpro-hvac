@@ -434,6 +434,14 @@ input[type="checkbox"], input[type="radio"] {
     margin-left: 0.04em;
 }
 
+/* Right side of the header: User Guide + Log out sit together as one
+   flex-child so the header's space-between keeps its 3-zone layout. */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .header-action {
     color: var(--color-text-inverse);
     padding: 8px 14px;
