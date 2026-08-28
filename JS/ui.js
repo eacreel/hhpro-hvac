@@ -84,6 +84,20 @@
         // Drawn by the export "draw-in" confirmation (HHpro.FX.flashSuccess).
         'check': [
             ['polyline', { points: '20 6 9 17 4 12' }]
+        ],
+        // 2x3 dot grid used as a drag handle (lucide "grip-vertical")
+        'grip': [
+            ['circle', { cx: '9', cy: '5', r: '1' }],
+            ['circle', { cx: '9', cy: '12', r: '1' }],
+            ['circle', { cx: '9', cy: '19', r: '1' }],
+            ['circle', { cx: '15', cy: '5', r: '1' }],
+            ['circle', { cx: '15', cy: '12', r: '1' }],
+            ['circle', { cx: '15', cy: '19', r: '1' }]
+        ],
+        // Two overlapping squares (lucide "copy") - duplicate action
+        'copy': [
+            ['rect', { x: '9', y: '9', width: '13', height: '13', rx: '2', ry: '2' }],
+            ['path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' }]
         ]
     };
 

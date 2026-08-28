@@ -32,6 +32,7 @@
      HHpro.Cart.init()
      HHpro.Cart.addItem(productKey, selectionId, label)
      HHpro.Cart.duplicateItem(instanceId)
+     HHpro.Cart.moveItemBefore(instanceId, beforeInstanceId)
      HHpro.Cart.removeItem(instanceId)
      HHpro.Cart.updateItem(instanceId, patch)
      HHpro.Cart.computeLabel(product, selection, data)
@@ -115,6 +116,7 @@
         init: init,
         addItem: addItem,
         duplicateItem: duplicateItem,
+        moveItemBefore: moveItemBefore,
         removeItem: removeItem,
         updateItem: updateItem,
         computeLabel: computeLabel,
@@ -698,6 +700,42 @@
         if (idx < 0) return;
         pushUndo();
         state.items.splice(idx, 1);
+        saveStateToSession();
+        renderPanel();
+        renderToggle();
+    }
+
+    /**
+     * Move an item so it sits immediately before another item, or --
+     * when beforeInstanceId is null -- after the last item that shares
+     * its productKey (i.e. the end of that product's schedule tab).
+     * Used by the project schedule's drag-to-reorder handle. Reorders
+     * are undoable like any other item mutation.
+     */
+    function moveItemBefore(instanceId, beforeInstanceId) {
+        var fromIdx = indexOfItem(instanceId);
+        if (fromIdx < 0 || instanceId === beforeInstanceId) return;
+
+        var toIdx;
+        if (beforeInstanceId == null) {
+            var pk = state.items[fromIdx].productKey;
+            toIdx = -1;
+            for (var i = 0; i < state.items.length; i++) {
+                if (state.items[i].productKey === pk) toIdx = i;
+            }
+            toIdx = toIdx + 1;
+        } else {
+            toIdx = indexOfItem(beforeInstanceId);
+            if (toIdx < 0) return;
+        }
+
+        // Removing the item first shifts everything after it left one.
+        if (fromIdx < toIdx) toIdx--;
+        if (toIdx === fromIdx) return;
+
+        pushUndo();
+        var item = state.items.splice(fromIdx, 1)[0];
+        state.items.splice(toIdx, 0, item);
         saveStateToSession();
         renderPanel();
         renderToggle();

@@ -2677,6 +2677,93 @@
     function buildProjectScheduleBody(productKey, selections, visibleLetters, data) {
         var tbody = document.createElement('tbody');
 
+        // ---- drag-to-reorder state (scoped per product table) ----
+        // orderedIds: item instanceIds in render order; rowsById: every
+        // <tr> belonging to an item (multi-row selections span several).
+        // draggedId is only set inside this closure, so drags can't
+        // cross into another product's table.
+        var orderedIds = [];
+        var rowsById = {};
+        var draggedId = null;
+        var dropBeforeId = null;   // null = "no target"; NEXT_END = end of list
+        var NEXT_END = '__end__';
+
+        function markDraggedRows(on) {
+            (rowsById[draggedId] || []).forEach(function (r) {
+                r.classList.toggle('row-dragging', on);
+            });
+        }
+
+        function clearDropIndicator() {
+            tbody.querySelectorAll('.drop-before, .drop-after').forEach(function (r) {
+                r.classList.remove('drop-before', 'drop-after');
+            });
+            dropBeforeId = null;
+        }
+
+        function setDropIndicator(beforeId) {
+            if (dropBeforeId === beforeId) return;
+            clearDropIndicator();
+            dropBeforeId = beforeId;
+            if (beforeId === NEXT_END) {
+                var lastRows = rowsById[orderedIds[orderedIds.length - 1]] || [];
+                var lastRow = lastRows[lastRows.length - 1];
+                if (lastRow) lastRow.classList.add('drop-after');
+            } else if (beforeId) {
+                var firstRow = (rowsById[beforeId] || [])[0];
+                if (firstRow) firstRow.classList.add('drop-before');
+            }
+        }
+
+        tbody.addEventListener('dragover', function (e) {
+            if (!draggedId) return;
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+            var overTr = e.target && e.target.closest ? e.target.closest('tr') : null;
+            var overId = overTr && overTr.dataset ? overTr.dataset.instanceId : null;
+            if (!overId) return;
+
+            // Measure the hovered item's FULL block (first row top to
+            // last row bottom) so multi-row selections behave as one
+            // unit: upper half = insert before it, lower half = after.
+            var rows = rowsById[overId] || [];
+            if (!rows.length) return;
+            var top = rows[0].getBoundingClientRect().top;
+            var bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
+            var after = e.clientY > (top + bottom) / 2;
+
+            var idx = orderedIds.indexOf(overId);
+            var beforeId = after
+                ? (idx + 1 < orderedIds.length ? orderedIds[idx + 1] : NEXT_END)
+                : overId;
+
+            // Suppress the indicator on no-op targets (dropping the item
+            // back where it already sits).
+            var dIdx = orderedIds.indexOf(draggedId);
+            var noopBefore = (beforeId === draggedId) ||
+                (dIdx + 1 < orderedIds.length
+                    ? orderedIds[dIdx + 1] === beforeId
+                    : beforeId === NEXT_END);
+            if (noopBefore) { clearDropIndicator(); return; }
+
+            setDropIndicator(beforeId);
+        });
+
+        tbody.addEventListener('drop', function (e) {
+            if (!draggedId) return;
+            e.preventDefault();
+            var moved = draggedId;
+            var target = dropBeforeId;
+            markDraggedRows(false);
+            clearDropIndicator();
+            draggedId = null;
+            if (!target) return;
+            HHpro.Cart.moveItemBefore(moved, target === NEXT_END ? null : target);
+            filesCache = null;
+            filesSelection = null;
+            HHpro.App.showView('project_view');
+        });
+
         // Model-mapped notes context (diffusers): numbers the visible
         // schedule notes once per render so each row's Accessories cell
         // can cite the note numbers that apply to its model.
@@ -2722,9 +2809,14 @@
                     }
                 }) : null;
 
+            orderedIds.push(item.instanceId);
+            rowsById[item.instanceId] = [];
+
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
                 if (rowIndex === 0) tr.className = 'selection-boundary';
+                tr.dataset.instanceId = item.instanceId;
+                rowsById[item.instanceId].push(tr);
 
                 // LEFT-SIDE columns: Actions (X + Docs) + Tag (both
                 // span every row of a multi-row selection, rendered
@@ -2736,6 +2828,36 @@
 
                     var actionsWrap = document.createElement('div');
                     actionsWrap.className = 'project-sched-actions';
+
+                    // Grab handle - drag the whole selection to a new
+                    // position in this product's schedule. draggable on
+                    // the handle (not the row) so text selection and
+                    // the other buttons keep working normally.
+                    var grab = document.createElement('span');
+                    grab.className = 'project-sched-grab';
+                    grab.title = 'Drag to reorder';
+                    grab.setAttribute('aria-label', 'Drag to reorder');
+                    grab.draggable = true;
+                    grab.appendChild(HHpro.UI.icon('grip'));
+                    grab.addEventListener('dragstart', function (e) {
+                        draggedId = item.instanceId;
+                        if (e.dataTransfer) {
+                            e.dataTransfer.effectAllowed = 'move';
+                            try { e.dataTransfer.setData('text/plain', item.instanceId); } catch (err) { /* IE noop */ }
+                            // Ghost the item's first row instead of just
+                            // the tiny handle icon.
+                            if (e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(tr, 20, 12);
+                        }
+                        markDraggedRows(true);
+                    });
+                    grab.addEventListener('dragend', function () {
+                        // Fires after drop OR on a cancelled drag; drop
+                        // may have already cleaned up + re-rendered.
+                        markDraggedRows(false);
+                        clearDropIndicator();
+                        draggedId = null;
+                    });
+                    actionsWrap.appendChild(grab);
 
                     var rmBtn = document.createElement('button');
                     rmBtn.type = 'button';
@@ -2750,6 +2872,25 @@
                         HHpro.App.showView('project_view');
                     });
                     actionsWrap.appendChild(rmBtn);
+
+                    // Duplicate - copies the item (accessories, serves,
+                    // capacity conditions, kW variant...) directly below
+                    // the original. The tag is intentionally left blank
+                    // (cart.duplicateItem clears it) so two items never
+                    // share one tag by accident.
+                    var dupBtn = document.createElement('button');
+                    dupBtn.type = 'button';
+                    dupBtn.className = 'project-sched-dup-btn';
+                    dupBtn.setAttribute('aria-label', 'Duplicate item');
+                    dupBtn.title = 'Duplicate item';
+                    dupBtn.appendChild(HHpro.UI.icon('copy'));
+                    dupBtn.addEventListener('click', function () {
+                        HHpro.Cart.duplicateItem(item.instanceId);
+                        filesCache = null;
+                        filesSelection = null;
+                        HHpro.App.showView('project_view');
+                    });
+                    actionsWrap.appendChild(dupBtn);
 
                     // Docs button - opens the same per-selection docs
                     // popup the main product pages use, so people can
