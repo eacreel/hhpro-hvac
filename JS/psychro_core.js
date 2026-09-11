@@ -341,13 +341,18 @@
     }
 
     // ----- Energy recovery (wheel / plate) on the outdoor air -----
-    // Exhaust is taken at the return-air condition.
-    function erv(oa, exhaust, effSPct, effLPct, P) {
+    // Exhaust is taken at the return-air condition. `flowRatio` is
+    // exhaust mass flow over outdoor mass flow, capped at 1: AHRI 1060
+    // effectiveness is referenced to the smaller stream, so when the
+    // exhaust is the smaller one the outdoor air changes proportionally
+    // less.
+    function erv(oa, exhaust, effSPct, effLPct, P, flowRatio) {
         var es = Number(effSPct) / 100, el = Number(effLPct) / 100;
         if (!isFinite(es) || es < 0 || es > 1) throw new Error('Sensible effectiveness must be 0 to 100%');
         if (!isFinite(el) || el < 0 || el > 1) throw new Error('Latent effectiveness must be 0 to 100%');
-        var db = oa.db - es * (oa.db - exhaust.db);
-        var w = oa.w - el * (oa.w - exhaust.w);
+        var k = (isFinite(flowRatio) && flowRatio >= 0) ? Math.min(1, flowRatio) : 1;
+        var db = oa.db - es * k * (oa.db - exhaust.db);
+        var w = oa.w - el * k * (oa.w - exhaust.w);
         if (w < 0) w = 0;
         return fromDbWClamped(db, w, P);
     }

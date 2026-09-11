@@ -67,7 +67,7 @@
             ],
             ahu: {
                 oa:  { enabled: true, db: 95, key: 'wb', value: 78 },
-                erv: { enabled: false, effS: 70, effL: 60 },
+                erv: { enabled: false, mode: 'mix', effS: 70, effL: 60, exhCfm: null },
                 ra:  { enabled: true, db: 75, key: 'rh', value: 50 },
                 flowMode: 'each', basis: 'std',
                 oaCfm: 2000, raCfm: 8000, totalCfm: 10000, oaPct: 20,
@@ -171,7 +171,10 @@
         oa: 'Outdoor air brought into the unit. Plots as OA. With return air included it is one end of the grey mixing line; with return air excluded it is the entering-coil air itself.',
         oa_db: 'Outdoor design dry bulb. Moves OA left or right.',
         oa_second: 'Any one of wet bulb, RH, dew point, humidity ratio or enthalpy fixes the moisture in the outdoor air. Moves OA up or down.',
-        erv: 'Energy recovery wheel or plate between the incoming outdoor air and the exhaust (taken at the return air condition). Pre-conditions OA toward RA before mixing. Plots the leaving air as ER with an arrow from OA; mixing then starts from ER.',
+        erv: 'Energy recovery wheel or plate between the incoming outdoor air and the building exhaust, which is taken at the return air condition. Pre-conditions OA toward RA and plots the leaving air as ER with an arrow from OA. Whether ER then mixes with return air or goes straight to the coil depends on the arrangement below.',
+        erv_mode: 'Return air mixes: the recovery device treats the outdoor air, then ER mixes with the recirculated return air (MA) before the coil. Dedicated outdoor air unit: return air is only the exhaust side of the device and never enters the supply; the coil sees ER directly and no mixing line is drawn.',
+        erv_exh: 'Airflow through the exhaust side of the device. Blank means equal to the outdoor airflow. When the exhaust is smaller than the outdoor air the recovery on the outdoor side drops in proportion (AHRI 1060), so ER moves less far toward RA.',
+        exh_cfm: 'Building exhaust airflow through the recovery device. It sets the flow correction: exhaust smaller than the outdoor air reduces the recovery. It does not add to the supply.',
         erv_s: 'Sensible effectiveness: the fraction of the temperature difference between OA and RA that is recovered. 70% moves ER 70% of the way toward the RA temperature.',
         erv_l: 'Latent effectiveness: the fraction of the moisture difference recovered (wheels only; plates are near zero). Moves ER vertically toward the RA humidity ratio.',
         ra: 'Air returning from the space, normally at the room condition. Plots as RA; the other end of the mixing line.',
@@ -623,14 +626,34 @@
         }, function () { renderFlowFields(); syncEconVisibility(); }, 'oa'));
 
         // Energy recovery
-        form.appendChild(stageSection('er', 'Energy recovery on outdoor air', a.erv, function (sec, body) {
+        // Energy recovery needs both an outdoor and an exhaust (return) stream,
+        // so the section hides when either is excluded.
+        refs.ervSection = form.appendChild(stageSection('er', 'Energy recovery on outdoor air', a.erv, function (sec, body) {
             body.appendChild(hint('Wheel or plate exchanger between outdoor and exhaust (return) air. The outdoor air leaving it plots as ER.'));
+            var r = document.createElement('div');
+            r.className = 'psy-radio-row';
+            r.appendChild(inlineLabel('Arrangement:'));
+            r.appendChild(help('erv_mode'));
+            [['mix', 'Return air mixes with outdoor air'], ['doas', 'Dedicated outdoor air unit (return air is exhaust only)']].forEach(function (m) {
+                r.appendChild(radio('psy-erv-mode', m[0], m[1], a.erv.mode === m[0], function () {
+                    a.erv.mode = m[0]; save(); buildForm(); recompute();
+                }));
+            });
+            body.appendChild(r);
             var g = fields();
             g.appendChild(numberField('Sensible eff.', 'pct', a.erv.effS, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effS = v; }, 'erv_s'));
             g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }, 'erv_l'));
+            if (a.erv.mode !== 'doas') {
+                var ex = numberField('Exhaust airflow', 'flow', a.erv.exhCfm, { min: 0, step: 50 }, function (v) { a.erv.exhCfm = v; }, 'erv_exh');
+                ex.querySelector('input').placeholder = '= outdoor';
+                g.appendChild(ex);
+            }
             body.appendChild(g);
+            if (a.erv.mode === 'doas') {
+                body.appendChild(hint('Exhaust airflow is entered in the Airflow section. The return air condition is still the exhaust-side condition.'));
+            }
             body.appendChild(errorLine('erv'));
-        }, null, 'erv'));
+        }, function () { renderFlowFields(); }, 'erv'));
 
         // Return air
         form.appendChild(stageSection('ra', 'Return air', a.ra, function (sec, body) {
@@ -858,10 +881,12 @@
         return sec;
     }
 
+    // Sections that only make sense with both air streams present.
     function syncEconVisibility() {
-        if (!refs.econSection) return;
         var a = state.ahu;
-        refs.econSection.hidden = !(a.oa.enabled && a.ra.enabled);
+        var both = a.oa.enabled && a.ra.enabled;
+        if (refs.econSection) refs.econSection.hidden = !both;
+        if (refs.ervSection) refs.ervSection.hidden = !both;
     }
 
     function renderFlowFields() {
@@ -871,7 +896,10 @@
         wrap.innerHTML = '';
         var both = a.oa.enabled && a.ra.enabled;
         var g = fields();
-        if (both) {
+        if (both && a.erv.enabled && a.erv.mode === 'doas') {
+            g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }, 'oa_cfm'));
+            g.appendChild(numberField('Exhaust airflow', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }, 'exh_cfm'));
+        } else if (both) {
             var modes = document.createElement('div');
             modes.className = 'psy-radio-row';
             [['each', 'Per stream'], ['pct', 'Total + % outdoor air']].forEach(function (m) {
@@ -1250,14 +1278,17 @@
 
         var oa = a.oa.enabled ? tryState(a.oa, 'oa', P, onError) : null;
         var ra = a.ra.enabled ? tryState(a.ra, 'ra', P, onError) : null;
+        var both = a.oa.enabled && a.ra.enabled;
+        // Dedicated outdoor air arrangement: return air is the exhaust side
+        // of the recovery device only and never enters the supply.
+        var doas = both && a.erv.enabled && a.erv.mode === 'doas';
         if (oa) addPoint('oa', 'OA', oa, 'Outdoor air');
-        if (ra) addPoint('ra', 'RA', ra, 'Return air');
+        if (ra) addPoint('ra', 'RA', ra, doas ? 'Return air (exhaust side only, not mixed)' : 'Return air');
 
         // Airflow per stream
         var oaCfm = null, raCfm = null;
-        var both = a.oa.enabled && a.ra.enabled;
         if (both) {
-            if (a.flowMode === 'pct') {
+            if (a.flowMode === 'pct' && !doas) {
                 var total = toNum(a.totalCfm, null), pct = toNum(a.oaPct, null);
                 if (total !== null && pct !== null) { oaCfm = total * pct / 100; raCfm = total - oaCfm; }
             } else { oaCfm = toNum(a.oaCfm, null); raCfm = toNum(a.raCfm, null); }
@@ -1271,11 +1302,14 @@
                 onError('erv', 'Energy recovery needs both outdoor and return air included.');
             } else {
                 try {
-                    var er = Psy.erv(oa, ra, a.erv.effS, a.erv.effL, P);
+                    var exhCfm = doas ? raCfm
+                        : ((a.erv.exhCfm !== null && a.erv.exhCfm !== undefined) ? Number(a.erv.exhCfm) : oaCfm);
+                    var ratio = (oaCfm > 0 && exhCfm !== null && isFinite(exhCfm)) ? Math.min(1, exhCfm / oaCfm) : 1;
+                    var er = Psy.erv(oa, ra, a.erv.effS, a.erv.effL, P, ratio);
                     addPoint('er', 'ER', er, 'Outdoor air leaving energy recovery');
                     lines.push({ from: 'oa', to: 'er', cls: 'psy-line-process', arrow: true });
                     oaStream = er; oaStreamId = 'er';
-                    res.erv = { from: oa, to: er };
+                    res.erv = { from: oa, to: er, mode: doas ? 'doas' : 'mix', exhCfm: exhCfm, ratio: ratio };
                 } catch (e) { onError('erv', e.message); }
             }
         }
@@ -1283,8 +1317,8 @@
         // Mixing / entering state
         var streams = [];
         if (a.oa.enabled && oaStream) streams.push({ id: oaStreamId, label: oaStreamId.toUpperCase(), state: oaStream, cfm: oaCfm, raw: oa });
-        if (a.ra.enabled && ra) streams.push({ id: 'ra', label: 'RA', state: ra, cfm: raCfm, raw: ra });
-        var enabledCount = (a.oa.enabled ? 1 : 0) + (a.ra.enabled ? 1 : 0);
+        if (a.ra.enabled && ra && !doas) streams.push({ id: 'ra', label: 'RA', state: ra, cfm: raCfm, raw: ra });
+        var enabledCount = doas ? 1 : (a.oa.enabled ? 1 : 0) + (a.ra.enabled ? 1 : 0);
 
         var mixed = null, cur = null, curId = null, curLabel = null;
         if (enabledCount === 0) {
@@ -1510,6 +1544,9 @@
 
             if (res.erv) {
                 var e = res.erv, er = [];
+                er.push(['Arrangement', e.mode === 'doas' ? 'Dedicated OA unit, return air is exhaust only' : 'Return air mixes with outdoor air']);
+                if (e.exhCfm !== null && isFinite(e.exhCfm)) er.push(['Exhaust airflow', fmtU('flow', e.exhCfm)]);
+                if (e.ratio < 0.999) er.push(['Flow correction', 'Exhaust is ' + fmt(e.ratio * 100, 0) + '% of outdoor flow; recovery scaled to match']);
                 er.push(['OA leaving ER', fmtU('temp', e.to.db) + ' DB / ' + fmtU('temp', e.to.wb) + ' WB']);
                 if (e.load) {
                     var cooling = e.load.total >= 0;
