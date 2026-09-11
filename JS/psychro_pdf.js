@@ -123,6 +123,13 @@
         'psy-region':         { fill: '#000000', stroke: null, width: 0 },
         'psy-econ-region':    { fill: '#9fd8bd', stroke: null },
         'psy-path-label':     { size: 10, bold: true },
+        'psy-callout-bg':     { fill: '#f4f6f8', stroke: '#b9c0c8', width: 0.6 },
+        'psy-callout-title':  { text: '#111111', size: 10.5, bold: true },
+        'psy-callout-text':   { text: '#222222', size: 10 },
+        'psy-callout-dot':    { color: '#999999' },
+        'is-ok':              { color: '#2f9e44' },
+        'is-no':              { color: '#e03131' },
+        'psy-point-sf': { color: '#868e96' },
         'psy-label-econ':     { text: '#1f8f5f' },
         'psy-label-limit':    { text: '#a86a00' },
         'psy-point-label':    { size: 12, bold: true },
@@ -211,6 +218,10 @@
                 var rx = +node.getAttribute('x'), ry = +node.getAttribute('y');
                 var rw = +node.getAttribute('width'), rh = +node.getAttribute('height');
                 var re = num(X(rx)) + ' ' + num(Y(ry + rh)) + ' ' + num(rw * scale) + ' ' + num(rh * scale) + ' re';
+                if (st.fill && /\bpsy-region\b/.test(cls)) {
+                    ops.push('q /GA gs ' + rgbOp(st.fill, false) + ' ' + re + ' f Q ' + rgbOp('#1f8f5f', true) + ' 0.5 w [] 0 d ' + re + ' S');
+                    return;
+                }
                 if (st.fill) ops.push(rgbOp(st.fill, false) + ' ' + re + ' f');
                 if (st.stroke) ops.push(strokeSetup(st) + ' ' + re + ' S');
                 return;

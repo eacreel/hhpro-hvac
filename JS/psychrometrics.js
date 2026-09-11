@@ -18,9 +18,11 @@
 
    Everything is calculated in IP (psychro_core.js); the IP/SI
    toggle converts at the screen edge (psychro_units.js). Inputs
-   persist in localStorage; "Save to project" stores a snapshot
-   in the active project's extra data (cart.js) which the View
-   Project page lists and exports as PDF (psychro_pdf.js).
+   live in memory only - a page reload starts from the defaults
+   (Eric's choice, so a shared screen never opens on someone
+   else's numbers). "Save to project" stores a snapshot in the
+   active project's extra data (cart.js) which the View Project
+   page lists and exports as PDF (psychro_pdf.js).
 
    Public surface for other modules:
      HHpro.Psychrometrics.pdfBlob(snapshot, meta) -> Blob
@@ -71,12 +73,10 @@
                 oaCfm: 2000, raCfm: 8000, totalCfm: 10000, oaPct: 20,
                 econ: { enabled: false, mode: 'enthalpy', limitDb: 65 },
                 preheat: { enabled: false, db: 55 },
-                fan1: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
                 coil: { enabled: true, mode: 'leaving', db: 55, key: 'rh', value: 95, adp: 50, bf: 10 },
-                fan2: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
+                fan: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
                 reheat: { enabled: false, db: 65 },
                 hum: { enabled: false, type: 'steam', key: 'rh', value: 40, eff: 85 },
-                evap: { enabled: false, eff: 85 },
                 room: { enabled: false, db: 75, key: 'rh', value: 50, qs: 120000, ql: 30000,
                         solve: 'db', cfm: null, dbSupply: 55 }
             }
@@ -113,6 +113,10 @@
             delete parsed.mix;
         }
         if (parsed && parsed.mode === 'mix') parsed.mode = 'ahu';
+        if (parsed && parsed.ahu && !parsed.ahu.fan) {
+            var f = (parsed.ahu.fan2 && parsed.ahu.fan2.enabled) ? parsed.ahu.fan2 : parsed.ahu.fan1;
+            if (f) parsed.ahu.fan = f;
+        }
         return parsed;
     }
 
@@ -129,17 +133,14 @@
         return d;
     }
 
+    // A page reload always starts from the defaults. State survives
+    // navigating between views within the app (module memory only).
     function load() {
-        try {
-            var raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) return fromSnapshot(JSON.parse(raw));
-        } catch (e) { /* corrupt or unavailable storage */ }
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
         return defaults();
     }
 
-    function save() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* non-fatal */ }
-    }
+    function save() { /* intentionally not persisted */ }
 
     var state = null;
     var refs = {};
@@ -153,7 +154,7 @@
     HHpro.Calculators.register({
         key: 'psychrometrics',
         name: 'Psychrometrics',
-        description: 'Air handler chain (mixing, coils, fans, reheat, humidifier), room loads, economizer and condensate on a psychrometric chart.',
+        description: 'Air handler chain (mixing, coils, fan, reheat, humidifier), room loads, economizer and condensate on a psychrometric chart.',
         icon: 'thermometer',
         view: 'psychrometrics'
     });
@@ -204,7 +205,7 @@
         title.textContent = 'Psychrometric Calculator';
         var sub = document.createElement('p');
         sub.className = 'psy-sub';
-        sub.textContent = 'Build the air handler stage by stage (mixing, coils, fans, reheat, humidifier), ' +
+        sub.textContent = 'Build the air handler stage by stage (mixing, coils, fan, reheat, humidifier), ' +
             'check it against the room load, and read every state off the chart.';
         intro.appendChild(title);
         intro.appendChild(sub);
@@ -493,13 +494,13 @@
         var a = state.ahu;
 
         // Outdoor air
-        form.appendChild(stageSection('oa', 'Outdoor air (OA)', a.oa, function (sec, body) {
+        form.appendChild(stageSection('oa', 'Outdoor air', a.oa, function (sec, body) {
             body.appendChild(buildStateFields(a.oa, 'oa'));
         }, function () { renderFlowFields(); }));
 
         // Energy recovery
-        form.appendChild(stageSection('er', 'Energy recovery on OA (ER)', a.erv, function (sec, body) {
-            body.appendChild(hint('Wheel or plate exchanger between outdoor and exhaust (return) air. Leaving OA plots as ER.'));
+        form.appendChild(stageSection('er', 'Energy recovery on outdoor air', a.erv, function (sec, body) {
+            body.appendChild(hint('Wheel or plate exchanger between outdoor and exhaust (return) air. The outdoor air leaving it plots as ER.'));
             var g = fields();
             g.appendChild(numberField('Sensible eff.', 'pct', a.erv.effS, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effS = v; }));
             g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }));
@@ -508,7 +509,7 @@
         }));
 
         // Return air
-        form.appendChild(stageSection('ra', 'Return air (RA)', a.ra, function (sec, body) {
+        form.appendChild(stageSection('ra', 'Return air', a.ra, function (sec, body) {
             body.appendChild(buildStateFields(a.ra, 'ra'));
         }, function () { renderFlowFields(); }));
 
@@ -548,20 +549,15 @@
         }));
 
         // Preheat
-        form.appendChild(stageSection('ph', 'Preheat coil (PH)', a.preheat, function (sec, body) {
+        form.appendChild(stageSection('ph', 'Preheat coil', a.preheat, function (sec, body) {
             var g = fields();
             g.appendChild(numberField('Leaving dry bulb', 'temp', a.preheat.db, { step: 0.5 }, function (v) { a.preheat.db = v; }));
             body.appendChild(g);
             body.appendChild(errorLine('preheat'));
         }));
 
-        // Fan blow-through
-        form.appendChild(stageSection('f1', 'Supply fan, blow-through (F1)', a.fan1, function (sec, body) {
-            buildFanFields(body, a.fan1, 'fan1');
-        }));
-
         // Cooling coil
-        form.appendChild(stageSection('sa', 'Cooling coil leaving air (SA)', a.coil, function (sec, body) {
+        form.appendChild(stageSection('sa', 'Cooling coil leaving air', a.coil, function (sec, body) {
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Define by:'));
@@ -584,13 +580,14 @@
             }
         }));
 
-        // Fan draw-through
-        form.appendChild(stageSection('f2', 'Supply fan, draw-through (F2)', a.fan2, function (sec, body) {
-            buildFanFields(body, a.fan2, 'fan2');
+        // Supply fan (draw-through: after the coil, before reheat)
+        form.appendChild(stageSection('sf', 'Supply fan heat (draw-through)', a.fan, function (sec, body) {
+            body.appendChild(hint('Fan and motor heat picked up after the coil, before any reheat.'));
+            buildFanFields(body, a.fan, 'fan');
         }));
 
         // Reheat
-        form.appendChild(stageSection('rh', 'Reheat (RH)', a.reheat, function (sec, body) {
+        form.appendChild(stageSection('rh', 'Reheat', a.reheat, function (sec, body) {
             body.appendChild(hint('Hot gas, electric or hydronic reheat: humidity ratio is held, only dry bulb rises.'));
             var g = fields();
             g.appendChild(numberField('Leaving dry bulb', 'temp', a.reheat.db, { step: 0.5 }, function (v) { a.reheat.db = v; }));
@@ -599,7 +596,7 @@
         }));
 
         // Humidifier
-        form.appendChild(stageSection('hu', 'Humidifier (HU)', a.hum, function (sec, body) {
+        form.appendChild(stageSection('hu', 'Humidifier', a.hum, function (sec, body) {
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Type:'));
@@ -619,17 +616,8 @@
             body.appendChild(errorLine('hum'));
         }));
 
-        // Evaporative cooler
-        form.appendChild(stageSection('ec', 'Evaporative cooler (EC)', a.evap, function (sec, body) {
-            body.appendChild(hint('Direct evaporative cooling along the wet-bulb line.'));
-            var g = fields();
-            g.appendChild(numberField('Effectiveness', 'pct', a.evap.eff, { min: 0, max: 100, step: 1 }, function (v) { a.evap.eff = v; }));
-            body.appendChild(g);
-            body.appendChild(errorLine('evap'));
-        }));
-
         // Room
-        form.appendChild(stageSection('rm', 'Room (RM)', a.room, function (sec, body) {
+        form.appendChild(stageSection('rm', 'Room', a.room, function (sec, body) {
             body.appendChild(hint('Space condition and loads draw the room sensible-heat-ratio line and size the supply air.'));
             body.appendChild(buildStateFields(a.room, 'room'));
             var g = fields();
@@ -1214,6 +1202,29 @@
                              label: 'High limit ' + fmtU('temp', lim), labelAt: 'end', labelCls: 'psy-label-limit' });
             }
             res.econ.regionNote = 'Shaded chart area = free-cooling region';
+
+            // Plain-language explainer drawn in the chart's top-left corner.
+            var ec0 = res.econ;
+            var rows = [{ swatch: ec0.ok ? 'ok' : 'no',
+                          text: ec0.ok ? 'Free cooling available at this outdoor condition'
+                                       : 'Free cooling NOT available at this outdoor condition' }];
+            if (a.econ.mode === 'enthalpy') {
+                var dh = Math.abs(ec0.hDiff), hUnit = U.unit('h', sys());
+                var dhDisp = sys() === 'SI' ? dh * 2.326 : dh;
+                rows.push({ swatch: 'econ', text: 'Green dashed = return air enthalpy ' + fmtH(ra) +
+                    '. Outdoor air is ' + fmt(dhDisp, 1) + ' ' + hUnit + (ec0.hDiff > 0 ? ' below it (good)' : ' above it (too much heat)') });
+            } else {
+                var ddb = Math.abs(ec0.dbDiff);
+                rows.push({ swatch: 'econ', text: 'Green dashed = return air dry bulb ' + fmtU('temp', ra.db) +
+                    '. Outdoor air is ' + fmtU('dtemp', ddb) + (ec0.dbDiff > 0 ? ' cooler (good)' : ' warmer (too warm)') });
+            }
+            if (hasLim) {
+                var dl = Math.abs(oa.db - lim);
+                rows.push({ swatch: 'limit', text: 'Amber dotted = ' + fmtU('temp', lim) + ' high limit. Outdoor air is ' +
+                    fmtU('dtemp', dl) + (ec0.belowLimit ? ' below it (dampers may open)' : ' above it (dampers stay at minimum)') });
+            }
+            rows.push({ swatch: 'region', text: 'Shaded = where the outdoor air point must sit for free cooling' });
+            res.callout = { title: 'Economizer check', rows: rows };
         }
 
         // Sequential stages
@@ -1236,10 +1247,6 @@
             if (isFinite(db) && db < c.db) throw new Error('Preheat leaving temperature is below the entering air');
             return Psy.sensible(c, a.preheat.db, P);
         });
-        if (a.fan1.enabled) stage('f1', 'F1', 'Supply fan (blow-through)', 'fan1', function (c) {
-            var f = Psy.fanHeat(c, a.fan1, m, P);
-            return { state: f.state, extra: { q: f.q, dt: f.dt } };
-        });
         if (a.coil.enabled) stage('sa', 'SA', 'Cooling coil', 'coil', function (c) {
             var st, adpInfo;
             if (a.coil.mode === 'adp') {
@@ -1251,15 +1258,14 @@
             }
             return { state: st, extra: { adp: adpInfo } };
         });
-        if (a.fan2.enabled) stage('f2', 'F2', 'Supply fan (draw-through)', 'fan2', function (c) {
-            var f = Psy.fanHeat(c, a.fan2, m, P);
+        if (a.fan.enabled) stage('sf', 'SF', 'Supply fan heat', 'fan', function (c) {
+            var f = Psy.fanHeat(c, a.fan, m, P);
             return { state: f.state, extra: { q: f.q, dt: f.dt } };
         });
         if (a.reheat.enabled) stage('rh', 'RH', 'Reheat', 'reheat', function (c) { return Psy.reheat(c, a.reheat.db, P); });
         if (a.hum.enabled) stage('hu', 'HU', a.hum.type === 'evap' ? 'Evaporative humidifier' : 'Steam humidifier', 'hum', function (c) {
             return a.hum.type === 'evap' ? Psy.evap(c, a.hum.eff, P) : Psy.steam(c, a.hum.key, a.hum.value, P);
         });
-        if (a.evap.enabled) stage('ec', 'EC', 'Evaporative cooler', 'evap', function (c) { return Psy.evap(c, a.evap.eff, P); });
 
         res.final = cur;
         res.finalLabel = curLabel;
@@ -1372,16 +1378,13 @@
                         rowsS.push(['Condensate', fmtU('volrate', c.galhr) + '  /  ' + fmtU('volday', c.galday)]);
                         rowsS.push(['Drain size (IMC 307.2.2)', c.drainSize]);
                     }
-                } else if (st.id === 'f1' || st.id === 'f2') {
+                } else if (st.id === 'sf') {
                     rowsS.push(['Fan heat added', fmtPower(st.extra.q)]);
                     rowsS.push(['Temperature rise', fmtU('dtemp', st.extra.dt, 2)]);
                 } else if (st.id === 'hu') {
                     rowsS.push(['Water added', fmtU('massflow', Math.abs(L.moistureLbHr), 1)]);
                     if (a.hum.type === 'steam') rowsS.push(['Heat added with steam', fmtPower(-L.total)]);
                     else rowsS.push(['Dry bulb drop', fmtU('dtemp', st.from.db - st.to.db)]);
-                } else if (st.id === 'ec') {
-                    rowsS.push(['Dry bulb drop', fmtU('dtemp', st.from.db - st.to.db)]);
-                    rowsS.push(['Water added', fmtU('massflow', Math.abs(L.moistureLbHr), 1)]);
                 } else {
                     rowsS.push(['Heat added', fmtPower(-L.total)]);
                     rowsS.push(['Leaving dry bulb', fmtU('temp', st.to.db)]);
@@ -1463,7 +1466,8 @@
             show: state.show,
             points: res.points,
             lines: res.lines,
-            paths: res.paths
+            paths: res.paths,
+            callout: res.callout || null
         });
         renderResults(buildReport(res, state));
         updateAddState();
@@ -1565,8 +1569,8 @@
         var cfm = (a.oa.enabled && a.ra.enabled && a.flowMode === 'pct') ? a.totalCfm
             : ((a.oa.enabled ? Number(a.oaCfm) || 0 : 0) + (a.ra.enabled ? Number(a.raCfm) || 0 : 0));
         if (cfm) bits.push(fmt(cfm, 0) + ' CFM');
-        var stagesOn = ['erv', 'preheat', 'fan1', 'coil', 'fan2', 'reheat', 'hum', 'evap', 'room'].filter(function (k) { return a[k] && a[k].enabled; });
-        var names = { erv: 'ER', preheat: 'PH', fan1: 'F1', coil: 'SA', fan2: 'F2', reheat: 'RH', hum: 'HU', evap: 'EC', room: 'RM' };
+        var stagesOn = ['erv', 'preheat', 'coil', 'fan', 'reheat', 'hum', 'room'].filter(function (k) { return a[k] && a[k].enabled; });
+        var names = { erv: 'ER', preheat: 'PH', coil: 'SA', fan: 'SF', reheat: 'RH', hum: 'HU', room: 'RM' };
         if (stagesOn.length) bits.push(stagesOn.map(function (k) { return names[k]; }).join(' → '));
         if (s.altitude) bits.push(fmt(s.altitude, 0) + ' ft');
         return bits.join(' · ');
@@ -1674,7 +1678,7 @@
             var chart = Chart.create(holder);
             chart.update({
                 pressure: res.pressure, units: s.units, viewport: s.view || Chart.defaultViewport(s.dbMin),
-                show: s.show, points: res.points, lines: res.lines, paths: res.paths
+                show: s.show, points: res.points, lines: res.lines, paths: res.paths, callout: res.callout || null
             });
             var blocks = buildReport(res, s);
             var sub = [];

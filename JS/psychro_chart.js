@@ -195,9 +195,10 @@
         var gLines  = el('g', null, 'psy-lines');
         var gAxes   = el('g', null, 'psy-axes');
         var gPoints = el('g', null, 'psy-points');
+        var gCallout = el('g', null, 'psy-callout');
         var gHover  = el('g', null, 'psy-hover');
         [gGrid, gCurves, gLabels, gSat, gUnder, gPaths, gLines].forEach(function (g) { gPlot.appendChild(g); });
-        [gBg, gPlot, gAxes, gPoints, gHover].forEach(function (g) { svg.appendChild(g); });
+        [gBg, gPlot, gAxes, gPoints, gCallout, gHover].forEach(function (g) { svg.appendChild(g); });
 
         gBg.appendChild(el('rect', { x: mL, y: mT, width: pw, height: ph }, 'psy-frame'));
         var frame = el('rect', { x: mL, y: mT, width: pw, height: ph }, 'psy-frame-outline');
@@ -214,7 +215,7 @@
         var current = {
             pressure: null,
             show: { rh: true, wb: true, h: true, v: false },
-            points: [], lines: [], paths: []
+            points: [], lines: [], paths: [], callout: null
         };
 
         function clear(g) { while (g.firstChild) g.removeChild(g.firstChild); }
@@ -505,6 +506,42 @@
             });
         }
 
+        // -------- callout: explainer box in the top-left of the plot --------
+        // callout = { title, rows: [{ swatch: 'ok'|'no'|'econ'|'limit'|'region'|null, text }] }
+
+        function drawCallout() {
+            clear(gCallout);
+            var c = current.callout;
+            if (!c || !c.rows || !c.rows.length) return;
+            var x = mL + 8, y = mT + 46;
+            var lineH = 15, pad = 8, swatchW = 22;
+            var charW = 5.6; // approx px per character at 10.5px
+            var maxLen = (c.title || '').length * 1.15;
+            c.rows.forEach(function (r) { maxLen = Math.max(maxLen, r.text.length); });
+            var w = Math.min(pw * 0.6, Math.max(180, maxLen * charW + swatchW + pad * 2 + 6));
+            var h = pad * 2 + (c.title ? lineH + 2 : 0) + c.rows.length * lineH;
+            gCallout.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 4 }, 'psy-callout-bg'));
+            var cy = y + pad + 11;
+            if (c.title) {
+                gCallout.appendChild(text(x + pad, cy, c.title, 'psy-callout-title', 'start'));
+                cy += lineH + 2;
+            }
+            c.rows.forEach(function (r) {
+                var sx = x + pad, sy = cy - 4;
+                if (r.swatch === 'econ') {
+                    gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy }, 'psy-line psy-line-econ psy-callout-swatch'));
+                } else if (r.swatch === 'limit') {
+                    gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy }, 'psy-line psy-line-limit psy-callout-swatch'));
+                } else if (r.swatch === 'region') {
+                    gCallout.appendChild(el('rect', { x: sx, y: sy - 5, width: swatchW - 4, height: 10 }, 'psy-region psy-econ-region psy-callout-swatch-box'));
+                } else if (r.swatch === 'ok' || r.swatch === 'no') {
+                    gCallout.appendChild(el('circle', { cx: sx + 6, cy: sy, r: 4.5 }, 'psy-callout-dot ' + (r.swatch === 'ok' ? 'is-ok' : 'is-no')));
+                }
+                gCallout.appendChild(text(x + pad + swatchW, cy, r.text, 'psy-callout-text', 'start'));
+                cy += lineH;
+            });
+        }
+
         // -------- hover --------
 
         function hideCross() {
@@ -565,6 +602,7 @@
                 current.points = data.points || [];
                 current.lines = data.lines || [];
                 current.paths = data.paths || [];
+                current.callout = data.callout || null;
                 var key = [current.pressure, units, vp.dbMin, vp.dbMax, vp.wMin, vp.wMax,
                            current.show.rh, current.show.wb, current.show.h, current.show.v].join('|');
                 if (key !== lastStaticKey && current.pressure !== null) {
@@ -572,6 +610,7 @@
                     lastStaticKey = key;
                 }
                 drawDynamic();
+                drawCallout();
             },
             onHover: function (cb) { hoverCb = cb; },
             viewport: function () { return { dbMin: vp.dbMin, dbMax: vp.dbMax, wMin: vp.wMin, wMax: vp.wMax }; }
