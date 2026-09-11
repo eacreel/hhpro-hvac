@@ -141,6 +141,7 @@
         createAndActivateProject: createAndActivateProject,
         exitProject: clearActiveState,
         promptProjectName: promptProjectName,
+        ensureModeChosen: ensureModeChosen,
         mergeImportedProjects: mergeImportedProjects,
 
         undo: undo,

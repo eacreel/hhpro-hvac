@@ -126,14 +126,17 @@
     max-width: 760px;
 }
 
+.psy-settings {
+    flex-shrink: 0;
+    background-color: var(--color-bg-dark);
+    border-bottom: 1px solid var(--color-border);
+}
+
 .psy-altitude {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    flex-shrink: 0;
-    background-color: var(--color-bg-dark);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-sm) var(--space-md) var(--space-xs);
 }
 
 .psy-pressure {
@@ -504,6 +507,13 @@
     text-overflow: ellipsis;
 }
 
+/* Header cells may wrap so unit labels are never clipped. */
+.psy-table th {
+    white-space: normal;
+    line-height: 1.15;
+    vertical-align: bottom;
+}
+
 .psy-table th.psy-table-col,
 .psy-table td.psy-table-val {
     width: 66px;
@@ -836,4 +846,244 @@
     .calc-card:active {
         transform: none;
     }
+}
+
+/* ---------- Settings strip: units, save, export ---------- */
+
+.psy-seg {
+    display: inline-flex;
+    margin-left: auto;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.psy-seg-btn {
+    padding: 3px 10px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.psy-seg-btn + .psy-seg-btn {
+    border-left: 1px solid var(--color-border-strong);
+}
+
+.psy-seg-btn:hover {
+    color: var(--color-text);
+}
+
+.psy-seg-btn.is-active {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.psy-actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0 var(--space-md) var(--space-sm);
+}
+
+.psy-small-btn {
+    padding: 5px 10px;
+    font-size: var(--font-size-xs);
+}
+
+.psy-save-status {
+    font-size: var(--font-size-xs);
+    color: var(--color-success);
+}
+
+.psy-save-form {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    width: 100%;
+}
+
+.psy-save-name {
+    flex: 1;
+    text-align: left;
+    width: auto;
+}
+
+/* ---------- Chain stages ---------- */
+
+.psy-stage {
+    padding: var(--space-xs) 0 var(--space-xs) var(--space-sm);
+    border-left: 3px solid var(--psy-color, var(--color-border));
+}
+
+.psy-stage.is-off {
+    border-left-color: var(--color-border);
+}
+
+.psy-stage.is-off .psy-swatch {
+    opacity: 0.35;
+}
+
+.psy-stage-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.psy-stage-body.is-disabled {
+    display: none;
+}
+
+/* ---------- Chart controls ---------- */
+
+.psy-chart-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-left: auto;
+}
+
+.psy-zoom-group {
+    display: inline-flex;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.psy-zoom-btn {
+    min-width: 28px;
+    padding: 3px 8px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    transition: background-color var(--transition-fast);
+}
+
+.psy-zoom-btn + .psy-zoom-btn {
+    border-left: 1px solid var(--color-border-strong);
+}
+
+.psy-zoom-btn:hover {
+    background-color: var(--color-row-hover);
+}
+
+/* ---------- Extra chart styling ---------- */
+
+.psy-path {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.4;
+}
+
+.psy-line-room {
+    stroke: #c4b5fd;
+    stroke-dasharray: 5 3;
+}
+
+.psy-point-er { --psy-color: #fb923c; }
+.psy-point-ph { --psy-color: #fbbf24; }
+.psy-point-f1 { --psy-color: #94a3b8; }
+.psy-point-f2 { --psy-color: #94a3b8; }
+.psy-point-hu { --psy-color: #22d3ee; }
+.psy-point-ec { --psy-color: #34d399; }
+.psy-point-rm { --psy-color: #c4b5fd; }
+.psy-point-rq { --psy-color: #a78bfa; }
+.psy-point-econ { --psy-color: #94a3b8; }
+
+.psy-point-rq .psy-point-dot {
+    fill: var(--color-bg);
+    stroke: var(--psy-color);
+    stroke-width: 2;
+}
+
+/* ---------- Results ---------- */
+
+.psy-kv dd.is-ok {
+    color: var(--color-success);
+}
+
+.psy-kv dd.is-warn {
+    color: var(--color-warning);
+}
+
+.psy-table-cols-8 th.psy-table-col,
+.psy-table-cols-8 td.psy-table-val {
+    width: 50px;
+}
+
+.psy-table-cols-4 th.psy-table-col,
+.psy-table-cols-4 td.psy-table-val {
+    width: 100px;
+}
+
+.psy-table td.psy-table-prop .psy-swatch {
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+}
+
+/* ---------- Saved calculations (View Project tab) ---------- */
+
+.calc-saved-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    max-width: 900px;
+}
+
+.calc-saved-empty {
+    color: var(--color-text-muted);
+    padding: var(--space-xl);
+    text-align: center;
+}
+
+.calc-saved-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+}
+
+.calc-saved-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #0d3a5a 100%);
+    color: var(--color-text-inverse);
+    font-size: 18px;
+}
+
+.calc-saved-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.calc-saved-name {
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.calc-saved-meta {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calc-saved-actions {
+    display: flex;
+    gap: var(--space-xs);
+    flex-shrink: 0;
 }

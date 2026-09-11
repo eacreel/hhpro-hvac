@@ -95,7 +95,7 @@
                 } else if (activeTab === 'split_systems' && !combined) {
                     activeTab = firstVisibleTab(productKeys, groups);
                 } else if (activeTab !== 'files' && activeTab !== 'refrigerant' &&
-                           activeTab !== 'split_systems' &&
+                           activeTab !== 'split_systems' && activeTab !== 'calculations' &&
                            productKeys.indexOf(activeTab) < 0) {
                     activeTab = firstVisibleTab(productKeys, groups);
                 }
@@ -103,9 +103,15 @@
 
             main.appendChild(buildProjectHeader(activeState));
 
-            if (!activeState.items.length) {
+            // Saved psychrometric calculations count as project content:
+            // a project with only calculations still gets its tabs.
+            var calcCount = savedCalcCount();
+            if (!activeState.items.length && !calcCount) {
                 main.appendChild(buildEmptyProjectState());
                 return;
+            }
+            if (!activeState.items.length && activeTab !== 'files') {
+                activeTab = 'calculations';
             }
 
             main.appendChild(buildTabBar(productKeys, groups));
@@ -479,8 +485,145 @@
                 'REFRIGERANT (' + refCount + ')'));
         }
 
+        var calcN = savedCalcCount();
+        if (calcN) {
+            nav.appendChild(buildTabButton('calculations', 'CALCULATIONS (' + calcN + ')'));
+        }
+
         nav.appendChild(buildTabButton('files', 'FILES'));
         return nav;
+    }
+
+    // =================================================================
+    // Saved psychrometric calculations (Calculators section)
+    // =================================================================
+
+    function savedCalcCount() {
+        if (!HHpro.Psychrometrics || !HHpro.Psychrometrics.listSaved) return 0;
+        return HHpro.Psychrometrics.listSaved().length;
+    }
+
+    function calcFileName(calc) {
+        var base = String(calc.name || 'Calculation').replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Calculation';
+        return base + ' - Psychrometrics.pdf';
+    }
+
+    function calcPdfBlob(calc, activeState) {
+        return HHpro.Psychrometrics.pdfBlob(calc.snapshot, {
+            projectName: activeState.name || '',
+            title: calc.name,
+            savedAt: calc.savedAt
+        });
+    }
+
+    // Project-level synthetic files for the Files tab / ZIP: one PDF per
+    // saved calculation, generated on demand like the combined schedules.
+    function buildCalculationFiles(activeState) {
+        if (!HHpro.Psychrometrics || !HHpro.Psychrometrics.listSaved) return [];
+        var DOC_TYPE = 'PSYCHROMETRICS (PDF)';
+        return HHpro.Psychrometrics.listSaved().map(function (calc) {
+            var name = calcFileName(calc);
+            return {
+                key: 'calc||' + calc.id,
+                docColumn: { name: DOC_TYPE, folder: 'CALCULATIONS', fileExtension: 'pdf' },
+                filename: name.replace(/\.pdf$/i, ''),
+                filenameWithExt: 'CALCULATIONS/' + name,
+                url: null,
+                generator: function () {
+                    return Promise.resolve().then(function () { return calcPdfBlob(calc, activeState); });
+                },
+                docTypeName: DOC_TYPE,
+                isZip: false
+            };
+        });
+    }
+
+    function renderCalculationsTab(container, activeState) {
+        var list = HHpro.Psychrometrics ? HHpro.Psychrometrics.listSaved() : [];
+        var wrap = document.createElement('div');
+        wrap.className = 'calc-saved-list';
+
+        if (!list.length) {
+            var empty = document.createElement('p');
+            empty.className = 'calc-saved-empty';
+            empty.textContent = 'No saved calculations yet. Use Save to project on the Psychrometrics calculator.';
+            wrap.appendChild(empty);
+            container.appendChild(wrap);
+            return;
+        }
+
+        list.forEach(function (calc) {
+            var card = document.createElement('div');
+            card.className = 'calc-saved-card';
+
+            var icon = document.createElement('div');
+            icon.className = 'calc-saved-icon';
+            icon.appendChild(HHpro.UI.icon('thermometer'));
+            card.appendChild(icon);
+
+            var body = document.createElement('div');
+            body.className = 'calc-saved-body';
+            var name = document.createElement('p');
+            name.className = 'calc-saved-name';
+            name.textContent = calc.name;
+            body.appendChild(name);
+            var meta = document.createElement('div');
+            meta.className = 'calc-saved-meta';
+            var when = calc.savedAt ? new Date(calc.savedAt).toLocaleString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+            }) : '';
+            var summary = HHpro.Psychrometrics.summarize ? HHpro.Psychrometrics.summarize(calc.snapshot) : '';
+            meta.textContent = [when, summary].filter(Boolean).join(' \u00B7 ');
+            body.appendChild(meta);
+            card.appendChild(body);
+
+            var actions = document.createElement('div');
+            actions.className = 'calc-saved-actions';
+
+            var open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'projects-btn projects-btn-primary';
+            open.textContent = 'Open';
+            open.addEventListener('click', function () {
+                HHpro.App.showView('psychrometrics', { calcId: calc.id });
+            });
+            actions.appendChild(open);
+
+            var pdf = document.createElement('button');
+            pdf.type = 'button';
+            pdf.className = 'projects-btn projects-btn-secondary';
+            pdf.appendChild(HHpro.UI.icon('download'));
+            var pdfLbl = document.createElement('span');
+            pdfLbl.textContent = 'PDF';
+            pdf.appendChild(pdfLbl);
+            pdf.addEventListener('click', function () {
+                try {
+                    triggerBlobDownload(calcPdfBlob(calc, activeState), calcFileName(calc));
+                } catch (err) {
+                    alert('Could not build the PDF: ' + (err && err.message ? err.message : String(err)));
+                }
+            });
+            actions.appendChild(pdf);
+
+            var del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'projects-btn projects-btn-secondary';
+            del.appendChild(HHpro.UI.icon('x'));
+            var delLbl = document.createElement('span');
+            delLbl.textContent = 'Delete';
+            del.appendChild(delLbl);
+            del.addEventListener('click', function () {
+                if (!confirm('Delete "' + calc.name + '" from this project?')) return;
+                HHpro.Psychrometrics.deleteSaved(calc.id);
+                filesCache = null;
+                HHpro.App.showView('project_view');
+            });
+            actions.appendChild(del);
+
+            card.appendChild(actions);
+            wrap.appendChild(card);
+        });
+        container.appendChild(wrap);
     }
 
     function countRefrigerantSystems(groups) {
@@ -572,6 +715,11 @@
 
     function renderActiveTab(container, groups, activeState) {
         container.innerHTML = '';
+        if (activeTab === 'calculations') {
+            renderCalculationsTab(container, activeState);
+            syncHeaderWidthToSchedule();
+            return;
+        }
         if (activeTab === 'files') {
             renderFilesTab(container, activeState);
             syncHeaderWidthToSchedule();
@@ -4028,7 +4176,8 @@
             // Combined schedules - one project-level file per format. Built
             // only when at least one product has items; otherwise the FILES
             // tab is empty anyway and there's nothing to combine.
-            var projectFiles = buildProjectScheduleFiles(products);
+            var projectFiles = buildProjectScheduleFiles(products)
+                .concat(buildCalculationFiles(HHpro.Cart.getActiveState()));
             projectFiles.forEach(function (f) {
                 if (!seenOrdered[f.docTypeName]) {
                     seenOrdered[f.docTypeName] = true;
