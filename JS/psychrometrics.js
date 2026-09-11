@@ -620,7 +620,7 @@
         // Outdoor air
         form.appendChild(stageSection('oa', 'Outdoor air', a.oa, function (sec, body) {
             body.appendChild(buildStateFields(a.oa, 'oa', 'oa'));
-        }, function () { renderFlowFields(); }, 'oa'));
+        }, function () { renderFlowFields(); syncEconVisibility(); }, 'oa'));
 
         // Energy recovery
         form.appendChild(stageSection('er', 'Energy recovery on outdoor air', a.erv, function (sec, body) {
@@ -635,7 +635,7 @@
         // Return air
         form.appendChild(stageSection('ra', 'Return air', a.ra, function (sec, body) {
             body.appendChild(buildStateFields(a.ra, 'ra', 'ra'));
-        }, function () { renderFlowFields(); }, 'ra'));
+        }, function () { renderFlowFields(); syncEconVisibility(); }, 'ra'));
 
         // Airflow
         var flow = document.createElement('div');
@@ -658,8 +658,9 @@
         flow.appendChild(errorLine('flow'));
         form.appendChild(flow);
 
-        // Economizer check
-        form.appendChild(stageSection('econ', 'Economizer check', a.econ, function (sec, body) {
+        // Economizer check - only meaningful with both air streams to compare,
+        // so the section hides when outdoor or return air is excluded.
+        refs.econSection = form.appendChild(stageSection('econ', 'Economizer check', a.econ, function (sec, body) {
             body.appendChild(hint('Compares outdoor to return air and a fixed high limit; reports whether free cooling applies.'));
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
@@ -673,6 +674,7 @@
             g.appendChild(numberField('High limit', 'temp', a.econ.limitDb, { step: 0.5 }, function (v) { a.econ.limitDb = v; }, 'econ_limit'));
             body.appendChild(g);
         }, null, 'econ'));
+        syncEconVisibility();
 
         // Preheat
         form.appendChild(stageSection('ph', 'Preheat coil', a.preheat, function (sec, body) {
@@ -854,6 +856,12 @@
         });
         apply();
         return sec;
+    }
+
+    function syncEconVisibility() {
+        if (!refs.econSection) return;
+        var a = state.ahu;
+        refs.econSection.hidden = !(a.oa.enabled && a.ra.enabled);
     }
 
     function renderFlowFields() {
