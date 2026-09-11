@@ -190,12 +190,13 @@
         var gCurves = el('g', { 'clip-path': 'url(#' + id + '-sat)' }, 'psy-curves');
         var gLabels = el('g', null, 'psy-curve-labels');
         var gSat    = el('g', null, 'psy-sat-layer');
+        var gUnder  = el('g', { 'clip-path': 'url(#' + id + '-sat)' }, 'psy-paths-under');
         var gPaths  = el('g', null, 'psy-paths');
         var gLines  = el('g', null, 'psy-lines');
         var gAxes   = el('g', null, 'psy-axes');
         var gPoints = el('g', null, 'psy-points');
         var gHover  = el('g', null, 'psy-hover');
-        [gGrid, gCurves, gLabels, gSat, gPaths, gLines].forEach(function (g) { gPlot.appendChild(g); });
+        [gGrid, gCurves, gLabels, gSat, gUnder, gPaths, gLines].forEach(function (g) { gPlot.appendChild(g); });
         [gBg, gPlot, gAxes, gPoints, gHover].forEach(function (g) { svg.appendChild(g); });
 
         gBg.appendChild(el('rect', { x: mL, y: mT, width: pw, height: ph }, 'psy-frame'));
@@ -451,16 +452,30 @@
         // -------- dynamic layers: paths, lines, points --------
 
         function drawDynamic() {
-            clear(gPaths); clear(gLines); clear(gPoints);
+            clear(gUnder); clear(gPaths); clear(gLines); clear(gPoints);
             var pointPx = {};
             current.points.forEach(function (p) {
                 if (!p || !p.state) return;
                 pointPx[p.id] = { x: xOf(p.state.db), y: yOf(p.state.w) };
             });
+            // Paths: polylines in (db, w). `fill` closes and fills the shape,
+            // `under` additionally clips it to the region under saturation,
+            // `label` puts a caption at the first or last point (kept
+            // inside the frame).
             current.paths.forEach(function (pth) {
                 if (!pth || !pth.pts || pth.pts.length < 2) return;
                 var pts = pth.pts.map(function (q) { return [xOf(q.db), yOf(q.w)]; });
-                gPaths.appendChild(el('path', { d: pathFrom(pts) }, 'psy-path ' + (pth.cls || '')));
+                var d = pathFrom(pts) + (pth.fill ? ' Z' : '');
+                var target = pth.under ? gUnder : gPaths;
+                target.appendChild(el('path', { d: d }, (pth.fill ? 'psy-region ' : 'psy-path ') + (pth.cls || '')));
+                if (pth.label) {
+                    var at = pth.labelAt === 'start' ? pts[0] : pts[pts.length - 1];
+                    var lx = Math.min(Math.max(at[0], mL + 6), mL + pw - 6);
+                    var ly = Math.min(Math.max(at[1], mT + 14), mT + ph - 6);
+                    var anchor = lx > mL + pw * 0.7 ? 'end' : 'start';
+                    var t = text(lx + (anchor === 'end' ? -4 : 4), ly, pth.label, 'psy-path-label ' + (pth.labelCls || ''), anchor);
+                    gPaths.appendChild(t);
+                }
             });
             current.lines.forEach(function (ln) {
                 var a = pointPx[ln.from], b = pointPx[ln.to];

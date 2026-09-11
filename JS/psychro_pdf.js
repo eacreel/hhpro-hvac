@@ -118,6 +118,13 @@
         'psy-line-reheat':    { stroke: '#c0304a' },
         'psy-path':           { stroke: '#000000', width: 1.2 },
         'psy-line-room':      { stroke: '#7b3fbf', dash: [5, 3] },
+        'psy-line-econ':      { stroke: '#1f8f5f', width: 1.2, dash: [6, 4] },
+        'psy-line-limit':     { stroke: '#c27c00', width: 1.0, dash: [2, 3] },
+        'psy-region':         { fill: '#000000', stroke: null, width: 0 },
+        'psy-econ-region':    { fill: '#9fd8bd', stroke: null },
+        'psy-path-label':     { size: 10, bold: true },
+        'psy-label-econ':     { text: '#1f8f5f' },
+        'psy-label-limit':    { text: '#a86a00' },
         'psy-point-label':    { size: 12, bold: true },
         'psy-point-oa': { color: '#e8590c' }, 'psy-point-er': { color: '#d9480f' },
         'psy-point-ra': { color: '#1c7ed6' }, 'psy-point-ma': { color: '#2f9e44' },
@@ -240,6 +247,11 @@
                     } else { i++; }
                 }
                 if (!out.length) return;
+                if (st.fill && /\bpsy-region\b/.test(cls)) {
+                    // Translucent fill (ExtGState GA = 30% alpha), no stroke.
+                    ops.push('q /GA gs ' + rgbOp(st.fill, false) + ' ' + out.join(' ') + ' h f Q');
+                    return;
+                }
                 if (!st.stroke) st.stroke = '#000000';
                 ops.push(strokeSetup(st) + ' ' + out.join(' ') + ' S');
                 return;
@@ -452,7 +464,8 @@
             var content = ops.join('\n');
             var cN = add('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream');
             var pN = add('<< /Type /Page /Parent ' + pagesN + ' 0 R /MediaBox [0 0 ' + PAGE_W + ' ' + PAGE_H + '] ' +
-                '/Resources << /Font << /F1 ' + fontN + ' 0 R /F2 ' + fontB + ' 0 R >> >> /Contents ' + cN + ' 0 R >>');
+                '/Resources << /Font << /F1 ' + fontN + ' 0 R /F2 ' + fontB + ' 0 R >> ' +
+                '/ExtGState << /GA << /ca 0.3 /CA 1 >> >> >> /Contents ' + cN + ' 0 R >>');
             pageIds.push(pN);
         });
         objects[pagesN - 1] = '<< /Type /Pages /Kids [' + pageIds.map(function (n) { return n + ' 0 R'; }).join(' ') +

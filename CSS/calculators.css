@@ -1087,3 +1087,37 @@
     gap: var(--space-xs);
     flex-shrink: 0;
 }
+
+/* ---------- Economizer boundary on the chart ---------- */
+
+.psy-region {
+    stroke: none;
+}
+
+.psy-econ-region {
+    fill: rgba(52, 211, 153, 0.12);
+}
+
+.psy-line-econ {
+    stroke: #34d399;
+    stroke-width: 1.3;
+    stroke-dasharray: 6 4;
+}
+
+.psy-line-limit {
+    stroke: #f59e0b;
+    stroke-width: 1.1;
+    stroke-dasharray: 2 3;
+}
+
+.psy-path-label {
+    font-size: 10px;
+    font-weight: 600;
+    paint-order: stroke;
+    stroke: var(--color-bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+.psy-label-econ { fill: #6ee7b7; }
+.psy-label-limit { fill: #fcd34d; }

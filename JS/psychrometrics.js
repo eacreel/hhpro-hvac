@@ -1180,9 +1180,40 @@
         res.enteringLabel = curLabel;
         var m = mixed ? mixed.massFlow : 0;
 
-        // Economizer
+        // Economizer: verdict plus the changeover boundary drawn on the chart.
+        // The shaded region is where OA would have to sit for free cooling:
+        // below the RA enthalpy line (or left of the RA dry bulb) and left
+        // of the high limit, under the saturation curve.
         if (a.econ.enabled && oa && ra) {
             res.econ = Psy.economizer(oa, ra, { mode: a.econ.mode, limitDb: a.econ.limitDb });
+            var lim = Number(a.econ.limitDb);
+            var hasLim = isFinite(lim);
+            var dbLo = -100, wTop = 0.06;
+            var region, boundary, dbCut;
+            if (a.econ.mode === 'enthalpy') {
+                var hRa = ra.h;
+                var dbZero = hRa / 0.240;
+                var wH = function (db) { return Math.max(0, Psy.humRatioFromEnthalpy(hRa, db)); };
+                boundary = [];
+                for (var dbb = dbLo; dbb <= dbZero + 1e-9; dbb += 2) boundary.push({ db: dbb, w: wH(dbb) });
+                boundary.push({ db: dbZero, w: 0 });
+                dbCut = hasLim ? Math.min(lim, dbZero) : dbZero;
+                region = [{ db: dbLo, w: 0 }, { db: dbCut, w: 0 }, { db: dbCut, w: wH(dbCut) }];
+                for (var dbr = dbCut - 2; dbr >= dbLo; dbr -= 2) region.push({ db: dbr, w: wH(dbr) });
+                region.push({ db: dbLo, w: wH(dbLo) });
+                paths.push({ pts: boundary, cls: 'psy-line-econ', under: true, label: 'RA enthalpy ' + fmtH(ra), labelAt: 'end', labelCls: 'psy-label-econ' });
+            } else {
+                boundary = [{ db: ra.db, w: 0 }, { db: ra.db, w: wTop }];
+                dbCut = hasLim ? Math.min(lim, ra.db) : ra.db;
+                region = [{ db: dbLo, w: 0 }, { db: dbCut, w: 0 }, { db: dbCut, w: wTop }, { db: dbLo, w: wTop }];
+                paths.push({ pts: boundary, cls: 'psy-line-econ', under: true, label: 'RA dry bulb ' + fmtU('temp', ra.db), labelAt: 'end', labelCls: 'psy-label-econ' });
+            }
+            paths.unshift({ pts: region, cls: 'psy-econ-region', fill: true, under: true });
+            if (hasLim) {
+                paths.push({ pts: [{ db: lim, w: 0 }, { db: lim, w: wTop }], cls: 'psy-line-limit', under: true,
+                             label: 'High limit ' + fmtU('temp', lim), labelAt: 'end', labelCls: 'psy-label-limit' });
+            }
+            res.econ.regionNote = 'Shaded chart area = free-cooling region';
         }
 
         // Sequential stages
@@ -1315,7 +1346,8 @@
                     ['Free cooling', ec.ok ? 'Available' : 'Not available'],
                     ['Dry bulb, RA − OA', fmtU('dtemp', ec.dbDiff)],
                     ['Enthalpy, RA − OA', fmt(sys() === 'SI' ? ec.hDiff * 2.326 : ec.hDiff, 2) + ' ' + U.unit('h', sys())],
-                    ['High limit', (ec.belowLimit ? 'OA below ' : 'OA above ') + fmtU('temp', a.econ.limitDb)]
+                    ['High limit', (ec.belowLimit ? 'OA below ' : 'OA above ') + fmtU('temp', a.econ.limitDb)],
+                    ['On the chart', 'Shaded area is where OA must fall for free cooling']
                 ] });
             }
 
