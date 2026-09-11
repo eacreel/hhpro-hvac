@@ -3,20 +3,24 @@
    ------------------------------------------------------------
    Two tools on one page, sharing a chart:
 
+     Mixed Air (default) - outdoor and/or return air with airflow
+       (CFM each, or total CFM and % OA) -> mixed-air state, an
+       optional coil leaving (supply) state and an optional hot gas
+       reheat leaving temperature. The chart shows OA, RA, MA on
+       the mixing line, the MA -> SA coil process and the SA -> RH
+       reheat; the results list the coil and reheat loads.
+
      State Points - enter any number of air states (dry bulb plus
        one of wet bulb / RH / dew point / humidity ratio / enthalpy)
        and read every property back; each point plots on the chart.
 
-     Mixed Air - outdoor + return air with airflow (CFM each, or
-       total CFM and % OA) -> mixed-air state, plus an optional
-       supply-air state. The chart shows OA, RA, MA on the mixing
-       line and the MA -> SA process line; the results list the
-       coil loads for that process.
-
    Altitude (default sea level) sets the barometric pressure for
-   both the numbers and the chart curves. Everything the user
-   types is kept in localStorage so the page reopens where they
-   left it.
+   both the numbers and the chart curves. Loads default to the
+   standard-air basis (0.075 lb/ft3, i.e. CFM x 4.5) that coil
+   selection software and the 1.08/4.5 rules of thumb use; the
+   "actual air" basis uses the specific volume at each stream.
+   Everything the user types is kept in localStorage so the page
+   reopens where they left it.
 
    Math lives in JS/psychro_core.js, drawing in JS/psychro_chart.js;
    this file is only the form, the results tables and the glue.
@@ -31,6 +35,12 @@
     var MAX_POINTS = 8;
     var POINT_COLOR_COUNT = 6; // .psy-point-c0 .. c5 in calculators.css
 
+    var RANGE_OPTIONS = [
+        { dbMin: 20,  label: '20 to 120 °F (standard)' },
+        { dbMin: 0,   label: '0 to 120 °F' },
+        { dbMin: -20, label: '-20 to 120 °F (cold climate)' }
+    ];
+
     // -----------------------------------------------------------------
     // Persistent state
     // -----------------------------------------------------------------
@@ -38,19 +48,25 @@
     function defaults() {
         return {
             altitude: 0,
-            mode: 'points',                                  // 'points' | 'mix'
+            mode: 'mix',                                     // 'mix' | 'points'
+            dbMin: 20,                                       // chart low end
             show: { rh: true, wb: true, h: true, v: false },
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
             mix: {
+                oaEnabled: true,
+                raEnabled: true,
                 oa: { db: 95, key: 'wb', value: 78 },
                 ra: { db: 75, key: 'rh', value: 50 },
                 flowMode: 'each',                            // 'each' | 'pct'
+                basis: 'std',                                // 'std' | 'actual'
                 oaCfm: 2000, raCfm: 8000,
                 totalCfm: 10000, oaPct: 20,
                 saEnabled: true,
-                sa: { db: 55, key: 'rh', value: 95 }
+                sa: { db: 55, key: 'rh', value: 95 },        // coil leaving air
+                rhEnabled: false,
+                rhDb: 65                                     // hot gas reheat leaving dry bulb
             }
         };
     }
@@ -95,7 +111,7 @@
     HHpro.Calculators.register({
         key: 'psychrometrics',
         name: 'Psychrometrics',
-        description: 'Air state properties, mixed air and supply air plotted on a psychrometric chart.',
+        description: 'Mixed air, coil leaving air and reheat plotted on a psychrometric chart, plus air state properties.',
         icon: 'thermometer',
         view: 'psychrometrics'
     });
@@ -132,7 +148,7 @@
     };
 
     // -----------------------------------------------------------------
-    // Top bar: title + altitude
+    // Top bar: title only (altitude lives at the top of the panel)
     // -----------------------------------------------------------------
 
     function buildTopBar() {
@@ -146,12 +162,15 @@
         title.textContent = 'Psychrometric Calculator';
         var sub = document.createElement('p');
         sub.className = 'psy-sub';
-        sub.textContent = 'Enter air states to read their properties and plot them. ' +
-            'Use Mixed Air for outdoor + return air mixing and the coil load to a supply condition.';
+        sub.textContent = 'Mixed Air takes outdoor and return air through the coil (and reheat) and reports the loads. ' +
+            'State Points reads the properties of any air condition. Everything plots on the chart.';
         intro.appendChild(title);
         intro.appendChild(sub);
         bar.appendChild(intro);
+        return bar;
+    }
 
+    function buildAltitudeStrip() {
         var alt = document.createElement('div');
         alt.className = 'psy-altitude';
 
@@ -179,23 +198,23 @@
         pressure.className = 'psy-pressure';
         alt.appendChild(pressure);
         refs.pressure = pressure;
-
-        bar.appendChild(alt);
-        return bar;
+        return alt;
     }
 
     // -----------------------------------------------------------------
-    // Left panel: tabs + form + results
+    // Left panel: altitude + tabs + form + results
     // -----------------------------------------------------------------
 
     function buildPanel() {
         var panel = document.createElement('aside');
         panel.className = 'psy-panel';
 
+        panel.appendChild(buildAltitudeStrip());
+
         var tabs = document.createElement('div');
         tabs.className = 'psy-tabs';
         tabs.setAttribute('role', 'tablist');
-        [['points', 'State Points'], ['mix', 'Mixed Air']].forEach(function (t) {
+        [['mix', 'Mixed Air'], ['points', 'State Points']].forEach(function (t) {
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'psy-tab' + (state.mode === t[0] ? ' is-active' : '');
@@ -239,10 +258,10 @@
         var form = refs.form;
         form.innerHTML = '';
         fieldErrorEls = {};
-        if (state.mode === 'mix') {
-            buildMixForm(form);
-        } else {
+        if (state.mode === 'points') {
             buildPointsForm(form);
+        } else {
+            buildMixForm(form);
         }
     }
 
@@ -358,8 +377,10 @@
     function buildMixForm(form) {
         var mix = state.mix;
 
-        form.appendChild(buildStreamSection('Outdoor air', 'OA', mix.oa, 'oa'));
-        form.appendChild(buildStreamSection('Return air', 'RA', mix.ra, 'ra'));
+        form.appendChild(buildStreamSection('Outdoor air', 'OA', mix.oa, 'oa', 'oaEnabled',
+            'Include'));
+        form.appendChild(buildStreamSection('Return air', 'RA', mix.ra, 'ra', 'raEnabled',
+            'Include'));
 
         // Airflow
         var flow = document.createElement('div');
@@ -369,36 +390,32 @@
         fh.textContent = 'Airflow';
         flow.appendChild(fh);
 
-        var modes = document.createElement('div');
-        modes.className = 'psy-radio-row';
-        [['each', 'CFM per stream'], ['pct', 'Total CFM + % outdoor air']].forEach(function (m) {
-            var lbl = document.createElement('label');
-            lbl.className = 'psy-radio';
-            var r = document.createElement('input');
-            r.type = 'radio';
-            r.name = 'psy-flow-mode';
-            r.value = m[0];
-            r.checked = mix.flowMode === m[0];
-            r.addEventListener('change', function () {
-                if (!r.checked) return;
-                mix.flowMode = m[0];
-                save();
-                renderFlowFields();
-                recompute();
-            });
-            var span = document.createElement('span');
-            span.textContent = m[1];
-            lbl.appendChild(r);
-            lbl.appendChild(span);
-            modes.appendChild(lbl);
-        });
-        flow.appendChild(modes);
-
         var flowFields = document.createElement('div');
-        flowFields.className = 'psy-fields';
+        flowFields.className = 'psy-flow-fields';
         flow.appendChild(flowFields);
         refs.flowFields = flowFields;
         renderFlowFields();
+
+        var basisRow = document.createElement('div');
+        basisRow.className = 'psy-radio-row';
+        var basisLbl = document.createElement('span');
+        basisLbl.className = 'psy-inline-label';
+        basisLbl.textContent = 'Load basis:';
+        basisRow.appendChild(basisLbl);
+        [['std', 'Standard air (0.075 lb/ft³)'], ['actual', 'Actual air at each stream']].forEach(function (m) {
+            basisRow.appendChild(radio('psy-basis', m[0], m[1], mix.basis === m[0], function () {
+                mix.basis = m[0];
+                save();
+                recompute();
+            }));
+        });
+        flow.appendChild(basisRow);
+
+        var basisHint = document.createElement('p');
+        basisHint.className = 'psy-hint';
+        basisHint.textContent = 'Standard air is the CFM × 4.5 convention used by coil selection ' +
+            'software and the 1.08 / 4.5 rules of thumb, independent of altitude.';
+        flow.appendChild(basisHint);
 
         var flowErr = document.createElement('p');
         flowErr.className = 'psy-field-error';
@@ -406,45 +423,71 @@
         fieldErrorEls.flow = flowErr;
         form.appendChild(flow);
 
-        // Supply air
+        // Coil leaving air (supply)
         var sa = document.createElement('div');
-        sa.className = 'psy-section';
-        var sh = document.createElement('div');
-        sh.className = 'psy-section-head';
-        var st = document.createElement('h2');
-        st.className = 'psy-section-title';
-        st.textContent = 'Supply air';
-        sh.appendChild(st);
-
-        var toggle = document.createElement('label');
-        toggle.className = 'psy-check';
-        var cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = !!mix.saEnabled;
-        var cbText = document.createElement('span');
-        cbText.textContent = 'Include';
-        toggle.appendChild(cb);
-        toggle.appendChild(cbText);
-        sh.appendChild(toggle);
-        sa.appendChild(sh);
-
+        sa.className = 'psy-section psy-stream-sa';
+        sa.appendChild(buildSectionHead('Coil leaving air (SA)', true, mix.saEnabled, function (on) {
+            mix.saEnabled = on;
+            saFields.classList.toggle('is-disabled', !on);
+            setFieldsDisabled(saFields, !on);
+            save();
+            recompute();
+        }));
         var saHint = document.createElement('p');
         saHint.className = 'psy-hint';
         saHint.textContent = 'Desired leaving-coil condition. Plots the MA → SA process and reports the coil load.';
         sa.appendChild(saHint);
-
         var saFields = buildStateFields(mix.sa, 'sa');
         saFields.classList.toggle('is-disabled', !mix.saEnabled);
+        setFieldsDisabled(saFields, !mix.saEnabled);
         sa.appendChild(saFields);
-        cb.addEventListener('change', function () {
-            mix.saEnabled = cb.checked;
-            saFields.classList.toggle('is-disabled', !mix.saEnabled);
-            setFieldsDisabled(saFields, !mix.saEnabled);
+        form.appendChild(sa);
+
+        // Hot gas reheat
+        var rh = document.createElement('div');
+        rh.className = 'psy-section psy-stream-rh';
+        rh.appendChild(buildSectionHead('Hot gas reheat (RH)', true, mix.rhEnabled, function (on) {
+            mix.rhEnabled = on;
+            rhFields.classList.toggle('is-disabled', !on);
+            setFieldsDisabled(rhFields, !on);
             save();
             recompute();
-        });
-        setFieldsDisabled(saFields, !mix.saEnabled);
-        form.appendChild(sa);
+        }));
+        var rhHint = document.createElement('p');
+        rhHint.className = 'psy-hint';
+        rhHint.textContent = 'Sensible reheat after the coil: humidity ratio stays at the coil leaving value, ' +
+            'only dry bulb rises. Plots SA → RH.';
+        rh.appendChild(rhHint);
+        var rhFields = document.createElement('div');
+        rhFields.className = 'psy-state-fields';
+        var rhGrid = document.createElement('div');
+        rhGrid.className = 'psy-fields';
+        rhGrid.appendChild(numberField('Leaving dry bulb', '°F', mix.rhDb, { step: 0.5 }, function (v) { mix.rhDb = v; }));
+        rhFields.appendChild(rhGrid);
+        var rhErr = document.createElement('p');
+        rhErr.className = 'psy-field-error';
+        rhFields.appendChild(rhErr);
+        fieldErrorEls.rh = rhErr;
+        rhFields.classList.toggle('is-disabled', !mix.rhEnabled);
+        setFieldsDisabled(rhFields, !mix.rhEnabled);
+        rh.appendChild(rhFields);
+        form.appendChild(rh);
+    }
+
+    function radio(name, value, labelText, checked, onChange) {
+        var lbl = document.createElement('label');
+        lbl.className = 'psy-radio';
+        var r = document.createElement('input');
+        r.type = 'radio';
+        r.name = name;
+        r.value = value;
+        r.checked = checked;
+        r.addEventListener('change', function () { if (r.checked) onChange(); });
+        var span = document.createElement('span');
+        span.textContent = labelText;
+        lbl.appendChild(r);
+        lbl.appendChild(span);
+        return lbl;
     }
 
     function setFieldsDisabled(container, disabled) {
@@ -453,9 +496,8 @@
         });
     }
 
-    function buildStreamSection(title, tag, obj, id) {
-        var sec = document.createElement('div');
-        sec.className = 'psy-section psy-stream-' + id;
+    // Section heading with the colour swatch and an optional Include toggle.
+    function buildSectionHead(titleText, withToggle, checked, onToggle) {
         var head = document.createElement('div');
         head.className = 'psy-section-head';
         var swatch = document.createElement('span');
@@ -463,24 +505,85 @@
         head.appendChild(swatch);
         var h = document.createElement('h2');
         h.className = 'psy-section-title';
-        h.textContent = title + ' (' + tag + ')';
+        h.textContent = titleText;
         head.appendChild(h);
-        sec.appendChild(head);
-        sec.appendChild(buildStateFields(obj, id));
+        if (withToggle) {
+            var toggle = document.createElement('label');
+            toggle.className = 'psy-check';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = !!checked;
+            cb.addEventListener('change', function () { onToggle(cb.checked); });
+            var cbText = document.createElement('span');
+            cbText.textContent = 'Include';
+            toggle.appendChild(cb);
+            toggle.appendChild(cbText);
+            head.appendChild(toggle);
+        }
+        return head;
+    }
+
+    function buildStreamSection(title, tag, obj, id, enabledKey) {
+        var mix = state.mix;
+        var sec = document.createElement('div');
+        sec.className = 'psy-section psy-stream-' + id;
+        var fields = buildStateFields(obj, id);
+        sec.appendChild(buildSectionHead(title + ' (' + tag + ')', true, mix[enabledKey], function (on) {
+            mix[enabledKey] = on;
+            fields.classList.toggle('is-disabled', !on);
+            setFieldsDisabled(fields, !on);
+            save();
+            renderFlowFields();
+            recompute();
+        }));
+        fields.classList.toggle('is-disabled', !mix[enabledKey]);
+        setFieldsDisabled(fields, !mix[enabledKey]);
+        sec.appendChild(fields);
         return sec;
     }
 
+    // Airflow inputs depend on which streams are included: both streams
+    // get the CFM-each / total+%OA choice, a single stream just needs
+    // its own CFM.
     function renderFlowFields() {
         var mix = state.mix;
         var wrap = refs.flowFields;
+        if (!wrap) return;
         wrap.innerHTML = '';
-        if (mix.flowMode === 'pct') {
-            wrap.appendChild(numberField('Total airflow', 'CFM', mix.totalCfm, { min: 0, step: 50 }, function (v) { mix.totalCfm = v; }));
-            wrap.appendChild(numberField('Outdoor air', '%', mix.oaPct, { min: 0, max: 100, step: 1 }, function (v) { mix.oaPct = v; }));
+        var both = mix.oaEnabled && mix.raEnabled;
+        var fields = document.createElement('div');
+        fields.className = 'psy-fields';
+
+        if (both) {
+            var modes = document.createElement('div');
+            modes.className = 'psy-radio-row';
+            [['each', 'CFM per stream'], ['pct', 'Total CFM + % outdoor air']].forEach(function (m) {
+                modes.appendChild(radio('psy-flow-mode', m[0], m[1], mix.flowMode === m[0], function () {
+                    mix.flowMode = m[0];
+                    save();
+                    renderFlowFields();
+                    recompute();
+                }));
+            });
+            wrap.appendChild(modes);
+            if (mix.flowMode === 'pct') {
+                fields.appendChild(numberField('Total airflow', 'CFM', mix.totalCfm, { min: 0, step: 50 }, function (v) { mix.totalCfm = v; }));
+                fields.appendChild(numberField('Outdoor air', '%', mix.oaPct, { min: 0, max: 100, step: 1 }, function (v) { mix.oaPct = v; }));
+            } else {
+                fields.appendChild(numberField('Outdoor air', 'CFM', mix.oaCfm, { min: 0, step: 50 }, function (v) { mix.oaCfm = v; }));
+                fields.appendChild(numberField('Return air', 'CFM', mix.raCfm, { min: 0, step: 50 }, function (v) { mix.raCfm = v; }));
+            }
+        } else if (mix.oaEnabled) {
+            fields.appendChild(numberField('Outdoor air', 'CFM', mix.oaCfm, { min: 0, step: 50 }, function (v) { mix.oaCfm = v; }));
+        } else if (mix.raEnabled) {
+            fields.appendChild(numberField('Return air', 'CFM', mix.raCfm, { min: 0, step: 50 }, function (v) { mix.raCfm = v; }));
         } else {
-            wrap.appendChild(numberField('Outdoor air', 'CFM', mix.oaCfm, { min: 0, step: 50 }, function (v) { mix.oaCfm = v; }));
-            wrap.appendChild(numberField('Return air', 'CFM', mix.raCfm, { min: 0, step: 50 }, function (v) { mix.raCfm = v; }));
+            var none = document.createElement('p');
+            none.className = 'psy-hint';
+            none.textContent = 'Include at least one air stream above.';
+            fields.appendChild(none);
         }
+        wrap.appendChild(fields);
     }
 
     // ---------- Shared field builders ----------
@@ -623,12 +726,37 @@
             lbl.appendChild(span);
             toolbar.appendChild(lbl);
         });
+
+        // Chart temperature window
+        var rangeWrap = document.createElement('label');
+        rangeWrap.className = 'psy-field psy-range';
+        var rangeLbl = document.createElement('span');
+        rangeLbl.className = 'psy-toolbar-label';
+        rangeLbl.textContent = 'Range:';
+        rangeWrap.appendChild(rangeLbl);
+        var rangeSel = document.createElement('select');
+        rangeSel.className = 'filter-select psy-select psy-range-select';
+        RANGE_OPTIONS.forEach(function (o) {
+            var opt = document.createElement('option');
+            opt.value = String(o.dbMin);
+            opt.textContent = o.label;
+            if (o.dbMin === state.dbMin) opt.selected = true;
+            rangeSel.appendChild(opt);
+        });
+        rangeSel.addEventListener('change', function () {
+            state.dbMin = toNum(rangeSel.value, 20);
+            save();
+            recompute();
+        });
+        rangeWrap.appendChild(rangeSel);
+        toolbar.appendChild(rangeWrap);
+
         area.appendChild(toolbar);
 
         var wrap = document.createElement('div');
         wrap.className = 'psy-chart-wrap';
         area.appendChild(wrap);
-        refs.chart = HHpro.PsychroChart.create(wrap);
+        refs.chart = HHpro.PsychroChart.create(wrap, { dbMin: state.dbMin });
 
         var readout = document.createElement('div');
         readout.className = 'psy-readout';
@@ -688,10 +816,11 @@
         // Reset all field errors; the branches below fill in any that apply.
         Object.keys(fieldErrorEls).forEach(function (k) { fieldErrorEls[k].textContent = ''; });
 
-        var result = state.mode === 'mix' ? computeMix(P) : computePoints(P);
+        var result = state.mode === 'points' ? computePoints(P) : computeMix(P);
 
         refs.chart.update({
             pressure: P,
+            dbMin: state.dbMin,
             show: state.show,
             points: result.points,
             lines: result.lines
@@ -728,19 +857,28 @@
     function computeMix(P) {
         var Psy = HHpro.Psychro;
         var mix = state.mix;
-        var oa = resolveState(mix.oa, 'oa', P);
-        var ra = resolveState(mix.ra, 'ra', P);
+        var both = mix.oaEnabled && mix.raEnabled;
+
+        var oa = mix.oaEnabled ? resolveState(mix.oa, 'oa', P) : null;
+        var ra = mix.raEnabled ? resolveState(mix.ra, 'ra', P) : null;
         var sa = mix.saEnabled ? resolveState(mix.sa, 'sa', P) : null;
 
-        var oaCfm, raCfm;
-        if (mix.flowMode === 'pct') {
-            var total = toNum(mix.totalCfm, null), pct = toNum(mix.oaPct, null);
-            if (total !== null && pct !== null) {
-                oaCfm = total * pct / 100;
-                raCfm = total - oaCfm;
+        // Airflow per included stream
+        var oaCfm = null, raCfm = null;
+        if (both) {
+            if (mix.flowMode === 'pct') {
+                var total = toNum(mix.totalCfm, null), pct = toNum(mix.oaPct, null);
+                if (total !== null && pct !== null) {
+                    oaCfm = total * pct / 100;
+                    raCfm = total - oaCfm;
+                }
+            } else {
+                oaCfm = toNum(mix.oaCfm, null);
+                raCfm = toNum(mix.raCfm, null);
             }
-        } else {
+        } else if (mix.oaEnabled) {
             oaCfm = toNum(mix.oaCfm, null);
+        } else if (mix.raEnabled) {
             raCfm = toNum(mix.raCfm, null);
         }
 
@@ -748,21 +886,42 @@
         if (oa) { points.push({ id: 'oa', label: 'OA', state: oa, cls: 'psy-point-oa', title: 'Outdoor air' }); columns.push({ label: 'OA', state: oa, cls: 'psy-point-oa' }); }
         if (ra) { points.push({ id: 'ra', label: 'RA', state: ra, cls: 'psy-point-ra', title: 'Return air' }); columns.push({ label: 'RA', state: ra, cls: 'psy-point-ra' }); }
 
-        var mixed = null, coil = null, flowError = null;
-        if (oa && ra) {
-            if (oaCfm === null || raCfm === null || oaCfm === undefined || raCfm === undefined) {
-                flowError = 'Enter the airflow to compute the mixed condition.';
-            } else if (oaCfm < 0 || raCfm < 0) {
+        // Entering-coil state: the mixture when both streams are in, or
+        // the single included stream.
+        var streams = [];
+        if (mix.oaEnabled && oa) streams.push({ id: 'oa', label: 'OA', state: oa, cfm: oaCfm });
+        if (mix.raEnabled && ra) streams.push({ id: 'ra', label: 'RA', state: ra, cfm: raCfm });
+        var enabledCount = (mix.oaEnabled ? 1 : 0) + (mix.raEnabled ? 1 : 0);
+
+        var mixed = null, entering = null, enteringId = null, enteringLabel = null, flowError = null;
+        if (enabledCount === 0) {
+            flowError = 'Include at least one air stream.';
+        } else if (streams.length === enabledCount) {
+            var missing = streams.some(function (s) { return s.cfm === null || s.cfm === undefined; });
+            var negative = streams.some(function (s) { return s.cfm < 0; });
+            if (missing) {
+                flowError = 'Enter the airflow to compute the entering condition.';
+            } else if (negative) {
                 flowError = 'Airflow cannot be negative.';
             } else {
                 try {
-                    mixed = Psy.mix([{ state: oa, cfm: oaCfm }, { state: ra, cfm: raCfm }], P);
-                    mixed.oaCfm = oaCfm;
-                    mixed.raCfm = raCfm;
-                    mixed.oaPctVolume = mixed.cfm > 0 ? oaCfm / mixed.cfm * 100 : 0;
-                    points.push({ id: 'ma', label: 'MA', state: mixed.state, cls: 'psy-point-ma', title: 'Mixed air' });
-                    columns.push({ label: 'MA', state: mixed.state, cls: 'psy-point-ma' });
-                    lines.push({ from: 'oa', to: 'ra', cls: 'psy-line-mix', arrow: false });
+                    mixed = Psy.mix(streams.map(function (s) { return { state: s.state, cfm: s.cfm }; }), P, mix.basis);
+                    mixed.oaCfm = mix.oaEnabled ? oaCfm : 0;
+                    mixed.single = streams.length === 1;
+                    mixed.oaPctVolume = mixed.cfm > 0 ? mixed.oaCfm / mixed.cfm * 100 : 0;
+                    mixed.oaPctMass = mix.oaEnabled ? mixed.fractions[0] * 100 : 0;
+                    if (mixed.single) {
+                        entering = streams[0].state;
+                        enteringId = streams[0].id;
+                        enteringLabel = streams[0].label;
+                    } else {
+                        entering = mixed.state;
+                        enteringId = 'ma';
+                        enteringLabel = 'MA';
+                        points.push({ id: 'ma', label: 'MA', state: mixed.state, cls: 'psy-point-ma', title: 'Mixed air' });
+                        columns.push({ label: 'MA', state: mixed.state, cls: 'psy-point-ma' });
+                        lines.push({ from: 'oa', to: 'ra', cls: 'psy-line-mix', arrow: false });
+                    }
                 } catch (e) {
                     flowError = e.message;
                 }
@@ -770,16 +929,42 @@
         }
         if (flowError && fieldErrorEls.flow) fieldErrorEls.flow.textContent = flowError;
 
+        var coil = null;
         if (sa) {
-            points.push({ id: 'sa', label: 'SA', state: sa, cls: 'psy-point-sa', title: 'Supply air' });
+            points.push({ id: 'sa', label: 'SA', state: sa, cls: 'psy-point-sa', title: 'Coil leaving air' });
             columns.push({ label: 'SA', state: sa, cls: 'psy-point-sa' });
-            if (mixed) {
-                lines.push({ from: 'ma', to: 'sa', cls: 'psy-line-process', arrow: true });
-                coil = Psy.process(mixed.state, sa, mixed.massFlow);
+            if (entering) {
+                lines.push({ from: enteringId, to: 'sa', cls: 'psy-line-process', arrow: true });
+                coil = Psy.process(entering, sa, mixed.massFlow);
             }
         }
 
-        return { kind: 'mix', points: points, lines: lines, columns: columns, mixed: mixed, coil: coil, sa: sa };
+        // Hot gas reheat: sensible-only rise from the coil leaving state.
+        var rhState = null, reheat = null, net = null;
+        if (mix.rhEnabled) {
+            if (!sa) {
+                if (fieldErrorEls.rh) fieldErrorEls.rh.textContent = 'Reheat needs the coil leaving air above.';
+            } else {
+                try {
+                    rhState = Psy.reheat(sa, mix.rhDb, P);
+                    points.push({ id: 'rh', label: 'RH', state: rhState, cls: 'psy-point-rh', title: 'After hot gas reheat' });
+                    columns.push({ label: 'RH', state: rhState, cls: 'psy-point-rh' });
+                    lines.push({ from: 'sa', to: 'rh', cls: 'psy-line-reheat', arrow: true });
+                    if (entering) {
+                        reheat = Psy.process(sa, rhState, mixed.massFlow);      // negative = heat added
+                        net = Psy.process(entering, rhState, mixed.massFlow);   // entering -> final supply
+                    }
+                } catch (e) {
+                    if (fieldErrorEls.rh) fieldErrorEls.rh.textContent = e.message;
+                }
+            }
+        }
+
+        return {
+            kind: 'mix', points: points, lines: lines, columns: columns,
+            mixed: mixed, entering: entering, enteringLabel: enteringLabel,
+            coil: coil, sa: sa, reheat: reheat, net: net, rhState: rhState
+        };
     }
 
     // ---------- Results ----------
@@ -788,51 +973,56 @@
         { label: 'Dry bulb',        unit: '°F',      get: function (s) { return fmt(s.db, 1); } },
         { label: 'Wet bulb',        unit: '°F',      get: function (s) { return fmt(s.wb, 1); } },
         { label: 'Dew point',       unit: '°F',      get: function (s) { return fmt(s.dp, 1); } },
-        { label: 'Relative humidity', unit: '%',          get: function (s) { return fmt(s.rh * 100, 1); } },
+        { label: 'Rel. humidity',   unit: '%',            get: function (s) { return fmt(s.rh * 100, 1); } },
         { label: 'Humidity ratio',  unit: 'gr/lb',        get: function (s) { return fmt(s.grains, 1); } },
         { label: 'Humidity ratio',  unit: 'lb/lb',        get: function (s) { return s.w.toFixed(5); } },
         { label: 'Enthalpy',        unit: 'Btu/lb',       get: function (s) { return fmt(s.h, 2); } },
-        { label: 'Specific volume', unit: 'ft³/lb',  get: function (s) { return fmt(s.v, 3); } },
+        { label: 'Sp. volume',      unit: 'ft³/lb',  get: function (s) { return fmt(s.v, 3); } },
         { label: 'Density',         unit: 'lb/ft³',  get: function (s) { return fmt(s.density, 4); } },
         { label: 'Vapor pressure',  unit: 'psia',         get: function (s) { return fmt(s.pv, 4); } }
     ];
+
+    function sectionTitle(text) {
+        var h = document.createElement('h2');
+        h.className = 'psy-section-title';
+        h.textContent = text;
+        return h;
+    }
+
+    function hint(text) {
+        var p = document.createElement('p');
+        p.className = 'psy-hint';
+        p.textContent = text;
+        return p;
+    }
 
     function renderResults(result, P) {
         var box = refs.results;
         box.innerHTML = '';
 
         if (!result.columns.length) {
-            var empty = document.createElement('p');
-            empty.className = 'psy-hint';
-            empty.textContent = 'Enter a valid air state to see its properties.';
-            box.appendChild(empty);
+            box.appendChild(hint('Enter a valid air state to see its properties.'));
             return;
         }
 
-        var hdr = document.createElement('h2');
-        hdr.className = 'psy-section-title';
-        hdr.textContent = result.kind === 'mix' ? 'Air properties' : 'Properties';
-
         if (result.kind !== 'mix') {
-            box.appendChild(hdr);
+            box.appendChild(sectionTitle('Properties'));
             box.appendChild(buildPropTable(result.columns));
             return;
         }
 
-        // Mixed Air: the mixing summary and coil load are the point of
-        // the tab, so they lead; the full property table follows.
-        if (result.mixed) {
-            var m = result.mixed;
-            var mh = document.createElement('h2');
-            mh.className = 'psy-section-title';
-            mh.textContent = 'Mixing';
-            box.appendChild(mh);
-            var rows = [
-                ['Total airflow', fmt(m.cfm, 0) + ' CFM'],
-                ['Outdoor air (by volume)', fmt(m.oaPctVolume, 1) + ' %'],
-                ['Outdoor air (by mass)', fmt(m.fractions[0] * 100, 1) + ' %'],
-                ['Dry-air mass flow', fmt(m.massFlow, 0) + ' lb/hr']
-            ];
+        // Mixed Air: airflow/mixing summary and the loads lead; the full
+        // property table follows.
+        var m = result.mixed;
+        if (m) {
+            box.appendChild(sectionTitle(m.single ? 'Airflow' : 'Mixing'));
+            var rows = [['Total airflow', fmt(m.cfm, 0) + ' CFM']];
+            if (!m.single) {
+                rows.push(['Outdoor air (by volume)', fmt(m.oaPctVolume, 1) + ' %']);
+                rows.push(['Outdoor air (by mass)', fmt(m.oaPctMass, 1) + ' %']);
+            }
+            rows.push(['Dry-air mass flow', fmt(m.massFlow, 0) + ' lb/hr' +
+                (state.mix.basis === 'actual' ? ' (actual air)' : ' (standard air)')]);
             if (m.state.fogged) rows.push(['Note', 'Mixture lands in the fog region; saturated state shown.']);
             box.appendChild(buildKvList(rows));
         }
@@ -840,10 +1030,8 @@
         if (result.coil) {
             var c = result.coil;
             var cooling = c.total >= 0;
-            var ch = document.createElement('h2');
-            ch.className = 'psy-section-title';
-            ch.textContent = (cooling ? 'Cooling coil load' : 'Heating load') + ' (MA → SA)';
-            box.appendChild(ch);
+            box.appendChild(sectionTitle((cooling ? 'Cooling coil load' : 'Heating load') +
+                ' (' + result.enteringLabel + ' → SA)'));
             var sign = cooling ? 1 : -1;
             var crows = [
                 ['Total', fmt(sign * c.total, 0) + ' Btu/h' + (cooling ? '  (' + fmt(c.tons, 2) + ' tons)' : '')],
@@ -855,21 +1043,28 @@
             crows.push([lbhr >= 0 ? 'Moisture removed' : 'Moisture added',
                 fmt(Math.abs(lbhr), 1) + ' lb/hr  (' + fmt(Math.abs(lbhr) / 8.345, 2) + ' gal/hr)']);
             box.appendChild(buildKvList(crows));
-
-            var note = document.createElement('p');
-            note.className = 'psy-hint';
-            note.textContent = cooling
-                ? 'Loads are what the coil removes from the air stream at the mixed-air mass flow.'
-                : 'Supply air is warmer than mixed air, so the process adds heat to the air stream.';
-            box.appendChild(note);
-        } else if (result.sa && !result.mixed) {
-            var n2 = document.createElement('p');
-            n2.className = 'psy-hint';
-            n2.textContent = 'Coil load needs both streams and their airflow.';
-            box.appendChild(n2);
+            if (!cooling) {
+                box.appendChild(hint('Coil leaving air is warmer than the entering air, so the process adds heat to the air stream.'));
+            }
+        } else if (result.sa && !result.entering) {
+            box.appendChild(hint('Coil load needs an included air stream with its airflow.'));
         }
 
-        box.appendChild(hdr);
+        if (result.reheat) {
+            var r = result.reheat, n = result.net;
+            box.appendChild(sectionTitle('Hot gas reheat (SA → RH)'));
+            var rrows = [
+                ['Reheat added (sensible)', fmt(-r.total, 0) + ' Btu/h']
+            ];
+            if (n) {
+                rrows.push(['Net total (' + result.enteringLabel + ' → RH)', fmt(n.total, 0) + ' Btu/h' +
+                    (n.total >= 0 ? '  (' + fmt(n.tons, 2) + ' tons)' : '')]);
+                rrows.push(['Net sensible (' + result.enteringLabel + ' → RH)', fmt(n.sensible, 0) + ' Btu/h']);
+            }
+            box.appendChild(buildKvList(rrows));
+        }
+
+        box.appendChild(sectionTitle('Air properties'));
         box.appendChild(buildPropTable(result.columns));
     }
 
@@ -877,7 +1072,7 @@
         var wrap = document.createElement('div');
         wrap.className = 'psy-table-wrap';
         var table = document.createElement('table');
-        table.className = 'psy-table';
+        table.className = 'psy-table psy-table-cols-' + columns.length;
 
         var thead = document.createElement('thead');
         var hr = document.createElement('tr');

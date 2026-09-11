@@ -35,6 +35,7 @@
 
     var GRAINS_PER_LB = 7000;
     var INHG_PER_PSI = 2.036021;
+    var STD_AIR_DENSITY = 0.075; // lb/ft3 - "standard air" behind the 4.5 x CFM and 1.08 x CFM factors
     var R_DA_IP = 0.370486; // ft3 psi / (lb R) - dry air gas constant, matches PsychroLib
 
     // Second-property choices for entering a state point. `key` is
@@ -124,10 +125,16 @@
         return fromDbW(db, w, P);
     }
 
-    // Mass flow of dry air through a stream, lb/hr, from its volumetric
-    // flow at the stream's own state (CFM is measured at that condition).
-    function massFlow(st, cfm) {
-        return (Number(cfm) * 60) / st.v;
+    // Mass flow of dry air through a stream, lb/hr.
+    //   basis 'std'    - standard air, 0.075 lb/ft3 (CFM x 4.5), the
+    //                    convention behind published coil loads; altitude
+    //                    does not change it.
+    //   basis 'actual' - CFM measured at the stream's own state, so the
+    //                    specific volume (and altitude) counts.
+    function massFlow(st, cfm, basis) {
+        var q = Number(cfm) * 60;
+        if (basis === 'actual') return q / st.v;
+        return q * STD_AIR_DENSITY;
     }
 
     /**
@@ -135,10 +142,10 @@
      * @param {Array<{state:object, cfm:number}>} streams
      * @returns {{state, massFlow, cfm, fractions}}  fractions are mass-based
      */
-    function mix(streams, P) {
+    function mix(streams, P, basis) {
         var mTot = 0, wSum = 0, hSum = 0, cfmTot = 0;
         var masses = streams.map(function (s) {
-            var m = massFlow(s.state, s.cfm);
+            var m = massFlow(s.state, s.cfm, basis);
             if (!isFinite(m) || m < 0) m = 0;
             mTot += m;
             wSum += m * s.state.w;
@@ -189,6 +196,15 @@
             moistureLbHr: m * (from.w - to.w),
             massFlow: m
         };
+    }
+
+    // Sensible-only reheat (hot gas reheat, electric, etc.): humidity
+    // ratio is held at the entering value and only dry bulb rises.
+    function reheat(entering, dbOut, P) {
+        dbOut = Number(dbOut);
+        if (!isFinite(dbOut)) throw new Error('Enter the leaving dry bulb');
+        if (dbOut < entering.db) throw new Error('Reheat leaving temperature must be at or above the coil leaving temperature');
+        return fromDbW(dbOut, entering.w, P);
     }
 
     // ----- Curve helpers for the chart -----
@@ -244,6 +260,8 @@
     HHpro.Psychro = {
         INPUT_KEYS: INPUT_KEYS,
         GRAINS_PER_LB: GRAINS_PER_LB,
+        STD_AIR_DENSITY: STD_AIR_DENSITY,
+        reheat: reheat,
         pressureFromAltitude: pressureFromAltitude,
         inHgFromPsi: function (psi) { return psi * INHG_PER_PSI; },
         state: state,

@@ -247,8 +247,9 @@
                     }
                     gCurves.appendChild(el('path', { d: pathFrom(wpts) }, 'psy-wb'));
                     // Label a little inside the plot, riding the line.
+                    // Skip labels that would sit on the x-axis (cold, near-dry lines).
                     var ldb = wb + 4, lw = Psy.humRatioFromWb(ldb, wb, P);
-                    if (lw !== null && ldb < dbMax && wb % 10 === 0) {
+                    if (lw !== null && ldb < dbMax && wb % 10 === 0 && yOf(lw) < mT + ph - 14) {
                         gLabels.appendChild(text(xOf(ldb) + 2, yOf(lw) - 3, String(wb), 'psy-label psy-label-wb', 'start'));
                     }
                 }
@@ -267,7 +268,7 @@
                     }
                     hpts.push([xOf(Math.min(dbE, dbMax)), yOf(Math.max(0, Psy.humRatioFromEnthalpy(h, Math.min(dbE, dbMax))))]);
                     gCurves.appendChild(el('path', { d: pathFrom(hpts) }, 'psy-h'));
-                    if (dbS >= dbMin && dbS <= satTopDb && h % 10 === 0) {
+                    if (dbS >= dbMin && dbS <= satTopDb && h % 10 === 0 && yOf(Psy.satHumRatio(dbS, P)) < mT + ph - 14) {
                         var wS = Psy.satHumRatio(dbS, P);
                         gLabels.appendChild(text(xOf(dbS) - 8, yOf(wS) - 6, String(h), 'psy-label psy-label-h', 'end'));
                     }
@@ -278,7 +279,7 @@
 
             // --- Specific volume lines every 0.5 ft3/lb ---
             if (show.v) {
-                for (var v = 12.0; v <= 16.0; v += 0.5) {
+                for (var v = 11.0; v <= 16.0; v += 0.5) {
                     var db0 = v * P / 0.370486 - 459.67; // W = 0 crossing
                     var dbSv = Psy.satDbForVolume(v, P);
                     if (dbSv < dbMin || db0 > dbMax) continue;
@@ -393,9 +394,13 @@
                 data = data || {};
                 if (data.show) current.show = data.show;
                 if (data.pressure !== undefined) current.pressure = data.pressure;
+                // Dry-bulb window is adjustable (PsychroLib is good down to
+                // -148 F; the low end just needs room for cold-climate OA).
+                if (isFinite(data.dbMin) && data.dbMin < dbMax - 20) dbMin = Number(data.dbMin);
+                if (isFinite(data.dbMax) && data.dbMax > dbMin + 20) dbMax = Number(data.dbMax);
                 current.points = data.points || [];
                 current.lines = data.lines || [];
-                var key = [current.pressure, current.show.rh, current.show.wb, current.show.h, current.show.v].join('|');
+                var key = [current.pressure, dbMin, dbMax, current.show.rh, current.show.wb, current.show.h, current.show.v].join('|');
                 if (key !== lastStaticKey && current.pressure !== null) {
                     drawStatic(current.pressure);
                     lastStaticKey = key;
