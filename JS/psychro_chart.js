@@ -17,6 +17,12 @@
          paths:  [{ pts: [{ db, w }, ...], cls: 'psy-line-room' }]
      });
      chart.onHover(function (stateOrNull) { ... });
+     chart.onViewportChange(function (vp) { ... });   // wheel zoom / drag pan
+
+   Mouse: the wheel zooms about the pointer, click-and-drag pans.
+   Both report the new viewport through onViewportChange; the page
+   stores it and calls update() again, so the chart itself stays
+   stateless about where the view "should" be.
 
    Viewport helpers (pure functions, used by the page for its
    zoom / pan / fit buttons):
@@ -106,6 +112,14 @@
         var cx = (vp.dbMin + vp.dbMax) / 2, cy = (vp.wMin + vp.wMax) / 2;
         var hx = (vp.dbMax - vp.dbMin) / 2 * factor, hy = (vp.wMax - vp.wMin) / 2 * factor;
         return clampViewport({ dbMin: cx - hx, dbMax: cx + hx, wMin: cy - hy, wMax: cy + hy });
+    }
+
+    // Zoom keeping the state under the pointer (db, w) where it is.
+    function zoomAt(vp, factor, db, w) {
+        return clampViewport({
+            dbMin: db - (db - vp.dbMin) * factor, dbMax: db + (vp.dbMax - db) * factor,
+            wMin: w - (w - vp.wMin) * factor,     wMax: w + (vp.wMax - w) * factor
+        });
     }
 
     function pan(vp, fx, fy) {
@@ -215,8 +229,9 @@
         var current = {
             pressure: null,
             show: { rh: true, wb: true, h: true, v: false },
-            points: [], lines: [], paths: [], callout: null
+            points: [], lines: [], paths: [], callouts: []
         };
+        var viewportCb = null;
 
         function clear(g) { while (g.firstChild) g.removeChild(g.firstChild); }
 
@@ -509,36 +524,42 @@
         // -------- callout: explainer box in the top-left of the plot --------
         // callout = { title, rows: [{ swatch: 'ok'|'no'|'econ'|'limit'|'region'|null, text }] }
 
+        // Compact boxes stacked down the top-left of the plot. Each box:
+        // { title, rows: [{ swatch, text }] } with swatch one of
+        // ok | no | econ | limit | region | room | req | null.
         function drawCallout() {
             clear(gCallout);
-            var c = current.callout;
-            if (!c || !c.rows || !c.rows.length) return;
-            var x = mL + 8, y = mT + 46;
-            var lineH = 15, pad = 8, swatchW = 22;
-            var charW = 5.6; // approx px per character at 10.5px
-            var maxLen = (c.title || '').length * 1.15;
-            c.rows.forEach(function (r) { maxLen = Math.max(maxLen, r.text.length); });
-            var w = Math.min(pw * 0.6, Math.max(180, maxLen * charW + swatchW + pad * 2 + 6));
-            var h = pad * 2 + (c.title ? lineH + 2 : 0) + c.rows.length * lineH;
-            gCallout.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 4 }, 'psy-callout-bg'));
-            var cy = y + pad + 11;
-            if (c.title) {
-                gCallout.appendChild(text(x + pad, cy, c.title, 'psy-callout-title', 'start'));
-                cy += lineH + 2;
-            }
-            c.rows.forEach(function (r) {
-                var sx = x + pad, sy = cy - 4;
-                if (r.swatch === 'econ') {
-                    gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy }, 'psy-line psy-line-econ psy-callout-swatch'));
-                } else if (r.swatch === 'limit') {
-                    gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy }, 'psy-line psy-line-limit psy-callout-swatch'));
-                } else if (r.swatch === 'region') {
-                    gCallout.appendChild(el('rect', { x: sx, y: sy - 5, width: swatchW - 4, height: 10 }, 'psy-region psy-econ-region psy-callout-swatch-box'));
-                } else if (r.swatch === 'ok' || r.swatch === 'no') {
-                    gCallout.appendChild(el('circle', { cx: sx + 6, cy: sy, r: 4.5 }, 'psy-callout-dot ' + (r.swatch === 'ok' ? 'is-ok' : 'is-no')));
+            var list = current.callouts || [];
+            var x = mL + 8, y = mT + 44;
+            var lineH = 12, pad = 6, swatchW = 20, charW = 4.7; // ~9px text
+            list.forEach(function (c) {
+                if (!c || !c.rows || !c.rows.length) return;
+                var maxLen = (c.title || '').length * 1.1;
+                c.rows.forEach(function (r) { maxLen = Math.max(maxLen, r.text.length); });
+                var w = Math.min(pw * 0.42, Math.max(150, maxLen * charW + swatchW + pad * 2 + 4));
+                var h = pad * 2 + (c.title ? lineH + 1 : 0) + c.rows.length * lineH;
+                gCallout.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 3 }, 'psy-callout-bg'));
+                var cy = y + pad + 9;
+                if (c.title) {
+                    gCallout.appendChild(text(x + pad, cy, c.title, 'psy-callout-title', 'start'));
+                    cy += lineH + 1;
                 }
-                gCallout.appendChild(text(x + pad + swatchW, cy, r.text, 'psy-callout-text', 'start'));
-                cy += lineH;
+                c.rows.forEach(function (r) {
+                    var sx = x + pad, sy = cy - 3;
+                    if (r.swatch === 'econ' || r.swatch === 'limit' || r.swatch === 'room') {
+                        gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy },
+                            'psy-line psy-line-' + r.swatch + ' psy-callout-swatch'));
+                    } else if (r.swatch === 'region') {
+                        gCallout.appendChild(el('rect', { x: sx, y: sy - 4, width: swatchW - 4, height: 8 }, 'psy-region psy-econ-region psy-callout-swatch-box'));
+                    } else if (r.swatch === 'ok' || r.swatch === 'no') {
+                        gCallout.appendChild(el('circle', { cx: sx + 5, cy: sy, r: 3.5 }, 'psy-callout-dot ' + (r.swatch === 'ok' ? 'is-ok' : 'is-no')));
+                    } else if (r.swatch === 'req') {
+                        gCallout.appendChild(el('circle', { cx: sx + 5, cy: sy, r: 3.5 }, 'psy-callout-req'));
+                    }
+                    gCallout.appendChild(text(x + pad + swatchW, cy, r.text, 'psy-callout-text', 'start'));
+                    cy += lineH;
+                });
+                y += h + 6;
             });
         }
 
@@ -558,8 +579,49 @@
             try { return pt.matrixTransform(ctm.inverse()); } catch (e) { return null; }
         }
 
+        // --- wheel zoom about the pointer ---
+        svg.addEventListener('wheel', function (evt) {
+            if (current.pressure === null || !viewportCb) return;
+            var p = svgPoint(evt);
+            if (!p) return;
+            evt.preventDefault();
+            var db = dbOf(p.x), w = wOf(p.y);
+            var factor = evt.deltaY > 0 ? 1.15 : 1 / 1.15;
+            viewportCb(zoomAt(vp, factor, db, w));
+        }, { passive: false });
+
+        // --- click-and-drag pan (pixel deltas against the viewport at mousedown) ---
+        var drag = null;
+        svg.addEventListener('mousedown', function (evt) {
+            if (evt.button !== 0 || current.pressure === null || !viewportCb) return;
+            var p = svgPoint(evt);
+            if (!p) return;
+            drag = { x: p.x, y: p.y, vp: { dbMin: vp.dbMin, dbMax: vp.dbMax, wMin: vp.wMin, wMax: vp.wMax }, moved: false };
+            svg.classList.add('is-dragging');
+            evt.preventDefault();
+        });
+        function endDrag() {
+            if (!drag) return;
+            drag = null;
+            svg.classList.remove('is-dragging');
+        }
+        if (typeof window.addEventListener === 'function') window.addEventListener('mouseup', endDrag);
         svg.addEventListener('mousemove', function (evt) {
-            if (current.pressure === null) return;
+            if (!drag) return;
+            var p = svgPoint(evt);
+            if (!p) return;
+            var v0 = drag.vp;
+            var dDb = -(p.x - drag.x) / pw * (v0.dbMax - v0.dbMin);
+            var dW  =  (p.y - drag.y) / ph * (v0.wMax - v0.wMin);
+            if (Math.abs(p.x - drag.x) + Math.abs(p.y - drag.y) > 2) drag.moved = true;
+            if (!drag.moved) return;
+            hideCross();
+            if (hoverCb) hoverCb(null);
+            viewportCb(clampViewport({ dbMin: v0.dbMin + dDb, dbMax: v0.dbMax + dDb, wMin: v0.wMin + dW, wMax: v0.wMax + dW }));
+        });
+
+        svg.addEventListener('mousemove', function (evt) {
+            if (current.pressure === null || drag) return;
             var p = svgPoint(evt);
             if (!p) return;
             var db = dbOf(p.x), w = wOf(p.y);
@@ -602,7 +664,7 @@
                 current.points = data.points || [];
                 current.lines = data.lines || [];
                 current.paths = data.paths || [];
-                current.callout = data.callout || null;
+                current.callouts = data.callouts || (data.callout ? [data.callout] : []);
                 var key = [current.pressure, units, vp.dbMin, vp.dbMax, vp.wMin, vp.wMax,
                            current.show.rh, current.show.wb, current.show.h, current.show.v].join('|');
                 if (key !== lastStaticKey && current.pressure !== null) {
@@ -613,6 +675,7 @@
                 drawCallout();
             },
             onHover: function (cb) { hoverCb = cb; },
+            onViewportChange: function (cb) { viewportCb = cb; },
             viewport: function () { return { dbMin: vp.dbMin, dbMax: vp.dbMax, wMin: vp.wMin, wMax: vp.wMax }; }
         };
     }
@@ -621,6 +684,7 @@
         create: create,
         defaultViewport: defaultViewport,
         zoom: zoom,
+        zoomAt: zoomAt,
         pan: pan,
         fit: fit,
         clampViewport: clampViewport

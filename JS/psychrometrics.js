@@ -991,14 +991,12 @@
             b.addEventListener('click', function () { fn(); save(); recompute(); });
             return b;
         }
+        var mouseHint = document.createElement('span');
+        mouseHint.className = 'psy-toolbar-label psy-mouse-hint';
+        mouseHint.textContent = 'Wheel to zoom · drag to pan';
+        ctrl.appendChild(mouseHint);
         var group = document.createElement('div');
         group.className = 'psy-zoom-group';
-        group.appendChild(zoomBtn('+', 'Zoom in', function () { state.view = Chart.zoom(currentViewport(), 0.7); }));
-        group.appendChild(zoomBtn('−', 'Zoom out', function () { state.view = Chart.zoom(currentViewport(), 1 / 0.7); }));
-        group.appendChild(zoomBtn('←', 'Pan left', function () { state.view = Chart.pan(currentViewport(), -0.15, 0); }));
-        group.appendChild(zoomBtn('→', 'Pan right', function () { state.view = Chart.pan(currentViewport(), 0.15, 0); }));
-        group.appendChild(zoomBtn('↑', 'Pan up', function () { state.view = Chart.pan(currentViewport(), 0, 0.15); }));
-        group.appendChild(zoomBtn('↓', 'Pan down', function () { state.view = Chart.pan(currentViewport(), 0, -0.15); }));
         group.appendChild(zoomBtn('Fit', 'Zoom to the plotted points', function () {
             var sts = (refs.lastResult ? refs.lastResult.points : []).map(function (p) { return p.state; });
             state.view = Chart.fit(currentViewport(), sts);
@@ -1019,6 +1017,18 @@
         refs.readout = readout;
         showReadout(null);
         refs.chart.onHover(showReadout);
+        // Wheel / drag updates arrive faster than a full redraw is worth;
+        // coalesce them to one redraw every ~30 ms.
+        var pendingView = null;
+        refs.chart.onViewportChange(function (vp) {
+            pendingView = vp;
+            if (refs.viewTimer) return;
+            refs.viewTimer = setTimeout(function () {
+                refs.viewTimer = null;
+                state.view = pendingView;
+                recompute();
+            }, 30);
+        });
         return area;
     }
 
@@ -1206,25 +1216,23 @@
             // Plain-language explainer drawn in the chart's top-left corner.
             var ec0 = res.econ;
             var rows = [{ swatch: ec0.ok ? 'ok' : 'no',
-                          text: ec0.ok ? 'Free cooling available at this outdoor condition'
-                                       : 'Free cooling NOT available at this outdoor condition' }];
+                          text: ec0.ok ? 'Free cooling available' : 'Free cooling not available' }];
             if (a.econ.mode === 'enthalpy') {
                 var dh = Math.abs(ec0.hDiff), hUnit = U.unit('h', sys());
                 var dhDisp = sys() === 'SI' ? dh * 2.326 : dh;
-                rows.push({ swatch: 'econ', text: 'Green dashed = return air enthalpy ' + fmtH(ra) +
-                    '. Outdoor air is ' + fmt(dhDisp, 1) + ' ' + hUnit + (ec0.hDiff > 0 ? ' below it (good)' : ' above it (too much heat)') });
+                rows.push({ swatch: 'econ', text: 'RA enthalpy ' + fmtH(ra) + ' - OA is ' + fmt(dhDisp, 1) + ' ' + hUnit +
+                    (ec0.hDiff > 0 ? ' below (good)' : ' above (too warm)') });
             } else {
-                var ddb = Math.abs(ec0.dbDiff);
-                rows.push({ swatch: 'econ', text: 'Green dashed = return air dry bulb ' + fmtU('temp', ra.db) +
-                    '. Outdoor air is ' + fmtU('dtemp', ddb) + (ec0.dbDiff > 0 ? ' cooler (good)' : ' warmer (too warm)') });
+                rows.push({ swatch: 'econ', text: 'RA dry bulb ' + fmtU('temp', ra.db) + ' - OA is ' + fmtU('dtemp', Math.abs(ec0.dbDiff)) +
+                    (ec0.dbDiff > 0 ? ' cooler (good)' : ' warmer') });
             }
             if (hasLim) {
-                var dl = Math.abs(oa.db - lim);
-                rows.push({ swatch: 'limit', text: 'Amber dotted = ' + fmtU('temp', lim) + ' high limit. Outdoor air is ' +
-                    fmtU('dtemp', dl) + (ec0.belowLimit ? ' below it (dampers may open)' : ' above it (dampers stay at minimum)') });
+                rows.push({ swatch: 'limit', text: 'High limit ' + fmtU('temp', lim) + ' - OA is ' + fmtU('dtemp', Math.abs(oa.db - lim)) +
+                    (ec0.belowLimit ? ' below (dampers may open)' : ' above (dampers at minimum)') });
             }
-            rows.push({ swatch: 'region', text: 'Shaded = where the outdoor air point must sit for free cooling' });
-            res.callout = { title: 'Economizer check', rows: rows };
+            rows.push({ swatch: 'region', text: 'OA must sit in the shaded area for free cooling' });
+            res.callouts = res.callouts || [];
+            res.callouts.push({ title: 'Economizer check', rows: rows });
         }
 
         // Sequential stages
@@ -1306,6 +1314,30 @@
                     onError('room', 'Enter the room sensible load.');
                 }
                 res.room = roomRes;
+
+                // Explainer box for the room line and required supply point.
+                if (roomRes.shr !== undefined) {
+                    var rrows = [{ swatch: 'room', text: 'Room line, SHR ' + fmt(roomRes.shr, 2) +
+                        ' - supply air on this line matches the room sensible/latent split' }];
+                    if (roomRes.required) {
+                        var rq = roomRes.required;
+                        rrows.push({ swatch: 'req', text: 'REQ = supply that carries the load: ' +
+                            (a.room.solve === 'cfm'
+                                ? fmtU('flow', rq.cfm) + ' at ' + fmtU('temp', rq.state.db)
+                                : fmtU('temp', rq.state.db) + ' at ' + fmtU('flow', rq.cfm)) });
+                    }
+                    if (roomRes.delivered && res.final) {
+                        var dd = roomRes.delivered;
+                        var sOk = dd.sensible >= roomRes.qs * 0.98, lOk = dd.latent >= roomRes.ql * 0.98;
+                        rrows.push({ swatch: sOk && lOk ? 'ok' : 'no',
+                            text: sOk && lOk
+                                ? res.finalLabel + ' meets the room load'
+                                : res.finalLabel + ' falls short - sensible ' + fmtPower(dd.sensible) + ' of ' + fmtPower(roomRes.qs) +
+                                  (lOk ? '' : ', latent ' + fmtPower(dd.latent) + ' of ' + fmtPower(roomRes.ql)) });
+                    }
+                    res.callouts = res.callouts || [];
+                    res.callouts.push({ title: 'Room check', rows: rrows });
+                }
             }
         }
 
@@ -1467,7 +1499,7 @@
             points: res.points,
             lines: res.lines,
             paths: res.paths,
-            callout: res.callout || null
+            callouts: res.callouts || []
         });
         renderResults(buildReport(res, state));
         updateAddState();
@@ -1678,7 +1710,7 @@
             var chart = Chart.create(holder);
             chart.update({
                 pressure: res.pressure, units: s.units, viewport: s.view || Chart.defaultViewport(s.dbMin),
-                show: s.show, points: res.points, lines: res.lines, paths: res.paths, callout: res.callout || null
+                show: s.show, points: res.points, lines: res.lines, paths: res.paths, callouts: res.callouts || []
             });
             var blocks = buildReport(res, s);
             var sub = [];

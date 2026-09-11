@@ -1132,14 +1132,34 @@
 
 .psy-callout-title {
     fill: var(--color-text);
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.03em;
 }
 
 .psy-callout-text {
     fill: var(--color-text);
-    font-size: 10px;
+    font-size: 9px;
+}
+
+.psy-callout-req {
+    fill: var(--color-bg);
+    stroke: #a78bfa;
+    stroke-width: 1.5;
+}
+
+/* Mouse-driven chart: grab cursor while panning */
+.psy-chart {
+    cursor: crosshair;
+}
+
+.psy-chart.is-dragging {
+    cursor: grabbing;
+}
+
+.psy-mouse-hint {
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .psy-callout-dot.is-ok {
