@@ -98,6 +98,21 @@
         'copy': [
             ['rect', { x: '9', y: '9', width: '13', height: '13', rx: '2', ry: '2' }],
             ['path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' }]
+        ],
+        'calculator': [
+            ['rect', { x: 4, y: 2, width: 16, height: 20, rx: 2 }],
+            ['line', { x1: 8, y1: 6, x2: 16, y2: 6 }],
+            ['line', { x1: 16, y1: 14, x2: 16, y2: 18 }],
+            ['path', { d: 'M16 10h.01' }],
+            ['path', { d: 'M12 10h.01' }],
+            ['path', { d: 'M8 10h.01' }],
+            ['path', { d: 'M12 14h.01' }],
+            ['path', { d: 'M8 14h.01' }],
+            ['path', { d: 'M12 18h.01' }],
+            ['path', { d: 'M8 18h.01' }]
+        ],
+        'thermometer': [
+            ['path', { d: 'M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z' }]
         ]
     };
 
@@ -239,17 +254,36 @@
             });
             brandWrap.appendChild(brand);
 
-            if (currentPage) {
+            // currentPage is either a string (one crumb, the current
+            // page) or an array of crumbs. Array entries are strings
+            // (plain text) or { label, view, params } objects, which
+            // render as clickable links to that view - used by pages
+            // nested under a hub (Calculators › Psychrometrics).
+            var crumbs = Array.isArray(currentPage) ? currentPage
+                : (currentPage ? [currentPage] : []);
+            crumbs.forEach(function (crumb, idx) {
                 var sep = document.createElement('span');
                 sep.className = 'breadcrumb-sep';
                 sep.textContent = '›';
                 brandWrap.appendChild(sep);
 
-                var curr = document.createElement('span');
-                curr.className = 'breadcrumb-current';
-                curr.textContent = currentPage;
-                brandWrap.appendChild(curr);
-            }
+                var isLast = idx === crumbs.length - 1;
+                if (crumb && typeof crumb === 'object' && crumb.view && !isLast) {
+                    var link = document.createElement('button');
+                    link.type = 'button';
+                    link.className = 'breadcrumb-link breadcrumb-parent';
+                    link.textContent = crumb.label;
+                    link.addEventListener('click', function () {
+                        HHpro.App.showView(crumb.view, crumb.params || {});
+                    });
+                    brandWrap.appendChild(link);
+                } else {
+                    var curr = document.createElement('span');
+                    curr.className = 'breadcrumb-current';
+                    curr.textContent = (crumb && typeof crumb === 'object') ? crumb.label : crumb;
+                    brandWrap.appendChild(curr);
+                }
+            });
 
             header.appendChild(brandWrap);
 

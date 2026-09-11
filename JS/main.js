@@ -82,6 +82,7 @@
         projectsRow.className = 'projects-row';
         projectsRow.appendChild(createProjectsTile());
         projectsRow.appendChild(createDesignSearchTile());
+        projectsRow.appendChild(createCalculatorsTile());
         main.appendChild(projectsRow);
 
         // Product grid: one tile per product type, laid out in the same
@@ -163,6 +164,36 @@
 
         tile.addEventListener('click', function () {
             HHpro.App.showView('design_search');
+        });
+
+        return tile;
+    }
+
+    function createCalculatorsTile() {
+        var tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'tile tile-calculators tile-projects-compact';
+
+        var body = document.createElement('div');
+        body.className = 'tile-body';
+
+        var label = document.createElement('h3');
+        label.className = 'tile-label';
+        label.appendChild(HHpro.UI.icon('calculator'));
+        var labelText = document.createElement('span');
+        labelText.textContent = 'Calculators';
+        label.appendChild(labelText);
+
+        var sublabel = document.createElement('p');
+        sublabel.className = 'tile-sublabel';
+        sublabel.textContent = 'Psychrometrics and HVAC calculations';
+
+        body.appendChild(label);
+        body.appendChild(sublabel);
+        tile.appendChild(body);
+
+        tile.addEventListener('click', function () {
+            HHpro.App.showView('calculators');
         });
 
         return tile;

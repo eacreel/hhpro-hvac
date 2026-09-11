@@ -1,0 +1,793 @@
+/* ============================================================
+   Calculators hub + Psychrometric calculator
+   ------------------------------------------------------------
+   Two views share this sheet:
+     .calc-*  the Calculators landing page (card grid)
+     .psy-*   the Psychrometric calculator (form panel + chart)
+   The SVG chart is styled here too (.psy-chart and its curve
+   classes) so the drawing code sets geometry only.
+   ============================================================ */
+
+/* ---------- Landing page ---------- */
+
+.calc-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-lg) var(--space-xl);
+}
+
+.calc-title {
+    font-size: var(--font-size-xxl);
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.calc-sub {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    max-width: 800px;
+}
+
+.calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
+    gap: var(--space-lg);
+}
+
+.calc-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    text-align: left;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.calc-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
+}
+
+.calc-card:active {
+    transform: translateY(0) scale(0.99);
+}
+
+.calc-card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #0d3a5a 100%);
+    color: var(--color-text-inverse);
+    font-size: 24px;
+}
+
+.calc-card-name {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xs) 0;
+}
+
+.calc-card-desc {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+}
+
+.calc-empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* ---------- Psychrometric page layout ---------- */
+
+/* Fixed-height page like Design Search: the form panel scrolls on
+   its own and the chart takes whatever height remains. */
+.psy-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md) var(--space-xl);
+    gap: var(--space-md);
+    overflow: hidden;
+    min-height: 0;
+}
+
+.psy-topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.psy-title {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    margin: 0 0 2px 0;
+}
+
+.psy-sub {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    max-width: 760px;
+}
+
+.psy-altitude {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+}
+
+.psy-pressure {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    padding-left: var(--space-sm);
+    border-left: 1px solid var(--color-border);
+}
+
+.psy-work {
+    flex: 1;
+    display: flex;
+    gap: var(--space-md);
+    min-height: 0;
+    overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+    .psy-page {
+        overflow: auto;
+    }
+    .psy-work {
+        flex-direction: column;
+        overflow: visible;
+    }
+    .psy-panel {
+        width: auto !important;
+        max-height: none !important;
+    }
+    .psy-chart-wrap {
+        min-height: 420px;
+    }
+}
+
+/* ---------- Left panel ---------- */
+
+.psy-panel {
+    width: 480px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.psy-tabs {
+    display: flex;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-dark);
+}
+
+.psy-tab {
+    flex: 1;
+    padding: 10px var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+    transition: color var(--transition-fast),
+                border-color var(--transition-fast),
+                background-color var(--transition-fast);
+}
+
+.psy-tab:hover {
+    color: var(--color-text);
+    background-color: var(--color-row-hover);
+}
+
+.psy-tab.is-active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-primary-light);
+}
+
+.psy-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.psy-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.psy-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.psy-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+}
+
+.psy-section-head .psy-swatch {
+    margin-right: var(--space-xs);
+}
+
+.psy-section-head .psy-section-title {
+    flex: 1;
+}
+
+.psy-section-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.psy-hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+}
+
+.psy-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+}
+
+.psy-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.psy-field-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
+.psy-input {
+    width: 66px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    box-sizing: border-box;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    transition: border-color var(--transition-fast);
+}
+
+.psy-input::-webkit-outer-spin-button,
+.psy-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.psy-input:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+}
+
+.psy-input:disabled,
+.psy-select:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.psy-input-alt {
+    width: 88px;
+}
+
+.psy-point-name {
+    flex: 1;
+    text-align: left;
+    width: auto;
+    min-width: 0;
+}
+
+.psy-select {
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: var(--font-size-sm);
+    width: 150px;
+}
+
+.psy-unit {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.psy-field-error {
+    color: var(--color-error-light);
+    font-size: var(--font-size-xs);
+    min-height: 0;
+    margin: 0;
+}
+
+.psy-field-error:empty {
+    display: none;
+}
+
+.psy-state-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.psy-state-fields.is-disabled {
+    opacity: 0.6;
+}
+
+.psy-radio-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+}
+
+.psy-radio,
+.psy-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.psy-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.psy-add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.psy-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.psy-icon-btn:hover:not(:disabled) {
+    background-color: var(--color-row-hover);
+    color: var(--color-error-light);
+}
+
+.psy-icon-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Point rows (State Points tab) */
+.psy-point-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.psy-point-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm) var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--psy-color, var(--color-primary-light));
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+}
+
+.psy-point-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.psy-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--psy-color, var(--color-primary-light));
+    flex-shrink: 0;
+}
+
+/* ---------- Results ---------- */
+
+.psy-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Breathing room between stacked result blocks (mixing, coil load,
+   property table) without touching the first heading. */
+.psy-results .psy-section-title + .psy-kv,
+.psy-results .psy-section-title + .psy-table-wrap {
+    margin-bottom: var(--space-sm);
+}
+
+.psy-table-wrap {
+    overflow-x: auto;
+}
+
+.psy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.psy-table th,
+.psy-table td {
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.psy-table th {
+    text-align: right;
+    font-weight: 600;
+    color: var(--color-text);
+    background-color: var(--color-bg-dark);
+}
+
+.psy-table th.psy-table-col .psy-swatch {
+    margin-right: 6px;
+}
+
+.psy-table-prop {
+    text-align: left !important;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.psy-table-unit {
+    margin-left: 6px;
+    font-size: var(--font-size-xs);
+    opacity: 0.8;
+}
+
+.psy-table-val {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+}
+
+.psy-table tbody tr:hover td {
+    background-color: var(--color-row-hover);
+}
+
+.psy-kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px var(--space-md);
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+.psy-kv dt {
+    color: var(--color-text-muted);
+}
+
+.psy-kv dd {
+    margin: 0;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ---------- Chart area ---------- */
+
+.psy-chart-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: var(--space-sm);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-sm) var(--space-md);
+}
+
+.psy-chart-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    flex-shrink: 0;
+}
+
+.psy-toolbar-label {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.psy-chart-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.psy-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+    font-family: var(--font-family);
+    user-select: none;
+}
+
+.psy-readout {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+    min-height: 24px;
+    align-items: center;
+    font-size: var(--font-size-sm);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--color-border);
+}
+
+.psy-readout-hint {
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: var(--font-size-xs);
+}
+
+.psy-readout-item {
+    display: inline-flex;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.psy-readout-key {
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.psy-readout-val {
+    color: var(--color-text);
+}
+
+/* ---------- Chart drawing ---------- */
+
+.psy-frame {
+    fill: var(--color-bg);
+    stroke: none;
+}
+
+.psy-frame-outline {
+    fill: none;
+    stroke: var(--color-border-strong);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+.psy-grid-line {
+    stroke: var(--color-border);
+    stroke-width: 0.6;
+    opacity: 0.6;
+}
+
+.psy-grid-major {
+    stroke: var(--color-border-strong);
+    stroke-width: 0.8;
+    opacity: 0.55;
+}
+
+.psy-tick {
+    stroke: var(--color-border-strong);
+    stroke-width: 1;
+}
+
+.psy-axis-label {
+    fill: var(--color-text-muted);
+    font-size: 11px;
+}
+
+.psy-axis-title {
+    fill: var(--color-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.psy-pressure-label {
+    fill: var(--color-text-muted);
+    font-size: 11px;
+}
+
+.psy-sat {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.8;
+}
+
+.psy-rh {
+    fill: none;
+    stroke: #5ba9d8;
+    stroke-width: 0.9;
+    opacity: 0.75;
+}
+
+.psy-wb {
+    fill: none;
+    stroke: #6ee7b7;
+    stroke-width: 0.7;
+    opacity: 0.6;
+}
+
+.psy-h {
+    fill: none;
+    stroke: #fbbf24;
+    stroke-width: 0.7;
+    stroke-dasharray: 5 4;
+    opacity: 0.6;
+}
+
+.psy-v {
+    fill: none;
+    stroke: #c4b5fd;
+    stroke-width: 0.7;
+    stroke-dasharray: 2 3;
+    opacity: 0.7;
+}
+
+.psy-label {
+    font-size: 10px;
+    paint-order: stroke;
+    stroke: var(--color-bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+.psy-label-rh { fill: #8fc7ea; }
+.psy-label-wb { fill: #9ef0cc; }
+.psy-label-h  { fill: #fcd34d; }
+.psy-label-v  { fill: #d6ccff; }
+
+.psy-label-caption {
+    font-size: 10px;
+    font-style: italic;
+}
+
+/* Hover crosshair */
+.psy-crosshair {
+    stroke: var(--color-text-muted);
+    stroke-width: 0.8;
+    stroke-dasharray: 3 3;
+    pointer-events: none;
+}
+
+.psy-crosshair-dot {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+/* Plotted points and lines. Each point carries a color class that
+   sets --psy-color; the same classes color the form swatches and
+   result-table headers so everything matches. */
+.psy-line {
+    stroke: var(--color-text);
+    stroke-width: 2;
+    fill: none;
+}
+
+.psy-line-mix {
+    stroke: #94a3b8;
+    stroke-dasharray: 6 4;
+}
+
+.psy-line-process {
+    stroke: #f8fafc;
+}
+
+.psy-arrow {
+    fill: #f8fafc;
+}
+
+.psy-point-halo {
+    fill: var(--psy-color, var(--color-primary-light));
+    opacity: 0.3;
+}
+
+.psy-point-dot {
+    fill: var(--psy-color, var(--color-primary-light));
+    stroke: var(--color-bg);
+    stroke-width: 1.5;
+}
+
+.psy-point-label {
+    fill: var(--psy-color, var(--color-primary-light));
+    font-size: 12px;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: var(--color-bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+.psy-point-offchart .psy-point-dot {
+    stroke-dasharray: 2 2;
+}
+
+.psy-point-oa { --psy-color: #f97316; }
+.psy-point-ra { --psy-color: #38bdf8; }
+.psy-point-ma { --psy-color: #a3e635; }
+.psy-point-sa { --psy-color: #e879f9; }
+
+.psy-point-c0 { --psy-color: #38bdf8; }
+.psy-point-c1 { --psy-color: #f97316; }
+.psy-point-c2 { --psy-color: #a3e635; }
+.psy-point-c3 { --psy-color: #e879f9; }
+.psy-point-c4 { --psy-color: #facc15; }
+.psy-point-c5 { --psy-color: #f87171; }
+
+/* Reduced motion: the landing cards still lift on hover elsewhere;
+   here we simply drop the transform. */
+@media (prefers-reduced-motion: reduce) {
+    .calc-card:hover,
+    .calc-card:active {
+        transform: none;
+    }
+}
