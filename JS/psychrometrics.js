@@ -159,6 +159,124 @@
         view: 'psychrometrics'
     });
 
+
+    // -----------------------------------------------------------------
+    // Help text for the "?" icons. Each entry: what the input is, and
+    // how changing it moves the chart.
+    // -----------------------------------------------------------------
+
+    var HELP = {
+        altitude: 'Site elevation. Sets the barometric pressure used for every property. Higher altitude means lower pressure, which raises the saturation curve and the humidity ratio at a given RH, so the same wet bulb reads a little wetter.',
+        units: 'Switches every input and result between IP (\u00B0F, gr/lb, Btu/h, CFM) and SI (\u00B0C, g/kg, kW, L/s). The math does not change, only how values are shown.',
+        oa: 'Outdoor air brought into the unit. Plots as OA. With return air included it is one end of the grey mixing line; with return air excluded it is the entering-coil air itself.',
+        oa_db: 'Outdoor design dry bulb. Moves OA left or right.',
+        oa_second: 'Any one of wet bulb, RH, dew point, humidity ratio or enthalpy fixes the moisture in the outdoor air. Moves OA up or down.',
+        erv: 'Energy recovery wheel or plate between the incoming outdoor air and the exhaust (taken at the return air condition). Pre-conditions OA toward RA before mixing. Plots the leaving air as ER with an arrow from OA; mixing then starts from ER.',
+        erv_s: 'Sensible effectiveness: the fraction of the temperature difference between OA and RA that is recovered. 70% moves ER 70% of the way toward the RA temperature.',
+        erv_l: 'Latent effectiveness: the fraction of the moisture difference recovered (wheels only; plates are near zero). Moves ER vertically toward the RA humidity ratio.',
+        ra: 'Air returning from the space, normally at the room condition. Plots as RA; the other end of the mixing line.',
+        ra_db: 'Return air dry bulb. Moves RA left or right.',
+        ra_second: 'Fixes the moisture in the return air. Moves RA up or down.',
+        flowmode: 'Per stream: enter the outdoor and return CFM separately. Total + % outdoor air: enter the fan airflow and the outdoor fraction.',
+        oa_cfm: 'Outdoor airflow. The ratio of outdoor to return air sets where MA sits on the mixing line: more outdoor air pulls MA toward OA.',
+        ra_cfm: 'Return airflow. More return air pulls MA toward RA.',
+        total_cfm: 'Total supply airflow through the unit. Sets the mass flow every load is figured on; does not move the points.',
+        oa_pct: 'Outdoor air as a percentage of total airflow. Slides MA along the mixing line: 0% lands on RA, 100% on OA.',
+        basis: 'How CFM becomes mass flow. Standard air uses 0.075 lb/ft\u00B3 (CFM \u00D7 4.5 lb/hr), the convention in coil selection software and the 1.08 / 4.5 rules of thumb. Actual air uses the specific volume at each stream, which matters at altitude or high temperature. Changes the loads, not the plotted points.',
+        econ: 'Asks whether the outdoor air could cool the space without running the coil. Draws the changeover line through RA, the amber high-limit line, and shades the free-cooling region. The box in the chart states the verdict for the current OA point.',
+        econ_mode: 'Differential enthalpy compares total heat (temperature plus moisture); the green boundary is the RA enthalpy line. Differential dry bulb compares temperature only; the boundary is a vertical line at the RA dry bulb.',
+        econ_limit: 'Fixed outdoor dry bulb above which the dampers stay at minimum no matter what the comparison says. Draws the amber vertical line; the shaded region never extends to its right.',
+        preheat: 'Sensible heating ahead of the cooling coil, for freeze protection or winter heating. Moves the point horizontally to the right at constant moisture and plots PH.',
+        preheat_db: 'Air temperature leaving the preheat coil. Must be at or above the entering air. Sets how far right PH sits.',
+        coil: 'The cooling and dehumidifying coil. The process runs down and to the left from the entering air to SA. Leaving condition: enter the state you want and the implied apparatus dew point and bypass factor are reported. ADP + bypass factor: describe the coil instead and the leaving point is calculated.',
+        coil_db: 'Coil leaving dry bulb. Moves SA left or right; colder means more sensible cooling.',
+        coil_second: 'Fixes the moisture leaving the coil. Lower moisture means more latent cooling; a dehumidifying coil usually leaves air near 90 to 95% RH.',
+        coil_adp: 'Apparatus dew point: the saturation temperature the coil surface effectively runs at, where the process line meets the saturation curve. Lower ADP gives colder, drier leaving air and a steeper process line.',
+        coil_bf: 'Bypass factor: the fraction of air that passes the coil untouched. 0% lands SA on the ADP; higher values move SA back toward the entering air along the same line. Typical values are 5 to 15% for 4 to 6 row coils.',
+        fan: 'Heat from the supply fan and motor picked up after the coil (draw-through). A small horizontal step to the right, usually 1 to 3 \u00B0F, plotted as SF. It reduces the net cooling delivered.',
+        fan_mode: 'Brake horsepower converts fan work to heat (2545 Btu/h per hp) and spreads it over the airflow. Temperature rise lets you enter the rise directly.',
+        fan_bhp: 'Fan brake horsepower at design airflow. More power means a larger temperature rise.',
+        fan_motor: 'Tick when the motor sits in the airstream, so its losses also heat the air.',
+        fan_eff: 'Motor efficiency. Losses (1 minus efficiency) are added to the air when the motor is in the airstream.',
+        fan_dt: 'Temperature rise across the fan. Moves SF that far to the right of the previous point.',
+        reheat: 'Sensible heat added after the coil (hot gas, electric or hydronic) to avoid overcooling the space while keeping the dehumidification. Horizontal move to the right at constant moisture; plots RH.',
+        reheat_db: 'Air temperature leaving the reheat. Must be at or above the coil leaving temperature. Sets how far right RH sits.',
+        hum: 'Adds moisture to the supply air. Steam rises almost vertically at constant dry bulb to the target humidity. Evaporative moves up and to the left along the wet-bulb line by the effectiveness. Plots HU.',
+        hum_type: 'Steam: choose a target RH, dew point or humidity ratio. Evaporative: choose an effectiveness; the air cools as it humidifies.',
+        hum_target: 'Humidity to reach at the current dry bulb. Sets how far up HU sits.',
+        hum_eff: 'Saturation effectiveness of the evaporative media. 100% reaches the wet-bulb temperature.',
+        room: 'The space being served: its design condition and loads. Draws the purple room line (every supply state that matches the space sensible / latent split), places REQ where your airflow lands on it, and checks the final supply air against the loads.',
+        room_db: 'Space design dry bulb. Plots RM and anchors the room line.',
+        room_second: 'Space design humidity. Moves RM up or down and shifts the whole room line with it.',
+        room_qs: 'Sensible load: heat that raises the space temperature (solar, lights, equipment, people). With the latent load it sets the slope of the room line; more sensible flattens it.',
+        room_ql: 'Latent load: moisture gain (people, infiltration, processes). More latent steepens the room line, calling for drier supply air.',
+        room_solve: 'Supply temperature from airflow: you give the CFM and it finds where REQ lands on the line. Airflow from supply temperature: you give the supply dry bulb and it finds the CFM needed.',
+        room_cfm: 'Supply airflow to size against. Blank uses the system airflow from the Airflow section. More CFM moves REQ up the line toward RM (warmer supply); less moves it down toward saturation.',
+        room_dbsupply: 'Supply dry bulb to size against. Colder supply needs less airflow to carry the same load.',
+        point: 'Dry bulb plus any one other property defines a state point. The chart plots it with this colour and the table lists every property.'
+    };
+
+    var helpPop = null, helpPinned = null;
+
+    function ensureHelpPop() {
+        if (helpPop) return helpPop;
+        helpPop = document.createElement('div');
+        helpPop.className = 'psy-help-pop';
+        helpPop.hidden = true;
+        document.body.appendChild(helpPop);
+        document.addEventListener('click', function (e) {
+            if (!helpPinned) return;
+            if (e.target === helpPinned || helpPop.contains(e.target)) return;
+            helpPinned = null;
+            helpPop.hidden = true;
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { helpPinned = null; helpPop.hidden = true; }
+        });
+        return helpPop;
+    }
+
+    function showHelp(btn, key) {
+        var pop = ensureHelpPop();
+        pop.textContent = HELP[key] || '';
+        pop.hidden = false;
+        var r = btn.getBoundingClientRect();
+        var w = Math.min(340, window.innerWidth - 24);
+        pop.style.width = w + 'px';
+        var left = Math.min(r.left, window.innerWidth - w - 12);
+        var top = r.bottom + 6;
+        pop.style.left = Math.max(8, left) + 'px';
+        pop.style.top = top + 'px';
+        var ph = pop.getBoundingClientRect().height;
+        if (top + ph > window.innerHeight - 8) pop.style.top = Math.max(8, r.top - ph - 6) + 'px';
+    }
+
+    function hideHelp() {
+        if (helpPinned || !helpPop) return;
+        helpPop.hidden = true;
+    }
+
+    // "?" icon: hover to peek, click to pin, click again / Escape / click away to close.
+    function help(key) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'psy-help';
+        b.textContent = '?';
+        b.setAttribute('aria-label', 'Explain this input');
+        b.title = '';
+        b.addEventListener('mouseenter', function () { if (!helpPinned) showHelp(b, key); });
+        b.addEventListener('mouseleave', hideHelp);
+        b.addEventListener('focus', function () { if (!helpPinned) showHelp(b, key); });
+        b.addEventListener('blur', hideHelp);
+        b.addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            if (helpPinned === b) { helpPinned = null; helpPop.hidden = true; return; }
+            helpPinned = b;
+            showHelp(b, key);
+        });
+        return b;
+    }
+
     // -----------------------------------------------------------------
     // View
     // -----------------------------------------------------------------
@@ -325,6 +443,7 @@
         label.textContent = 'Altitude';
         label.htmlFor = 'psy-altitude-input';
         altRow.appendChild(label);
+        altRow.appendChild(help('altitude'));
         var input = numberInput(inputDisp('altitude', state.altitude), { step: sys() === 'SI' ? 50 : 100, cls: 'psy-input psy-input-alt' });
         input.id = 'psy-altitude-input';
         input.addEventListener('input', function () {
@@ -361,6 +480,7 @@
             seg.appendChild(b);
         });
         altRow.appendChild(seg);
+        altRow.appendChild(help('units'));
         strip.appendChild(altRow);
 
         var actions = document.createElement('div');
@@ -412,7 +532,11 @@
     function buildPointsForm(form) {
         var section = document.createElement('div');
         section.className = 'psy-section';
-        section.appendChild(sectionTitle('Air states'));
+        var pth = document.createElement('div');
+        pth.className = 'psy-section-head';
+        pth.appendChild(sectionTitle('Air states'));
+        pth.appendChild(help('point'));
+        section.appendChild(pth);
         section.appendChild(hint('Dry bulb plus any one other property defines a point.'));
 
         var list = document.createElement('div');
@@ -495,23 +619,23 @@
 
         // Outdoor air
         form.appendChild(stageSection('oa', 'Outdoor air', a.oa, function (sec, body) {
-            body.appendChild(buildStateFields(a.oa, 'oa'));
-        }, function () { renderFlowFields(); }));
+            body.appendChild(buildStateFields(a.oa, 'oa', 'oa'));
+        }, function () { renderFlowFields(); }, 'oa'));
 
         // Energy recovery
         form.appendChild(stageSection('er', 'Energy recovery on outdoor air', a.erv, function (sec, body) {
             body.appendChild(hint('Wheel or plate exchanger between outdoor and exhaust (return) air. The outdoor air leaving it plots as ER.'));
             var g = fields();
-            g.appendChild(numberField('Sensible eff.', 'pct', a.erv.effS, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effS = v; }));
-            g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }));
+            g.appendChild(numberField('Sensible eff.', 'pct', a.erv.effS, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effS = v; }, 'erv_s'));
+            g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }, 'erv_l'));
             body.appendChild(g);
             body.appendChild(errorLine('erv'));
-        }));
+        }, null, 'erv'));
 
         // Return air
         form.appendChild(stageSection('ra', 'Return air', a.ra, function (sec, body) {
-            body.appendChild(buildStateFields(a.ra, 'ra'));
-        }, function () { renderFlowFields(); }));
+            body.appendChild(buildStateFields(a.ra, 'ra', 'ra'));
+        }, function () { renderFlowFields(); }, 'ra'));
 
         // Airflow
         var flow = document.createElement('div');
@@ -525,6 +649,7 @@
         var basisRow = document.createElement('div');
         basisRow.className = 'psy-radio-row';
         basisRow.appendChild(inlineLabel('Load basis:'));
+        basisRow.appendChild(help('basis'));
         [['std', 'Standard air (' + (sys() === 'SI' ? '1.2 kg/m³' : '0.075 lb/ft³') + ')'], ['actual', 'Actual air at each stream']].forEach(function (m) {
             basisRow.appendChild(radio('psy-basis', m[0], m[1], a.basis === m[0], function () { a.basis = m[0]; save(); recompute(); }));
         });
@@ -539,22 +664,23 @@
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Changeover:'));
+            r.appendChild(help('econ_mode'));
             [['enthalpy', 'Differential enthalpy'], ['db', 'Differential dry bulb']].forEach(function (m) {
                 r.appendChild(radio('psy-econ-mode', m[0], m[1], a.econ.mode === m[0], function () { a.econ.mode = m[0]; save(); recompute(); }));
             });
             body.appendChild(r);
             var g = fields();
-            g.appendChild(numberField('High limit', 'temp', a.econ.limitDb, { step: 0.5 }, function (v) { a.econ.limitDb = v; }));
+            g.appendChild(numberField('High limit', 'temp', a.econ.limitDb, { step: 0.5 }, function (v) { a.econ.limitDb = v; }, 'econ_limit'));
             body.appendChild(g);
-        }));
+        }, null, 'econ'));
 
         // Preheat
         form.appendChild(stageSection('ph', 'Preheat coil', a.preheat, function (sec, body) {
             var g = fields();
-            g.appendChild(numberField('Leaving dry bulb', 'temp', a.preheat.db, { step: 0.5 }, function (v) { a.preheat.db = v; }));
+            g.appendChild(numberField('Leaving dry bulb', 'temp', a.preheat.db, { step: 0.5 }, function (v) { a.preheat.db = v; }, 'preheat_db'));
             body.appendChild(g);
             body.appendChild(errorLine('preheat'));
-        }));
+        }, null, 'preheat'));
 
         // Cooling coil
         form.appendChild(stageSection('sa', 'Cooling coil leaving air', a.coil, function (sec, body) {
@@ -569,37 +695,38 @@
             body.appendChild(r);
             if (a.coil.mode === 'adp') {
                 var g = fields();
-                g.appendChild(numberField('Apparatus dew point', 'temp', a.coil.adp, { step: 0.5 }, function (v) { a.coil.adp = v; }));
-                g.appendChild(numberField('Bypass factor', 'pct', a.coil.bf, { min: 0, max: 99, step: 1 }, function (v) { a.coil.bf = v; }));
+                g.appendChild(numberField('Apparatus dew point', 'temp', a.coil.adp, { step: 0.5 }, function (v) { a.coil.adp = v; }, 'coil_adp'));
+                g.appendChild(numberField('Bypass factor', 'pct', a.coil.bf, { min: 0, max: 99, step: 1 }, function (v) { a.coil.bf = v; }, 'coil_bf'));
                 body.appendChild(g);
                 body.appendChild(errorLine('coil'));
                 body.appendChild(hint('Leaving state is the point on the entering → ADP line a bypass-factor fraction back from the ADP.'));
             } else {
-                body.appendChild(buildStateFields(a.coil, 'coil'));
+                body.appendChild(buildStateFields(a.coil, 'coil', 'coil'));
                 body.appendChild(hint('The ADP and bypass factor implied by this leaving condition are reported below.'));
             }
-        }));
+        }, null, 'coil'));
 
         // Supply fan (draw-through: after the coil, before reheat)
         form.appendChild(stageSection('sf', 'Supply fan heat (draw-through)', a.fan, function (sec, body) {
             body.appendChild(hint('Fan and motor heat picked up after the coil, before any reheat.'));
             buildFanFields(body, a.fan, 'fan');
-        }));
+        }, null, 'fan'));
 
         // Reheat
         form.appendChild(stageSection('rh', 'Reheat', a.reheat, function (sec, body) {
             body.appendChild(hint('Hot gas, electric or hydronic reheat: humidity ratio is held, only dry bulb rises.'));
             var g = fields();
-            g.appendChild(numberField('Leaving dry bulb', 'temp', a.reheat.db, { step: 0.5 }, function (v) { a.reheat.db = v; }));
+            g.appendChild(numberField('Leaving dry bulb', 'temp', a.reheat.db, { step: 0.5 }, function (v) { a.reheat.db = v; }, 'reheat_db'));
             body.appendChild(g);
             body.appendChild(errorLine('reheat'));
-        }));
+        }, null, 'reheat'));
 
         // Humidifier
         form.appendChild(stageSection('hu', 'Humidifier', a.hum, function (sec, body) {
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Type:'));
+            r.appendChild(help('hum_type'));
             [['steam', 'Steam (constant dry bulb)'], ['evap', 'Evaporative (constant wet bulb)']].forEach(function (m) {
                 r.appendChild(radio('psy-hum-type', m[0], m[1], a.hum.type === m[0], function () {
                     a.hum.type = m[0]; save(); buildForm(); recompute();
@@ -608,25 +735,26 @@
             body.appendChild(r);
             var g = fields();
             if (a.hum.type === 'evap') {
-                g.appendChild(numberField('Effectiveness', 'pct', a.hum.eff, { min: 0, max: 100, step: 1 }, function (v) { a.hum.eff = v; }));
+                g.appendChild(numberField('Effectiveness', 'pct', a.hum.eff, { min: 0, max: 100, step: 1 }, function (v) { a.hum.eff = v; }, 'hum_eff'));
             } else {
-                g.appendChild(buildSecondProperty(a.hum, 'Target', ['rh', 'dp', 'w']));
+                g.appendChild(buildSecondProperty(a.hum, 'Target', ['rh', 'dp', 'w'], 'hum_target'));
             }
             body.appendChild(g);
             body.appendChild(errorLine('hum'));
-        }));
+        }, null, 'hum'));
 
         // Room
         form.appendChild(stageSection('rm', 'Room', a.room, function (sec, body) {
             body.appendChild(hint('Space condition and loads draw the room sensible-heat-ratio line and size the supply air.'));
-            body.appendChild(buildStateFields(a.room, 'room'));
+            body.appendChild(buildStateFields(a.room, 'room', 'room'));
             var g = fields();
-            g.appendChild(numberField('Sensible load', 'power', a.room.qs, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { a.room.qs = v; }));
-            g.appendChild(numberField('Latent load', 'power', a.room.ql, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { a.room.ql = v; }));
+            g.appendChild(numberField('Sensible load', 'power', a.room.qs, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { a.room.qs = v; }, 'room_qs'));
+            g.appendChild(numberField('Latent load', 'power', a.room.ql, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { a.room.ql = v; }, 'room_ql'));
             body.appendChild(g);
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Solve for:'));
+            r.appendChild(help('room_solve'));
             [['db', 'Supply temperature from airflow'], ['cfm', 'Airflow from supply temperature']].forEach(function (m) {
                 r.appendChild(radio('psy-room-solve', m[0], m[1], a.room.solve === m[0], function () {
                     a.room.solve = m[0]; save(); buildForm(); recompute();
@@ -635,21 +763,22 @@
             body.appendChild(r);
             var g2 = fields();
             if (a.room.solve === 'cfm') {
-                g2.appendChild(numberField('Supply dry bulb', 'temp', a.room.dbSupply, { step: 0.5 }, function (v) { a.room.dbSupply = v; }));
+                g2.appendChild(numberField('Supply dry bulb', 'temp', a.room.dbSupply, { step: 0.5 }, function (v) { a.room.dbSupply = v; }, 'room_dbsupply'));
             } else {
-                var f = numberField('Supply airflow', 'flow', a.room.cfm, { min: 0, step: 50 }, function (v) { a.room.cfm = v; });
+                var f = numberField('Supply airflow', 'flow', a.room.cfm, { min: 0, step: 50 }, function (v) { a.room.cfm = v; }, 'room_cfm');
                 f.querySelector('input').placeholder = 'system';
                 g2.appendChild(f);
             }
             body.appendChild(g2);
             body.appendChild(errorLine('room'));
-        }));
+        }, null, 'room'));
     }
 
     function buildFanFields(body, fan, errId) {
         var r = document.createElement('div');
         r.className = 'psy-radio-row';
         r.appendChild(inlineLabel('Heat from:'));
+        r.appendChild(help('fan_mode'));
         [['bhp', 'Brake horsepower'], ['dt', 'Temperature rise']].forEach(function (m) {
             r.appendChild(radio('psy-' + errId + '-mode', m[0], m[1], fan.mode === m[0], function () {
                 fan.mode = m[0]; save(); buildForm(); recompute();
@@ -658,9 +787,9 @@
         body.appendChild(r);
         var g = fields();
         if (fan.mode === 'dt') {
-            g.appendChild(numberField('Temperature rise', 'dtemp', fan.dt, { min: 0, step: 0.1 }, function (v) { fan.dt = v; }));
+            g.appendChild(numberField('Temperature rise', 'dtemp', fan.dt, { min: 0, step: 0.1 }, function (v) { fan.dt = v; }, 'fan_dt'));
         } else {
-            g.appendChild(numberField('Fan power', 'hp', fan.bhp, { min: 0, step: 0.25 }, function (v) { fan.bhp = v; }));
+            g.appendChild(numberField('Fan power', 'hp', fan.bhp, { min: 0, step: 0.25 }, function (v) { fan.bhp = v; }, 'fan_bhp'));
             var lbl = document.createElement('label');
             lbl.className = 'psy-check';
             var cb = document.createElement('input');
@@ -671,8 +800,9 @@
             sp.textContent = 'Motor in airstream';
             lbl.appendChild(cb); lbl.appendChild(sp);
             g.appendChild(lbl);
+            g.appendChild(help('fan_motor'));
             if (fan.motorIn) {
-                g.appendChild(numberField('Motor eff.', 'pct', fan.motorEff, { min: 1, max: 100, step: 1 }, function (v) { fan.motorEff = v; }));
+                g.appendChild(numberField('Motor eff.', 'pct', fan.motorEff, { min: 1, max: 100, step: 1 }, function (v) { fan.motorEff = v; }, 'fan_eff'));
             }
         }
         body.appendChild(g);
@@ -680,7 +810,7 @@
     }
 
     // A chain stage: swatch + title + Include toggle; body greys out when off.
-    function stageSection(pointId, titleText, obj, buildBody, onToggle) {
+    function stageSection(pointId, titleText, obj, buildBody, onToggle, helpKey) {
         var sec = document.createElement('div');
         sec.className = 'psy-section psy-stage psy-point-' + pointId;
         var head = document.createElement('div');
@@ -692,6 +822,7 @@
         h.className = 'psy-section-title';
         h.textContent = titleText;
         head.appendChild(h);
+        if (helpKey) head.appendChild(help(helpKey));
         var toggle = document.createElement('label');
         toggle.className = 'psy-check';
         var cb = document.createElement('input');
@@ -740,18 +871,19 @@
                     a.flowMode = m[0]; save(); renderFlowFields(); recompute();
                 }));
             });
+            modes.appendChild(help('flowmode'));
             wrap.appendChild(modes);
             if (a.flowMode === 'pct') {
-                g.appendChild(numberField('Total airflow', 'flow', a.totalCfm, { min: 0, step: 50 }, function (v) { a.totalCfm = v; }));
-                g.appendChild(numberField('Outdoor air', 'pct', a.oaPct, { min: 0, max: 100, step: 1 }, function (v) { a.oaPct = v; }));
+                g.appendChild(numberField('Total airflow', 'flow', a.totalCfm, { min: 0, step: 50 }, function (v) { a.totalCfm = v; }, 'total_cfm'));
+                g.appendChild(numberField('Outdoor air', 'pct', a.oaPct, { min: 0, max: 100, step: 1 }, function (v) { a.oaPct = v; }, 'oa_pct'));
             } else {
-                g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }));
-                g.appendChild(numberField('Return air', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }));
+                g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }, 'oa_cfm'));
+                g.appendChild(numberField('Return air', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }, 'ra_cfm'));
             }
         } else if (a.oa.enabled) {
-            g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }));
+            g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }, 'oa_cfm'));
         } else if (a.ra.enabled) {
-            g.appendChild(numberField('Return air', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }));
+            g.appendChild(numberField('Return air', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }, 'ra_cfm'));
         } else {
             g.appendChild(hint('Include at least one air stream above.'));
         }
@@ -830,13 +962,14 @@
     }
 
     // [label] [input in display units] [unit]; onChange receives IP.
-    function numberField(labelText, kind, ipValue, opts, onChange) {
+    function numberField(labelText, kind, ipValue, opts, onChange, helpKey) {
         var wrap = document.createElement('label');
         wrap.className = 'psy-field';
         var label = document.createElement('span');
         label.className = 'psy-field-label';
         label.textContent = labelText;
         wrap.appendChild(label);
+        if (helpKey) wrap.appendChild(help(helpKey));
         var input = numberInput(inputDisp(kind, ipValue), opts);
         input.addEventListener('input', function () {
             var v = input.value === '' ? null : toNum(input.value, null);
@@ -875,7 +1008,7 @@
     }
 
     // Property selector + value for `obj` ({key, value}); optional key subset.
-    function buildSecondProperty(obj, labelText, allowedKeys) {
+    function buildSecondProperty(obj, labelText, allowedKeys, helpKey) {
         var second = document.createElement('div');
         second.className = 'psy-field';
         if (labelText) {
@@ -884,6 +1017,7 @@
             l.textContent = labelText;
             second.appendChild(l);
         }
+        if (helpKey) second.appendChild(help(helpKey));
         var select = document.createElement('select');
         select.className = 'filter-select psy-select';
         select.setAttribute('aria-label', 'Property');
@@ -918,12 +1052,12 @@
     }
 
     // Dry bulb + (property selector, value) for one air state.
-    function buildStateFields(obj, id) {
+    function buildStateFields(obj, id, helpBase) {
         var wrap = document.createElement('div');
         wrap.className = 'psy-state-fields';
         var grid = fields();
-        grid.appendChild(numberField('Dry bulb', 'temp', obj.db, { step: 0.5 }, function (v) { obj.db = v; }));
-        grid.appendChild(buildSecondProperty(obj, null, null));
+        grid.appendChild(numberField('Dry bulb', 'temp', obj.db, { step: 0.5 }, function (v) { obj.db = v; }, helpBase ? helpBase + '_db' : null));
+        grid.appendChild(buildSecondProperty(obj, null, null, helpBase ? helpBase + '_second' : null));
         wrap.appendChild(grid);
         wrap.appendChild(errorLine(id));
         return wrap;

@@ -1176,3 +1176,50 @@
 }
 
 .psy-point-sf { --psy-color: #94a3b8; }
+
+/* ---------- "?" help icons and popover ---------- */
+
+.psy-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-left: 2px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: help;
+    transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.psy-help:hover,
+.psy-help:focus-visible {
+    color: var(--color-text-inverse);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    outline: none;
+}
+
+.psy-section-head .psy-help {
+    margin-right: auto;
+}
+
+.psy-help-pop {
+    position: fixed;
+    z-index: 1200;
+    max-width: 340px;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    font-size: var(--font-size-xs);
+    line-height: 1.45;
+    pointer-events: auto;
+}

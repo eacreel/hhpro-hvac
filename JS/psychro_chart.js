@@ -527,24 +527,60 @@
         // Compact boxes stacked down the top-left of the plot. Each box:
         // { title, rows: [{ swatch, text }] } with swatch one of
         // ok | no | econ | limit | region | room | req | null.
+        // Text width is estimated per character (Inter at 9px) and long
+        // rows wrap, so the box always encloses its text.
+        function estWidth(str, size) {
+            var w = 0;
+            for (var i = 0; i < str.length; i++) {
+                var ch = str[i];
+                if (ch === ' ') w += 0.28;
+                else if (/[A-Z]/.test(ch)) w += 0.70;
+                else if (/[0-9]/.test(ch)) w += 0.60;
+                else if (/[mw]/.test(ch)) w += 0.85;
+                else if (/[il.,:;'|!]/.test(ch)) w += 0.30;
+                else if (/[a-z]/.test(ch)) w += 0.56;
+                else w += 0.60;
+            }
+            return w * size;
+        }
+
+        function wrapText(str, maxW, size) {
+            var words = str.split(' '), lines = [], cur = '';
+            words.forEach(function (wd) {
+                var trial = cur ? cur + ' ' + wd : wd;
+                if (cur && estWidth(trial, size) > maxW) { lines.push(cur); cur = wd; }
+                else cur = trial;
+            });
+            if (cur) lines.push(cur);
+            return lines;
+        }
+
         function drawCallout() {
             clear(gCallout);
             var list = current.callouts || [];
             var x = mL + 8, y = mT + 44;
-            var lineH = 12, pad = 6, swatchW = 20, charW = 4.7; // ~9px text
+            var size = 9, lineH = 12, pad = 6, swatchW = 20;
+            var maxTextW = pw * 0.46 - swatchW - pad * 2;
             list.forEach(function (c) {
                 if (!c || !c.rows || !c.rows.length) return;
-                var maxLen = (c.title || '').length * 1.1;
-                c.rows.forEach(function (r) { maxLen = Math.max(maxLen, r.text.length); });
-                var w = Math.min(pw * 0.42, Math.max(150, maxLen * charW + swatchW + pad * 2 + 4));
-                var h = pad * 2 + (c.title ? lineH + 1 : 0) + c.rows.length * lineH;
+                var rows = c.rows.map(function (r) {
+                    return { swatch: r.swatch, lines: wrapText(r.text, maxTextW, size) };
+                });
+                var widest = c.title ? estWidth(c.title, size + 0.5) * 1.05 : 0;
+                var lineCount = 0;
+                rows.forEach(function (r) {
+                    r.lines.forEach(function (ln) { widest = Math.max(widest, estWidth(ln, size) + swatchW); });
+                    lineCount += r.lines.length;
+                });
+                var w = Math.min(pw * 0.46, widest + pad * 2 + 6);
+                var h = pad * 2 + (c.title ? lineH + 1 : 0) + lineCount * lineH;
                 gCallout.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 3 }, 'psy-callout-bg'));
                 var cy = y + pad + 9;
                 if (c.title) {
                     gCallout.appendChild(text(x + pad, cy, c.title, 'psy-callout-title', 'start'));
                     cy += lineH + 1;
                 }
-                c.rows.forEach(function (r) {
+                rows.forEach(function (r) {
                     var sx = x + pad, sy = cy - 3;
                     if (r.swatch === 'econ' || r.swatch === 'limit' || r.swatch === 'room') {
                         gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy },
@@ -556,8 +592,10 @@
                     } else if (r.swatch === 'req') {
                         gCallout.appendChild(el('circle', { cx: sx + 5, cy: sy, r: 3.5 }, 'psy-callout-req'));
                     }
-                    gCallout.appendChild(text(x + pad + swatchW, cy, r.text, 'psy-callout-text', 'start'));
-                    cy += lineH;
+                    r.lines.forEach(function (ln) {
+                        gCallout.appendChild(text(x + pad + swatchW, cy, ln, 'psy-callout-text', 'start'));
+                        cy += lineH;
+                    });
                 });
                 y += h + 6;
             });
