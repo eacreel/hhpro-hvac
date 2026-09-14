@@ -380,8 +380,7 @@
         var s = state;
         var seed = {
             units: s.units, altitude: s.altitude, basis: s.basis,
-            room: deepClone(s.room), ql: toNum(s.ql, null), cfm: toNum(s.cfm, null),
-            snapshot: deepClone(s)      // full calculation, reported in the chart's PDF
+            room: deepClone(s.room), ql: toNum(s.ql, null), cfm: toNum(s.cfm, null)
         };
         try {
             var res = evaluate(s);
