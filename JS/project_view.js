@@ -498,18 +498,29 @@
     // Saved psychrometric calculations (Calculators section)
     // =================================================================
 
-    function savedCalcCount() {
-        if (!HHpro.Psychrometrics || !HHpro.Psychrometrics.listSaved) return 0;
-        return HHpro.Psychrometrics.listSaved().length;
+    // One shared list (HHpro.Calculators.saved); each entry names the
+    // calculator it came from, whose registry def supplies the summary,
+    // PDF builder, icon and view.
+    function savedCalcs() {
+        if (!HHpro.Calculators || !HHpro.Calculators.saved) return [];
+        return HHpro.Calculators.saved.list();
+    }
+
+    function savedCalcCount() { return savedCalcs().length; }
+
+    function calcDef(calc) {
+        return (HHpro.Calculators && HHpro.Calculators.get(HHpro.Calculators.saved.calcKey(calc))) || {};
     }
 
     function calcFileName(calc) {
         var base = String(calc.name || 'Calculation').replace(/[\\/:*?"<>|]+/g, '-').trim() || 'Calculation';
-        return base + ' - Psychrometrics.pdf';
+        return base + ' - ' + (calcDef(calc).name || 'Calculation') + '.pdf';
     }
 
     function calcPdfBlob(calc, activeState) {
-        return HHpro.Psychrometrics.pdfBlob(calc.snapshot, {
+        var def = calcDef(calc);
+        if (!def.saved || !def.saved.pdfBlob) throw new Error('This calculator cannot build a PDF.');
+        return def.saved.pdfBlob(calc.snapshot, {
             projectName: activeState.name || '',
             title: calc.name,
             savedAt: calc.savedAt
@@ -519,10 +530,10 @@
     // Project-level synthetic files for the Files tab / ZIP: one PDF per
     // saved calculation, generated on demand like the combined schedules.
     function buildCalculationFiles(activeState) {
-        if (!HHpro.Psychrometrics || !HHpro.Psychrometrics.listSaved) return [];
-        var DOC_TYPE = 'PSYCHROMETRICS (PDF)';
-        return HHpro.Psychrometrics.listSaved().map(function (calc) {
+        return savedCalcs().map(function (calc) {
             var name = calcFileName(calc);
+            var def = calcDef(calc);
+            var DOC_TYPE = (def.saved && def.saved.docType) || 'CALCULATION (PDF)';
             return {
                 key: 'calc||' + calc.id,
                 docColumn: { name: DOC_TYPE, folder: 'CALCULATIONS', fileExtension: 'pdf' },
@@ -539,14 +550,14 @@
     }
 
     function renderCalculationsTab(container, activeState) {
-        var list = HHpro.Psychrometrics ? HHpro.Psychrometrics.listSaved() : [];
+        var list = savedCalcs();
         var wrap = document.createElement('div');
         wrap.className = 'calc-saved-list';
 
         if (!list.length) {
             var empty = document.createElement('p');
             empty.className = 'calc-saved-empty';
-            empty.textContent = 'No saved calculations yet. Use Save to project on the Psychrometrics calculator.';
+            empty.textContent = 'No saved calculations yet. Use Save to project on any calculator.';
             wrap.appendChild(empty);
             container.appendChild(wrap);
             return;
@@ -555,10 +566,11 @@
         list.forEach(function (calc) {
             var card = document.createElement('div');
             card.className = 'calc-saved-card';
+            var def = calcDef(calc);
 
             var icon = document.createElement('div');
             icon.className = 'calc-saved-icon';
-            icon.appendChild(HHpro.UI.icon('thermometer'));
+            icon.appendChild(HHpro.UI.icon(def.icon || 'calculator'));
             card.appendChild(icon);
 
             var body = document.createElement('div');
@@ -572,8 +584,8 @@
             var when = calc.savedAt ? new Date(calc.savedAt).toLocaleString('en-US', {
                 year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
             }) : '';
-            var summary = HHpro.Psychrometrics.summarize ? HHpro.Psychrometrics.summarize(calc.snapshot) : '';
-            meta.textContent = [when, summary].filter(Boolean).join(' \u00B7 ');
+            var summary = (def.saved && def.saved.summarize) ? def.saved.summarize(calc.snapshot) : '';
+            meta.textContent = [when, def.name, summary].filter(Boolean).join(' \u00B7 ');
             body.appendChild(meta);
             card.appendChild(body);
 
@@ -585,7 +597,7 @@
             open.className = 'projects-btn projects-btn-primary';
             open.textContent = 'Open';
             open.addEventListener('click', function () {
-                HHpro.App.showView('psychrometrics', { calcId: calc.id });
+                HHpro.App.showView(def.view || 'psychrometrics', { calcId: calc.id });
             });
             actions.appendChild(open);
 
@@ -614,7 +626,7 @@
             del.appendChild(delLbl);
             del.addEventListener('click', function () {
                 if (!confirm('Delete "' + calc.name + '" from this project?')) return;
-                HHpro.Psychrometrics.deleteSaved(calc.id);
+                HHpro.Calculators.saved.remove(calc.id);
                 filesCache = null;
                 HHpro.App.showView('project_view');
             });

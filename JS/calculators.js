@@ -39,7 +39,43 @@
             }
             registry.push(def);
         },
-        list: function () { return registry.slice(); }
+        list: function () { return registry.slice(); },
+        get: function (key) {
+            for (var i = 0; i < registry.length; i++) if (registry[i].key === key) return registry[i];
+            return null;
+        },
+        // Saved calculations live in the project extra 'calculations' as one
+        // list shared by every calculator. Each entry: { id, name, savedAt,
+        // calc: <registry key>, snapshot }. Entries without `calc` predate the
+        // second calculator and belong to psychrometrics. A calculator that
+        // wants its saves listed in the project view registers
+        // saved: { summarize(snapshot), pdfBlob(snapshot, meta), docType }.
+        saved: {
+            KEY: 'calculations',
+            list: function () {
+                if (!HHpro.Cart || !HHpro.Cart.getProjectExtra) return [];
+                var ex = HHpro.Cart.getProjectExtra('calculations') || {};
+                return Array.isArray(ex.list) ? ex.list : [];
+            },
+            find: function (id) {
+                var list = HHpro.Calculators.saved.list();
+                for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+                return null;
+            },
+            write: function (list) { HHpro.Cart.setProjectExtra('calculations', { list: list }); },
+            add: function (entry) {
+                var list = HHpro.Calculators.saved.list();
+                entry.id = entry.id || ('calc_' + Date.now().toString(36));
+                entry.savedAt = entry.savedAt || new Date().toISOString();
+                list.push(entry);
+                HHpro.Calculators.saved.write(list);
+                return entry;
+            },
+            remove: function (id) {
+                HHpro.Calculators.saved.write(HHpro.Calculators.saved.list().filter(function (c) { return c.id !== id; }));
+            },
+            calcKey: function (entry) { return (entry && entry.calc) || 'psychrometrics'; }
+        }
     };
 
     HHpro.Views.calculators = {

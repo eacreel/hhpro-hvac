@@ -38,7 +38,6 @@
     HHpro.Views = HHpro.Views || {};
 
     var STORAGE_KEY = 'hhpro.psychro';
-    var CALC_EXTRA_KEY = 'calculations';
     var MAX_POINTS = 8;
     var POINT_COLOR_COUNT = 6;
 
@@ -159,7 +158,8 @@
         name: 'Psychrometrics',
         description: 'Air handler chain (mixing, coils, fan, reheat, humidifier), room loads, economizer and condensate on a psychrometric chart.',
         icon: 'thermometer',
-        view: 'psychrometrics'
+        view: 'psychrometrics',
+        saved: { summarize: summarize, pdfBlob: pdfBlob, docType: 'PSYCHROMETRICS (PDF)' }
     });
 
 
@@ -297,6 +297,7 @@
                 var saved = findSaved(params.calcId);
                 if (saved) { state = fromSnapshot(saved.snapshot); save(); }
             }
+            if (params && params.seed) applySeed(params.seed);
             root.innerHTML = '';
             refs = {};
             fieldErrorEls = {};
@@ -321,6 +322,36 @@
             recompute();
         }
     };
+
+    // Hand-off from the Supply air dew point calculator: DOAS preset with
+    // the Room check in ventilation-latent mode and its inputs filled in.
+    // seed = { units, altitude, basis, room: {db, key, value}, ql, cfm, supplyDp }
+    function applySeed(seed) {
+        state = defaults();
+        if (seed.units === 'SI') state.units = 'SI';
+        if (isFinite(seed.altitude)) state.altitude = Number(seed.altitude);
+        var a = state.ahu;
+        if (seed.basis === 'std' || seed.basis === 'actual') a.basis = seed.basis;
+        applyPreset('doas');
+        a.room.enabled = true;
+        a.room.latentOnly = true;
+        if (seed.room) {
+            if (isFinite(seed.room.db)) a.room.db = Number(seed.room.db);
+            if (seed.room.key) a.room.key = seed.room.key;
+            if (seed.room.value !== undefined && seed.room.value !== null) a.room.value = Number(seed.room.value);
+        }
+        if (isFinite(seed.ql)) a.room.ql = Number(seed.ql);
+        if (isFinite(seed.cfm) && seed.cfm !== null) { a.room.vozCfm = Number(seed.cfm); a.oaCfm = Number(seed.cfm); }
+        // Put the coil at the delivered dew point (near-saturated) when known,
+        // so the SA point sits where the unit actually leaves the air.
+        if (isFinite(seed.supplyDp) && seed.supplyDp !== null) {
+            a.coil.mode = 'leaving';
+            a.coil.db = Number(seed.supplyDp) + 2;
+            a.coil.key = 'dp';
+            a.coil.value = Number(seed.supplyDp);
+        }
+        save();
+    }
 
     function buildTopBar() {
         var bar = document.createElement('div');
@@ -2023,25 +2054,18 @@
         return bits.join(' · ');
     }
 
+    // Saved calculations are stored by the shared store in calculators.js;
+    // this calculator only sees its own entries.
     function listSaved() {
-        if (!HHpro.Cart || !HHpro.Cart.getProjectExtra) return [];
-        var ex = HHpro.Cart.getProjectExtra(CALC_EXTRA_KEY) || {};
-        return Array.isArray(ex.list) ? ex.list : [];
+        return HHpro.Calculators.saved.list().filter(function (c) { return HHpro.Calculators.saved.calcKey(c) === 'psychrometrics'; });
     }
 
     function findSaved(id) {
-        var list = listSaved();
-        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
-        return null;
+        var c = HHpro.Calculators.saved.find(id);
+        return (c && HHpro.Calculators.saved.calcKey(c) === 'psychrometrics') ? c : null;
     }
 
-    function writeSaved(list) {
-        HHpro.Cart.setProjectExtra(CALC_EXTRA_KEY, { list: list });
-    }
-
-    function deleteSaved(id) {
-        writeSaved(listSaved().filter(function (c) { return c.id !== id; }));
-    }
+    function deleteSaved(id) { HHpro.Calculators.saved.remove(id); }
 
     function beginSave(bar) {
         if (bar.querySelector('.psy-save-form')) return;
@@ -2074,14 +2098,7 @@
         ok.addEventListener('click', function () {
             var name = input.value.trim() || defaultCalcName();
             var proceed = function () {
-                var list = listSaved();
-                list.push({
-                    id: 'calc_' + Date.now().toString(36),
-                    name: name,
-                    savedAt: new Date().toISOString(),
-                    snapshot: deepClone(state)
-                });
-                writeSaved(list);
+                HHpro.Calculators.saved.add({ name: name, calc: 'psychrometrics', snapshot: deepClone(state) });
                 done();
                 var active = HHpro.Cart.getActiveState();
                 setStatus('Saved to ' + (active.mode === 'project' ? (active.name || 'project') : 'the temporary cart') + '.');
