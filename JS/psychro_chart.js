@@ -582,7 +582,7 @@
                 }
                 rows.forEach(function (r) {
                     var sx = x + pad, sy = cy - 3;
-                    if (r.swatch === 'econ' || r.swatch === 'limit' || r.swatch === 'room') {
+                    if (r.swatch === 'econ' || r.swatch === 'limit' || r.swatch === 'room' || r.swatch === 'dplimit') {
                         gCallout.appendChild(el('line', { x1: sx, y1: sy, x2: sx + swatchW - 4, y2: sy },
                             'psy-line psy-line-' + r.swatch + ' psy-callout-swatch'));
                     } else if (r.swatch === 'region') {

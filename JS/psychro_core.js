@@ -421,6 +421,42 @@
         };
     }
 
+    // ----- Ventilation latent limit ("Law #1") -----
+    // Moisture the air can absorb between the space and the supply state:
+    //   Q_latent = m x HFG_LATENT x (W_space - W_supply)
+    // With standard air (m = 4.5 x CFM) and W in grains this is the
+    // familiar 0.69 x CFM x delta-grains rule (4.5 x 1076 / 7000 = 0.69),
+    // the form manufacturers quote for dedicated outdoor air design.
+    var HFG_LATENT = 1076; // Btu per lb of water vapor
+
+    // The wettest supply state (humidity ratio / dew point) at which `cfm`
+    // of air still removes `ql` Btu/h of latent load from the room.
+    function latentLimit(room, ql, cfm, basis, P) {
+        ql = Number(ql); cfm = Number(cfm);
+        if (!isFinite(ql) || ql < 0) throw new Error('Room latent load cannot be negative');
+        if (!isFinite(cfm) || cfm <= 0) throw new Error('Enter the airflow for the latent check');
+        var m = massFlow(room, cfm, basis);
+        var dW = ql / (m * HFG_LATENT);
+        var w = room.w - dW;
+        if (w <= 0) throw new Error('This airflow cannot carry the latent load at any dew point; raise the airflow');
+        var st = fromDbW(room.db, w, P);
+        return {
+            state: st,
+            w: w,
+            dp: st.dp,
+            grains: w * GRAINS_PER_LB,
+            dW: dW,
+            massFlow: m,
+            cfm: cfm,
+            factor: HFG_LATENT * (m / cfm) / GRAINS_PER_LB   // Btu/h per CFM per gr/lb; 0.69 for standard air
+        };
+    }
+
+    // Latent load a dry-air mass flow removes going from `room` to `supply`.
+    function latentCarried(room, supply, massLbHr) {
+        return massLbHr * HFG_LATENT * (room.w - supply.w);
+    }
+
     // ----- Economizer check -----
     // opts: { mode: 'db' | 'enthalpy', limitDb (F, fixed high limit) }
     function economizer(oa, ra, opts) {
@@ -558,6 +594,9 @@
         erv: erv,
         roomLine: roomLine,
         supplyFromRoom: supplyFromRoom,
+        latentLimit: latentLimit,
+        latentCarried: latentCarried,
+        HFG_LATENT: HFG_LATENT,
         economizer: economizer,
         condensate: condensate,
         satHumRatio: satHumRatio,
