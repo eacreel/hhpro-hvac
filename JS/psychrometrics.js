@@ -337,6 +337,24 @@
         intro.appendChild(title);
         intro.appendChild(sub);
         bar.appendChild(intro);
+
+        // Design-condition lookup (ASHRAE climatic data by station). A plain
+        // link: nothing is requested until it is clicked, so privacy.js
+        // stays accurate.
+        var links = document.createElement('div');
+        links.className = 'psy-topbar-links';
+        var meteo = document.createElement('a');
+        meteo.className = 'projects-btn projects-btn-secondary psy-ext-link';
+        meteo.href = 'https://ashrae-meteo.info/';
+        meteo.target = '_blank';
+        meteo.rel = 'noopener noreferrer';
+        meteo.title = 'ASHRAE climatic design conditions by weather station (opens in a new tab)';
+        meteo.appendChild(HHpro.UI.icon('search'));
+        var meteoLbl = document.createElement('span');
+        meteoLbl.textContent = 'ASHRAE design conditions';
+        meteo.appendChild(meteoLbl);
+        links.appendChild(meteo);
+        bar.appendChild(links);
         return bar;
     }
 

@@ -114,6 +114,23 @@
     flex-shrink: 0;
 }
 
+.psy-topbar-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    align-self: flex-start;
+}
+
+.psy-ext-link {
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.psy-ext-link svg {
+    width: 14px;
+    height: 14px;
+}
+
 .psy-title {
     font-size: var(--font-size-xl);
     color: var(--color-text);
