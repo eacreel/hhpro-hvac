@@ -152,6 +152,20 @@
         return fromDbW(db, w, P);
     }
 
+    // Value of one INPUT_KEYS property for a state, in the units state()
+    // accepts (RH in %, W in grains): lets a form re-express the same
+    // point when the user switches which property they enter.
+    function propertyValue(st, key) {
+        switch (key) {
+            case 'wb': return st.wb;
+            case 'rh': return st.rh * 100;
+            case 'dp': return st.dp;
+            case 'w':  return st.grains;
+            case 'h':  return st.h;
+            default: throw new Error('Unknown property "' + key + '"');
+        }
+    }
+
     // Mass flow of dry air through a stream, lb/hr.
     //   basis 'std'    - standard air, 0.075 lb/ft3 (CFM x 4.5), the
     //                    convention behind published coil loads; altitude
@@ -578,6 +592,7 @@
         inHgFromPsi: function (psi) { return psi * INHG_PER_PSI; },
         cpMoist: cpMoist,
         state: state,
+        propertyValue: propertyValue,
         fromDbW: fromDbW,
         fromDbWClamped: fromDbWClamped,
         massFlow: massFlow,

@@ -558,9 +558,23 @@
         unit.textContent = U.unit(kindForKey(obj.key), sys());
         second.appendChild(unit);
         select.addEventListener('change', function () {
+            // Same air state, new property: re-express the value so the
+            // point does not jump when the selector changes.
+            var converted = null;
+            try {
+                if (obj.value !== null && obj.value !== undefined && isFinite(Number(obj.db))) {
+                    var st = Psy.state(obj.db, obj.key, obj.value, Psy.pressureFromAltitude(state.altitude));
+                    converted = Psy.propertyValue(st, select.value);
+                }
+            } catch (e) { converted = null; }
             obj.key = select.value;
             unit.textContent = U.unit(kindForKey(obj.key), sys());
-            obj.value = input.value === '' ? null : U.fromDisp(kindForKey(obj.key), toNum(input.value, null), sys());
+            if (converted !== null && isFinite(converted)) {
+                obj.value = converted;
+                input.value = inputDisp(kindForKey(obj.key), obj.value);
+            } else {
+                obj.value = input.value === '' ? null : U.fromDisp(kindForKey(obj.key), toNum(input.value, null), sys());
+            }
             recompute();
         });
         input.addEventListener('input', function () {

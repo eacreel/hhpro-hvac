@@ -1238,6 +1238,20 @@
         return U.fromDisp(kindForKey(obj.key), disp, sys());
     }
 
+    // Value of `newKey` for the state {obj.db, oldKey, obj.value}, in IP,
+    // or null when there is no dry bulb (humidifier target) or the
+    // current value does not describe a valid state.
+    function convertSecond(obj, oldKey, newKey) {
+        if (oldKey === newKey) return null;
+        var db = Number(obj.db), v = Number(obj.value);
+        if (!isFinite(db) || obj.value === null || obj.value === undefined || !isFinite(v)) return null;
+        try {
+            var st = Psy.state(db, oldKey, v, Psy.pressureFromAltitude(state.altitude));
+            var out = Psy.propertyValue(st, newKey);
+            return isFinite(out) ? out : null;
+        } catch (e) { return null; }
+    }
+
     // Property selector + value for `obj` ({key, value}); optional key subset.
     function buildSecondProperty(obj, labelText, allowedKeys, helpKey) {
         var second = document.createElement('div');
@@ -1270,9 +1284,17 @@
         unit.textContent = U.unit(kindForKey(obj.key), sys());
         second.appendChild(unit);
         select.addEventListener('change', function () {
+            // Same air state, new property: re-express the value so the
+            // point does not jump (78 F WB becomes 47.3% RH, not 78% RH).
+            var converted = convertSecond(obj, obj.key, select.value);
             obj.key = select.value;
             unit.textContent = U.unit(kindForKey(obj.key), sys());
-            obj.value = input.value === '' ? null : secondFromDisp(obj, toNum(input.value, null));
+            if (converted !== null) {
+                obj.value = converted;
+                input.value = secondDisp(obj);
+            } else {
+                obj.value = input.value === '' ? null : secondFromDisp(obj, toNum(input.value, null));
+            }
             save(); recompute();
         });
         input.addEventListener('input', function () {
