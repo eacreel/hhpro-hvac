@@ -380,7 +380,8 @@
         var s = state;
         var seed = {
             units: s.units, altitude: s.altitude, basis: s.basis,
-            room: deepClone(s.room), ql: toNum(s.ql, null), cfm: toNum(s.cfm, null)
+            room: deepClone(s.room), ql: toNum(s.ql, null), cfm: toNum(s.cfm, null),
+            snapshot: deepClone(s)      // full calculation, reported in the chart's PDF
         };
         try {
             var res = evaluate(s);
@@ -808,5 +809,25 @@
         }
     }
 
-    HHpro.DewPoint = { pdfBlob: pdfBlob, summarize: summarize };
+    // Report blocks for a snapshot in the caller's unit system: the
+    // Psychrometrics view appends these to its results and PDF after a
+    // "Show on chart" hand-off.
+    function reportBlocks(snap, units) {
+        init();
+        var saved = state;
+        state = fromSnapshot(snap);
+        if (units === 'SI' || units === 'IP') state.units = units;
+        try {
+            var res = evaluate(state);
+            return buildReport(res, state).map(function (b) {
+                return { title: 'Supply air dew point: ' + b.title.toLowerCase(), rows: b.rows };
+            });
+        } catch (e) {
+            return [{ title: 'Supply air dew point', rows: [['Note', e.message]] }];
+        } finally {
+            state = saved;
+        }
+    }
+
+    HHpro.DewPoint = { pdfBlob: pdfBlob, summarize: summarize, reportBlocks: reportBlocks };
 })();

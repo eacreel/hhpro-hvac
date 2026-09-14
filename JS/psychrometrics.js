@@ -61,6 +61,7 @@
             dbMin: 20,
             view: null,                                      // zoomed viewport or null = default
             show: { rh: true, wb: true, h: true, v: false },
+            dewpoint: null,                                  // Supply air dew point calc imported via "Show on chart"
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -328,6 +329,7 @@
     // seed = { units, altitude, basis, room: {db, key, value}, ql, cfm, supplyDp }
     function applySeed(seed) {
         state = defaults();
+        state.dewpoint = seed.snapshot ? deepClone(seed.snapshot) : null;
         if (seed.units === 'SI') state.units = 'SI';
         if (isFinite(seed.altitude)) state.altitude = Number(seed.altitude);
         var a = state.ahu;
@@ -760,6 +762,7 @@
         });
         sel.addEventListener('change', function () {
             if (!sel.value) return;
+            state.dewpoint = null;      // a new system drops the imported dew point calc
             applyPreset(sel.value);
             save(); buildForm(); recompute();
         });
@@ -1913,6 +1916,13 @@
                     rr.push(['Result', sensOk && latOk ? 'Supply air meets the room load' : 'Supply air does not meet the room load']);
                 }
                 blocks.push({ title: r.latentOnly ? 'Room (RM), Law #1 dew point check' : 'Room (RM)', rows: rr });
+            }
+
+            // Calculation imported from the Supply air dew point calculator
+            // ("Show on chart"): reported alongside the chart so one PDF
+            // carries both.
+            if (s.dewpoint && HHpro.DewPoint && HHpro.DewPoint.reportBlocks) {
+                blocks = blocks.concat(HHpro.DewPoint.reportBlocks(s.dewpoint, s.units));
             }
         }
 
