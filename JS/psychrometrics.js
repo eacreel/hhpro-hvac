@@ -66,17 +66,17 @@
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
             ahu: {
-                preset: null,                                // system type; null = nothing chosen yet
+                preset: 'custom',                            // system type; opens on Custom (no stages)
                 oa:  { enabled: false, db: 95, key: 'wb', value: 78 },
                 erv: { enabled: false, mode: 'mix', effS: 70, effL: 60, exhCfm: null },
                 ra:  { enabled: false, db: 75, key: 'rh', value: 50 },
-                flowMode: 'each', basis: 'std',
+                flowMode: 'each', basis: 'actual',           // actual air: what the Daikin selection software uses
                 oaCfm: 2000, raCfm: 8000, totalCfm: 10000, oaPct: 20,
                 econ: { enabled: false, mode: 'enthalpy', limitDb: 65 },
                 preheat: { enabled: false, db: 55 },
                 coil: { enabled: false, mode: 'leaving', db: 55, key: 'rh', value: 95, adp: 50, bf: 10 },
                 fan: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
-                reheat: { enabled: false, db: 65 },
+                reheat: { enabled: false, db: 72 },
                 hum: { enabled: false, type: 'steam', key: 'rh', value: 40, eff: 85 },
                 room: { enabled: false, db: 75, key: 'rh', value: 50, qs: 120000, ql: 30000,
                         solve: 'db', cfm: null, dbSupply: 55,
@@ -169,7 +169,7 @@
     // -----------------------------------------------------------------
 
     var HELP = {
-        system: 'The kind of unit being modelled. Choosing one switches on the air streams and stages that belong to it; numbers already entered are kept, so switching never wipes your inputs. Add or remove components with the chips below, or take a stage out with the × in its header.',
+        system: 'The kind of unit being modelled. Choosing one switches on the air streams and stages that belong to it and fills in typical design conditions for them; other numbers you have entered are kept. Add or remove components with the chips below, or take a stage out with the × in its header.',
         room_latentonly: 'Dedicated outdoor air design: the ventilation air is the only thing removing moisture from the space, while the zone equipment (VRF, chilled beams, fan coils, sensible RTUs) runs dry. The supply must be dried to a dew point low enough that the ventilation airflow alone carries the space latent load. The sensible load is left to the zone equipment and is not checked in this mode.',
         room_voz: 'Ventilation (outdoor) airflow delivered to the space, ASHRAE 62.1 Voz. Blank uses the outdoor airflow from the Airflow section. Less airflow calls for a lower supply dew point.',
         altitude: 'Site elevation. Sets the barometric pressure used for every property. Higher altitude means lower pressure, which raises the saturation curve and the humidity ratio at a given RH, so the same wet bulb reads a little wetter.',
@@ -622,24 +622,26 @@
     }
 
     // ---------- System presets ----------
-    // A preset switches the streams and stages on or off. Values already
-    // entered are kept, so changing presets never wipes the numbers.
+    // A preset switches the streams and stages on or off (`on`) and may
+    // set typical design values for them (`values`, merged into the state).
+    // Everything else you have entered is kept.
     var PRESETS = [
         { key: 'rtu', label: 'Packaged RTU / split (mixed air)', short: 'RTU',
-          desc: 'Outdoor and return air mix ahead of the cooling coil; the supply is checked against the room load.',
-          on: ['oa', 'ra', 'coil', 'room'] },
-        { key: 'rtu_hgrh', label: 'RTU with hot gas reheat', short: 'RTU + HGRH',
-          desc: 'Mixed air through the cooling coil, then reheat so the space is not overcooled while it is still dehumidified.',
-          on: ['oa', 'ra', 'coil', 'reheat', 'room'] },
+          desc: 'Outdoor and return air mix ahead of the cooling coil. Add Reheat for hot gas reheat, Room check to size against the space load.',
+          on: ['oa', 'ra', 'coil'],
+          values: { oa: { db: 95, key: 'wb', value: 78 }, ra: { db: 75, key: 'rh', value: 50 } } },
         { key: 'doas', label: '100% outdoor air / DOAS', short: 'DOAS',
-          desc: 'Dedicated outdoor air unit with energy recovery against the building exhaust. The ventilation air alone must carry the space latent load (Law #1: meet the required supply air dew point).',
-          on: ['oa', 'ra', 'erv', 'coil', 'reheat', 'room'], erv: 'doas', latentOnly: true },
+          desc: 'Dedicated outdoor air unit: cooling coil and reheat on 100% outdoor air. Add Energy recovery (with Return air as the exhaust) or Room check for the Law #1 supply dew point.',
+          on: ['oa', 'coil', 'reheat'], erv: 'doas', latentOnly: true,
+          values: { oa: { db: 95, key: 'wb', value: 78 } } },
         { key: 'mau', label: 'Makeup air / heating', short: 'Makeup air',
           desc: '100% outdoor air through a heating coil.',
-          on: ['oa', 'preheat'] },
+          on: ['oa', 'preheat'],
+          values: { oa: { db: 21.5, key: 'rh', value: 25 }, preheat: { db: 95 } } },
         { key: 'hum', label: 'Winter humidification', short: 'Humidification',
-          desc: 'Return air heated and humidified, checked against the room condition.',
-          on: ['ra', 'preheat', 'hum', 'room'] },
+          desc: 'Outdoor and return air mixed, heated and humidified. Add Room check to compare with the space condition.',
+          on: ['oa', 'ra', 'preheat', 'hum'],
+          values: { oa: { db: 95, key: 'rh', value: 25 }, ra: { db: 70, key: 'rh', value: 50 }, preheat: { db: 95 } } },
         { key: 'custom', label: 'Custom (pick the components)', short: null,
           desc: 'Start empty and add the streams and stages you need.',
           on: [] }
@@ -661,6 +663,7 @@
         a.preset = key;
         if (!p) return;
         STAGE_KEYS.forEach(function (k) { a[k].enabled = p.on.indexOf(k) >= 0; });
+        if (p.values) extend(a, deepClone(p.values));
         a.erv.mode = p.erv || 'mix';
         a.room.latentOnly = !!p.latentOnly;
         enforceStreamRules();
@@ -1414,8 +1417,10 @@
         var points = [], lines = [], paths = [], stages = [];
         var basis = a.basis === 'actual' ? 'actual' : 'std';
         var res = { kind: 'ahu', points: points, lines: lines, paths: paths, stages: stages };
-        if (!a.preset) {
-            res.callouts = [{ title: 'Psychrometric calculator', rows: [{ swatch: null, text: 'Choose a system type in the panel to start plotting.' }] }];
+        if (!a.preset || !STAGE_KEYS.some(function (k) { return a[k].enabled; })) {
+            res.callouts = [{ title: 'Psychrometric calculator', rows: [{ swatch: null, text: a.preset
+                ? 'Add components with the chips in the panel to start plotting.'
+                : 'Choose a system type in the panel to start plotting.' }] }];
             res.tablePoints = [];
             return res;
         }
@@ -1894,8 +1899,8 @@
         var box = refs.results;
         box.innerHTML = '';
         if (!blocks.length) {
-            box.appendChild(hint(state.mode === 'ahu' && !state.ahu.preset
-                ? 'Choose a system type to begin.'
+            box.appendChild(hint(state.mode === 'ahu' && !anyStageOn()
+                ? (state.ahu.preset ? 'Add components to begin.' : 'Choose a system type to begin.')
                 : 'Enter a valid air state to see its properties.'));
             return;
         }
