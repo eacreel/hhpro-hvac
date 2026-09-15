@@ -1,0 +1,3 @@
+# Cloudflare Pages redirects. The SERVER folder holds the backend code,
+# which is deployed with the repo but is not part of the site.
+/SERVER/*  /  302

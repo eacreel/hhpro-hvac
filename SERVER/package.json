@@ -1,0 +1,19 @@
+{
+  "name": "hhpro-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HHpro backend: accounts, location permissions, and saved projects. Runs on the Hoffman & Hoffman server behind Cloudflare Tunnel.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning server.js",
+    "import-users": "node --no-warnings=ExperimentalWarning scripts/import_users.js",
+    "sync-excel": "node --no-warnings=ExperimentalWarning scripts/sync_excel.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1"
+  }
+}

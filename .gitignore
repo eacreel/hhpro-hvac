@@ -10,3 +10,7 @@
 
 # User/permission spreadsheet - not for the public repo or the live site
 Users/
+
+# Backend: installed packages and the settings file with the session secret
+SERVER/node_modules/
+SERVER/.env
