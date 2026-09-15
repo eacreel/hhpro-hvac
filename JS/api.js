@@ -69,8 +69,44 @@
         });
     }
 
+    /**
+     * Fetch a file the backend generates (a spreadsheet, say) and hand
+     * it to the browser as a download. The session cookie goes along,
+     * which a plain link could not do across the api subdomain.
+     */
+    function download(path, filename) {
+        return fetch(base() + path, { credentials: 'include' }).then(function (res) {
+            if (!res.ok) {
+                return res.text().then(function (text) {
+                    var data = null;
+                    try { data = JSON.parse(text); } catch (e) { data = null; }
+                    var err = new Error((data && data.error) || ('Download failed (' + res.status + ')'));
+                    err.status = res.status;
+                    throw err;
+                });
+            }
+            return res.blob();
+        }).then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+        }, function (err) {
+            if (err && err.status) throw err;
+            var e = new Error(UNREACHABLE);
+            e.status = 0;
+            e.network = true;
+            throw e;
+        });
+    }
+
     HHpro.Api = {
         base: base,
+        download: download,
         get: function (path) { return request('GET', path); },
         post: function (path, body) { return request('POST', path, body || {}); },
         put: function (path, body, extra) { return request('PUT', path, body || {}, extra); },

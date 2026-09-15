@@ -21,6 +21,8 @@ back to the home page.
 | Saved projects | `Users\Projects\<person>\` |
 | Logs | `Users\logs\backend-YYYY-MM-DD.log` |
 | Excel backups | `Users\backups\excel\` (newest 10 kept) |
+| Daily data backups | `Users\backups\daily\hhpro-data-YYYY-MM-DD.zip` (newest 30 kept) |
+| Weekly site backups | `Users\backups\weekly\hhpro-site-YYYY-MM-DD.zip` (newest 4 kept) |
 
 Everything under `Users\` is git-ignored.
 
@@ -32,6 +34,25 @@ Everything under `Users\` is git-ignored.
   edits there are overwritten. If the file is open in Excel the write
   waits and retries every minute.
 
+## Backups
+
+The service makes them on its own; nothing to schedule in Windows.
+
+- **Daily, 02:00**: the users database, the spreadsheet, and every
+  project folder, zipped into `Users\backups\daily`. Thirty days kept.
+  The same job removes trashed projects and set-aside user folders that
+  are more than 30 days old.
+- **Weekly, Sunday 03:00**: the site files (HTML, CSS, JS, DATA, SERVER
+  code) into `Users\backups\weekly`. Four kept. ASSETS is left out
+  unless `BACKUP_SITE_INCLUDE_ASSETS=true` in `.env`; everything in the
+  site is also in GitHub.
+- If the server was off at the scheduled time, the job runs within five
+  minutes of the service starting.
+- `BACKUP_DIR` in `.env` moves both to another drive or a network share.
+
+To restore, stop the HHpro Backend service, unzip the daily backup over
+`Users\` (hhpro.db, the spreadsheet, Projects), and start the service.
+
 ## Commands
 
 Run these from the `SERVER` folder.
@@ -42,6 +63,7 @@ Run these from the `SERVER` folder.
 | `npm start` | Runs the backend in the current window (for testing) |
 | `npm run import-users` | One-time import of the Users tab into the database |
 | `npm run sync-excel` | Rewrites the Users tab from the database on demand |
+| `npm run backup` | Makes a daily data backup now (`npm run backup -- weekly` for the site) |
 
 ## Health check
 

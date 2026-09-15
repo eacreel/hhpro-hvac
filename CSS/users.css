@@ -426,3 +426,75 @@
     border-color: var(--color-error);
     color: var(--color-error-light);
 }
+
+/* ---- Download button (toolbar) ------------------------------------ */
+
+.users-download-btn {
+    padding: 8px 12px;
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+}
+
+.users-download-btn:disabled {
+    opacity: 0.6;
+}
+
+/* ---- Help tab ---------------------------------------------------- */
+
+.users-help {
+    max-width: 72ch;
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.users-help-title {
+    margin: var(--space-lg) 0 var(--space-sm);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+}
+
+.users-help-title:first-child {
+    margin-top: var(--space-sm);
+}
+
+.users-help-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.55;
+}
+
+.users-help-list li + li {
+    margin-top: 6px;
+}
+
+.users-status {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px var(--space-md);
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+.users-status dt {
+    color: var(--color-text-muted);
+}
+
+.users-status dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.users-status-bad {
+    color: var(--color-warning);
+}
+
+@media (max-width: 560px) {
+    .users-status {
+        grid-template-columns: 1fr;
+    }
+}

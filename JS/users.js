@@ -11,6 +11,8 @@
      Permissions  the Permissions tab of Eric's Excel file, read
                   only, so admins can see which products each
                   location gets.
+     Help         how the levels, invitations and the spreadsheet
+                  work, plus backup status from the server.
 
    Emails are never sent by the site: "Send invitation" and
    "Reset password" get a one-time link from the backend, then
@@ -69,8 +71,10 @@
         tabs.setAttribute('role', 'tablist');
         var usersTab = tabButton('Users', 'users');
         var permsTab = tabButton('Permissions', 'permissions');
+        var helpTab = tabButton('Help', 'help');
         tabs.appendChild(usersTab);
         tabs.appendChild(permsTab);
+        tabs.appendChild(helpTab);
         titleBar.appendChild(tabs);
         main.appendChild(titleBar);
 
@@ -78,7 +82,7 @@
         panel.className = 'users-panel';
         main.appendChild(panel);
         els.panel = panel;
-        els.tabs = { users: usersTab, permissions: permsTab };
+        els.tabs = { users: usersTab, permissions: permsTab, help: helpTab };
 
         showTab(activeTab);
         return main;
@@ -101,6 +105,7 @@
         });
         els.panel.innerHTML = '';
         if (key === 'permissions') renderPermissions(els.panel);
+        else if (key === 'help') renderHelp(els.panel);
         else renderUsers(els.panel);
     }
 
@@ -133,6 +138,26 @@
         count.className = 'users-count';
         toolbar.appendChild(count);
         els.count = count;
+
+        var download = document.createElement('button');
+        download.type = 'button';
+        download.className = 'users-action users-download-btn';
+        download.appendChild(HHpro.UI.icon('download'));
+        var dlLabel = document.createElement('span');
+        dlLabel.textContent = 'Download as Excel';
+        download.appendChild(dlLabel);
+        download.addEventListener('click', function () {
+            download.disabled = true;
+            var stamp = new Date().toISOString().slice(0, 10);
+            HHpro.Api.download('/api/users/export.xlsx', 'HHpro Users ' + stamp + '.xlsx').then(function () {
+                download.disabled = false;
+                toast('Spreadsheet downloaded.');
+            }, function (err) {
+                download.disabled = false;
+                toast(err.message, true);
+            });
+        });
+        toolbar.appendChild(download);
 
         var add = document.createElement('button');
         add.type = 'button';
@@ -826,6 +851,107 @@
             wrap.innerHTML = '';
             wrap.appendChild(problem(err));
         });
+    }
+
+    // =================================================================
+    // Help tab
+    // =================================================================
+
+    var HELP = [
+        { title: 'User levels', items: [
+            'Super Admin: sees every product, manages every user, can make other Super Admins.',
+            'Admin: sees products for their location, can add Admin, Hoffman, Engineer and Contractor users, and can edit or delete only the users they added.',
+            'Hoffman: sees products for their location and can pick any engineer schedule template.',
+            'Engineer: sees products for their location; gets the standard template plus their company\'s, if one exists.',
+            'Contractor: same as Engineer but standard template only.'
+        ] },
+        { title: 'Adding someone', items: [
+            'Add user, fill in the form, and choose "Add and send invitation". Your mail program opens with the registration link in the body. Send it.',
+            'The link works for 72 hours and once. If it lapses, open the row\'s "Send invitation" again for a fresh one.',
+            'Company spelling matters for Engineers: "Refresco" is what ties them to the Refresco schedule template. Pick from the suggestions when you can.',
+            'Need a location or level that is not in the dropdown? Email ' + 'eric.creel@hoffman-hoffman.com' + ' and it will be added to the Permissions tab.'
+        ] },
+        { title: 'Passwords', items: [
+            'The site never sees or stores a password in readable form, so nobody can look one up. "Reset password" on a row makes a new link and signs that person out everywhere.',
+            'When someone uses "Forgot password?" on the sign-in screen, an email comes to whoever added them, copying Eric. Reply by using Reset password on their row.'
+        ] },
+        { title: 'The spreadsheet', items: [
+            'The Users tab of "HHpro - Users & Permissions.xlsx" is rewritten from this screen after every change. Do not edit that tab by hand; it will be overwritten.',
+            'The Permissions tab is the other way round: Eric edits it in Excel and the site reads it within about 15 seconds. Blank cells mean Yes.'
+        ] },
+        { title: 'Projects and backups', items: [
+            'Projects live on the Hoffman & Hoffman server, one folder per person. Deleting a project sets it aside for 30 days before it is removed for good.',
+            'The server backs up the database, the spreadsheet and all project folders every night, and the site files once a week. The latest backup times are shown below.'
+        ] }
+    ];
+
+    function renderHelp(panel) {
+        var wrap = document.createElement('div');
+        wrap.className = 'users-help';
+
+        HELP.forEach(function (section) {
+            var h = document.createElement('h3');
+            h.className = 'users-help-title';
+            h.textContent = section.title;
+            wrap.appendChild(h);
+            var ul = document.createElement('ul');
+            ul.className = 'users-help-list';
+            section.items.forEach(function (text) {
+                var li = document.createElement('li');
+                li.textContent = text;
+                ul.appendChild(li);
+            });
+            wrap.appendChild(ul);
+        });
+
+        var statusTitle = document.createElement('h3');
+        statusTitle.className = 'users-help-title';
+        statusTitle.textContent = 'Server status';
+        wrap.appendChild(statusTitle);
+
+        var status = document.createElement('dl');
+        status.className = 'users-status';
+        wrap.appendChild(status);
+        status.appendChild(spinner('Checking...'));
+
+        HHpro.Api.get('/api/users/status').then(function (s) {
+            status.innerHTML = '';
+            function row(label, value, bad) {
+                var dt = document.createElement('dt');
+                dt.textContent = label;
+                var dd = document.createElement('dd');
+                dd.textContent = value;
+                if (bad) dd.className = 'users-status-bad';
+                status.appendChild(dt);
+                status.appendChild(dd);
+            }
+            function when(job) {
+                if (!job || !job.at) return { text: 'Not yet', bad: false };
+                var d = new Date(job.at);
+                var size = !job.bytes ? '' : job.bytes < 1048576
+                    ? ' · ' + Math.max(1, Math.round(job.bytes / 1024)) + ' KB'
+                    : ' · ' + (job.bytes / 1048576).toFixed(1) + ' MB';
+                return job.ok
+                    ? { text: d.toLocaleString() + size, bad: false }
+                    : { text: 'Failed ' + d.toLocaleString() + (job.error ? ': ' + job.error : ''), bad: true };
+            }
+            var daily = when(s.lastDaily);
+            var weekly = when(s.lastWeekly);
+            var excel = s.excelSync || {};
+            row('Users on file', String(s.users));
+            row('Last nightly data backup', daily.text, daily.bad);
+            row('Last weekly site backup', weekly.text, weekly.bad);
+            row('Backups are kept in', s.backupDir);
+            row('Spreadsheet Users tab', excel.pending
+                ? 'Waiting to write (is the file open in Excel?)'
+                : (excel.at ? 'Written ' + new Date(excel.at).toLocaleString() : 'Not written since the service started'),
+                !!excel.pending);
+        }, function (err) {
+            status.innerHTML = '';
+            status.appendChild(problem(err));
+        });
+
+        panel.appendChild(wrap);
     }
 
     // =================================================================

@@ -26,6 +26,7 @@ const auth = require('./lib/auth');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
+const backup = require('./lib/backup');
 const pkg = require('./package.json');
 
 const app = express();
@@ -73,7 +74,14 @@ app.get('/health', (req, res) => {
             products: perms.products.length,
             error: perms.error
         },
-        excelSync: usersExcel.getSyncStatus()
+        excelSync: usersExcel.getSyncStatus(),
+        backups: (function () {
+            var s = backup.status();
+            return {
+                lastDaily: s.lastDaily ? { at: s.lastDaily.at, ok: s.lastDaily.ok } : null,
+                lastWeekly: s.lastWeekly ? { at: s.lastWeekly.at, ok: s.lastWeekly.ok } : null
+            };
+        })()
     });
 });
 
@@ -106,6 +114,13 @@ async function start() {
     const server = app.listen(config.port, '127.0.0.1', () => {
         log.info(`HHpro backend ${pkg.version} listening on http://127.0.0.1:${config.port}`);
     });
+
+    // Backups: daily data at 02:00, weekly site on Sunday 03:00. The
+    // check runs every five minutes and catches up if the server was
+    // off at the scheduled time. First check shortly after start.
+    setTimeout(() => backup.tick(), 30 * 1000).unref();
+    setInterval(() => backup.tick(), 5 * 60 * 1000).unref();
+    log.info(`Backups go to ${backup.backupDir}`);
 
     function shutdown(signal) {
         log.info(`${signal} received, shutting down`);

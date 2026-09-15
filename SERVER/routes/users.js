@@ -10,6 +10,8 @@
                             Permissions tab, levels the caller may
                             assign, known company names
      GET    /permissions    the Permissions tab, for display
+     GET    /export.xlsx    the user list as a spreadsheet download
+     GET    /status         backup and spreadsheet-sync status (Help tab)
      POST   /               add a user (Invited)
      PUT    /:id            edit a user
      DELETE /:id            delete a user; folder is set aside
@@ -32,7 +34,9 @@ const auth = require('../lib/auth');
 const permissions = require('../lib/permissions');
 const folders = require('../lib/folders');
 const usersExcel = require('../lib/users_excel');
+const backup = require('../lib/backup');
 const log = require('../lib/log');
+const ExcelJS = require('exceljs');
 
 const router = express.Router();
 router.use(auth.requireAdmin);
@@ -123,6 +127,55 @@ router.get('/permissions', (req, res) => {
         locations: p.locations,
         products: p.products,
         contactEmail: config.superAdminEmail
+    });
+});
+
+router.get('/export.xlsx', async (req, res, next) => {
+    try {
+        const wb = new ExcelJS.Workbook();
+        wb.creator = 'HHpro';
+        const ws = wb.addWorksheet('Users');
+        ws.columns = [
+            { header: 'FIRST NAME', key: 'first', width: 14 },
+            { header: 'LAST NAME', key: 'last', width: 14 },
+            { header: 'COMPANY', key: 'company', width: 18 },
+            { header: 'LOCATION', key: 'location', width: 20 },
+            { header: 'USER LEVEL', key: 'level', width: 14 },
+            { header: 'USERNAME', key: 'email', width: 38 },
+            { header: 'STATUS', key: 'status', width: 10 },
+            { header: 'ADDED BY', key: 'by', width: 38 },
+            { header: 'ADDED ON', key: 'on', width: 12 },
+            { header: 'REGISTERED ON', key: 'reg', width: 14 }
+        ];
+        ws.getRow(1).font = { bold: true };
+        db.listUsers().forEach((u) => {
+            ws.addRow({
+                first: u.first_name, last: u.last_name, company: u.company, location: u.location,
+                level: u.user_level, email: u.email, status: u.status === 'active' ? 'Active' : 'Invited',
+                by: u.created_by, on: (u.created_at || '').slice(0, 10), reg: (u.registered_at || '').slice(0, 10)
+            });
+        });
+        ws.autoFilter = { from: 'A1', to: 'J1' };
+        ws.views = [{ state: 'frozen', ySplit: 1 }];
+        const stamp = new Date().toISOString().slice(0, 10);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="HHpro Users ${stamp}.xlsx"`);
+        await wb.xlsx.write(res);
+        res.end();
+    } catch (e) {
+        next(e);
+    }
+});
+
+router.get('/status', (req, res) => {
+    const b = backup.status();
+    res.json({
+        users: db.countUsers(),
+        excelSync: usersExcel.getSyncStatus(),
+        backupDir: b.backupDir,
+        lastDaily: b.lastDaily,
+        lastWeekly: b.lastWeekly,
+        includeAssets: b.includeAssets
     });
 });
 
