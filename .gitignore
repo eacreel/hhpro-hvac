@@ -4,3 +4,9 @@
 
 # Office lock files
 ~$*
+
+# Local Claude Code permission settings (machine-specific)
+.claude/settings.local.json
+
+# User/permission spreadsheet - not for the public repo or the live site
+Users/
