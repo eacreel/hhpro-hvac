@@ -86,6 +86,10 @@ function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
 }
 
+function clean(s) {
+    return String(s || '').trim();
+}
+
 // ---- users -------------------------------------------------------
 
 function listUsers() {
@@ -96,6 +100,12 @@ function listUsers() {
 
 function countUsers() {
     return open().prepare('SELECT COUNT(*) AS c FROM users').get().c;
+}
+
+function listCompanies() {
+    return open().prepare(
+        "SELECT DISTINCT company FROM users WHERE company <> '' ORDER BY company COLLATE NOCASE"
+    ).all().map((r) => r.company);
 }
 
 function getUserByEmail(email) {
@@ -121,16 +131,86 @@ function insertUser(u) {
                            status, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, ?, 'invited', ?, ?)
     `).run(
-        email,
-        String(u.firstName || '').trim(),
-        String(u.lastName || '').trim(),
-        String(u.company || '').trim(),
-        String(u.location || '').trim(),
-        u.userLevel,
-        normalizeEmail(u.createdBy),
-        now()
+        email, clean(u.firstName), clean(u.lastName), clean(u.company), clean(u.location),
+        u.userLevel, normalizeEmail(u.createdBy), now()
     );
     return getUserById(Number(result.lastInsertRowid));
+}
+
+/** Update the editable profile fields. Email changes keep the same account and folder. */
+function updateUser(id, u) {
+    const email = normalizeEmail(u.email);
+    if (!email || !email.includes('@')) throw new Error(`Invalid email: "${u.email}"`);
+    if (!USER_LEVELS.includes(u.userLevel)) throw new Error(`Unknown user level: "${u.userLevel}"`);
+    const existing = getUserByEmail(email);
+    if (existing && existing.id !== id) throw new Error(`Email already exists: ${email}`);
+
+    open().prepare(`
+        UPDATE users SET email = ?, first_name = ?, last_name = ?, company = ?, location = ?, user_level = ?
+        WHERE id = ?
+    `).run(email, clean(u.firstName), clean(u.lastName), clean(u.company), clean(u.location), u.userLevel, id);
+    return getUserById(id);
+}
+
+function deleteUser(id) {
+    open().prepare('DELETE FROM users WHERE id = ?').run(id);
+}
+
+function setInviteToken(id, tokenHash, expiresIso) {
+    open().prepare('UPDATE users SET invite_token_hash = ?, invite_expires = ? WHERE id = ?')
+        .run(tokenHash, expiresIso, id);
+}
+
+function getUserByInviteHash(tokenHash) {
+    if (!tokenHash) return null;
+    return open().prepare('SELECT * FROM users WHERE invite_token_hash = ?').get(tokenHash) || null;
+}
+
+/** Set (or reset) the password, activate the account, and clear the token. */
+function activateUser(id, passwordHash, projectFolder) {
+    const user = getUserById(id);
+    open().prepare(`
+        UPDATE users SET password_hash = ?, status = 'active',
+                         registered_at = COALESCE(registered_at, ?),
+                         project_folder = COALESCE(project_folder, ?),
+                         invite_token_hash = NULL, invite_expires = NULL
+        WHERE id = ?
+    `).run(passwordHash, now(), projectFolder || user.project_folder || null, id);
+    return getUserById(id);
+}
+
+function projectFolderTaken(folder) {
+    return !!open().prepare('SELECT 1 FROM users WHERE project_folder = ?').get(folder);
+}
+
+// ---- sessions ----------------------------------------------------
+
+function createSession(id, userId) {
+    const t = now();
+    open().prepare('INSERT INTO sessions (id, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)')
+        .run(id, userId, t, t);
+}
+
+/** Session row joined with its user, or null. */
+function getSession(id) {
+    if (!id) return null;
+    return open().prepare(`
+        SELECT s.id AS session_id, s.last_seen, u.*
+        FROM sessions s JOIN users u ON u.id = s.user_id
+        WHERE s.id = ?
+    `).get(id) || null;
+}
+
+function touchSession(id) {
+    open().prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(now(), id);
+}
+
+function deleteSession(id) {
+    open().prepare('DELETE FROM sessions WHERE id = ?').run(id);
+}
+
+function deleteSessionsForUser(userId) {
+    open().prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
 }
 
 module.exports = {
@@ -141,7 +221,19 @@ module.exports = {
     USER_STATUSES,
     listUsers,
     countUsers,
+    listCompanies,
     getUserByEmail,
     getUserById,
-    insertUser
+    insertUser,
+    updateUser,
+    deleteUser,
+    setInviteToken,
+    getUserByInviteHash,
+    activateUser,
+    projectFolderTaken,
+    createSession,
+    getSession,
+    touchSession,
+    deleteSession,
+    deleteSessionsForUser
 };

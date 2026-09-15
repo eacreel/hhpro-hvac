@@ -6,10 +6,10 @@
    to this process on 127.0.0.1:8787, so the port is never open
    to the network directly.
 
-   Phase 1 (this file): health check, permissions loaded from the
-   Excel file and kept fresh, database created. Accounts, the
-   Users screen and saved projects arrive in later phases as
-   separate route modules under routes/.
+   Route modules under routes/:
+     routes/auth.js    /api/auth/*   sign in, register, who am I
+     routes/users.js   /api/users/*  the Users screen (admins)
+   Saved projects arrive in Phase 3 as routes/projects.js.
    ============================================================ */
 
 'use strict';
@@ -21,6 +21,9 @@ const log = require('./lib/log');
 const db = require('./lib/db');
 const permissions = require('./lib/permissions');
 const usersExcel = require('./lib/users_excel');
+const auth = require('./lib/auth');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const pkg = require('./package.json');
 
 const app = express();
@@ -45,7 +48,13 @@ app.use((req, res, next) => {
     next();
 });
 
+// Turn the session cookie into req.user on every request.
+app.use(auth.attach);
+
 // ---- Routes --------------------------------------------------------
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/health', (req, res) => {
     const perms = permissions.getPermissions();
