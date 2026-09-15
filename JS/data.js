@@ -89,7 +89,7 @@
         },
         {
             productKey: 'marvair',
-            displayName: 'MARVAIR VERTICAL WALL MOUNT',
+            displayName: 'Marvair Vertical Wall Mount',
             jsonFile: 'DATA/JSON/marvair.json',
             pictureFile: 'DATA/PICTURES/MARVAIR VERTICAL WALL MOUNT.jpg',
             assetsFolder: 'ASSETS/MARVAIR',
