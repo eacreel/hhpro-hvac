@@ -274,8 +274,17 @@
     var productDataCache = {};
 
     HHpro.Data = {
+        /**
+         * Products this person may see. The Permissions tab of the Users
+         * spreadsheet can say No for a product at their location; those
+         * are left out here, so tiles, Design Search and model lookup all
+         * respect it from one place. Super Admins see everything.
+         */
         getProducts: function () {
-            return PRODUCTS.slice();
+            return PRODUCTS.filter(function (p) {
+                return !HHpro.State || typeof HHpro.State.isProductAllowed !== 'function' ||
+                    HHpro.State.isProductAllowed(p.displayName);
+            });
         },
 
         getProduct: function (productKey) {

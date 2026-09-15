@@ -1,0 +1,428 @@
+/* ============================================================
+   Users View (administrators)
+   ------------------------------------------------------------
+   Table of accounts, the add/edit form, invitation link modal,
+   and the read-only Permissions grid. Modal shell classes
+   (.modal-backdrop, .modal, .modal-btn) come from cart.css.
+   ============================================================ */
+
+.users-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.users-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.users-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Tabs: underline marks the active one, like a folder tab. */
+.users-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.users-tab {
+    padding: 10px 16px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.users-tab:hover {
+    color: var(--color-text);
+}
+
+.users-tab-active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-primary-light);
+}
+
+/* ---- Toolbar --------------------------------------------------- */
+
+.users-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.users-search {
+    flex: 1 1 280px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0 12px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+}
+
+.users-search:focus-within {
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.22);
+}
+
+.users-search-input {
+    flex: 1;
+    padding: 10px 0;
+    background: transparent;
+    border: 0;
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+}
+
+.users-search-input:focus {
+    outline: none;
+}
+
+.users-count {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.users-add-btn {
+    margin-left: auto;
+}
+
+/* ---- Table ----------------------------------------------------- */
+
+.users-table-wrap {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.users-table th,
+.users-table td {
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.users-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    z-index: 1;
+}
+
+.users-table tbody tr:hover {
+    background-color: var(--color-row-hover);
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.users-row-self td:first-child {
+    box-shadow: inset 3px 0 0 var(--color-primary-light);
+}
+
+.users-sort {
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    padding: 0;
+}
+
+.users-sort:hover,
+.users-sort-active {
+    color: var(--color-text);
+}
+
+.users-th-actions {
+    text-align: right;
+}
+
+.users-td-email {
+    color: var(--color-text-muted);
+}
+
+.users-td-muted {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+.users-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--space-xl) !important;
+}
+
+/* Status pill: green once registered, blue while the invitation
+   is out, amber when the link has lapsed. */
+.users-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.users-badge-active {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: var(--color-success);
+}
+
+.users-badge-invited {
+    background-color: rgba(91, 169, 216, 0.15);
+    color: var(--color-primary-light);
+}
+
+.users-badge-expired {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning);
+}
+
+/* Row actions: icon + label, quiet until hovered. */
+.users-actions {
+    text-align: right;
+}
+
+.users-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    margin-left: 4px;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.users-action:hover {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.users-action-danger:hover {
+    color: var(--color-error-light);
+}
+
+.users-action .icon {
+    font-size: 14px;
+}
+
+/* ---- Add / edit form --------------------------------------------- */
+
+.users-modal {
+    max-width: 640px;
+    width: calc(100% - 2 * var(--space-md));
+}
+
+.users-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.users-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+}
+
+@media (max-width: 560px) {
+    .users-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.users-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.users-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.users-input {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    caret-color: var(--color-primary-light);
+}
+
+.users-input:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 3px rgba(91, 169, 216, 0.22);
+}
+
+.users-input:disabled {
+    opacity: 0.6;
+}
+
+.users-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 32px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+        linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.users-select option {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+.users-form-help {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.users-form-warning {
+    margin: 0;
+    color: var(--color-warning);
+    font-size: var(--font-size-sm);
+    min-height: 0;
+}
+
+.users-form-warning:empty,
+.users-form-error:empty {
+    display: none;
+}
+
+.users-form-error {
+    margin: 0;
+    color: var(--color-error-light);
+    font-size: var(--font-size-sm);
+}
+
+/* Invitation link, shown so it can be copied by hand. */
+.users-link {
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: var(--font-size-sm);
+    margin: var(--space-sm) 0 var(--space-md);
+}
+
+/* ---- Permissions grid ------------------------------------------ */
+
+.users-perm-note {
+    margin: 0;
+    padding: var(--space-md);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.users-perm-table th.users-perm-product,
+.users-perm-table td.users-perm-product {
+    position: sticky;
+    left: 0;
+    background-color: var(--color-surface);
+    font-weight: 500;
+    box-shadow: var(--shadow-pin);
+    z-index: 2;
+}
+
+.users-perm-table thead th.users-perm-product {
+    background-color: var(--color-bg-dark);
+    z-index: 3;
+}
+
+.users-perm-table td {
+    text-align: center;
+}
+
+.users-perm-yes {
+    color: var(--color-success);
+}
+
+.users-perm-no {
+    color: var(--color-error-light);
+    font-weight: 600;
+}
+
+.users-perm-when {
+    padding: var(--space-sm) var(--space-md);
+    margin: 0;
+}
+
+/* ---- Loading and toast ----------------------------------------- */
+
+.users-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-xl);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.users-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 12px);
+    padding: 10px 18px;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    z-index: 1200;
+}
+
+.users-toast-show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.users-toast-error {
+    border-color: var(--color-error);
+    color: var(--color-error-light);
+}

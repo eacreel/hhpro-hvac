@@ -113,6 +113,24 @@
         ],
         'thermometer': [
             ['path', { d: 'M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z' }]
+        ],
+        // Users screen (header button + row actions)
+        'users': [
+            ['path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }],
+            ['circle', { cx: 9, cy: 7, r: 4 }],
+            ['path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }],
+            ['path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' }]
+        ],
+        'mail': [
+            ['rect', { x: 2, y: 4, width: 20, height: 16, rx: 2 }],
+            ['path', { d: 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' }]
+        ],
+        'edit': [
+            ['path', { d: 'M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' }]
+        ],
+        'trash': [
+            ['polyline', { points: '3 6 5 6 21 6' }],
+            ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }]
         ]
     };
 
@@ -231,6 +249,62 @@
         },
 
         /**
+         * "Users" header button. Only administrators get one; everyone
+         * else gets null, so callers append it conditionally.
+         *
+         * @returns {HTMLElement|null}
+         */
+        createUsersButton: function () {
+            if (!HHpro.State || !HHpro.State.canManageUsers()) return null;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'header-action';
+            btn.appendChild(HHpro.UI.icon('users'));
+            var label = document.createElement('span');
+            label.textContent = 'Users';
+            btn.appendChild(label);
+            btn.addEventListener('click', function () {
+                HHpro.App.showView('users');
+            });
+            return btn;
+        },
+
+        /**
+         * "Log out" header button. Ends the session on the server too.
+         *
+         * @returns {HTMLElement}
+         */
+        createLogoutButton: function () {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'header-action';
+            btn.appendChild(HHpro.UI.icon('log-out'));
+            var label = document.createElement('span');
+            label.textContent = 'Log out';
+            btn.appendChild(label);
+            btn.title = HHpro.State && HHpro.State.getUserName ? HHpro.State.getUserName() : '';
+            btn.addEventListener('click', function () {
+                HHpro.App.logout();
+            });
+            return btn;
+        },
+
+        /**
+         * Open a pre-filled message in the user's own mail program. The
+         * site never sends email itself; this is how invitations and
+         * reset requests travel.
+         *
+         * @param {{to:string, cc?:string, subject:string, body:string}} mail
+         */
+        openMailto: function (mail) {
+            var params = [];
+            if (mail.cc) params.push('cc=' + encodeURIComponent(mail.cc));
+            params.push('subject=' + encodeURIComponent(mail.subject || ''));
+            params.push('body=' + encodeURIComponent(mail.body || ''));
+            window.location.href = 'mailto:' + encodeURIComponent(mail.to || '') + '?' + params.join('&');
+        },
+
+        /**
          * Build the dark top header used on every logged-in view.
          *
          * @param {string=} currentPage - optional breadcrumb label shown after the logo.
@@ -293,19 +367,9 @@
             actions.className = 'header-actions';
 
             actions.appendChild(HHpro.UI.createUserGuideButton());
-
-            var logout = document.createElement('button');
-            logout.type = 'button';
-            logout.className = 'header-action';
-            logout.appendChild(HHpro.UI.icon('log-out'));
-            var logoutLabel = document.createElement('span');
-            logoutLabel.textContent = 'Log out';
-            logout.appendChild(logoutLabel);
-            logout.addEventListener('click', function () {
-                HHpro.State.logout();
-                HHpro.App.showView('login');
-            });
-            actions.appendChild(logout);
+            var usersBtn = HHpro.UI.createUsersButton();
+            if (usersBtn) actions.appendChild(usersBtn);
+            actions.appendChild(HHpro.UI.createLogoutButton());
 
             header.appendChild(actions);
 

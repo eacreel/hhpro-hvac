@@ -42,24 +42,15 @@
 
         header.appendChild(HHpro.UI.createLookupInput());
 
-        // Header actions on the right: User Guide + Log out.
+        // Header actions on the right: User Guide, Users (admins only),
+        // Log out. Shared with HHpro.UI.buildHeader so both stay in sync.
         var actions = document.createElement('div');
         actions.className = 'header-actions';
 
         actions.appendChild(HHpro.UI.createUserGuideButton());
-
-        var logoutBtn = document.createElement('button');
-        logoutBtn.type = 'button';
-        logoutBtn.className = 'header-action';
-        logoutBtn.appendChild(HHpro.UI.icon('log-out'));
-        var logoutLabel = document.createElement('span');
-        logoutLabel.textContent = 'Log out';
-        logoutBtn.appendChild(logoutLabel);
-        logoutBtn.addEventListener('click', function () {
-            HHpro.State.logout();
-            HHpro.App.showView('login');
-        });
-        actions.appendChild(logoutBtn);
+        var usersBtn = HHpro.UI.createUsersButton();
+        if (usersBtn) actions.appendChild(usersBtn);
+        actions.appendChild(HHpro.UI.createLogoutButton());
 
         header.appendChild(actions);
 

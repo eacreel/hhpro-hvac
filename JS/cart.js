@@ -83,17 +83,15 @@
     // picked one yet (the original Hoffman & Hoffman layout).
     var DEFAULT_ENGINEER = 'hoffman';
 
-    // The engineer layout a fresh cart/project should adopt: the firm tied
-    // to the current login (its non-standard allowed engineer), falling back
-    // to the standard layout. So a Saber login lands on the Saber layout by
-    // default, while a standard (Mellon) login stays on Hoffman & Hoffman.
-    // An explicitly saved project.engineer still wins over this default.
+    // The engineer layout a fresh cart/project should adopt: an Engineer
+    // at a firm with its own template (say, Saber) lands on that layout;
+    // everyone else, including Hoffman staff who can pick any template,
+    // starts on the standard Hoffman & Hoffman layout. The backend decides
+    // this per account (State.getDefaultEngineer). An explicitly saved
+    // project.engineer still wins over this default.
     function defaultEngineer() {
-        if (HHpro.State && typeof HHpro.State.getAllowedEngineers === 'function') {
-            var allowed = HHpro.State.getAllowedEngineers();
-            for (var i = 0; i < allowed.length; i++) {
-                if (allowed[i] && allowed[i] !== DEFAULT_ENGINEER) return allowed[i];
-            }
+        if (HHpro.State && typeof HHpro.State.getDefaultEngineer === 'function') {
+            return HHpro.State.getDefaultEngineer() || DEFAULT_ENGINEER;
         }
         return DEFAULT_ENGINEER;
     }

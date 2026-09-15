@@ -165,3 +165,44 @@
         animation: none;
     }
 }
+
+/* Text-only action under the form ("Forgot password?", "Back to
+   sign in"). Reads as a link, not a second button. */
+.login-link {
+    align-self: center;
+    margin-top: var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 4px 8px;
+}
+
+.login-link:hover,
+.login-link:focus-visible {
+    color: var(--color-primary-light);
+    outline: none;
+}
+
+/* Explanatory copy inside the card: the forgot-password intro,
+   the name/email line on the registration screen, the password
+   hint. */
+.login-help {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+/* Message above the form after something happened elsewhere
+   (session ended, password saved). */
+.login-notice {
+    margin: 0 0 var(--space-md);
+    padding: 10px 12px;
+    background-color: rgba(91, 169, 216, 0.12);
+    border: 1px solid rgba(91, 169, 216, 0.35);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}

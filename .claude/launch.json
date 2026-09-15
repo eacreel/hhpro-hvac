@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "hhpro-static",
+      "name": "site",
       "runtimeExecutable": "python",
-      "runtimeArgs": [".claude/serve_nocache.py"],
+      "runtimeArgs": ["-m", "http.server", "8000", "--bind", "127.0.0.1"],
       "port": 8000
     }
   ]
