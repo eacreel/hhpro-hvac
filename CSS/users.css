@@ -545,3 +545,39 @@
 .users-check-stale {
     color: var(--color-warning);
 }
+
+/* ---- Locations column, kept short ---------------------------------- */
+
+.users-locations-all {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: rgba(91, 169, 216, 0.15);
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.users-locations-more {
+    margin-left: 6px;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+/* Select all / Clear beside the Locations label in the form */
+.users-check-quick {
+    margin-left: 10px;
+    font-weight: 400;
+}
+
+.users-check-link {
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+    padding: 0 4px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.users-check-link:hover {
+    color: var(--color-text);
+}

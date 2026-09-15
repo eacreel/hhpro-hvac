@@ -301,6 +301,8 @@
             } else if (col.key === 'createdBy') {
                 td.className = 'users-td-muted';
                 td.textContent = nameForEmail(u.createdBy);
+            } else if (col.key === 'location') {
+                td.appendChild(locationsCell(u));
             } else {
                 td.textContent = col.get ? col.get(u) : (u[col.key] || '');
             }
@@ -360,6 +362,32 @@
             }
         }
         return badge;
+    }
+
+    /**
+     * Locations, kept short: "All locations" when they have every one on
+     * the Permissions tab, the first two plus "+N more" when the list is
+     * long, and the full list on hover either way.
+     */
+    function locationsCell(u) {
+        var list = u.locations || [];
+        var all = options && options.locations ? options.locations : [];
+        var span = document.createElement('span');
+        span.className = 'users-locations';
+        span.title = list.join('\n');
+        if (all.length && list.length >= all.length && all.every(function (l) { return list.indexOf(l) !== -1; })) {
+            span.textContent = 'All locations';
+            span.className += ' users-locations-all';
+        } else if (list.length > 2) {
+            span.textContent = list.slice(0, 2).join('; ');
+            var more = document.createElement('span');
+            more.className = 'users-locations-more';
+            more.textContent = '+' + (list.length - 2) + ' more';
+            span.appendChild(more);
+        } else {
+            span.textContent = list.join('; ');
+        }
+        return span;
     }
 
     function nameForEmail(email) {
@@ -578,6 +606,23 @@
         legend.className = 'users-label';
         legend.textContent = labelText;
         wrap.appendChild(legend);
+
+        // Quick picks: everything, or start over.
+        var quick = document.createElement('span');
+        quick.className = 'users-check-quick';
+        var pickAll = document.createElement('button');
+        pickAll.type = 'button';
+        pickAll.className = 'users-check-link';
+        pickAll.textContent = 'Select all';
+        pickAll.addEventListener('click', function () { boxes.forEach(function (b) { b.checked = true; }); });
+        var pickNone = document.createElement('button');
+        pickNone.type = 'button';
+        pickNone.className = 'users-check-link';
+        pickNone.textContent = 'Clear';
+        pickNone.addEventListener('click', function () { boxes.forEach(function (b) { b.checked = false; }); });
+        quick.appendChild(pickAll);
+        quick.appendChild(pickNone);
+        legend.appendChild(quick);
 
         var grid = document.createElement('div');
         grid.className = 'users-checks';

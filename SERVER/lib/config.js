@@ -43,7 +43,11 @@ function required(name) {
     return value;
 }
 
-const USERS_DIR = path.join(HHPRO_DIR, 'Users');
+// HHPRO_USERS_DIR points a test copy of the backend at a separate data
+// folder, so test accounts never appear in the live user list.
+const USERS_DIR = process.env.HHPRO_USERS_DIR
+    ? path.resolve(process.env.HHPRO_USERS_DIR)
+    : path.join(HHPRO_DIR, 'Users');
 
 const config = {
     hhproDir: HHPRO_DIR,
