@@ -30,10 +30,8 @@ const router = express.Router();
 
 /** Everything the site needs to know about the signed-in person. */
 function profile(user) {
-    const perms = permissions.getPermissions();
-    const blocked = user.user_level === 'Super Admin'
-        ? []
-        : perms.products.filter((p) => !permissions.isProductAllowed(p.name, user.location)).map((p) => p.name);
+    const locations = db.locationsOf(user);
+    const blocked = user.user_level === 'Super Admin' ? [] : permissions.blockedProductsFor(locations);
     return {
         user: {
             id: user.id,
@@ -41,7 +39,8 @@ function profile(user) {
             firstName: user.first_name,
             lastName: user.last_name,
             company: user.company,
-            location: user.location,
+            locations: locations,
+            location: locations.join('; '),
             userLevel: user.user_level
         },
         allowedEngineers: templates.allowedEngineersFor(user),

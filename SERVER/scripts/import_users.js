@@ -35,7 +35,7 @@ async function main() {
                 firstName: r.firstName,
                 lastName: r.lastName,
                 company: r.company,
-                location: r.location,
+                locations: r.locations,
                 userLevel: r.userLevel,
                 createdBy: config.superAdminEmail
             });

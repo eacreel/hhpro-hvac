@@ -52,6 +52,14 @@ const MIGRATIONS = [
         last_seen  TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id);
+    `,
+    // v2: a person can belong to several locations. Stored as a JSON
+    // array of the names on the Permissions tab; the old single
+    // location column is folded in and dropped.
+    `
+    ALTER TABLE users ADD COLUMN locations TEXT NOT NULL DEFAULT '[]';
+    UPDATE users SET locations = CASE WHEN location <> '' THEN json_array(location) ELSE '[]' END;
+    ALTER TABLE users DROP COLUMN location;
     `
 ];
 
@@ -88,6 +96,31 @@ function normalizeEmail(email) {
 
 function clean(s) {
     return String(s || '').trim();
+}
+
+/** Accepts an array, a JSON string, or a "; "-joined string; returns a clean array. */
+function normalizeLocations(value) {
+    let list = value;
+    if (typeof list === 'string') {
+        const t = list.trim();
+        if (t.startsWith('[')) {
+            try { list = JSON.parse(t); } catch (e) { list = []; }
+        } else {
+            list = t.split(';');
+        }
+    }
+    if (!Array.isArray(list)) list = [];
+    const out = [];
+    list.forEach((v) => {
+        const s = clean(v);
+        if (s && !out.includes(s)) out.push(s);
+    });
+    return out;
+}
+
+/** The locations array for a users row (the column holds JSON). */
+function locationsOf(user) {
+    return user ? normalizeLocations(user.locations) : [];
 }
 
 // ---- users -------------------------------------------------------
@@ -127,11 +160,12 @@ function insertUser(u) {
     if (getUserByEmail(email)) throw new Error(`Email already exists: ${email}`);
 
     const result = open().prepare(`
-        INSERT INTO users (email, first_name, last_name, company, location, user_level,
+        INSERT INTO users (email, first_name, last_name, company, locations, user_level,
                            status, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, ?, 'invited', ?, ?)
     `).run(
-        email, clean(u.firstName), clean(u.lastName), clean(u.company), clean(u.location),
+        email, clean(u.firstName), clean(u.lastName), clean(u.company),
+        JSON.stringify(normalizeLocations(u.locations !== undefined ? u.locations : u.location)),
         u.userLevel, normalizeEmail(u.createdBy), now()
     );
     return getUserById(Number(result.lastInsertRowid));
@@ -146,9 +180,10 @@ function updateUser(id, u) {
     if (existing && existing.id !== id) throw new Error(`Email already exists: ${email}`);
 
     open().prepare(`
-        UPDATE users SET email = ?, first_name = ?, last_name = ?, company = ?, location = ?, user_level = ?
+        UPDATE users SET email = ?, first_name = ?, last_name = ?, company = ?, locations = ?, user_level = ?
         WHERE id = ?
-    `).run(email, clean(u.firstName), clean(u.lastName), clean(u.company), clean(u.location), u.userLevel, id);
+    `).run(email, clean(u.firstName), clean(u.lastName), clean(u.company),
+        JSON.stringify(normalizeLocations(u.locations !== undefined ? u.locations : u.location)), u.userLevel, id);
     return getUserById(id);
 }
 
@@ -221,6 +256,8 @@ module.exports = {
     open,
     now,
     normalizeEmail,
+    normalizeLocations,
+    locationsOf,
     USER_LEVELS,
     USER_STATUSES,
     listUsers,

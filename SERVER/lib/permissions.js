@@ -122,6 +122,19 @@ function isProductAllowed(productName, location) {
     return product.byLocation[location];
 }
 
+/**
+ * Products hidden for someone who belongs to these locations: a product
+ * is hidden only if every one of their locations says No. Someone with
+ * no locations on file sees everything, the same as an unknown location.
+ */
+function blockedProductsFor(locations) {
+    const list = Array.isArray(locations) ? locations.filter(Boolean) : [];
+    if (!list.length) return [];
+    return current.products
+        .filter((p) => list.every((loc) => !isProductAllowed(p.name, loc)))
+        .map((p) => p.name);
+}
+
 /** Product names visible for a location (Super Admins bypass this). */
 function allowedProductsFor(location) {
     return current.products.filter((p) => isProductAllowed(p.name, location)).map((p) => p.name);
@@ -133,5 +146,6 @@ module.exports = {
     getPermissions,
     getLocations,
     isProductAllowed,
+    blockedProductsFor,
     allowedProductsFor
 };

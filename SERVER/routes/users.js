@@ -60,7 +60,8 @@ function publicRow(u, actor) {
         firstName: u.first_name,
         lastName: u.last_name,
         company: u.company,
-        location: u.location,
+        locations: db.locationsOf(u),
+        location: db.locationsOf(u).join('; '),
         userLevel: u.user_level,
         status: u.status,
         createdBy: u.created_by,
@@ -79,7 +80,7 @@ function readForm(body, actor) {
         firstName: String(b.firstName || '').trim(),
         lastName: String(b.lastName || '').trim(),
         company: String(b.company || '').trim(),
-        location: String(b.location || '').trim(),
+        locations: db.normalizeLocations(b.locations !== undefined ? b.locations : b.location),
         userLevel: String(b.userLevel || '').trim(),
         email: db.normalizeEmail(b.email)
     };
@@ -88,9 +89,11 @@ function readForm(body, actor) {
     if (!assignableLevels(actor).includes(fields.userLevel)) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
-    const locations = permissions.getLocations();
-    if (!locations.includes(fields.location)) {
-        return { error: `"${fields.location || '(none)'}" is not a location on the Permissions tab. Email ${config.superAdminEmail} to have it added.` };
+    const known = permissions.getLocations();
+    if (!fields.locations.length) return { error: 'Choose at least one location.' };
+    const unknown = fields.locations.find((loc) => !known.includes(loc));
+    if (unknown) {
+        return { error: `"${unknown}" is not a location on the Permissions tab. Email ${config.superAdminEmail} to have it added.` };
     }
     return { fields };
 }
@@ -139,7 +142,7 @@ router.get('/export.xlsx', async (req, res, next) => {
             { header: 'FIRST NAME', key: 'first', width: 14 },
             { header: 'LAST NAME', key: 'last', width: 14 },
             { header: 'COMPANY', key: 'company', width: 18 },
-            { header: 'LOCATION', key: 'location', width: 20 },
+            { header: 'LOCATION(S)', key: 'location', width: 28 },
             { header: 'USER LEVEL', key: 'level', width: 14 },
             { header: 'USERNAME', key: 'email', width: 38 },
             { header: 'STATUS', key: 'status', width: 10 },
@@ -150,7 +153,7 @@ router.get('/export.xlsx', async (req, res, next) => {
         ws.getRow(1).font = { bold: true };
         db.listUsers().forEach((u) => {
             ws.addRow({
-                first: u.first_name, last: u.last_name, company: u.company, location: u.location,
+                first: u.first_name, last: u.last_name, company: u.company, location: db.locationsOf(u).join('; '),
                 level: u.user_level, email: u.email, status: u.status === 'active' ? 'Active' : 'Invited',
                 by: u.created_by, on: (u.created_at || '').slice(0, 10), reg: (u.registered_at || '').slice(0, 10)
             });

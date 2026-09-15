@@ -204,7 +204,7 @@
     var COLUMNS = [
         { key: 'lastName', label: 'Name', get: function (u) { return u.firstName + ' ' + u.lastName; } },
         { key: 'company', label: 'Company' },
-        { key: 'location', label: 'Location' },
+        { key: 'location', label: 'Locations', get: function (u) { return (u.locations || []).join('; '); } },
         { key: 'userLevel', label: 'Level' },
         { key: 'email', label: 'Email' },
         { key: 'status', label: 'Status' },
@@ -396,8 +396,11 @@
         var lastName = textField('Last name', 'user-last', existing ? existing.lastName : '', 'family-name');
         var company = textField('Company', 'user-company', existing ? existing.company : '', 'organization');
         var email = textField('Email', 'user-email', existing ? existing.email : '', 'email', 'email');
-        var location = selectField('Location', 'user-location', options.locations, existing ? existing.location : '');
         var level = selectField('User level', 'user-level', options.levels, existing ? existing.userLevel : '');
+        // One or more locations. An engineer who covers several
+        // territories sees the products any of them allows.
+        var locations = checkField('Locations', 'user-location', options.locations,
+            existing ? (existing.locations || []) : []);
 
         // Company suggestions keep spelling consistent, which is what
         // ties an Engineer to their firm's schedule template.
@@ -415,8 +418,8 @@
         grid.appendChild(lastName.wrap);
         grid.appendChild(company.wrap);
         grid.appendChild(email.wrap);
-        grid.appendChild(location.wrap);
         grid.appendChild(level.wrap);
+        grid.appendChild(locations.wrap);
         form.appendChild(grid);
 
         // A level the caller may not assign (an Admin editing... a Super
@@ -507,7 +510,7 @@
                 lastName: lastName.input.value.trim(),
                 company: company.input.value.trim(),
                 email: email.input.value.trim(),
-                location: location.input.value,
+                locations: locations.values(),
                 userLevel: existing && existing.isSelf ? existing.userLevel : level.input.value
             };
         }
@@ -516,7 +519,7 @@
             var p = payload();
             if (!p.firstName || !p.lastName) { error.textContent = 'First and last name are required.'; return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { error.textContent = 'Enter a valid email address.'; return; }
-            if (!p.location) { error.textContent = 'Choose a location.'; return; }
+            if (!p.locations.length) { error.textContent = 'Choose at least one location.'; return; }
             if (!p.userLevel) { error.textContent = 'Choose a user level.'; return; }
             error.textContent = '';
             save.disabled = true;
@@ -562,6 +565,64 @@
         wrap.appendChild(label);
         wrap.appendChild(input);
         return { wrap: wrap, input: input };
+    }
+
+    /**
+     * A group of checkboxes laid out as a grid, for picking several
+     * locations. .values() returns the checked ones in list order.
+     */
+    function checkField(labelText, idPrefix, values, checked) {
+        var wrap = document.createElement('fieldset');
+        wrap.className = 'users-field users-field-full users-checkfield';
+        var legend = document.createElement('legend');
+        legend.className = 'users-label';
+        legend.textContent = labelText;
+        wrap.appendChild(legend);
+
+        var grid = document.createElement('div');
+        grid.className = 'users-checks';
+        var boxes = [];
+        (values || []).forEach(function (v, i) {
+            var label = document.createElement('label');
+            label.className = 'users-check';
+            var box = document.createElement('input');
+            box.type = 'checkbox';
+            box.id = idPrefix + '-' + i;
+            box.value = v;
+            box.checked = (checked || []).indexOf(v) !== -1;
+            label.appendChild(box);
+            var text = document.createElement('span');
+            text.textContent = v;
+            label.appendChild(text);
+            grid.appendChild(label);
+            boxes.push(box);
+        });
+        // A location on file that is no longer on the Permissions tab
+        // still shows, checked, so editing does not silently drop it.
+        (checked || []).forEach(function (v, i) {
+            if ((values || []).indexOf(v) !== -1) return;
+            var label = document.createElement('label');
+            label.className = 'users-check users-check-stale';
+            var box = document.createElement('input');
+            box.type = 'checkbox';
+            box.id = idPrefix + '-old-' + i;
+            box.value = v;
+            box.checked = true;
+            label.appendChild(box);
+            var text = document.createElement('span');
+            text.textContent = v + ' (not on the Permissions tab)';
+            label.appendChild(text);
+            grid.appendChild(label);
+            boxes.push(box);
+        });
+        wrap.appendChild(grid);
+
+        return {
+            wrap: wrap,
+            values: function () {
+                return boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
+            }
+        };
     }
 
     function selectField(labelText, id, values, value) {
@@ -860,9 +921,10 @@
     var HELP = [
         { title: 'User levels', items: [
             'Super Admin: sees every product, manages every user, can make other Super Admins.',
-            'Admin: sees products for their location, can add Admin, Hoffman, Engineer and Contractor users, and can edit or delete only the users they added.',
-            'Hoffman: sees products for their location and can pick any engineer schedule template.',
-            'Engineer: sees products for their location; gets the standard template plus their company\'s, if one exists.',
+            'Admin: sees products for their locations, can add Admin, Hoffman, Engineer and Contractor users, and can edit or delete only the users they added.',
+            'Hoffman: sees products for their locations and can pick any engineer schedule template.',
+            'Engineer: sees products for their locations; gets the standard template plus their company\'s, if one exists.',
+            'A person can have several locations. They see every product that any one of their locations allows.',
             'Contractor: same as Engineer but standard template only.'
         ] },
         { title: 'Adding someone', items: [

@@ -72,7 +72,8 @@ async function readUsersTab() {
             firstName: cellText(row.getCell(col['FIRST NAME'])),
             lastName: cellText(row.getCell(col['LAST NAME'])),
             company: cellText(row.getCell(col['COMPANY'])),
-            location: cellText(row.getCell(col['LOCATION'])),
+            // Several locations are written "Charlotte, NC; Nashville, TN".
+            locations: db.normalizeLocations(cellText(row.getCell(col['LOCATION']))),
             userLevel: cellText(row.getCell(col['USER LEVEL'])),
             email: email
         });
@@ -114,7 +115,7 @@ async function writeUsersTab() {
     // Data rows.
     users.forEach((u, i) => {
         const row = ws.getRow(i + 2);
-        const values = [u.first_name, u.last_name, u.company, u.location, u.user_level,
+        const values = [u.first_name, u.last_name, u.company, db.locationsOf(u).join('; '), u.user_level,
             u.email, statusLabel(u.status), u.created_by];
         values.forEach((v, c) => { row.getCell(c + 1).value = v; });
         for (let c = HEADERS.length + 1; c <= ws.columnCount; c++) row.getCell(c).value = null;
@@ -127,7 +128,7 @@ async function writeUsersTab() {
     }
 
     // Widen columns so the sheet reads well when opened.
-    const widths = [14, 14, 18, 20, 14, 38, 10, 38];
+    const widths = [14, 14, 18, 28, 14, 38, 10, 38];
     widths.forEach((w, i) => {
         const column = ws.getColumn(i + 1);
         if (!column.width || column.width < w) column.width = w;
