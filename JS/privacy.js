@@ -1,11 +1,12 @@
 /* ============================================================
    HHpro - Privacy & Data view
    ------------------------------------------------------------
-   A plain-language account of what the site does with data.
+   The privacy notice, kept to the essentials: who collects the
+   data, what, why, who it is shared with, cookies, how long it
+   is kept, how to get it corrected or removed, and the date.
 
-   Since accounts arrived (September 2026) HHpro has a backend:
-   a small server run by Hoffman & Hoffman that holds accounts
-   and saved projects. There are still no analytics, no
+   HHpro has a backend run by Hoffman & Hoffman that holds
+   accounts and saved projects. There are no analytics, no
    advertising and no third-party scripts, and the site itself
    sends no email.
 
@@ -25,92 +26,55 @@
     // changes, not for typo fixes.
     var LAST_UPDATED = 'September 15, 2026';
 
+    var CONTACT = 'eric.creel@hoffman-hoffman.com';
+
     var SECTIONS = [
         {
-            title: 'The short version',
+            title: 'Who we are',
             paragraphs: [
-                'HHpro requires an account. We store the details needed to run your account and ' +
-                'the projects you save. There is no advertising, no analytics and no tracking. ' +
-                'Nothing is shared with anyone outside Hoffman & Hoffman.'
+                'HHpro is operated by Hoffman & Hoffman. Questions about this notice go to ' +
+                CONTACT + '.'
             ]
         },
         {
-            title: 'What we store about you',
+            title: 'What we collect',
             paragraphs: [
-                'Your name, company, office location, user level and email address, entered by the ' +
-                'Hoffman & Hoffman administrator who set up your account. A scrambled version of ' +
-                'your password that cannot be turned back into the password itself. The date your ' +
-                'account was created and who created it.'
+                'Your name, company, office location(s), user level and email address, entered by ' +
+                'the administrator who set up your account, plus a scrambled form of your password. ' +
+                'Projects you save on the site are stored with your account.'
             ]
         },
         {
-            title: 'Projects you save',
+            title: 'Why',
             paragraphs: [
-                'Projects are saved on a Hoffman & Hoffman server in Charlotte, North Carolina, in a ' +
-                'folder that belongs to your account. Only you can see them on the site. Hoffman & ' +
-                'Hoffman staff who maintain the server can access the files. You can export any ' +
-                'project to CSV and delete any project at any time.'
+                'To sign you in, show you the products for your locations, and keep your saved projects.'
+            ]
+        },
+        {
+            title: 'Sharing',
+            paragraphs: [
+                'Your information is not sold or shared with anyone outside Hoffman & Hoffman. The ' +
+                'site is delivered through Cloudflare, which handles the network connection under its ' +
+                'own privacy policy.'
             ]
         },
         {
             title: 'Cookies',
             paragraphs: [
-                'One cookie, which keeps you signed in. It holds a random session code and nothing ' +
-                'else. It is removed when you log out. There are no third-party cookies.'
+                'One cookie keeps you signed in. There are no advertising, analytics or third-party cookies.'
             ]
         },
         {
-            title: 'Email',
+            title: 'How long we keep it',
             paragraphs: [
-                'HHpro never sends email. When an administrator invites you or you ask for a ' +
-                'password reset, the site opens a message in their own mail program for them to ' +
-                'send. Your email address is used only to identify your account and to reach you ' +
-                'about it.'
+                'For as long as your account is active. Deleted accounts and deleted projects are ' +
+                'removed within 30 days.'
             ]
         },
         {
-            title: 'Who can see the user list',
+            title: 'Your choices',
             paragraphs: [
-                'Hoffman & Hoffman administrators can see the name, company, location, level and ' +
-                'email of every account. They cannot see passwords or your projects.'
-            ]
-        },
-        {
-            title: 'Third parties',
-            paragraphs: [
-                'The site loads no third-party scripts, fonts, images, trackers or embedded content. ' +
-                'Documents you generate (Excel schedules, PDFs, CAD files) are built inside your ' +
-                'browser and downloaded directly; they are never uploaded anywhere.'
-            ]
-        },
-        {
-            title: 'Cloudflare',
-            paragraphs: [
-                'The site and its server connection are delivered through Cloudflare, which handles ' +
-                'the network request and sees your IP address as any web host would. Cloudflare does ' +
-                'not receive your account details or projects in any form it can read. That ' +
-                'processing is Cloudflare’s and is covered by their privacy policy.'
-            ]
-        },
-        {
-            title: 'Removing your account',
-            paragraphs: [
-                'Email eric.creel@hoffman-hoffman.com. Your account is deleted and your project ' +
-                'folder is set aside and removed after 30 days.'
-            ]
-        },
-        {
-            title: 'Children',
-            paragraphs: [
-                'HHpro is a professional engineering tool intended for use in the course of work. ' +
-                'It is not directed at children.'
-            ]
-        },
-        {
-            title: 'Changes',
-            paragraphs: [
-                'If the way HHpro handles data changes, this page changes in the same update, and ' +
-                'the date below changes with it.'
+                'To see, correct or delete the information we hold about you, email ' + CONTACT + '.'
             ]
         }
     ];
