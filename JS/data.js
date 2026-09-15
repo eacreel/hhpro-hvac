@@ -32,7 +32,7 @@
     var PRODUCTS = [
         {
             productKey: 'gas_packs',
-            displayName: 'GAS PACK RTUS',
+            displayName: 'Daikin Light Commercial RTUs',
             jsonFile: 'DATA/JSON/gas_packs.json',
             pictureFile: 'DATA/PICTURES/GAS PACK RTUS.jpg',
             assetsFolder: 'ASSETS/GAS PACKS',
@@ -40,7 +40,7 @@
         },
         {
             productKey: 'mini_splits',
-            displayName: 'MINI SPLITS',
+            displayName: 'Daikin Mini Splits',
             jsonFile: 'DATA/JSON/mini_splits.json',
             pictureFile: 'DATA/PICTURES/MINI SPLITS.jpg',
             assetsFolder: 'ASSETS/MINI SPLITS',
@@ -61,7 +61,7 @@
         },
         {
             productKey: 'multi_position_splits',
-            displayName: 'MULTI POSITION SPLITS',
+            displayName: 'Daikin Multi Position Splits',
             jsonFile: 'DATA/JSON/multi_position_splits.json',
             pictureFile: 'DATA/PICTURES/MULTI POSITION SPLITS.jpg',
             assetsFolder: 'ASSETS/MULTI POSITION SPLITS',
@@ -81,7 +81,7 @@
         },
         {
             productKey: 'gas_splits',
-            displayName: 'GAS SPLITS',
+            displayName: 'Daikin Gas Splits',
             jsonFile: 'DATA/JSON/gas_splits.json',
             pictureFile: 'DATA/PICTURES/GAS SPLITS.jpg',
             assetsFolder: 'ASSETS/GAS SPLITS',
@@ -107,7 +107,7 @@
         },
         {
             productKey: 'vfds',
-            displayName: 'VFDs',
+            displayName: 'ABB VFDs',
             jsonFile: 'DATA/JSON/vfds.json',
             pictureFile: 'DATA/PICTURES/VFDs.jpg',
             assetsFolder: 'ASSETS/VFDs',
@@ -136,7 +136,7 @@
         },
         {
             productKey: 'diffusers',
-            displayName: 'DIFFUSERS',
+            displayName: 'Price Diffusers',
             jsonFile: 'DATA/JSON/diffusers.json',
             pictureFile: 'DATA/PICTURES/DIFFUSERS.jpg',
             assetsFolder: 'ASSETS/DIFFUSERS',
@@ -190,7 +190,7 @@
         },
         {
             productKey: 'grilles',
-            displayName: 'GRILLES',
+            displayName: 'Price Grilles',
             jsonFile: 'DATA/JSON/grilles.json',
             pictureFile: 'DATA/PICTURES/GRILLES.jpg',
             assetsFolder: 'ASSETS/GRILLES',
@@ -231,9 +231,9 @@
         },
         {
             productKey: 'gps',
-            displayName: 'Bipolar Ionization',
+            displayName: 'GPS Bipolar Ionization',
             // Short label used in export filenames (productTabLabel).
-            name: 'Bipolar Ionization',
+            name: 'GPS Bipolar Ionization',
             jsonFile: 'DATA/JSON/gps.json',
             pictureFile: 'DATA/PICTURES/GPS/GPS.webp',
             assetsFolder: 'ASSETS/GPS',

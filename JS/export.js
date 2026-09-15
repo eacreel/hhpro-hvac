@@ -2515,13 +2515,15 @@ WHAT'S IN THE GRID
             ? HHpro.Data.getProduct(productKey) : null;
         if (product && product.name) return product.name;
         var fallback = {
-            'gas_packs': 'Gas Pack RTUs',
+            'gas_packs': 'Daikin Light Commercial RTUs',
             'marvair': 'Marvair Vertical Wall Mount',
-            'mini_splits': 'Mini Splits',
-            'multi_position_splits': 'Multi Position Splits',
-            'gas_splits': 'Gas Splits',
-            'vfds': 'VFDs',
-            'diffusers': 'Diffusers'
+            'mini_splits': 'Daikin Mini Splits',
+            'multi_position_splits': 'Daikin Multi Position Splits',
+            'gas_splits': 'Daikin Gas Splits',
+            'vfds': 'ABB VFDs',
+            'diffusers': 'Price Diffusers',
+            'grilles': 'Price Grilles',
+            'gps': 'GPS Bipolar Ionization'
         };
         return fallback[productKey] || productKey;
     }

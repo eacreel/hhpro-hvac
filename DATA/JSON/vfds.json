@@ -4,7 +4,7 @@
   "scheduleTitle": "VFD SCHEDULE",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "VFDs",
+    "displayName": "ABB VFDs",
     "description": "Variable frequency drives. Engineers typically size VFDs to an exact motor HP and electrical service, so this category uses filters only -- no tolerance-based targets apply.",
     "targets": []
   },

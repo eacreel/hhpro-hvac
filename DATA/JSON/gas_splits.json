@@ -4,7 +4,7 @@
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "Gas Splits",
+    "displayName": "Daikin Gas Splits",
     "description": "Three-component split systems with a gas furnace, indoor coil, and outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
     "targets": [
       {

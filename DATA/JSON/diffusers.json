@@ -4,7 +4,7 @@
   "scheduleTitle": "PRICE DIFFUSER SCHEDULE",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "Diffusers",
+    "displayName": "Price Diffusers",
     "description": "Price ceiling diffusers (supply + return). Enter a target airflow and/or use the filters to narrow by model, size, and application.",
     "targets": [
       {

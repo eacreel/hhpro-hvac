@@ -4,7 +4,7 @@
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "Multi Position Splits",
+    "displayName": "Daikin Multi Position Splits",
     "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
     "targets": [
       {

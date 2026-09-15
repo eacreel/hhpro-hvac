@@ -4,7 +4,7 @@
   "scheduleTitle": "SPLIT SYSTEM SCHEDULE",
   "supportsMultiRowSelections": true,
   "searchSchema": {
-    "displayName": "Mini Splits",
+    "displayName": "Daikin Mini Splits",
     "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
     "targets": [
       {
@@ -54381,7 +54381,7 @@
   },
   "_meta": {
     "sourceFile": "MINI SPLIT DATA.xlsx",
-    "generatedAt": "2026-08-04T11:04:23",
+    "generatedAt": "2026-09-14T12:07:56",
     "dataRowCount": 1255,
     "selectionCount": 394
   }

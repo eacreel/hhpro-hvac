@@ -5,7 +5,7 @@
   "supportsMultiRowSelections": false,
   "multiSchedule": true,
   "searchSchema": {
-    "displayName": "Bipolar Ionization",
+    "displayName": "GPS Bipolar Ionization",
     "description": "GPS air ionization devices.",
     "targets": []
   },

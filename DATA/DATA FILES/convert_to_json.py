@@ -92,7 +92,7 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "GAS PACKS",
         "searchSchema": {
-            "displayName": "Gas Pack RTUs",
+            "displayName": "Daikin Light Commercial RTUs",
             "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
                 {"label": "Nominal Tons",             "col": "C", "unit": "tons",  "defaultTolerance": 10},
@@ -130,7 +130,7 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": True,
         "assetsFolder": "MINI SPLITS",
         "searchSchema": {
-            "displayName": "Mini Splits",
+            "displayName": "Daikin Mini Splits",
             "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
             "targets": [
                 {"label": "Indoor Unit Cooling Capacity",             "col": "D", "unit": "BTU/h", "defaultTolerance": 10},
@@ -148,7 +148,7 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "MULTI POSITION SPLITS",
         "searchSchema": {
-            "displayName": "Multi Position Splits",
+            "displayName": "Daikin Multi Position Splits",
             "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
                 {"label": "Indoor Cooling Capacity",    "col": "I", "unit": "BTU/h", "defaultTolerance": 10},
@@ -167,7 +167,7 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "GAS SPLITS",
         "searchSchema": {
-            "displayName": "Gas Splits",
+            "displayName": "Daikin Gas Splits",
             "description": "Three-component split systems with a gas furnace, indoor coil, and outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
                 {"label": "Total Cooling Capacity", "col": "H", "unit": "BTU/h",  "defaultTolerance": 10},
@@ -197,7 +197,7 @@ PRODUCT_CONFIGS = {
         # excludes GPS from Design Search (mixed per-schedule columns
         # make tolerance targets meaningless for ionizers).
         "searchSchema": {
-            "displayName": "Bipolar Ionization",
+            "displayName": "GPS Bipolar Ionization",
             "description": "GPS air ionization devices.",
             "targets": [],
         },
@@ -210,7 +210,7 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "VFDs",
         "searchSchema": {
-            "displayName": "VFDs",
+            "displayName": "ABB VFDs",
             "description": "Variable frequency drives. Engineers typically size VFDs to an exact motor HP and electrical service, so this category uses filters only -- no tolerance-based targets apply.",
             "targets": [],
         },
@@ -230,7 +230,7 @@ PRODUCT_CONFIGS = {
         # applicable notes in its Accessories column.
         "notesFormat": "modelmap",
         "searchSchema": {
-            "displayName": "Diffusers",
+            "displayName": "Price Diffusers",
             "description": "Price ceiling diffusers (supply + return). Enter a target airflow and/or use the filters to narrow by model, size, and application.",
             "targets": [
                 {"label": "Airflow", "col": "U", "unit": "CFM", "defaultTolerance": 15},
@@ -252,7 +252,7 @@ PRODUCT_CONFIGS = {
         # (grilles.json + grilles-2.json); the site re-joins them.
         "splitParts": 2,
         "searchSchema": {
-            "displayName": "Grilles",
+            "displayName": "Price Grilles",
             "description": "Price supply, return, and transfer grilles. Enter a target airflow and/or use the filters to narrow by model, size, and application.",
             "targets": [
                 {"label": "Airflow", "col": "I", "unit": "CFM", "defaultTolerance": 15},

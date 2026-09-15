@@ -4,7 +4,7 @@
   "scheduleTitle": "PRICE GRILLE SCHEDULE",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "Grilles",
+    "displayName": "Price Grilles",
     "description": "Price supply, return, and transfer grilles. Enter a target airflow and/or use the filters to narrow by model, size, and application.",
     "targets": [
       {

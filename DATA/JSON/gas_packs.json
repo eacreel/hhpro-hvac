@@ -4,7 +4,7 @@
   "scheduleTitle": "PACKAGED ROOFTOP UNITS",
   "supportsMultiRowSelections": false,
   "searchSchema": {
-    "displayName": "Gas Pack RTUs",
+    "displayName": "Daikin Light Commercial RTUs",
     "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
     "targets": [
       {
