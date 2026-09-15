@@ -8,8 +8,9 @@
 
    Route modules under routes/:
      routes/auth.js    /api/auth/*   sign in, register, who am I
-     routes/users.js   /api/users/*  the Users screen (admins)
-   Saved projects arrive in Phase 3 as routes/projects.js.
+     routes/users.js     /api/users/*     the Users screen (admins)
+     routes/projects.js  /api/projects/*  saved projects, one folder
+                                          per person under Users/Projects
    ============================================================ */
 
 'use strict';
@@ -24,6 +25,7 @@ const usersExcel = require('./lib/users_excel');
 const auth = require('./lib/auth');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const projectRoutes = require('./routes/projects');
 const pkg = require('./package.json');
 
 const app = express();
@@ -55,6 +57,7 @@ app.use(auth.attach);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.get('/health', (req, res) => {
     const perms = permissions.getPermissions();

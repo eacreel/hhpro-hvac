@@ -290,6 +290,29 @@
         },
 
         /**
+         * Brief status message at the bottom of the screen. One element
+         * is reused; a new call replaces the text and restarts the timer.
+         *
+         * @param {string} message
+         * @param {boolean=} isError - red border, stays up longer
+         */
+        toast: function (message, isError) {
+            var el = document.getElementById('hh-toast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'hh-toast';
+                el.className = 'hh-toast';
+                el.setAttribute('role', 'status');
+                document.body.appendChild(el);
+            }
+            el.textContent = message;
+            el.classList.toggle('hh-toast-error', !!isError);
+            el.classList.add('hh-toast-show');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(function () { el.classList.remove('hh-toast-show'); }, isError ? 7000 : 3500);
+        },
+
+        /**
          * Open a pre-filled message in the user's own mail program. The
          * site never sends email itself; this is how invitations and
          * reset requests travel.

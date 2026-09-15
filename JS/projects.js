@@ -43,9 +43,70 @@
                 HHpro.Cart.init();
             }
             root.appendChild(HHpro.UI.buildHeader('Projects'));
+
+            // Projects come from the server. Until they have arrived,
+            // show a loading well and repaint when they do (or fail).
+            if (HHpro.Cart.isProjectsLoaded && !HHpro.Cart.isProjectsLoaded()) {
+                var main = document.createElement('main');
+                main.className = 'projects-view';
+                main.appendChild(buildLoadingState());
+                root.appendChild(main);
+                var rerender = function () {
+                    document.removeEventListener('hhpro:projects-loaded', rerender);
+                    document.removeEventListener('hhpro:projects-load-failed', onFail);
+                    if (main.parentNode === root) HHpro.Views.projects.render(root);
+                };
+                var onFail = function (e) {
+                    document.removeEventListener('hhpro:projects-loaded', rerender);
+                    document.removeEventListener('hhpro:projects-load-failed', onFail);
+                    if (main.parentNode !== root) return;
+                    main.innerHTML = '';
+                    main.appendChild(buildLoadFailedState(e.detail));
+                };
+                document.addEventListener('hhpro:projects-loaded', rerender);
+                document.addEventListener('hhpro:projects-load-failed', onFail);
+                HHpro.Cart.loadProjectsFromServer();
+                return;
+            }
+
             root.appendChild(buildBody());
         }
     };
+
+    function buildLoadingState() {
+        var box = document.createElement('div');
+        box.className = 'projects-loading';
+        var s = document.createElement('span');
+        s.className = 'hh-spinner hh-spinner-sm';
+        box.appendChild(s);
+        var t = document.createElement('span');
+        t.textContent = 'Loading your projects...';
+        box.appendChild(t);
+        return box;
+    }
+
+    function buildLoadFailedState(err) {
+        var box = document.createElement('div');
+        box.className = 'hh-empty';
+        box.appendChild(HHpro.UI.icon('alert-triangle'));
+        var t = document.createElement('p');
+        t.className = 'hh-empty-title';
+        t.textContent = 'Couldn\'t load your projects';
+        box.appendChild(t);
+        var h = document.createElement('p');
+        h.className = 'hh-empty-hint';
+        h.textContent = (err && err.message) || 'The server did not answer.';
+        box.appendChild(h);
+        var retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'projects-btn projects-btn-primary';
+        retry.textContent = 'Try again';
+        retry.addEventListener('click', function () {
+            HHpro.App.showView('projects');
+        });
+        box.appendChild(retry);
+        return box;
+    }
 
     // =================================================================
     // Body
@@ -57,6 +118,8 @@
 
         main.appendChild(buildTitleBar());
         main.appendChild(buildToolbar());
+        var migrate = buildMigrationBanner();
+        if (migrate) main.appendChild(migrate);
         main.appendChild(buildStorageNotice());
         main.appendChild(buildProjectsList());
 
@@ -64,17 +127,80 @@
     }
 
     /**
-     * Standing notice about where projects actually live.
-     *
-     * They are held in this browser's localStorage (see cart.js,
-     * 'hhpro_projects') - one copy, on one machine, with no server behind
-     * it. Clearing site data or browsing history wipes them, and nothing
-     * about the UI hints at that, so the page says it plainly and points at
-     * the CSV export sitting directly above as the backup.
-     *
-     * Deliberately not dismissable: the risk lasts as long as the storage
-     * does, and a notice the user dismissed six months ago is no warning at
-     * all on the day their cache gets cleared.
+     * Projects saved in this browser before accounts existed. Offer to
+     * move them into the account once; "Not now" asks again next visit,
+     * "Leave them" stops asking (a copy stays in the browser under a
+     * backup key, so nothing is destroyed).
+     */
+    function buildMigrationBanner() {
+        var old = HHpro.Cart.getBrowserProjects ? HHpro.Cart.getBrowserProjects() : [];
+        if (!old.length) return null;
+
+        var box = document.createElement('aside');
+        box.className = 'projects-notice projects-notice-migrate';
+
+        var icon = document.createElement('span');
+        icon.className = 'projects-notice-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.appendChild(HHpro.UI.icon('upload'));
+        box.appendChild(icon);
+
+        var body = document.createElement('div');
+        body.className = 'projects-notice-body';
+
+        var title = document.createElement('p');
+        title.className = 'projects-notice-title';
+        title.textContent = old.length + ' project' + (old.length === 1 ? '' : 's') +
+            ' from before accounts ' + (old.length === 1 ? 'is' : 'are') + ' still saved in this browser';
+        body.appendChild(title);
+
+        var text = document.createElement('p');
+        text.className = 'projects-notice-text';
+        text.textContent = 'Move ' + (old.length === 1 ? 'it' : 'them') +
+            ' to your account and ' + (old.length === 1 ? 'it' : 'they') +
+            ' will be here on any computer you sign in on: ' +
+            old.map(function (p) { return p.name; }).slice(0, 6).join(', ') +
+            (old.length > 6 ? ', ...' : '') + '.';
+        body.appendChild(text);
+
+        var actions = document.createElement('div');
+        actions.className = 'projects-notice-actions';
+
+        var move = document.createElement('button');
+        move.type = 'button';
+        move.className = 'projects-btn projects-btn-primary';
+        move.textContent = 'Move to my account';
+        move.addEventListener('click', function () {
+            var counts = HHpro.Cart.moveBrowserProjectsToServer();
+            var n = counts.imported + counts.renamed + counts.replaced;
+            if (HHpro.UI.toast) {
+                HHpro.UI.toast('Moved ' + n + ' project' + (n === 1 ? '' : 's') + ' to your account.');
+            }
+            HHpro.App.showView('projects');
+        });
+        actions.appendChild(move);
+
+        var leave = document.createElement('button');
+        leave.type = 'button';
+        leave.className = 'projects-btn projects-btn-secondary';
+        leave.textContent = 'Leave them';
+        leave.title = 'Stop asking. A copy stays in this browser.';
+        leave.addEventListener('click', function () {
+            HHpro.Cart.discardBrowserProjects();
+            HHpro.App.showView('projects');
+        });
+        actions.appendChild(leave);
+
+        body.appendChild(actions);
+        box.appendChild(body);
+        return box;
+    }
+
+    /**
+     * Standing note about where projects live: on the Hoffman & Hoffman
+     * server, tied to the account, so they follow the person between
+     * computers. CSV export remains as a personal backup and a way to
+     * hand a project to someone else.
      */
     function buildStorageNotice() {
         var box = document.createElement('aside');
@@ -91,23 +217,21 @@
 
         var title = document.createElement('p');
         title.className = 'projects-notice-title';
-        title.textContent = 'Projects are saved in this browser only';
+        title.textContent = 'Projects are saved to your HHpro account';
         body.appendChild(title);
 
         var text = document.createElement('p');
         text.className = 'projects-notice-text';
         text.appendChild(document.createTextNode(
-            'They live on this computer only — not on a server. Clearing your browsing ' +
-            'data deletes them for good.'));
+            'They are stored on the Hoffman & Hoffman server and follow you to any computer ' +
+            'you sign in on. Only you can see them.'));
         body.appendChild(text);
 
         var action = document.createElement('p');
         action.className = 'projects-notice-text';
-        var strong = document.createElement('strong');
-        strong.textContent = 'Export anything you can’t afford to lose.';
-        action.appendChild(strong);
         action.appendChild(document.createTextNode(
-            ' “Export All to CSV” saves a backup; “Import from CSV” restores it.'));
+            '“Export All to CSV” still makes a copy you can keep or hand to a colleague; ' +
+            '“Import from CSV” brings one in.'));
         body.appendChild(action);
 
         box.appendChild(body);

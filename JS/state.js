@@ -56,6 +56,13 @@
                 if (state.session) localStorage.setItem(STORAGE_KEY, JSON.stringify(state.session));
                 else localStorage.removeItem(STORAGE_KEY);
             } catch (e) { /* non-fatal */ }
+            // Let other modules (the cart's project store) react to who is
+            // signed in without every caller having to remember to tell them.
+            try {
+                document.dispatchEvent(new CustomEvent('hhpro:session-changed', {
+                    detail: { email: state.session ? state.session.user.email : null }
+                }));
+            } catch (e) { /* older browsers without CustomEvent: nothing to do */ }
         },
 
         getSession: function () {

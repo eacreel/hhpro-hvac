@@ -179,6 +179,10 @@ function activateUser(id, passwordHash, projectFolder) {
     return getUserById(id);
 }
 
+function setProjectFolder(id, folder) {
+    open().prepare('UPDATE users SET project_folder = ? WHERE id = ?').run(folder, id);
+}
+
 function projectFolderTaken(folder) {
     return !!open().prepare('SELECT 1 FROM users WHERE project_folder = ?').get(folder);
 }
@@ -230,6 +234,7 @@ module.exports = {
     setInviteToken,
     getUserByInviteHash,
     activateUser,
+    setProjectFolder,
     projectFolderTaken,
     createSession,
     getSession,

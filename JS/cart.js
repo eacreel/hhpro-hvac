@@ -5,12 +5,19 @@
 
    Two modes, managed by the same data shape:
      - 'cart'    : a temporary list, lost on tab close
-     - 'project' : backed by an entry in localStorage under
-                   'hhpro_projects'
+     - 'project' : saved on the HHpro server under the signed-in
+                   person's account (/api/projects)
 
    Persistence:
      sessionStorage 'hhpro_active_cart'    -> the active cart/project
-     localStorage   'hhpro_projects'       -> map of projectId -> project data
+     server         /api/projects          -> one file per project on
+                    the Hoffman & Hoffman server. Cached in memory here
+                    (loaded when a session starts) and written back
+                    after every change, with retries if the server is
+                    unreachable for a moment.
+     localStorage   'hhpro_projects'       -> LEGACY. Where projects lived
+                    before accounts. Read only to offer moving them to
+                    the account (see getBrowserProjects).
 
    Data shapes:
      project = {
@@ -54,6 +61,12 @@
      HHpro.Cart.createAndActivateProject(name)
      HHpro.Cart.promptProjectName(onDone)
      HHpro.Cart.mergeImportedProjects(list, options)
+
+     -- Server store --
+     HHpro.Cart.loadProjectsFromServer()   -> Promise; fires 'hhpro:projects-loaded'
+     HHpro.Cart.isProjectsLoaded()
+     HHpro.Cart.getBrowserProjects()       -> legacy projects still in this browser
+     HHpro.Cart.moveBrowserProjectsToServer() / discardBrowserProjects()
    ============================================================ */
 
 (function () {
@@ -62,11 +75,11 @@
 
     // --- storage keys ------------------------------------------------
     var SESSION_KEY = 'hhpro_active_cart';
-    var PROJECTS_KEY = 'hhpro_projects';
-    // Manual display order for the Projects list (array of project ids).
-    // Empty until the user drags to reorder, so listProjects keeps its
-    // original "newest first" default until then.
-    var PROJECTS_ORDER_KEY = 'hhpro_projects_order';
+    // Pre-accounts storage. Never written any more; read by
+    // getBrowserProjects so people can move old projects to their account.
+    var LEGACY_PROJECTS_KEY = 'hhpro_projects';
+    var LEGACY_ORDER_KEY = 'hhpro_projects_order';
+    var LEGACY_BACKUP_KEY = 'hhpro_projects_moved';
 
     // --- in-memory state (mirror of sessionStorage) ------------------
     var state = {
@@ -133,6 +146,11 @@
 
         listProjects: listProjects,
         setProjectsOrder: setProjectsOrder,
+        loadProjectsFromServer: loadProjectsFromServer,
+        isProjectsLoaded: isProjectsLoaded,
+        getBrowserProjects: getBrowserProjects,
+        moveBrowserProjectsToServer: moveBrowserProjectsToServer,
+        discardBrowserProjects: discardBrowserProjects,
         getCurrentProjectId: getCurrentProjectId,
         activateProject: activateProject,
         deleteProject: deleteProject,
@@ -278,26 +296,242 @@
     }
 
     // =================================================================
-    // Project persistence (localStorage)
+    // Project persistence (server, cached in memory)
+    // -----------------------------------------------------------------
+    // Reads are synchronous against the cache so the rest of this file
+    // and the views never wait. Writes diff the cache against what the
+    // server last confirmed and queue only the projects that changed.
+    // A failed write stays queued and is retried with growing delays;
+    // the person sees one toast when saving starts failing and one when
+    // it recovers.
     // =================================================================
 
+    var projectsCache = {};      // id -> project
+    var orderCache = [];         // manual display order (ids)
+    var projectsLoaded = false;
+    var loadedForEmail = null;
+    var lastSynced = {};         // id -> JSON the server is known to hold
+    var pending = {};            // id -> { type: 'put'|'delete', body }
+    var pendingOrder = null;
+    var flushTimer = null;
+    var flushing = false;
+    var retryDelay = 0;
+    var saveFailing = false;
+
     function loadProjects() {
-        try {
-            var raw = localStorage.getItem(PROJECTS_KEY);
-            if (!raw) return {};
-            var parsed = JSON.parse(raw);
-            return (parsed && typeof parsed === 'object') ? parsed : {};
-        } catch (e) {
-            return {};
-        }
+        return projectsCache;
     }
 
     function saveProjects(projects) {
-        try {
-            localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
-        } catch (e) {
-            alert('Could not save project - browser storage is unavailable or full.');
+        projectsCache = projects;
+        Object.keys(projects).forEach(function (id) {
+            var json = JSON.stringify(projects[id]);
+            if (lastSynced[id] !== json) {
+                lastSynced[id] = json;
+                pending[id] = { type: 'put', body: JSON.parse(json) };
+            }
+        });
+        Object.keys(lastSynced).forEach(function (id) {
+            if (!projects[id]) {
+                delete lastSynced[id];
+                pending[id] = { type: 'delete' };
+            }
+        });
+        scheduleFlush();
+    }
+
+    function scheduleFlush(delay) {
+        clearTimeout(flushTimer);
+        flushTimer = setTimeout(flush, delay || 300);
+    }
+
+    function hasPendingWrites() {
+        return Object.keys(pending).length > 0 || !!pendingOrder;
+    }
+
+    function flush() {
+        if (flushing) { scheduleFlush(500); return; }
+        if (!hasPendingWrites()) return;
+        if (!HHpro.State.isLoggedIn()) return;
+        flushing = true;
+
+        var chain = Promise.resolve();
+        Object.keys(pending).forEach(function (id) {
+            var job = pending[id];
+            chain = chain.then(function () {
+                var url = '/api/projects/' + encodeURIComponent(id);
+                var req = job.type === 'delete' ? HHpro.Api.del(url) : HHpro.Api.put(url, job.body);
+                return req.then(function () {
+                    if (pending[id] === job) delete pending[id];
+                }, function (err) {
+                    // Deleting something the server never had is fine.
+                    if (job.type === 'delete' && err.status === 404) {
+                        if (pending[id] === job) delete pending[id];
+                        return;
+                    }
+                    throw err;
+                });
+            });
+        });
+        if (pendingOrder) {
+            var order = pendingOrder;
+            chain = chain.then(function () {
+                return HHpro.Api.put('/api/projects/order', { ids: order }).then(function () {
+                    if (pendingOrder === order) pendingOrder = null;
+                });
+            });
         }
+
+        chain.then(function () {
+            flushing = false;
+            retryDelay = 0;
+            if (saveFailing) {
+                saveFailing = false;
+                if (HHpro.UI.toast) HHpro.UI.toast('Back in touch with the server. Your projects are saved.');
+            }
+            if (hasPendingWrites()) scheduleFlush();
+        }, function (err) {
+            flushing = false;
+            if (err.status === 401) {
+                // Session ended; app.js sends them to sign in. The queue
+                // stays in memory in case they sign straight back in.
+                if (HHpro.App && HHpro.App.refreshSession) HHpro.App.refreshSession();
+                return;
+            }
+            if (err.status >= 400 && err.status < 500 && err.status !== 429) {
+                // The server rejected this save outright; retrying will
+                // not help. Say so and drop it rather than loop forever.
+                if (HHpro.UI.toast) HHpro.UI.toast('Couldn\'t save a project: ' + err.message, true);
+                Object.keys(pending).forEach(function (id) { delete pending[id]; });
+                pendingOrder = null;
+                return;
+            }
+            retryDelay = Math.min(retryDelay ? retryDelay * 2 : 5000, 60000);
+            if (!saveFailing) {
+                saveFailing = true;
+                if (HHpro.UI.toast) {
+                    HHpro.UI.toast('Can\'t reach the HHpro server to save. Keeping your changes here and retrying.', true);
+                }
+            }
+            scheduleFlush(retryDelay);
+        });
+    }
+
+    // Last chance when the tab is closing: push any unsent saves with
+    // keepalive so the browser lets them finish after the page is gone.
+    window.addEventListener('pagehide', function () {
+        if (!hasPendingWrites() || !HHpro.State.isLoggedIn()) return;
+        Object.keys(pending).forEach(function (id) {
+            var job = pending[id];
+            var url = '/api/projects/' + encodeURIComponent(id);
+            try {
+                if (job.type === 'put') HHpro.Api.put(url, job.body, { keepalive: true });
+                else HHpro.Api.del(url);
+            } catch (e) { /* nothing more we can do */ }
+        });
+    });
+
+    /**
+     * Fetch every project for the signed-in person and make it the cache.
+     * Edits queued before the load finishes win over the server copy.
+     */
+    function loadProjectsFromServer() {
+        if (!HHpro.State.isLoggedIn()) return Promise.resolve();
+        var user = HHpro.State.getUser();
+        return HHpro.Api.get('/api/projects').then(function (res) {
+            var map = {};
+            (res.projects || []).forEach(function (p) {
+                if (p && p.id) {
+                    map[p.id] = p;
+                    lastSynced[p.id] = JSON.stringify(p);
+                }
+            });
+            Object.keys(pending).forEach(function (id) {
+                if (pending[id].type === 'put') map[id] = pending[id].body;
+                else delete map[id];
+            });
+            projectsCache = map;
+            orderCache = Array.isArray(res.order) ? res.order.slice() : [];
+            projectsLoaded = true;
+            loadedForEmail = user ? user.email : null;
+            document.dispatchEvent(new CustomEvent('hhpro:projects-loaded'));
+            if (initialized) { renderPanel(); renderToggle(); }
+        }, function (err) {
+            if (err.status === 401) {
+                if (HHpro.App && HHpro.App.refreshSession) HHpro.App.refreshSession();
+                return;
+            }
+            document.dispatchEvent(new CustomEvent('hhpro:projects-load-failed', { detail: err }));
+        });
+    }
+
+    function isProjectsLoaded() {
+        return projectsLoaded;
+    }
+
+    function resetProjectStore() {
+        projectsCache = {};
+        orderCache = [];
+        lastSynced = {};
+        pending = {};
+        pendingOrder = null;
+        projectsLoaded = false;
+        loadedForEmail = null;
+        clearTimeout(flushTimer);
+    }
+
+    // Load when a session starts; forget everything when it ends or a
+    // different person signs in on the same browser.
+    document.addEventListener('hhpro:session-changed', function (e) {
+        var email = e.detail && e.detail.email;
+        if (!email) {
+            resetProjectStore();
+            if (initialized) clearActiveState();
+            return;
+        }
+        if (!projectsLoaded || loadedForEmail !== email) {
+            if (loadedForEmail && loadedForEmail !== email) {
+                resetProjectStore();
+                if (initialized) clearActiveState();
+            }
+            loadProjectsFromServer();
+        }
+    });
+
+    // ---- projects left in this browser from before accounts ---------
+
+    function getBrowserProjects() {
+        try {
+            var raw = localStorage.getItem(LEGACY_PROJECTS_KEY);
+            if (!raw) return [];
+            var parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return [];
+            return Object.keys(parsed).map(function (k) { return parsed[k]; })
+                .filter(function (p) { return p && p.name; });
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function stashLegacyStorage() {
+        try {
+            var raw = localStorage.getItem(LEGACY_PROJECTS_KEY);
+            if (raw) localStorage.setItem(LEGACY_BACKUP_KEY, raw);
+            localStorage.removeItem(LEGACY_PROJECTS_KEY);
+            localStorage.removeItem(LEGACY_ORDER_KEY);
+        } catch (e) { /* non-fatal */ }
+    }
+
+    /** Copy the old browser projects into the account, then clear them out. */
+    function moveBrowserProjectsToServer() {
+        var counts = mergeImportedProjects(getBrowserProjects(), { onConflict: 'rename' });
+        stashLegacyStorage();
+        return counts;
+    }
+
+    /** Leave them behind (a copy stays under a backup key, just in case). */
+    function discardBrowserProjects() {
+        stashLegacyStorage();
     }
 
     function newProjectId() {
@@ -350,23 +584,16 @@
     // =================================================================
 
     function loadProjectOrder() {
-        try {
-            var raw = localStorage.getItem(PROJECTS_ORDER_KEY);
-            if (!raw) return [];
-            var parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            return [];
-        }
+        return orderCache.slice();
     }
 
     // Persist the manual project order (array of ids). Ids that no longer
     // exist are harmless - listProjects intersects against live projects.
     function setProjectsOrder(ids) {
         if (!Array.isArray(ids)) return;
-        try {
-            localStorage.setItem(PROJECTS_ORDER_KEY, JSON.stringify(ids));
-        } catch (e) { /* non-fatal: the order just won't persist */ }
+        orderCache = ids.slice();
+        pendingOrder = ids.slice();
+        scheduleFlush();
     }
 
     function listProjects() {
@@ -1243,6 +1470,9 @@
         if (!HHpro.State || typeof HHpro.State.isLoggedIn !== 'function') return false;
         if (!HHpro.State.isLoggedIn()) return false;
         init();
+        // A cached session at page load fires no session-changed event,
+        // so start the project load here.
+        if (!projectsLoaded) loadProjectsFromServer();
         return true;
     }
 

@@ -339,3 +339,30 @@
 .project-card.hh-drop-after {
     box-shadow: inset -3px 0 0 0 var(--color-primary-light), var(--shadow-md);
 }
+
+/* ---- Move-old-projects banner and loading state ---------------------- */
+
+.projects-notice-migrate {
+    border-color: var(--color-primary-light);
+}
+
+.projects-notice-migrate .projects-notice-icon {
+    color: var(--color-primary-light);
+}
+
+.projects-notice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.projects-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-xxl) var(--space-md);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}

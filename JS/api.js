@@ -35,12 +35,14 @@
         return DEFAULT_BASE;
     }
 
-    function request(method, path, body) {
+    function request(method, path, body, extra) {
         var opts = {
             method: method,
             credentials: 'include',
             headers: {}
         };
+        // keepalive lets a small save finish even as the tab closes.
+        if (extra && extra.keepalive) opts.keepalive = true;
         if (body !== undefined) {
             opts.headers['Content-Type'] = 'application/json';
             opts.body = JSON.stringify(body);
@@ -71,7 +73,7 @@
         base: base,
         get: function (path) { return request('GET', path); },
         post: function (path, body) { return request('POST', path, body || {}); },
-        put: function (path, body) { return request('PUT', path, body || {}); },
+        put: function (path, body, extra) { return request('PUT', path, body || {}, extra); },
         del: function (path) { return request('DELETE', path); }
     };
 })();
