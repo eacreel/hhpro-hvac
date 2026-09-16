@@ -128,33 +128,46 @@ function runDaily() {
     }
 }
 
-/** Remove trashed projects and set-aside user folders older than TRASH_DAYS. */
+/**
+ * Remove trashed projects and set-aside user folders older than
+ * TRASH_DAYS. Walks the whole Projects tree, so it finds every
+ * person's _trash whether they sit under Hoffman/, Engineers/<Company>/
+ * or Contractors/<Company>/.
+ */
 function tidyTrash() {
     if (!fs.existsSync(config.projectsDir)) return 0;
     const cutoff = Date.now() - TRASH_DAYS * 24 * 60 * 60 * 1000;
     let removed = 0;
-    for (const name of fs.readdirSync(config.projectsDir)) {
-        const full = path.join(config.projectsDir, name);
-        let stat;
-        try { stat = fs.statSync(full); } catch (e) { continue; }
-        if (!stat.isDirectory()) continue;
 
-        if (name.startsWith('_deleted_')) {
-            if (stat.mtimeMs < cutoff) {
-                fs.rmSync(full, { recursive: true, force: true });
-                removed++;
+    function walk(dir, depth) {
+        let names;
+        try { names = fs.readdirSync(dir); } catch (e) { return; }
+        for (const name of names) {
+            const full = path.join(dir, name);
+            let stat;
+            try { stat = fs.statSync(full); } catch (e) { continue; }
+            if (!stat.isDirectory()) continue;
+
+            if (name.startsWith('_deleted_')) {
+                if (stat.mtimeMs < cutoff) {
+                    fs.rmSync(full, { recursive: true, force: true });
+                    removed++;
+                }
+                continue;
             }
-            continue;
-        }
-        const trash = path.join(full, '_trash');
-        if (!fs.existsSync(trash)) continue;
-        for (const f of fs.readdirSync(trash)) {
-            const file = path.join(trash, f);
-            try {
-                if (fs.statSync(file).mtimeMs < cutoff) { fs.unlinkSync(file); removed++; }
-            } catch (e) { /* skip */ }
+            if (name === '_trash') {
+                for (const f of fs.readdirSync(full)) {
+                    const file = path.join(full, f);
+                    try {
+                        if (fs.statSync(file).mtimeMs < cutoff) { fs.unlinkSync(file); removed++; }
+                    } catch (e) { /* skip */ }
+                }
+                continue;
+            }
+            if (depth < 4) walk(full, depth + 1);
         }
     }
+    walk(config.projectsDir, 0);
     return removed;
 }
 

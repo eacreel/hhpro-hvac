@@ -1,7 +1,9 @@
 /* ============================================================
    HHpro backend - Saved projects (/api/projects)
    ------------------------------------------------------------
-   Every signed-in person has a folder under Users/Projects/.
+   Every signed-in person has a folder under Users/Projects/
+   (Hoffman/<person>, Engineers/<Company>/<person> or
+   Contractors/<Company>/<person>, see lib/folders.js).
    One JSON file per project, named by the project id, holding
    exactly what the browser used to keep in localStorage. A
    small _order.json remembers the manual drag order of the
@@ -34,14 +36,14 @@ const ID_RE = /^[A-Za-z0-9_-]{4,80}$/;
 const ORDER_FILE = '_order.json';
 const MAX_BYTES = 2 * 1024 * 1024;
 
-/** The caller's project folder, created on first use. */
+/** The caller's project folder, created (or moved into place) on first use. */
 function userDir(req) {
     const name = folders.ensureFolder(req.user);
     if (!req.user.project_folder) {
         db.setProjectFolder(req.user.id, name);
         req.user.project_folder = name;
     }
-    return path.join(config.projectsDir, name);
+    return folders.folderPath(req.user);
 }
 
 function readJson(file) {

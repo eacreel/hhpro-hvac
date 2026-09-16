@@ -18,7 +18,7 @@ back to the home page.
 | Settings and secret | `SERVER\.env` (git-ignored, copy of `.env.example`) |
 | Database | `Users\hhpro.db` |
 | Excel file (Users and Permissions tabs) | `Users\HHpro - Users & Permissions.xlsx` |
-| Saved projects | `Users\Projects\<person>\` |
+| Saved projects | `Users\Projects\Hoffman\<person>\`, `Users\Projects\Engineers\<Company>\<person>\`, `Users\Projects\Contractors\<Company>\<person>\` |
 | Logs | `Users\logs\backend-YYYY-MM-DD.log` |
 | Excel backups | `Users\backups\excel\` (newest 10 kept) |
 | Daily data backups | `Users\backups\daily\hhpro-data-YYYY-MM-DD.zip` (newest 30 kept) |

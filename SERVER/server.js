@@ -27,6 +27,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
 const backup = require('./lib/backup');
+const folders = require('./lib/folders');
 const pkg = require('./package.json');
 
 const app = express();
@@ -107,6 +108,7 @@ async function start() {
     }
     db.open();
     log.info(`Database open: ${config.dbFile} (${db.countUsers()} users)`);
+    folders.reorganizeAll();
 
     await permissions.reload('startup');
     permissions.watch();

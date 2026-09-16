@@ -270,7 +270,13 @@ router.put('/companies/:id', (req, res) => {
     if (clash && clash.id !== company.id) {
         return res.status(409).json({ error: `"${clash.name}" is already on the list.` });
     }
+    // Remember where each affected user's folder is before the rename,
+    // then move them under the new company folder.
+    const affected = db.listUsers()
+        .filter((u) => u.project_folder && String(u.company).toLowerCase() === company.name.toLowerCase())
+        .map((u) => ({ id: u.id, fromRel: folders.relativePath(u) }));
     const renamed = db.renameCompany(company.id, name);
+    affected.forEach((a) => folders.moveFolder(db.getUserById(a.id), a.fromRel));
     usersExcel.syncUsersTab();
     log.info('Company renamed', { by: req.user.email, from: company.name, to: renamed.name });
     res.json({ company: renamed, companies: db.listCompanies() });
@@ -326,7 +332,11 @@ router.put('/:id', (req, res) => {
     if (other && other.id !== target.id) {
         return res.status(409).json({ error: 'A user with that email already exists.' });
     }
+    // Their project folder lives under Hoffman / Engineers/<Company> /
+    // Contractors/<Company>; a change of level or company moves it.
+    const fromRel = folders.relativePath(target);
     const user = db.updateUser(target.id, form.fields);
+    folders.moveFolder(user, fromRel);
     usersExcel.syncUsersTab();
     log.info('User edited', { by: req.user.email, email: user.email });
     res.json({ user: publicRow(user, req.user) });
