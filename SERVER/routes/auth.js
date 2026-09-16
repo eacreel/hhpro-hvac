@@ -74,6 +74,12 @@ router.post('/login', (req, res) => {
     }
 
     auth.clearLoginFailures(req, email);
+    // A hash made under an older, lighter setting is replaced now that
+    // we have the password in hand. Invisible to the person signing in.
+    if (auth.needsRehash(user.password_hash)) {
+        db.setPasswordHash(user.id, auth.hashPassword(password));
+        log.info('Password hash upgraded', { email });
+    }
     auth.startSession(res, user.id);
     log.info('Login', { email, ip: req.ip });
     res.json(profile(user));

@@ -271,6 +271,11 @@ function activateUser(id, passwordHash, projectFolder) {
     return getUserById(id);
 }
 
+/** Replace the stored password hash (used to upgrade the work factor at sign-in). */
+function setPasswordHash(id, passwordHash) {
+    open().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, id);
+}
+
 function setProjectFolder(id, folder) {
     open().prepare('UPDATE users SET project_folder = ? WHERE id = ?').run(folder, id);
 }
@@ -334,6 +339,7 @@ module.exports = {
     setInviteToken,
     getUserByInviteHash,
     activateUser,
+    setPasswordHash,
     setProjectFolder,
     projectFolderTaken,
     createSession,

@@ -30,21 +30,60 @@ const LOGIN_MAX_FAILURES = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 // ---- passwords ---------------------------------------------------
+//
+// scrypt with the work factor OWASP recommends (N = 2^17, r = 8, p = 1,
+// about 128 MB of memory per hash). Stored as
+//     scrypt$<N>$<salt>$<hash>
+// Values written before the work factor was recorded look like
+//     scrypt$<salt>$<hash>
+// and were made with Node's default N = 16384. Both verify; the older
+// kind is upgraded in place at the person's next successful sign-in
+// (see needsRehash and the login route).
+
+const SCRYPT_N = 131072;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const LEGACY_N = 16384;
+const KEY_LENGTH = 64;
+
+function scryptParams(N) {
+    // scrypt needs 128 * N * r bytes; give it headroom above that.
+    return { N, r: SCRYPT_R, p: SCRYPT_P, maxmem: 256 * 1024 * 1024 };
+}
 
 function hashPassword(password) {
     const salt = crypto.randomBytes(16);
-    const hash = crypto.scryptSync(password, salt, 64);
-    return `scrypt$${salt.toString('base64url')}$${hash.toString('base64url')}`;
+    const hash = crypto.scryptSync(password, salt, KEY_LENGTH, scryptParams(SCRYPT_N));
+    return `scrypt$${SCRYPT_N}$${salt.toString('base64url')}$${hash.toString('base64url')}`;
+}
+
+/** Split a stored value into { N, salt, expected }, or null if it is not one of ours. */
+function parseStored(stored) {
+    if (!stored) return null;
+    const parts = String(stored).split('$');
+    if (parts[0] !== 'scrypt') return null;
+    if (parts.length === 4) {
+        const N = parseInt(parts[1], 10);
+        if (!Number.isInteger(N) || N < 1024) return null;
+        return { N, salt: Buffer.from(parts[2], 'base64url'), expected: Buffer.from(parts[3], 'base64url') };
+    }
+    if (parts.length === 3) {
+        return { N: LEGACY_N, salt: Buffer.from(parts[1], 'base64url'), expected: Buffer.from(parts[2], 'base64url') };
+    }
+    return null;
 }
 
 function verifyPassword(password, stored) {
-    if (!stored) return false;
-    const parts = String(stored).split('$');
-    if (parts.length !== 3 || parts[0] !== 'scrypt') return false;
-    const salt = Buffer.from(parts[1], 'base64url');
-    const expected = Buffer.from(parts[2], 'base64url');
-    const actual = crypto.scryptSync(password, salt, expected.length);
-    return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+    const p = parseStored(stored);
+    if (!p) return false;
+    const actual = crypto.scryptSync(password, p.salt, p.expected.length, scryptParams(p.N));
+    return actual.length === p.expected.length && crypto.timingSafeEqual(actual, p.expected);
+}
+
+/** True when a stored value was made with a weaker setting than today's. */
+function needsRehash(stored) {
+    const p = parseStored(stored);
+    return !!p && p.N < SCRYPT_N;
 }
 
 function passwordProblem(password) {
@@ -204,6 +243,7 @@ module.exports = {
     MIN_PASSWORD_LENGTH,
     hashPassword,
     verifyPassword,
+    needsRehash,
     passwordProblem,
     issueInvite,
     lookupInvite,
