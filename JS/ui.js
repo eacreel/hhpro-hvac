@@ -196,6 +196,33 @@
         },
 
         /**
+         * Company logo, separator bar and HHpro wordmark, as shown at the
+         * left of every header. Returns a fragment so it can drop into
+         * the plain brand div on the overview or the clickable breadcrumb
+         * button on every other page.
+         *
+         * @returns {DocumentFragment}
+         */
+        createHeaderBrand: function () {
+            var frag = document.createDocumentFragment();
+
+            var logo = document.createElement('img');
+            logo.className = 'header-logo';
+            logo.src = 'ASSETS/HH_FullLogo_white_header.png';
+            logo.alt = 'Hoffman & Hoffman';
+            logo.decoding = 'async';
+            frag.appendChild(logo);
+
+            var sep = document.createElement('span');
+            sep.className = 'header-brand-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            frag.appendChild(sep);
+
+            frag.appendChild(HHpro.UI.createLogo());
+            return frag;
+        },
+
+        /**
          * Build the model-lookup search input shown in the app header.
          * Returns a wrapper div containing the icon + input, with the
          * QuickLookup behavior already attached.
@@ -344,8 +371,8 @@
 
             var brand = document.createElement('button');
             brand.type = 'button';
-            brand.className = 'breadcrumb-link';
-            brand.appendChild(HHpro.UI.createLogo());
+            brand.className = 'breadcrumb-link breadcrumb-brand';
+            brand.appendChild(HHpro.UI.createHeaderBrand());
             brand.addEventListener('click', function () {
                 HHpro.App.showView('main');
             });

@@ -37,7 +37,7 @@
 
         var brand = document.createElement('div');
         brand.className = 'app-header-brand';
-        brand.appendChild(HHpro.UI.createLogo());
+        brand.appendChild(HHpro.UI.createHeaderBrand());
         header.appendChild(brand);
 
         header.appendChild(HHpro.UI.createLookupInput());

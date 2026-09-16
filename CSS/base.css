@@ -888,3 +888,35 @@ input[type="checkbox"], input[type="radio"] {
     border-color: var(--color-error);
     color: var(--color-error-light);
 }
+
+/* ---- Company logo in the header ------------------------------------ */
+
+/* Logo, thin white bar, then the HHpro wordmark. The brand containers
+   (.app-header-brand on the overview, .breadcrumb-brand elsewhere) lay
+   the three out as one row centred on the header's height. */
+.app-header-brand,
+.breadcrumb-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo {
+    display: block;
+    height: 26px;
+    width: auto;
+}
+
+.header-brand-sep {
+    display: block;
+    width: 1px;
+    height: 26px;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 640px) {
+    .header-logo,
+    .header-brand-sep {
+        height: 20px;
+    }
+}
