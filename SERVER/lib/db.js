@@ -60,6 +60,19 @@ const MIGRATIONS = [
     ALTER TABLE users ADD COLUMN locations TEXT NOT NULL DEFAULT '[]';
     UPDATE users SET locations = CASE WHEN location <> '' THEN json_array(location) ELSE '[]' END;
     ALTER TABLE users DROP COLUMN location;
+    `,
+    // v3: one managed list of company names, so "Refresco" and
+    // "Refresco Engineers" cannot both creep in. Seeded from the
+    // companies already on user rows.
+    `
+    CREATE TABLE IF NOT EXISTS companies (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT    NOT NULL COLLATE NOCASE UNIQUE,
+        created_by TEXT    NOT NULL DEFAULT '',
+        created_at TEXT    NOT NULL DEFAULT ''
+    );
+    INSERT OR IGNORE INTO companies (name, created_by, created_at)
+        SELECT DISTINCT company, 'import', '' FROM users WHERE company <> '';
     `
 ];
 
@@ -135,10 +148,54 @@ function countUsers() {
     return open().prepare('SELECT COUNT(*) AS c FROM users').get().c;
 }
 
+// ---- companies ---------------------------------------------------
+
 function listCompanies() {
-    return open().prepare(
-        "SELECT DISTINCT company FROM users WHERE company <> '' ORDER BY company COLLATE NOCASE"
-    ).all().map((r) => r.company);
+    return open().prepare('SELECT name FROM companies ORDER BY name COLLATE NOCASE').all().map((r) => r.name);
+}
+
+/** Companies with how many users each has. */
+function listCompaniesWithCounts() {
+    return open().prepare(`
+        SELECT c.id, c.name, c.created_by, c.created_at,
+               (SELECT COUNT(*) FROM users u WHERE u.company = c.name COLLATE NOCASE) AS users
+        FROM companies c ORDER BY c.name COLLATE NOCASE
+    `).all();
+}
+
+function getCompanyByName(name) {
+    return open().prepare('SELECT * FROM companies WHERE name = ? COLLATE NOCASE').get(clean(name)) || null;
+}
+
+function getCompanyById(id) {
+    return open().prepare('SELECT * FROM companies WHERE id = ?').get(id) || null;
+}
+
+function insertCompany(name, createdBy) {
+    const result = open().prepare('INSERT INTO companies (name, created_by, created_at) VALUES (?, ?, ?)')
+        .run(clean(name), normalizeEmail(createdBy), now());
+    return getCompanyById(Number(result.lastInsertRowid));
+}
+
+/** Rename a company and carry every user on it across. */
+function renameCompany(id, newName) {
+    const company = getCompanyById(id);
+    if (!company) return null;
+    const d = open();
+    d.exec('BEGIN');
+    try {
+        d.prepare('UPDATE companies SET name = ? WHERE id = ?').run(clean(newName), id);
+        d.prepare('UPDATE users SET company = ? WHERE company = ? COLLATE NOCASE').run(clean(newName), company.name);
+        d.exec('COMMIT');
+    } catch (e) {
+        d.exec('ROLLBACK');
+        throw e;
+    }
+    return getCompanyById(id);
+}
+
+function deleteCompany(id) {
+    open().prepare('DELETE FROM companies WHERE id = ?').run(id);
 }
 
 function getUserByEmail(email) {
@@ -263,6 +320,12 @@ module.exports = {
     listUsers,
     countUsers,
     listCompanies,
+    listCompaniesWithCounts,
+    getCompanyByName,
+    getCompanyById,
+    insertCompany,
+    renameCompany,
+    deleteCompany,
     getUserByEmail,
     getUserById,
     insertUser,

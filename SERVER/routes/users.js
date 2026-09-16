@@ -12,6 +12,15 @@
      GET    /permissions    the Permissions tab, for display
      GET    /export.xlsx    the user list as a spreadsheet download
      GET    /status         backup and spreadsheet-sync status (Help tab)
+     GET    /companies      the managed company list with user counts
+     POST   /companies      add a company (refuses look-alikes unless
+                            force is set)
+     PUT    /companies/:id  rename (Super Admin); users move with it
+     DELETE /companies/:id  remove an unused company (Super Admin)
+
+   Rules:
+     Only @hoffman-hoffman.com addresses may be Super Admin, Admin
+     or Hoffman. A user's company must be on the company list.
      POST   /               add a user (Invited)
      PUT    /:id            edit a user
      DELETE /:id            delete a user; folder is set aside
@@ -42,6 +51,32 @@ const router = express.Router();
 router.use(auth.requireAdmin);
 
 const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor'];
+const HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
+const HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
+
+function isHoffmanEmail(email) {
+    return String(email || '').toLowerCase().endsWith(HOFFMAN_DOMAIN);
+}
+
+// Words that do not distinguish one firm from another when checking
+// for look-alike company names.
+const COMPANY_NOISE = ['inc', 'llc', 'llp', 'pa', 'pc', 'co', 'company', 'corp', 'corporation',
+    'engineers', 'engineer', 'engineering', 'associates', 'assoc', 'group', 'and', 'the', 'of'];
+
+function companyKey(name) {
+    return String(name || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9 ]+/g, ' ')
+        .split(/\s+/).filter((w) => w && !COMPANY_NOISE.includes(w)).join('');
+}
+
+/** Existing company names that look like this one (same core words). */
+function similarCompanies(name) {
+    const key = companyKey(name);
+    if (key.length < 3) return [];
+    return db.listCompanies().filter((existing) => {
+        const k = companyKey(existing);
+        return k && (k === key || k.includes(key) || key.includes(k));
+    });
+}
 
 function assignableLevels(actor) {
     return actor.user_level === 'Super Admin' ? db.USER_LEVELS.slice() : ADMIN_ASSIGNABLE.slice();
@@ -89,6 +124,14 @@ function readForm(body, actor) {
     if (!assignableLevels(actor).includes(fields.userLevel)) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
+    if (HOFFMAN_LEVELS.includes(fields.userLevel) && !isHoffmanEmail(fields.email)) {
+        return { error: `Only ${HOFFMAN_DOMAIN} addresses can be Super Admin, Admin or Hoffman. Use Engineer or Contractor for people at other companies.` };
+    }
+    const company = db.getCompanyByName(fields.company);
+    if (!company) {
+        return { error: `"${fields.company || '(none)'}" is not on the company list. Choose one from the list, or add it with "New company".` };
+    }
+    fields.company = company.name;   // canonical spelling
     const known = permissions.getLocations();
     if (!fields.locations.length) return { error: 'Choose at least one location.' };
     const unknown = fields.locations.find((loc) => !known.includes(loc));
@@ -180,6 +223,70 @@ router.get('/status', (req, res) => {
         lastWeekly: b.lastWeekly,
         includeAssets: b.includeAssets
     });
+});
+
+// ---- companies -----------------------------------------------------
+
+router.get('/companies', (req, res) => {
+    res.json({ companies: db.listCompaniesWithCounts(), canEdit: req.user.user_level === 'Super Admin' });
+});
+
+router.post('/companies', (req, res) => {
+    const name = String((req.body && req.body.name) || '').trim().replace(/\s+/g, ' ');
+    const force = !!(req.body && req.body.force);
+    if (name.length < 2 || name.length > 80) return res.status(400).json({ error: 'Enter a company name.' });
+
+    const existing = db.getCompanyByName(name);
+    if (existing) {
+        return res.json({ company: existing, created: false, companies: db.listCompanies() });
+    }
+    const similar = similarCompanies(name);
+    if (similar.length && !force) {
+        return res.status(409).json({
+            error: `"${name}" looks like ${similar.map((s) => `"${s}"`).join(', ')}, which is already on the list.`,
+            similar
+        });
+    }
+    const company = db.insertCompany(name, req.user.email);
+    log.info('Company added', { by: req.user.email, name: company.name, forced: force && similar.length > 0 });
+    res.status(201).json({ company, created: true, companies: db.listCompanies() });
+});
+
+function requireSuperAdmin(req, res) {
+    if (req.user.user_level !== 'Super Admin') {
+        res.status(403).json({ error: 'Only a Super Admin can change the company list.' });
+        return false;
+    }
+    return true;
+}
+
+router.put('/companies/:id', (req, res) => {
+    if (!requireSuperAdmin(req, res)) return;
+    const company = db.getCompanyById(Number(req.params.id));
+    if (!company) return res.status(404).json({ error: 'That company no longer exists.' });
+    const name = String((req.body && req.body.name) || '').trim().replace(/\s+/g, ' ');
+    if (name.length < 2 || name.length > 80) return res.status(400).json({ error: 'Enter a company name.' });
+    const clash = db.getCompanyByName(name);
+    if (clash && clash.id !== company.id) {
+        return res.status(409).json({ error: `"${clash.name}" is already on the list.` });
+    }
+    const renamed = db.renameCompany(company.id, name);
+    usersExcel.syncUsersTab();
+    log.info('Company renamed', { by: req.user.email, from: company.name, to: renamed.name });
+    res.json({ company: renamed, companies: db.listCompanies() });
+});
+
+router.delete('/companies/:id', (req, res) => {
+    if (!requireSuperAdmin(req, res)) return;
+    const company = db.getCompanyById(Number(req.params.id));
+    if (!company) return res.status(404).json({ error: 'That company no longer exists.' });
+    const inUse = db.listCompaniesWithCounts().find((c) => c.id === company.id);
+    if (inUse && inUse.users > 0) {
+        return res.status(400).json({ error: `"${company.name}" still has ${inUse.users} user${inUse.users === 1 ? '' : 's'}. Move them first.` });
+    }
+    db.deleteCompany(company.id);
+    log.info('Company removed', { by: req.user.email, name: company.name });
+    res.json({ ok: true, companies: db.listCompanies() });
 });
 
 router.post('/', (req, res) => {

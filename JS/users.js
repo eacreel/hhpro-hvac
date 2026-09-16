@@ -28,6 +28,8 @@
     HHpro.Views = HHpro.Views || {};
 
     var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor'];
+    var HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
+    var HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
 
     // Per-render state
     var users = [];
@@ -71,9 +73,11 @@
         tabs.setAttribute('role', 'tablist');
         var usersTab = tabButton('Users', 'users');
         var permsTab = tabButton('Permissions', 'permissions');
+        var companiesTab = tabButton('Companies', 'companies');
         var helpTab = tabButton('Help', 'help');
         tabs.appendChild(usersTab);
         tabs.appendChild(permsTab);
+        tabs.appendChild(companiesTab);
         tabs.appendChild(helpTab);
         titleBar.appendChild(tabs);
         main.appendChild(titleBar);
@@ -82,7 +86,7 @@
         panel.className = 'users-panel';
         main.appendChild(panel);
         els.panel = panel;
-        els.tabs = { users: usersTab, permissions: permsTab, help: helpTab };
+        els.tabs = { users: usersTab, permissions: permsTab, companies: companiesTab, help: helpTab };
 
         showTab(activeTab);
         return main;
@@ -105,6 +109,7 @@
         });
         els.panel.innerHTML = '';
         if (key === 'permissions') renderPermissions(els.panel);
+        else if (key === 'companies') renderCompanies(els.panel);
         else if (key === 'help') renderHelp(els.panel);
         else renderUsers(els.panel);
     }
@@ -208,14 +213,70 @@
         { key: 'userLevel', label: 'Level' },
         { key: 'email', label: 'Email' },
         { key: 'status', label: 'Status' },
-        { key: 'createdBy', label: 'Added by' }
+        { key: 'createdBy', label: 'Added by' },
+        { key: 'createdAt', label: 'Date added', get: function (u) { return shortDate(u.createdAt); } }
     ];
+
+    // Column filters chosen in the dropdown row under the headers.
+    var filters = {};
+
+    function shortDate(iso) {
+        if (!iso) return '';
+        var d = new Date(iso);
+        return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
+    }
+
+    /** The value(s) a column filter compares against for one user. */
+    function filterValue(u, key) {
+        switch (key) {
+            case 'lastName': return u.firstName + ' ' + u.lastName;
+            case 'location': return u.locations || [];
+            case 'status': return u.status === 'active' ? 'Active' : 'Invited';
+            case 'createdBy': return nameForEmail(u.createdBy);
+            case 'createdAt': return shortDate(u.createdAt);
+            default: return String(u[key] || '');
+        }
+    }
+
+    function filterMatches(u, key, wanted) {
+        var v = filterValue(u, key);
+        return Array.isArray(v) ? v.indexOf(wanted) !== -1 : v === wanted;
+    }
+
+    /** Distinct choices for a column's dropdown, from every user (not just the visible ones). */
+    function filterChoices(key) {
+        var seen = {};
+        var out = [];
+        users.forEach(function (u) {
+            var v = filterValue(u, key);
+            (Array.isArray(v) ? v : [v]).forEach(function (x) {
+                if (x && !seen[x]) { seen[x] = true; out.push(x); }
+            });
+        });
+        if (key === 'userLevel') {
+            out.sort(function (a, b) { return LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b); });
+        } else if (key === 'createdAt') {
+            out.sort(function (a, b) { return new Date(b) - new Date(a); });
+        } else {
+            out.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+        }
+        return out;
+    }
+
+    function activeFilterKeys() {
+        return Object.keys(filters).filter(function (k) { return filters[k]; });
+    }
 
     function visibleUsers() {
         var q = query.trim().toLowerCase();
+        var active = activeFilterKeys();
         var list = users.filter(function (u) {
+            for (var i = 0; i < active.length; i++) {
+                if (!filterMatches(u, active[i], filters[active[i]])) return false;
+            }
             if (!q) return true;
-            var hay = [u.firstName, u.lastName, u.company, u.location, u.userLevel, u.email, u.status, u.createdBy]
+            var hay = [u.firstName, u.lastName, u.company, u.location, u.userLevel, u.email,
+                u.status, nameForEmail(u.createdBy), shortDate(u.createdAt)]
                 .join(' ').toLowerCase();
             return hay.indexOf(q) !== -1;
         });
@@ -268,6 +329,51 @@
         thActions.className = 'users-th-actions';
         hr.appendChild(thActions);
         thead.appendChild(hr);
+
+        // Filter row: one dropdown per column. Choices come from the
+        // whole list so a filter can always be widened again.
+        var fr = document.createElement('tr');
+        fr.className = 'users-filter-row';
+        COLUMNS.forEach(function (col) {
+            var td = document.createElement('th');
+            var sel = document.createElement('select');
+            sel.className = 'users-filter';
+            sel.id = 'users-filter-' + col.key;
+            sel.setAttribute('aria-label', 'Filter by ' + col.label.toLowerCase());
+            var all = document.createElement('option');
+            all.value = '';
+            all.textContent = 'All';
+            sel.appendChild(all);
+            filterChoices(col.key).forEach(function (v) {
+                var opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                sel.appendChild(opt);
+            });
+            sel.value = filters[col.key] || '';
+            if (sel.value) sel.classList.add('users-filter-active');
+            sel.addEventListener('change', function () {
+                filters[col.key] = sel.value;
+                drawTable();
+            });
+            td.appendChild(sel);
+            fr.appendChild(td);
+        });
+        var clearTd = document.createElement('th');
+        clearTd.className = 'users-th-actions';
+        if (activeFilterKeys().length) {
+            var clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'users-action';
+            clearBtn.textContent = 'Clear filters';
+            clearBtn.addEventListener('click', function () {
+                filters = {};
+                drawTable();
+            });
+            clearTd.appendChild(clearBtn);
+        }
+        fr.appendChild(clearTd);
+        thead.appendChild(fr);
         table.appendChild(thead);
 
         var tbody = document.createElement('tbody');
@@ -422,25 +528,13 @@
 
         var firstName = textField('First name', 'user-first', existing ? existing.firstName : '', 'given-name');
         var lastName = textField('Last name', 'user-last', existing ? existing.lastName : '', 'family-name');
-        var company = textField('Company', 'user-company', existing ? existing.company : '', 'organization');
+        var company = companyField(existing ? existing.company : '');
         var email = textField('Email', 'user-email', existing ? existing.email : '', 'email', 'email');
         var level = selectField('User level', 'user-level', options.levels, existing ? existing.userLevel : '');
         // One or more locations. An engineer who covers several
         // territories sees the products any of them allows.
         var locations = checkField('Locations', 'user-location', options.locations,
             existing ? (existing.locations || []) : []);
-
-        // Company suggestions keep spelling consistent, which is what
-        // ties an Engineer to their firm's schedule template.
-        var list = document.createElement('datalist');
-        list.id = 'user-company-list';
-        (options.companies || []).forEach(function (c) {
-            var opt = document.createElement('option');
-            opt.value = c;
-            list.appendChild(opt);
-        });
-        company.input.setAttribute('list', list.id);
-        company.wrap.appendChild(list);
 
         grid.appendChild(firstName.wrap);
         grid.appendChild(lastName.wrap);
@@ -490,9 +584,14 @@
                         'Make sure this is a different person.';
                 }
             });
+            var lvl = level.input.value;
+            if (!msg && HOFFMAN_LEVELS.indexOf(lvl) !== -1 && e && e.slice(-HOFFMAN_DOMAIN.length) !== HOFFMAN_DOMAIN) {
+                msg = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + lvl + '. Use Engineer or Contractor for people at other companies.';
+            }
             warning.textContent = msg;
         }
         [firstName, lastName, email].forEach(function (f) { f.input.addEventListener('input', checkDuplicates); });
+        level.input.addEventListener('change', checkDuplicates);
 
         var actions = document.createElement('div');
         actions.className = 'modal-actions';
@@ -536,26 +635,45 @@
             return {
                 firstName: firstName.input.value.trim(),
                 lastName: lastName.input.value.trim(),
-                company: company.input.value.trim(),
+                company: company.value(),
                 email: email.input.value.trim(),
                 locations: locations.values(),
                 userLevel: existing && existing.isSelf ? existing.userLevel : level.input.value
             };
         }
 
+        var forceCompany = false;
+
         function submit(sendAfter) {
             var p = payload();
             if (!p.firstName || !p.lastName) { error.textContent = 'First and last name are required.'; return; }
+            if (!p.company) { error.textContent = company.isNew() ? 'Type the new company\'s name.' : 'Choose a company.'; return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { error.textContent = 'Enter a valid email address.'; return; }
             if (!p.locations.length) { error.textContent = 'Choose at least one location.'; return; }
             if (!p.userLevel) { error.textContent = 'Choose a user level.'; return; }
+            if (HOFFMAN_LEVELS.indexOf(p.userLevel) !== -1 && p.email.toLowerCase().slice(-HOFFMAN_DOMAIN.length) !== HOFFMAN_DOMAIN) {
+                error.textContent = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + p.userLevel + '.';
+                return;
+            }
             error.textContent = '';
             save.disabled = true;
             if (saveOnly) saveOnly.disabled = true;
 
-            var req = isEdit
-                ? HHpro.Api.put('/api/users/' + existing.id, p)
-                : HHpro.Api.post('/api/users', p);
+            // A brand-new company is registered first, so the list stays
+            // the single source of spellings. A look-alike name comes back
+            // as a warning; saving again adds it anyway.
+            var ready = company.isNew()
+                ? HHpro.Api.post('/api/users/companies', { name: p.company, force: forceCompany }).then(function (res) {
+                    p.company = res.company.name;
+                    options.companies = res.companies;
+                })
+                : Promise.resolve();
+
+            var req = ready.then(function () {
+                return isEdit
+                    ? HHpro.Api.put('/api/users/' + existing.id, p)
+                    : HHpro.Api.post('/api/users', p);
+            });
             req.then(function (res) {
                 close();
                 toast(isEdit ? 'Saved ' + res.user.firstName + ' ' + res.user.lastName + '.'
@@ -566,6 +684,13 @@
             }, function (err) {
                 save.disabled = false;
                 if (saveOnly) saveOnly.disabled = false;
+                if (err.status === 409 && err.data && err.data.similar) {
+                    forceCompany = true;
+                    error.textContent = '';
+                    warning.textContent = err.message + ' Pick it from the Company list, or click "' +
+                        (isEdit ? 'Save' : 'Add') + '" again to add "' + p.company + '" as a separate company.';
+                    return;
+                }
                 error.textContent = err.message;
                 if (err.status === 401) HHpro.App.refreshSession();
             });
@@ -574,6 +699,63 @@
         function close() {
             if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
         }
+    }
+
+    /**
+     * Company picker: the managed list plus a "New company" choice that
+     * reveals a text box. Keeps one spelling per firm, which is also
+     * what ties an Engineer to their firm's schedule template.
+     */
+    function companyField(current) {
+        var wrap = document.createElement('div');
+        wrap.className = 'users-field';
+        var label = document.createElement('label');
+        label.className = 'users-label';
+        label.htmlFor = 'user-company';
+        label.textContent = 'Company';
+        wrap.appendChild(label);
+
+        var select = document.createElement('select');
+        select.id = 'user-company';
+        select.name = 'user-company';
+        select.className = 'users-input users-select';
+        function opt(value, text) {
+            var o = document.createElement('option');
+            o.value = value;
+            o.textContent = text;
+            return o;
+        }
+        select.appendChild(opt('', 'Choose...'));
+        var names = (options.companies || []).slice();
+        if (current && names.indexOf(current) === -1) names.push(current);
+        names.forEach(function (c) { select.appendChild(opt(c, c)); });
+        select.appendChild(opt('__new__', '+ New company...'));
+        select.value = current || '';
+        wrap.appendChild(select);
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'user-company-new';
+        input.className = 'users-input';
+        input.placeholder = 'New company name';
+        input.autocomplete = 'organization';
+        input.hidden = true;
+        wrap.appendChild(input);
+
+        select.addEventListener('change', function () {
+            input.hidden = select.value !== '__new__';
+            if (!input.hidden) input.focus();
+        });
+
+        return {
+            wrap: wrap,
+            select: select,
+            input: input,
+            isNew: function () { return select.value === '__new__'; },
+            value: function () {
+                return select.value === '__new__' ? input.value.trim().replace(/\s+/g, ' ') : select.value;
+            }
+        };
     }
 
     function textField(labelText, id, value, autocomplete, type) {
@@ -960,6 +1142,187 @@
     }
 
     // =================================================================
+    // Companies tab
+    // =================================================================
+
+    function renderCompanies(panel) {
+        var wrap = document.createElement('div');
+        wrap.className = 'users-table-wrap';
+        panel.appendChild(wrap);
+        wrap.appendChild(spinner('Loading companies...'));
+
+        HHpro.Api.get('/api/users/companies').then(function (res) {
+            wrap.innerHTML = '';
+
+            var note = document.createElement('p');
+            note.className = 'users-perm-note';
+            note.textContent = 'Every user is tied to one company from this list, so a firm is only ever spelled one way. ' +
+                (res.canEdit
+                    ? 'Renaming a company moves its users with it. A company can be removed once nobody is on it.'
+                    : 'Anyone can add a company; renaming or removing one is up to a Super Admin.');
+            wrap.appendChild(note);
+
+            var addRow = document.createElement('form');
+            addRow.className = 'users-company-add';
+            addRow.noValidate = true;
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'company-new-name';
+            input.className = 'users-input';
+            input.placeholder = 'Add a company...';
+            addRow.appendChild(input);
+            var addBtn = document.createElement('button');
+            addBtn.type = 'submit';
+            addBtn.className = 'btn btn-primary';
+            addBtn.textContent = 'Add company';
+            addRow.appendChild(addBtn);
+            var addMsg = document.createElement('p');
+            addMsg.className = 'users-form-warning';
+            addRow.appendChild(addMsg);
+            var force = false;
+            addRow.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var name = input.value.trim();
+                if (!name) return;
+                HHpro.Api.post('/api/users/companies', { name: name, force: force }).then(function (r) {
+                    toast(r.created ? 'Added ' + r.company.name + '.' : r.company.name + ' is already on the list.');
+                    options = null;
+                    showTab('companies');
+                }, function (err) {
+                    if (err.status === 409 && err.data && err.data.similar) {
+                        force = true;
+                        addMsg.textContent = err.message + ' Click "Add company" again to add it anyway.';
+                        return;
+                    }
+                    toast(err.message, true);
+                });
+            });
+            input.addEventListener('input', function () { force = false; addMsg.textContent = ''; });
+            wrap.appendChild(addRow);
+
+            var table = document.createElement('table');
+            table.className = 'users-table';
+            var thead = document.createElement('thead');
+            var hr = document.createElement('tr');
+            ['Company', 'Users', 'Added by', ''].forEach(function (h, i) {
+                var th = document.createElement('th');
+                th.textContent = h;
+                if (i === 3) th.className = 'users-th-actions';
+                hr.appendChild(th);
+            });
+            thead.appendChild(hr);
+            table.appendChild(thead);
+            var tbody = document.createElement('tbody');
+            res.companies.forEach(function (c) {
+                var tr = document.createElement('tr');
+                var name = document.createElement('td');
+                name.textContent = c.name;
+                tr.appendChild(name);
+                var count = document.createElement('td');
+                count.textContent = String(c.users);
+                tr.appendChild(count);
+                var by = document.createElement('td');
+                by.className = 'users-td-muted';
+                by.textContent = c.created_by === 'import' ? 'Original list' : nameForEmail(c.created_by);
+                tr.appendChild(by);
+                var actions = document.createElement('td');
+                actions.className = 'users-actions';
+                if (res.canEdit) {
+                    actions.appendChild(actionButton('edit', 'Rename', function () {
+                        promptModal({
+                            title: 'Rename ' + c.name,
+                            body: c.users ? 'The ' + c.users + ' user' + (c.users === 1 ? '' : 's') + ' on this company move with it.' : '',
+                            value: c.name,
+                            confirmLabel: 'Rename',
+                            onConfirm: function (newName) {
+                                HHpro.Api.put('/api/users/companies/' + c.id, { name: newName }).then(function () {
+                                    toast('Renamed to ' + newName + '.');
+                                    options = null;
+                                    showTab('companies');
+                                }, function (err) { toast(err.message, true); });
+                            }
+                        });
+                    }));
+                    if (!c.users) {
+                        actions.appendChild(actionButton('trash', 'Remove', function () {
+                            confirmModal({
+                                title: 'Remove ' + c.name + '?',
+                                body: 'No users are on it. It disappears from the company list.',
+                                confirmLabel: 'Remove',
+                                confirmVariant: 'danger',
+                                onConfirm: function () {
+                                    HHpro.Api.del('/api/users/companies/' + c.id).then(function () {
+                                        toast('Removed ' + c.name + '.');
+                                        options = null;
+                                        showTab('companies');
+                                    }, function (err) { toast(err.message, true); });
+                                }
+                            });
+                        }, true));
+                    }
+                }
+                tr.appendChild(actions);
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            wrap.appendChild(table);
+        }, function (err) {
+            wrap.innerHTML = '';
+            wrap.appendChild(problem(err));
+        });
+    }
+
+    /** Small modal with one text box. */
+    function promptModal(opts) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        var modal = document.createElement('div');
+        modal.className = 'modal';
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = opts.title;
+        modal.appendChild(title);
+        if (opts.body) {
+            var desc = document.createElement('p');
+            desc.className = 'modal-desc';
+            desc.textContent = opts.body;
+            modal.appendChild(desc);
+        }
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'users-prompt-input';
+        input.className = 'users-input';
+        input.value = opts.value || '';
+        modal.appendChild(input);
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        var cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'modal-btn modal-btn-secondary';
+        cancel.textContent = 'Cancel';
+        cancel.addEventListener('click', close);
+        var ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'modal-btn modal-btn-primary';
+        ok.textContent = opts.confirmLabel || 'OK';
+        ok.addEventListener('click', function () {
+            var v = input.value.trim();
+            if (!v) { input.focus(); return; }
+            close();
+            opts.onConfirm(v);
+        });
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok.click(); } });
+        actions.appendChild(cancel);
+        actions.appendChild(ok);
+        modal.appendChild(actions);
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+        backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+        window.setTimeout(function () { input.focus(); input.select(); }, 0);
+        function close() { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }
+    }
+
+    // =================================================================
     // Help tab
     // =================================================================
 
@@ -977,6 +1340,11 @@
             'The link works for 72 hours and once. If it lapses, open the row\'s "Send invitation" again for a fresh one.',
             'Company spelling matters for Engineers: "Refresco" is what ties them to the Refresco schedule template. Pick from the suggestions when you can.',
             'Need a location or level that is not in the dropdown? Email ' + 'eric.creel@hoffman-hoffman.com' + ' and it will be added to the Permissions tab.'
+        ] },
+        { title: 'Companies', items: [
+            'Every user is on exactly one company from the Companies tab, so a firm is only ever spelled one way. Pick it from the list when adding someone.',
+            'If the firm is new, choose "+ New company" in the form. A name that looks like one already on the list is flagged first so "Refresco" and "Refresco Engineers" do not both end up there.',
+            'Only @hoffman-hoffman.com addresses can be Super Admin, Admin or Hoffman. Everyone else is an Engineer or a Contractor.'
         ] },
         { title: 'Passwords', items: [
             'The site never sees or stores a password in readable form, so nobody can look one up. "Reset password" on a row makes a new link and signs that person out everywhere.',
