@@ -1,9 +1,9 @@
 /* ============================================================
    HHpro - Ductulator (duct sizing calculator)
    ------------------------------------------------------------
-   The slide-rule duct calculator, done properly. Airflow plus
-   ONE of friction rate / velocity / round diameter / rectangular
-   size fixes the other quantities:
+   The slide-rule duct calculator, done properly. Pick the duct
+   shape (round or rectangular), then airflow plus ONE of friction
+   rate / velocity / size fixes the other quantities:
 
        friction rate   Darcy-Weisbach with the Colebrook friction
                        factor (ASHRAE Fundamentals, Duct Design):
@@ -16,6 +16,11 @@
                        same airflow; the rectangle's own velocity is
                        lower because its area is larger)
 
+   Rectangular ducts are solved the way the instrument is used: the
+   width you can fit is given, the height comes out, and the answer
+   is rounded to the even-inch stock size with that size's actual
+   friction and velocity reported.
+
    Roughness comes from the ASHRAE duct roughness categories; the
    physical Ductulator assumes galvanized steel (medium smooth,
    0.0003 ft). Air density follows the site altitude at 70F.
@@ -24,12 +29,15 @@
    instrument: a fixed friction ring, a rotating airflow disk with
    an index arrow, and a fixed diameter scale on the hub. The disk
    turns so the airflow lines up with the friction rate, and the
-   arrow lands on the diameter - the same move as the real one.
-   Scales are logarithmic; the diameter scale is laid out from the
-   exact equations at 0.1 in. w.g./100 ft, so the arrow is exact
-   there and within a couple of percent elsewhere (the power-law
-   approximation every slide rule makes). The numbers on the hub
-   and in the results panel are always the exact solution.
+   arrow lands on the round (or equivalent round) diameter - the
+   same move as the real one. Scales are logarithmic; the diameter
+   scale is laid out from the exact equations at 0.1 in. w.g./100 ft,
+   so the arrow is exact there and within a couple of percent
+   elsewhere (the power-law approximation every slide rule makes).
+   The numbers on the hub and in the results panel are always the
+   exact solution. Beside the wheel, a dimensioned cross-section of
+   the selected duct is drawn to scale so the shape and size in the
+   picture always match the numbers.
 
    Registers on the Calculators hub; Save to project / Export PDF
    mirror the dew point calculator.
@@ -61,16 +69,27 @@
         ['linerfaced', 'Fibrous glass liner, faced',                        0.0006, 'average'],
         ['linerspray', 'Fibrous glass liner, spray coated',                 0.003,  'medium rough'],
         ['flexmetal',  'Flexible duct, metallic, fully extended',           0.003,  'medium rough'],
-        ['flexfabric', 'Flexible duct, fabric and wire, fully extended',    0.01,   'rough'],
-        ['fabric',     'Fabric duct, non-porous (DuctSox type)',            0.0003, 'medium smooth (assumed)']
+        ['flexfabric', 'Flexible duct, fabric and wire, fully extended',    0.01,   'rough']
     ];
 
-    var MODES = [
-        ['friction', 'Airflow + friction rate', 'the everyday equal-friction sizing: read the round size and velocity'],
-        ['velocity', 'Airflow + velocity',      'size to a velocity limit and read the friction rate that goes with it'],
-        ['diameter', 'Airflow + round diameter', 'check an existing round duct: velocity and friction at this airflow'],
-        ['rect',     'Airflow + rectangular size', 'check a rectangular duct: equivalent round, velocity and friction']
+    var SHAPES = [
+        ['round', 'Round'],
+        ['rect', 'Rectangular']
     ];
+
+    // Known-value modes per shape: [key, label, hint]
+    var MODES = {
+        round: [
+            ['friction', 'Airflow + friction rate', 'the everyday equal-friction sizing: read the round size and velocity'],
+            ['velocity', 'Airflow + velocity',      'size to a velocity limit and read the friction rate that goes with it'],
+            ['size',     'Airflow + diameter',      'check a round duct: velocity and friction at this airflow']
+        ],
+        rect: [
+            ['friction', 'Airflow + friction rate + width', 'give the width you can fit; the height comes out at that friction rate'],
+            ['velocity', 'Airflow + velocity + width',      'give the width you can fit; the height comes out at that velocity'],
+            ['size',     'Airflow + width × height',        'check a rectangular duct: velocity, friction and equivalent round']
+        ]
+    };
 
     // Widths tried for the equal-friction rectangular table (inches).
     var RECT_WIDTHS = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 42, 44, 48, 54, 60, 66, 72, 84, 96];
@@ -81,6 +100,7 @@
             units: 'IP',
             altitude: 0,
             material: 'galv',
+            shape: 'round',
             mode: 'friction',
             cfm: 1000,
             friction: 0.1,     // in. w.g. / 100 ft
@@ -98,7 +118,13 @@
         var d = defaults();
         try {
             var p = deepClone(snap || {});
+            // First-release snapshots had no shape: mode 'diameter' /
+            // 'rect' carried it.
+            if (p.mode === 'diameter') { p.shape = 'round'; p.mode = 'size'; }
+            if (p.mode === 'rect') { p.shape = 'rect'; p.mode = 'size'; }
             Object.keys(p).forEach(function (k) { if (p[k] !== undefined && d.hasOwnProperty(k)) d[k] = p[k]; });
+            if (!MODES[d.shape]) d.shape = 'round';
+            if (!MODES[d.shape].some(function (m) { return m[0] === d.mode; })) d.mode = 'friction';
         } catch (e) { /* defaults */ }
         return d;
     }
@@ -111,6 +137,11 @@
     function materialOf(key) {
         for (var i = 0; i < MATERIALS.length; i++) if (MATERIALS[i][0] === key) return MATERIALS[i];
         return MATERIALS[0];
+    }
+
+    function modeDef(shape, mode) {
+        var list = MODES[shape] || MODES.round;
+        return list.filter(function (m) { return m[0] === mode; })[0] || list[0];
     }
 
     // -----------------------------------------------------------------
@@ -141,6 +172,13 @@
         var v = U.toDisp(kind, ipValue, s);
         var d = Math.max(U.decimals(kind, s), s === 'SI' ? 1 : 0);
         return String(Number(v.toFixed(d)));
+    }
+
+    function dimText(x, dec) {
+        var s = sys();
+        var v = U.toDisp('dim', x, s);
+        var d = dec !== undefined ? dec : ((s === 'IP' && v % 1) ? 1 : 0);
+        return fmt(v, d);
     }
 
     function sizeText(w, h) {
@@ -227,61 +265,89 @@
 
     function evenInch(x) { return Math.max(4, 2 * Math.round(x / 2)); }
 
+    // Full description of a rectangle w x h (in) at Q.
+    function rectDuct(Q, w, h, rho, eps) {
+        var A = w * h / 144;
+        var V = Q / A;
+        var de = equivRound(w, h);
+        var eq = roundDuct(Q, de, rho, eps);
+        return {
+            w: w, h: h, A: A, V: V, vp: rho * Math.pow(V / 1097, 2),
+            de: de, dp100: eq.dp100, aspect: Math.max(w, h) / Math.min(w, h), equiv: eq
+        };
+    }
+
     function evaluate(s) {
         var rho = airDensity(s.altitude);
         var mat = materialOf(s.material);
         var eps = mat[2];
         var Q = toNum(s.cfm, null);
         if (Q === null || Q <= 0) throw new Error('Enter the airflow.');
-        var res = { rho: rho, material: mat, mode: s.mode, Q: Q };
+        var shape = MODES[s.shape] ? s.shape : 'round';
+        var res = { rho: rho, material: mat, shape: shape, mode: s.mode, Q: Q };
         var D;
 
-        if (s.mode === 'friction') {
-            var fr = toNum(s.friction, null);
-            if (fr === null || fr <= 0) throw new Error('Enter the friction rate.');
-            D = diameterForFriction(Q, fr, rho, eps);
-        } else if (s.mode === 'velocity') {
-            var V = toNum(s.velocity, null);
-            if (V === null || V <= 0) throw new Error('Enter the velocity.');
-            D = diameterForVelocity(Q, V);
-        } else if (s.mode === 'diameter') {
-            D = toNum(s.diameter, null);
-            if (D === null || D <= 0) throw new Error('Enter the round duct diameter.');
+        if (shape === 'round') {
+            if (s.mode === 'friction') {
+                var fr = toNum(s.friction, null);
+                if (fr === null || fr <= 0) throw new Error('Enter the friction rate.');
+                D = diameterForFriction(Q, fr, rho, eps);
+            } else if (s.mode === 'velocity') {
+                var V = toNum(s.velocity, null);
+                if (V === null || V <= 0) throw new Error('Enter the velocity.');
+                D = diameterForVelocity(Q, V);
+            } else {
+                D = toNum(s.diameter, null);
+                if (D === null || D <= 0) throw new Error('Enter the round duct diameter.');
+            }
+            res.round = roundDuct(Q, D, rho, eps);
+            var stdD = standardRound(D);
+            res.standard = roundDuct(Q, stdD, rho, eps);
+            res.headline = res.round;
         } else {
-            var w = toNum(s.width, null), h = toNum(s.height, null);
-            if (w === null || w <= 0 || h === null || h <= 0) throw new Error('Enter the rectangular duct width and height.');
-            D = equivRound(w, h);
-            var Ar = w * h / 144;
-            var Vr = Q / Ar;
-            res.rect = {
-                w: w, h: h, A: Ar, V: Vr, vp: rho * Math.pow(Vr / 1097, 2),
-                aspect: Math.max(w, h) / Math.min(w, h)
-            };
+            var w = toNum(s.width, null);
+            if (w === null || w <= 0) throw new Error('Enter the duct width.');
+            var hExact;
+            if (s.mode === 'friction') {
+                var fr2 = toNum(s.friction, null);
+                if (fr2 === null || fr2 <= 0) throw new Error('Enter the friction rate.');
+                D = diameterForFriction(Q, fr2, rho, eps);
+                hExact = heightForEquiv(w, D);
+            } else if (s.mode === 'velocity') {
+                var V2 = toNum(s.velocity, null);
+                if (V2 === null || V2 <= 0) throw new Error('Enter the velocity.');
+                hExact = (Q / V2) * 144 / w;           // area the rectangle needs
+                D = equivRound(w, hExact);
+            } else {
+                hExact = toNum(s.height, null);
+                if (hExact === null || hExact <= 0) throw new Error('Enter the duct height.');
+                D = equivRound(w, hExact);
+            }
+            res.round = roundDuct(Q, D, rho, eps);       // equivalent round
+            res.rectExact = rectDuct(Q, w, hExact, rho, eps);
+            if (s.mode === 'size') {
+                res.rect = res.rectExact;
+            } else {
+                // Stock answer: even-inch height, with that size's own numbers.
+                res.rect = rectDuct(Q, w, evenInch(hExact), rho, eps);
+                res.rectRounded = true;
+            }
+            res.headline = res.rect;
         }
-
-        res.round = roundDuct(Q, D, rho, eps);
-        var stdD = standardRound(D);
-        res.standard = roundDuct(Q, stdD, rho, eps);
         var L = toNum(s.length, null);
         if (L !== null && L > 0) {
             res.length = L;
-            res.totalLoss = res.round.dp100 * L / 100;
+            res.totalLoss = (shape === 'round' ? res.round.dp100 : res.rect.dp100) * L / 100;
         }
 
-        // Equal-friction rectangular equivalents (even inches, aspect <= 4:1).
+        // Equal-friction rectangular equivalents (even inches, aspect <= 4:1)
+        // for the round / equivalent round diameter.
         var rows = [];
         RECT_WIDTHS.forEach(function (wd) {
-            var hExact = heightForEquiv(wd, D);
-            var hr = evenInch(hExact);
+            var hr = evenInch(heightForEquiv(wd, D));
             if (hr > wd) return;                       // list each pair once, wide side first
-            var aspect = wd / hr;
-            var de = equivRound(wd, hr);
-            var atSize = roundDuct(Q, de, rho, eps);
-            rows.push({
-                w: wd, h: hr, de: de, aspect: aspect,
-                dp100: atSize.dp100, V: Q / (wd * hr / 144),
-                overAspect: aspect > MAX_ASPECT
-            });
+            var r = rectDuct(Q, wd, hr, rho, eps);
+            rows.push({ w: wd, h: hr, de: r.de, aspect: r.aspect, dp100: r.dp100, V: r.V, overAspect: r.aspect > MAX_ASPECT });
         });
         res.rectTable = rows;
         return res;
@@ -294,27 +360,23 @@
     function buildReport(res, s) {
         var blocks = [];
         var r = res.round;
-        var rowsIn = [['Airflow', fmtU('flow', res.Q)]];
-        if (res.mode === 'friction') rowsIn.push(['Friction rate', fmtU('friction', r.dp100)]);
-        if (res.mode === 'velocity') rowsIn.push(['Velocity', fmtU('velocity', r.V)]);
-        if (res.mode === 'diameter') rowsIn.push(['Round diameter', fmtU('dim', r.D)]);
-        if (res.mode === 'rect') rowsIn.push(['Rectangular size', sizeText(res.rect.w, res.rect.h)]);
+        var rowsIn = [['Duct shape', res.shape === 'round' ? 'Round' : 'Rectangular'], ['Airflow', fmtU('flow', res.Q)]];
+        if (res.mode === 'friction') rowsIn.push(['Friction rate', fmtU('friction', res.shape === 'round' ? r.dp100 : res.rectExact.dp100)]);
+        if (res.mode === 'velocity') rowsIn.push(['Velocity', fmtU('velocity', res.shape === 'round' ? r.V : res.rectExact.V)]);
+        if (res.shape === 'round' && res.mode === 'size') rowsIn.push(['Diameter', fmtU('dim', r.D)]);
+        if (res.shape === 'rect') {
+            if (res.mode === 'size') rowsIn.push(['Size (W × H)', sizeText(res.rect.w, res.rect.h)]);
+            else rowsIn.push(['Width', dimText(res.rect.w) + ' ' + U.unit('dim', sys())]);
+        }
         rowsIn.push(['Duct material', res.material[1] + ' (' + res.material[3] + ', ε = ' +
             (sys() === 'SI' ? fmt(res.material[2] * 304.8, 2) + ' mm' : res.material[2] + ' ft') + ')']);
         rowsIn.push(['Air density', fmtU('density', res.rho) + ' (' + fmtU('altitude', s.altitude) + ', 70°F)']);
         blocks.push({ title: 'Inputs', rows: rowsIn });
 
         var out = [];
-        if (res.mode === 'rect') {
-            out.push(['Equivalent round diameter', fmtU('dim', r.D) + ' (same friction)']);
-            out.push(['Velocity in the rectangle', fmtU('velocity', res.rect.V) +
-                (res.rect.overAspect ? '' : '') + '  (' + fmtU('area', res.rect.A) + ')']);
-            out.push(['Velocity pressure in the rectangle', fmtU('pstat', res.rect.vp)]);
-            out.push(['Aspect ratio', fmt(res.rect.aspect, 1) + ' : 1' + (res.rect.aspect > MAX_ASPECT ? '  (over 4:1 - avoid)' : '')]);
-            out.push(['Friction rate', fmtU('friction', r.dp100)]);
-        } else {
+        if (res.shape === 'round') {
             out.push(['Round diameter', fmtU('dim', r.D)]);
-            if (res.mode !== 'diameter') {
+            if (res.mode !== 'size') {
                 out.push(['Nearest stock round size', fmtU('dim', res.standard.D, 0) + '  →  ' +
                     fmtU('friction', res.standard.dp100) + ', ' + fmtU('velocity', res.standard.V)]);
             }
@@ -322,11 +384,26 @@
             out.push(['Friction rate', fmtU('friction', r.dp100)]);
             out.push(['Velocity pressure', fmtU('pstat', r.vp)]);
             out.push(['Cross-sectional area', fmtU('area', r.A)]);
+        } else {
+            var rc = res.rect;
+            if (res.rectRounded) {
+                out.push(['Exact height at the target', dimText(res.rectExact.h, 1) + ' ' + U.unit('dim', sys()) +
+                    '  (' + sizeText(res.rectExact.w, res.rectExact.h) + ')']);
+                out.push(['Stock size (even inch)', sizeText(rc.w, rc.h)]);
+            } else {
+                out.push(['Size (W × H)', sizeText(rc.w, rc.h)]);
+            }
+            out.push(['Velocity in the duct', fmtU('velocity', rc.V) + '  (' + fmtU('area', rc.A) + ')']);
+            out.push(['Friction rate', fmtU('friction', rc.dp100)]);
+            out.push(['Velocity pressure', fmtU('pstat', rc.vp)]);
+            out.push(['Equivalent round diameter', fmtU('dim', rc.de) + ' (same friction; velocity in that round duct ' + fmtU('velocity', rc.equiv.V) + ')']);
+            out.push(['Aspect ratio', fmt(rc.aspect, 1) + ' : 1' + (rc.aspect > MAX_ASPECT ? '  (over 4:1 - avoid)' : '')]);
         }
         if (res.length) {
             out.push(['Straight-run loss', fmtU('pstat', res.totalLoss) + ' over ' + fmtU('length', res.length) + ' (no fittings)']);
         }
-        out.push(['Reynolds number / friction factor', fmt(r.Re, 0) + ' / ' + fmt(r.f, 4) + (r.Re < 2300 ? ' (laminar)' : '')]);
+        var eq = res.shape === 'round' ? r : res.rect.equiv;
+        out.push(['Reynolds number / friction factor', fmt(eq.Re, 0) + ' / ' + fmt(eq.f, 4) + (eq.Re < 2300 ? ' (laminar)' : '')]);
         blocks.push({ title: 'Results', rows: out });
 
         var head = ['Size (W × H)', 'Equiv. round', 'Friction', 'Velocity', 'Aspect'];
@@ -339,7 +416,10 @@
                 fmt(t.aspect, 1) + ':1' + (t.overAspect ? ' !' : '')
             ];
         });
-        blocks.push({ title: 'Rectangular sizes at the same friction', table: { head: head, rows: trows } });
+        blocks.push({
+            title: res.shape === 'round' ? 'Rectangular sizes at the same friction' : 'Other rectangular sizes at the same friction',
+            table: { head: head, rows: trows }
+        });
         return blocks;
     }
 
@@ -350,7 +430,7 @@
     HHpro.Calculators.register({
         key: 'ductulator',
         name: 'Ductulator',
-        description: 'Duct sizing slide rule: airflow plus friction rate, velocity or duct size gives the rest, with equal-friction rectangular equivalents and a spinning wheel.',
+        description: 'Duct sizing slide rule for round and rectangular duct: airflow plus friction rate, velocity or size gives the rest, with a spinning wheel and a to-scale duct drawing.',
         icon: 'dial',
         view: 'ductulator',
         saved: { summarize: summarize, pdfBlob: pdfBlob, docType: 'DUCTULATOR (PDF)' }
@@ -394,8 +474,8 @@
         title.textContent = 'Ductulator';
         var sub = document.createElement('p');
         sub.className = 'psy-sub';
-        sub.textContent = 'Duct sizing by the equal-friction method: enter the airflow and one of friction rate, ' +
-            'velocity or duct size, and read the rest. Darcy-Weisbach with Colebrook friction, ASHRAE roughness.';
+        sub.textContent = 'Duct sizing by the equal-friction method: pick the duct shape, enter the airflow and one of ' +
+            'friction rate, velocity or size, and read the rest. Darcy-Weisbach with Colebrook friction, ASHRAE roughness.';
         intro.appendChild(title);
         intro.appendChild(sub);
         bar.appendChild(intro);
@@ -503,20 +583,49 @@
         var form = refs.form;
         form.innerHTML = '';
         var s = state;
+        if (!MODES[s.shape]) s.shape = 'round';
+        if (!MODES[s.shape].some(function (m) { return m[0] === s.mode; })) s.mode = 'friction';
 
+        // Shape
+        var shapeSec = section('Duct shape');
+        var seg = document.createElement('div');
+        seg.className = 'psy-seg dt-shape-seg';
+        seg.setAttribute('role', 'group');
+        seg.setAttribute('aria-label', 'Duct shape');
+        SHAPES.forEach(function (sh) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'psy-seg-btn' + (s.shape === sh[0] ? ' is-active' : '');
+            b.textContent = sh[1];
+            b.addEventListener('click', function () {
+                if (s.shape === sh[0]) return;
+                s.shape = sh[0];
+                buildForm();
+                recompute();
+            });
+            seg.appendChild(b);
+        });
+        shapeSec.appendChild(seg);
+        shapeSec.appendChild(hint(s.shape === 'round'
+            ? 'Round duct: the instrument\'s native case. The rectangular table below lists sizes with the same friction.'
+            : 'Rectangular duct: give the width you can fit and the height is solved, or enter both to check a size. Friction comes from the equivalent round diameter (ASHRAE); the velocity shown is in the rectangle itself.'));
+        form.appendChild(shapeSec);
+
+        // Known values
         var modeSec = section('Known values');
         var r = document.createElement('div');
         r.className = 'psy-radio-row dt-solve-row';
-        MODES.forEach(function (m) {
+        MODES[s.shape].forEach(function (m) {
             r.appendChild(radio('dt-mode', m[0], m[1], s.mode === m[0], function () {
                 s.mode = m[0]; buildForm(); recompute();
             }));
         });
         modeSec.appendChild(r);
-        var cur = MODES.filter(function (m) { return m[0] === s.mode; })[0];
+        var cur = modeDef(s.shape, s.mode);
         modeSec.appendChild(hint(cur[1] + ': ' + cur[2] + '.'));
         form.appendChild(modeSec);
 
+        // Inputs
         var inSec = section('Inputs');
         var g = fields();
         g.appendChild(numberField('Airflow', 'flow', s.cfm, { min: 0, step: 50 }, function (v) { s.cfm = v; }));
@@ -524,11 +633,16 @@
             g.appendChild(numberField('Friction rate', 'friction', s.friction, { min: 0, step: sys() === 'SI' ? 0.1 : 0.01 }, function (v) { s.friction = v; }));
         } else if (s.mode === 'velocity') {
             g.appendChild(numberField('Velocity', 'velocity', s.velocity, { min: 0, step: sys() === 'SI' ? 0.5 : 100 }, function (v) { s.velocity = v; }));
-        } else if (s.mode === 'diameter') {
-            g.appendChild(numberField('Round diameter', 'dim', s.diameter, { min: 0, step: sys() === 'SI' ? 25 : 1 }, function (v) { s.diameter = v; }));
+        }
+        if (s.shape === 'round') {
+            if (s.mode === 'size') {
+                g.appendChild(numberField('Diameter', 'dim', s.diameter, { min: 0, step: sys() === 'SI' ? 25 : 1 }, function (v) { s.diameter = v; }));
+            }
         } else {
             g.appendChild(numberField('Width', 'dim', s.width, { min: 0, step: sys() === 'SI' ? 50 : 2 }, function (v) { s.width = v; }));
-            g.appendChild(numberField('Height', 'dim', s.height, { min: 0, step: sys() === 'SI' ? 50 : 2 }, function (v) { s.height = v; }));
+            if (s.mode === 'size') {
+                g.appendChild(numberField('Height', 'dim', s.height, { min: 0, step: sys() === 'SI' ? 50 : 2 }, function (v) { s.height = v; }));
+            }
         }
         var lenField = numberField('Straight run', 'length', s.length, { min: 0, step: sys() === 'SI' ? 5 : 10 }, function (v) { s.length = v; });
         lenField.querySelector('input').placeholder = 'optional';
@@ -538,8 +652,10 @@
             ? 'Typical friction rates: 0.08 to 0.10 in. w.g./100 ft for low-pressure supply, 0.05 to 0.08 for return. The straight run only adds a total loss for that length; fittings are extra.'
             : s.mode === 'velocity'
                 ? 'Typical limits: 700 to 900 fpm in occupied-space branches, 1,000 to 1,500 fpm in mains, higher for medium-pressure systems.'
-                : 'Checks an existing or proposed duct at this airflow. Rectangular sizes use the ASHRAE equivalent-round relation, so the friction matches a round duct of the equivalent diameter.'));
+                : 'Checks an existing or proposed duct at this airflow.'));
+        form.appendChild(inSec);
 
+        // Material
         var matSec = section('Duct material');
         var matRow = document.createElement('div');
         matRow.className = 'psy-field';
@@ -556,13 +672,12 @@
         sel.addEventListener('change', function () { s.material = sel.value; recompute(); });
         matRow.appendChild(sel);
         matSec.appendChild(matRow);
-        matSec.appendChild(hint('ASHRAE roughness categories. The physical Ductulator is galvanized steel. Flexible duct figures assume it is pulled fully straight; sagging or compressed flex loses far more. ' +
-            'Fabric duct is treated as medium smooth for a non-porous fabric; porous DuctSox runs discharge along their length and should be sized with the manufacturer\'s software.'));
+        matSec.appendChild(hint('ASHRAE Fundamentals roughness categories. The physical Ductulator is galvanized steel. ' +
+            'Flexible duct figures assume it is pulled fully straight; sagging or compressed flex loses far more.'));
         var err = document.createElement('p');
         err.className = 'psy-field-error';
         matSec.appendChild(err);
         errorEl = err;
-        form.appendChild(inSec);
         form.appendChild(matSec);
     }
 
@@ -639,7 +754,7 @@
         return wrap;
     }
 
-    // ---------- Right-hand side: headline numbers + the wheel ----------
+    // ---------- Right-hand side: headline numbers, wheel, duct drawing ----------
 
     function buildSide() {
         var side = document.createElement('section');
@@ -650,6 +765,10 @@
         side.appendChild(hero);
         refs.hero = hero;
 
+        var visuals = document.createElement('div');
+        visuals.className = 'dt-visuals';
+        side.appendChild(visuals);
+
         var wrap = document.createElement('div');
         wrap.className = 'dt-wheel-wrap';
         var svg = document.createElementNS(SVG_NS, 'svg');
@@ -658,14 +777,25 @@
         svg.setAttribute('role', 'img');
         svg.setAttribute('aria-label', 'Ductulator wheel');
         wrap.appendChild(svg);
-        side.appendChild(wrap);
+        visuals.appendChild(wrap);
         refs.svg = svg;
-        drawWheel(svg, null, { bake: false });
+
+        var dwrap = document.createElement('div');
+        dwrap.className = 'dt-duct-wrap';
+        var dsvg = document.createElementNS(SVG_NS, 'svg');
+        dsvg.setAttribute('viewBox', '0 0 ' + DUCT_W + ' ' + DUCT_H);
+        dsvg.setAttribute('class', 'dt-duct');
+        dsvg.setAttribute('role', 'img');
+        dsvg.setAttribute('aria-label', 'Selected duct, drawn to scale');
+        dwrap.appendChild(dsvg);
+        visuals.appendChild(dwrap);
+        refs.duct = dsvg;
 
         var note = document.createElement('p');
         note.className = 'dt-note';
-        note.textContent = 'The disk turns so the airflow (red) lines up with the friction rate (blue); the arrow then points at the round diameter (green). ' +
-            'Scales are logarithmic like the real slide rule, so the arrow is a close reading and the numbers on the hub are the exact solution.';
+        note.textContent = 'Wheel: the disk turns so the airflow (red) lines up with the friction rate (blue); the arrow then points at the round or equivalent-round diameter (green). ' +
+            'Scales are logarithmic like the real slide rule, so the arrow is a close reading and the numbers on the hub are the exact solution. ' +
+            'Drawing: the selected duct, dimensioned and drawn to scale.';
         side.appendChild(note);
         return side;
     }
@@ -692,17 +822,19 @@
             hero.appendChild(heroItem('—', err, true));
             return;
         }
-        var r = res.round;
-        if (res.mode === 'rect') {
-            hero.appendChild(heroItem(fmtU('dim', r.D), 'Equivalent round'));
-            hero.appendChild(heroItem(fmtU('friction', r.dp100), 'Friction rate'));
-            hero.appendChild(heroItem(fmtU('velocity', res.rect.V), 'Velocity in duct'));
-        } else {
+        if (res.shape === 'round') {
+            var r = res.round;
             hero.appendChild(heroItem(fmtU('dim', r.D), 'Round diameter'));
             hero.appendChild(heroItem(fmtU('velocity', r.V), 'Velocity'));
             hero.appendChild(heroItem(fmtU('friction', r.dp100), 'Friction rate'));
+            hero.appendChild(heroItem(fmtU('pstat', r.vp), 'Velocity pressure'));
+        } else {
+            var rc = res.rect;
+            hero.appendChild(heroItem(sizeText(rc.w, rc.h), res.rectRounded ? 'Rectangular size (stock)' : 'Rectangular size'));
+            hero.appendChild(heroItem(fmtU('velocity', rc.V), 'Velocity'));
+            hero.appendChild(heroItem(fmtU('friction', rc.dp100), 'Friction rate'));
+            hero.appendChild(heroItem(fmtU('dim', rc.de), 'Equivalent round'));
         }
-        hero.appendChild(heroItem(fmtU('pstat', res.mode === 'rect' ? res.rect.vp : r.vp), 'Velocity pressure'));
     }
 
     // -----------------------------------------------------------------
@@ -916,14 +1048,112 @@
         }
         if (res) {
             var r = res.round;
-            centreText(C - 46, res.mode === 'rect' ? 'EQUIVALENT ROUND' : 'ROUND DIAMETER', 'dt-center-label psy-axis-label');
+            var rectMode = res.shape === 'rect';
+            centreText(C - 46, rectMode ? 'EQUIVALENT ROUND' : 'ROUND DIAMETER', 'dt-center-label psy-axis-label');
             centreText(C - 20, fmtU('dim', r.D), 'dt-center-value psy-axis-title');
-            centreText(C + 8, fmtU('velocity', res.mode === 'rect' ? res.rect.V : r.V), 'dt-center-sub psy-axis-label');
-            centreText(C + 30, fmtU('friction', r.dp100), 'dt-center-sub psy-axis-label');
+            centreText(C + 8, rectMode ? sizeText(res.rect.w, res.rect.h) : fmtU('velocity', r.V), 'dt-center-sub psy-axis-label');
+            centreText(C + 30, fmtU('friction', rectMode ? res.rect.dp100 : r.dp100), 'dt-center-sub psy-axis-label');
             centreText(C + 54, fmtU('flow', res.Q), 'dt-center-sub psy-axis-label');
         } else {
             centreText(C, 'Enter the inputs', 'dt-center-label psy-axis-label');
         }
+    }
+
+    // -----------------------------------------------------------------
+    // The duct drawing
+    // -----------------------------------------------------------------
+    // Cross-section of the selected duct drawn to scale (the larger side
+    // fills the drawing area), extruded a short way in an oblique view
+    // with the airflow arrow, plus dimension lines. Plain lines / paths /
+    // text only, so the PDF writer can copy it too.
+    var DUCT_W = 360, DUCT_H = 360;
+
+    function drawDuct(svg, res, offX, offY) {
+        offX = offX || 0; offY = offY || 0;
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        var g = el('g', {}, 'dt-duct-group');
+        svg.appendChild(g);
+        function L(x1, y1, x2, y2, cls) {
+            g.appendChild(el('line', { x1: (x1 + offX).toFixed(1), y1: (y1 + offY).toFixed(1), x2: (x2 + offX).toFixed(1), y2: (y2 + offY).toFixed(1) }, cls));
+        }
+        function P(points, cls, close) {
+            var d = points.map(function (p, i) { return (i ? 'L ' : 'M ') + (p[0] + offX).toFixed(1) + ' ' + (p[1] + offY).toFixed(1); }).join(' ');
+            g.appendChild(el('path', { d: d + (close ? ' Z' : '') }, cls));
+        }
+        function T(x, y, text, cls, anchor, rotate) {
+            var attrs = { 'text-anchor': anchor || 'middle' };
+            if (rotate) attrs.transform = 'translate(' + (x + offX).toFixed(1) + ' ' + (y + offY).toFixed(1) + ') rotate(' + rotate + ')';
+            else { attrs.x = (x + offX).toFixed(1); attrs.y = (y + offY).toFixed(1); }
+            var t = el('text', attrs, cls);
+            t.textContent = text;
+            g.appendChild(t);
+        }
+        function ellipsePath(cx, cy, rx, ry) {
+            var pts = [];
+            for (var i = 0; i <= 72; i++) {
+                var a = i * 5 * Math.PI / 180;
+                pts.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]);
+            }
+            return pts;
+        }
+        // Dimension line with end ticks and a label.
+        function dim(x1, y1, x2, y2, label, side) {
+            L(x1, y1, x2, y2, 'dt-dim psy-tick');
+            var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1;
+            var nx = -dy / len * 5, ny = dx / len * 5;
+            L(x1 - nx, y1 - ny, x1 + nx, y1 + ny, 'dt-dim psy-tick');
+            L(x2 - nx, y2 - ny, x2 + nx, y2 + ny, 'dt-dim psy-tick');
+            var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+            if (side === 'left') T(mx - 8, my, label, 'dt-dim-label psy-axis-label', 'middle', -90);
+            else T(mx, my - 7, label, 'dt-dim-label psy-axis-label', 'middle');
+        }
+
+        if (!res) {
+            T(DUCT_W / 2, DUCT_H / 2, 'Enter the inputs', 'dt-center-label psy-axis-label');
+            return;
+        }
+        var unit = U.unit('dim', sys());
+        var box = 200;                       // drawing area for the section
+        var cx = 150, cy = 205;              // section centre (room for the extrusion up-right)
+        var ex = 62, ey = -40;               // oblique extrusion offset
+        var flowText = fmtU('flow', res.Q) + ' · ' + fmtU('velocity', res.shape === 'round' ? res.round.V : res.rect.V);
+
+        if (res.shape === 'round') {
+            var D = res.round.D;
+            var R = box / 2;
+            // back ring, tangents, front face
+            P(ellipsePath(cx + ex, cy + ey, R, R), 'dt-duct-back psy-frame-outline', true);
+            var ang = Math.atan2(ey, ex);
+            var tx = -Math.sin(ang) * R, ty = Math.cos(ang) * R;
+            L(cx + tx, cy + ty, cx + ex + tx, cy + ey + ty, 'dt-duct-edge psy-frame-outline');
+            L(cx - tx, cy - ty, cx + ex - tx, cy + ey - ty, 'dt-duct-edge psy-frame-outline');
+            P(ellipsePath(cx, cy, R, R), 'dt-duct-face psy-frame-outline', true);
+            // airflow arrow out of the face
+            L(cx + ex * 0.55, cy + ey * 0.55, cx - ex * 0.5, cy - ey * 0.5, 'dt-flow psy-line');
+            P([[cx - ex * 0.5, cy - ey * 0.5], [cx - ex * 0.5 + 14, cy - ey * 0.5 + 1], [cx - ex * 0.5 + 2, cy - ey * 0.5 - 11]], 'dt-flow-head', true);
+            // diameter dimension
+            dim(cx - R, cy + R + 22, cx + R, cy + R + 22, 'Ø ' + dimText(D, 1) + ' ' + unit);
+            T(cx, cy + R + 52, 'ROUND DUCT', 'dt-duct-title psy-axis-title');
+            if (res.mode !== 'size') T(cx, cy + R + 70, 'stock ' + dimText(res.standard.D, 0) + ' ' + unit + ' · ' + fmtU('friction', res.standard.dp100), 'dt-duct-sub psy-axis-label');
+        } else {
+            var rc = res.rect;
+            var big = Math.max(rc.w, rc.h);
+            var sw = box * rc.w / big, sh = box * rc.h / big;
+            var x0 = cx - sw / 2, y0 = cy - sh / 2;
+            var fx = [[x0, y0], [x0 + sw, y0], [x0 + sw, y0 + sh], [x0, y0 + sh]];
+            var bx = fx.map(function (p) { return [p[0] + ex, p[1] + ey]; });
+            P(bx, 'dt-duct-back psy-frame-outline', true);
+            fx.forEach(function (p, i) { L(p[0], p[1], bx[i][0], bx[i][1], 'dt-duct-edge psy-frame-outline'); });
+            P(fx, 'dt-duct-face psy-frame-outline', true);
+            L(cx + ex * 0.55, cy + ey * 0.55, cx - ex * 0.5, cy - ey * 0.5, 'dt-flow psy-line');
+            P([[cx - ex * 0.5, cy - ey * 0.5], [cx - ex * 0.5 + 14, cy - ey * 0.5 + 1], [cx - ex * 0.5 + 2, cy - ey * 0.5 - 11]], 'dt-flow-head', true);
+            dim(x0, y0 + sh + 22, x0 + sw, y0 + sh + 22, 'W ' + dimText(rc.w) + ' ' + unit);
+            dim(x0 - 22, y0 + sh, x0 - 22, y0, 'H ' + dimText(rc.h) + ' ' + unit, 'left');
+            T(cx, cy + box / 2 + 52, 'RECTANGULAR DUCT', 'dt-duct-title psy-axis-title');
+            T(cx, cy + box / 2 + 70, 'equivalent round ' + dimText(rc.de, 1) + ' ' + unit + (rc.aspect > MAX_ASPECT ? ' · aspect over 4:1' : ''), 'dt-duct-sub psy-axis-label');
+        }
+        T(cx + ex + 30, cy + ey - 118, flowText, 'dt-duct-sub psy-axis-label', 'middle');
+        T(cx + ex + 30, cy + ey - 134, 'AIRFLOW', 'dt-duct-title psy-axis-title', 'middle');
     }
 
     // ---------- Recompute + render ----------
@@ -940,6 +1170,7 @@
         }
         renderHero(res, err);
         if (refs.svg) drawWheel(refs.svg, res, { bake: false });
+        if (refs.duct) drawDuct(refs.duct, res);
         var box = refs.results;
         box.innerHTML = '';
         if (err) {
@@ -1001,7 +1232,7 @@
         wrap.appendChild(table);
         var note = document.createElement('p');
         note.className = 'psy-hint';
-        note.textContent = 'Even-inch sizes with the same friction rate as the round duct above. "!" marks aspect ratios over 4:1, which cost more sheet metal and pressure drop than they save in depth.';
+        note.textContent = 'Even-inch sizes with the same friction rate as the round (or equivalent round) duct. "!" marks aspect ratios over 4:1, which cost more sheet metal and pressure drop than they save in depth.';
         wrap.appendChild(note);
         return wrap;
     }
@@ -1018,7 +1249,8 @@
     function defaultCalcName() {
         try {
             var res = evaluate(state);
-            return 'Ductulator - ' + fmt(res.Q, 0) + ' CFM, ' + fmt(res.round.D, 1) + ' in';
+            var size = res.shape === 'round' ? fmt(res.round.D, 1) + ' in round' : fmt(res.rect.w, 0) + ' x ' + fmt(res.rect.h, 0) + ' in';
+            return 'Ductulator - ' + fmt(res.Q, 0) + ' CFM, ' + size;
         } catch (e) {
             return 'Ductulator';
         }
@@ -1030,9 +1262,9 @@
         try {
             var res = evaluate(state);
             var bits = [fmtU('flow', res.Q)];
-            if (res.mode === 'rect') bits.push(sizeText(res.rect.w, res.rect.h), 'eq. ' + fmtU('dim', res.round.D));
+            if (res.shape === 'rect') bits.push(sizeText(res.rect.w, res.rect.h), 'eq. ' + fmtU('dim', res.rect.de));
             else bits.push(fmtU('dim', res.round.D) + ' round');
-            bits.push(fmtU('velocity', res.mode === 'rect' ? res.rect.V : res.round.V), fmtU('friction', res.round.dp100));
+            bits.push(fmtU('velocity', res.shape === 'rect' ? res.rect.V : res.round.V), fmtU('friction', res.shape === 'rect' ? res.rect.dp100 : res.round.dp100));
             return bits.join(' · ');
         } catch (e) {
             return 'Ductulator';
@@ -1100,6 +1332,7 @@
     }
 
     // PDF from any snapshot (used by the page and by the project view).
+    // The wheel (rotation baked in) and the duct drawing share one SVG.
     function pdfBlob(snapshot, meta) {
         init();
         meta = meta || {};
@@ -1108,10 +1341,12 @@
         try {
             var res = evaluate(state);
             var blocks = buildReport(res, state);
-            // Wheel with the rotation baked into the coordinates.
             var svg = document.createElementNS(SVG_NS, 'svg');
-            svg.setAttribute('viewBox', '0 0 620 620');
+            svg.setAttribute('viewBox', '0 0 ' + (620 + DUCT_W + 20) + ' 620');
             drawWheel(svg, res, { bake: true });
+            var ductSvg = document.createElementNS(SVG_NS, 'svg');
+            drawDuct(ductSvg, res, 640, 130);
+            while (ductSvg.firstChild) svg.appendChild(ductSvg.firstChild);
             var sub = [];
             if (meta.projectName) sub.push(meta.projectName);
             sub.push('HHpro Ductulator');
@@ -1130,5 +1365,9 @@
         }
     }
 
-    HHpro.Ductulator = { evaluate: function (s) { init(); return evaluate(s || state); }, pdfBlob: pdfBlob, summarize: summarize };
+    HHpro.Ductulator = {
+        evaluate: function (s) { init(); return evaluate(s ? fromSnapshot(s) : state); },
+        pdfBlob: pdfBlob,
+        summarize: summarize
+    };
 })();
