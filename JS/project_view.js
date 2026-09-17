@@ -814,13 +814,15 @@
     // Adding a new product here is the only change needed when its
     // refrigerant data lands in JSON.
     var MODEL_COLS_BY_PRODUCT = {
+        // Letters follow the Sept 2026 column inserts (mini splits: LDB /
+        // LWB at D:E; multi position: LAT (WB) at I).
         'mini_splits': {
-            indoor:  { make: 'M', model: 'N' },
-            outdoor: { make: 'V', model: 'W' }
+            indoor:  { make: 'O', model: 'P' },
+            outdoor: { make: 'X', model: 'Y' }
         },
         'multi_position_splits': {
             indoor:  { make: 'A', model: 'B' },
-            outdoor: { make: 'R', model: 'S' }
+            outdoor: { make: 'S', model: 'T' }
         },
         'gas_splits': {
             indoor:  { make: 'A', model: 'B' },
@@ -1357,10 +1359,11 @@
             var filterData = firstRow.filterData || {};
 
             // Per-product source columns. Multi Position writes voltage
-            // as "208/1" in W and stages in AD; Gas Splits writes
-            // "208/60/1" in S and stages in Z.
-            var elecCol = item.productKey === 'gas_splits' ? 'S' : 'W';
-            var stagesCol = item.productKey === 'gas_splits' ? 'Z' : 'AD';
+            // as "208/1" in X and stages in AE (one to the right of the
+            // pre-Sept-2026 letters, after LAT (WB) was inserted at I);
+            // Gas Splits writes "208/60/1" in S and stages in Z.
+            var elecCol = item.productKey === 'gas_splits' ? 'S' : 'X';
+            var stagesCol = item.productKey === 'gas_splits' ? 'Z' : 'AE';
 
             var outdoorElectrical = String(sched[elecCol] || '').trim();
             var stages = String(sched[stagesCol] || '').trim().toLowerCase();
@@ -2045,10 +2048,12 @@
             HHpro.Data.loadProduct('multi_position_splits'),
             HHpro.Data.loadProduct('mini_splits')
         ]).then(function (datas) {
-            // Multi position split rows can use capacity look-ups; ensure the
-            // capacity tables are loaded first (no-op for mini splits).
+            // Both split products can use capacity look-ups; ensure their
+            // tables are loaded first.
             var ready = (HHpro.Capacity && HHpro.Capacity.ensureFor)
-                ? HHpro.Capacity.ensureFor('multi_position_splits') : Promise.resolve();
+                ? Promise.all([HHpro.Capacity.ensureFor('multi_position_splits'),
+                               HHpro.Capacity.ensureFor('mini_splits')])
+                : Promise.resolve();
             return ready.then(function () {
                 container.innerHTML = '';
                 container.appendChild(buildSplitSystemsTabBody(

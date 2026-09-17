@@ -91,7 +91,7 @@
 
     function capacityUiActive() {
         return !!(HHpro.Capacity && HHpro.Capacity.isProduct(state.productKey) &&
-                  HHpro.Capacity.hasTables() && state.productData);
+                  HHpro.Capacity.hasTables(state.productKey) && state.productData);
     }
 
     // Nominal schedule column letter behind each capacity target (used

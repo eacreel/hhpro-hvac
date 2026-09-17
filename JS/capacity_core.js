@@ -137,6 +137,53 @@
         return { applicable: true, offGrid: offGrid, result: best.result };
     }
 
+    // -----------------------------------------------------------------
+    // Leaving-air psychrometrics
+    // -----------------------------------------------------------------
+    // Coil leaving dry bulb / wet bulb from the rated point, at standard
+    // air (0.075 lb/ft3 -> the familiar 1.08 x CFM and 4.5 x CFM factors)
+    // and sea-level pressure:
+    //     LDB = EDB - sensible / (1.08 x CFM)
+    //     h2  = h1  - total    / (4.5  x CFM)      -> W2 from (h2, LDB) -> LWB
+    // A sensible-only point (sensible >= total) keeps the entering humidity
+    // ratio. Where the numbers run past saturation (some Daikin tables at
+    // low ambient) the leaving air is reported saturated (LWB = LDB) and
+    // flagged. Same relations the capacity workbook builder used, so a
+    // computed cell here matches the LWB stored in the Sky Air tables.
+    // Uses the vendored PsychroLib (loaded later in index.html - resolved
+    // lazily, at call time). Returns null when it isn't available or the
+    // inputs don't make sense.
+    function leavingAir(eatDb, eatWb, cfm, totalBtuh, sensibleBtuh) {
+        var lib = window.psychrolib;
+        var db = Number(eatDb), wb = Number(eatWb), q = Number(cfm);
+        var tot = capNum(totalBtuh), sen = capNum(sensibleBtuh);
+        if (!lib || !isFinite(db) || !isFinite(wb) || !isFinite(q) || q <= 0 ||
+            !isFinite(tot) || !isFinite(sen) || tot <= 0 || wb > db) {
+            return null;
+        }
+        // isIP() throws while the unit system is still undefined.
+        var ip = false;
+        try { ip = !!(lib.isIP && lib.isIP()); } catch (e) { ip = false; }
+        if (!ip) lib.SetUnitSystem(lib.IP);
+        if (sen > tot) sen = tot;
+        var P = lib.GetStandardAtmPressure(0);
+        var w1 = lib.GetHumRatioFromTWetBulb(db, wb, P);
+        var h1 = lib.GetMoistAirEnthalpy(db, w1);
+        var ldb = db - sen / (1.08 * q);
+        var h2 = h1 - tot / (4.5 * q);
+        var w2 = lib.GetHumRatioFromEnthalpyAndTDryBulb(h2, ldb);
+        if (w2 > w1) w2 = w1;
+        var saturated = false;
+        var lwb;
+        if (w2 >= lib.GetSatHumRatio(ldb, P)) {
+            saturated = true;
+            lwb = ldb;
+        } else {
+            lwb = lib.GetTWetBulbFromHumRatio(ldb, w2, P);
+        }
+        return { ldb: ldb, lwb: lwb, saturated: saturated };
+    }
+
     // Provider registry. Each capacity-table module registers itself under
     // the productKey it serves, so Design Search can ask "is this product
     // condition-aware?" without naming the modules. Adding a third product
@@ -149,6 +196,7 @@
         bracketOn: bracketOn,
         harsher: harsher,
         coolingAt: coolingAt,
+        leavingAir: leavingAir,
 
         register: function (productKey, provider) { providers[productKey] = provider; },
         providerFor: function (productKey) { return providers[productKey] || null; },

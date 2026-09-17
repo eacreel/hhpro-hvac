@@ -133,9 +133,9 @@ PRODUCT_CONFIGS = {
             "displayName": "Daikin Mini Splits",
             "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
             "targets": [
-                {"label": "Indoor Unit Cooling Capacity",             "col": "D", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Indoor Unit Sensible Capacity",            "col": "E", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Cooling Capacity",             "col": "F", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Sensible Capacity",            "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "I", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Unit Airflow",                      "col": "A", "unit": "CFM",   "defaultTolerance": 15},
             ],
         },
@@ -151,10 +151,10 @@ PRODUCT_CONFIGS = {
             "displayName": "Daikin Multi Position Splits",
             "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
-                {"label": "Indoor Cooling Capacity",    "col": "I", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Indoor Sensible Capacity",   "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Heat Pump Heating Capacity", "col": "U", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Aux. Electric Heat",         "col": "L", "unit": "kW",    "defaultTolerance": 10},
+                {"label": "Indoor Cooling Capacity",    "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Sensible Capacity",   "col": "K", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heat Pump Heating Capacity", "col": "V", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Aux. Electric Heat",         "col": "M", "unit": "kW",    "defaultTolerance": 10},
                 {"label": "Indoor Airflow",             "col": "C", "unit": "CFM",   "defaultTolerance": 10},
             ],
         },
@@ -426,6 +426,155 @@ def convert_capacity_tables(input_path, output_path):
     hp_count = sum(1 for m in matchups.values() if "hp" in m)
     print(f"  -> {len(matchups)} matchups written to {os.path.basename(output_path)} "
           f"({hp_count} with a heat-pump table)")
+    if skipped_tabs:
+        print(f"     (skipped {len(skipped_tabs)} non-matchup tab(s): "
+              f"{', '.join(skipped_tabs)})")
+
+
+# -----------------------------------------------------------------------------
+# MINI SPLIT & SKY AIR CAPACITY TABLES
+# -----------------------------------------------------------------------------
+# "Mini Split & Sky Air Capacity Tables.xlsx" - built from the Daikin capacity
+# table PDFs. Same skeleton as the multi position workbook (one "<ODU> - <IDU>"
+# tab per matchup, cooling in long form in cols A-F) with two differences:
+#   - the cooling VALUE rows also carry LDB / LWB (leaving dry / wet bulb,
+#     calculated from the PDF sensible and total capacities at the unit's
+#     rated CFM) and kW (power input). Airflow is a single fixed CFM per unit.
+#   - the heat-pump table (cols H-L) varies by BOTH outdoor ambient and indoor
+#     entering dry bulb: Ambient DB | Ambient WB | IDB | MBH | kW.
+# Tabs without " - " in the name (e.g. NOTES) are skipped. Cooling-only
+# matchups (Oterra FTKF/RKF, Polara RKV) simply have no heat-pump table.
+# -----------------------------------------------------------------------------
+
+MS_CAPACITY_FILE = "Mini Split & Sky Air Capacity Tables.xlsx"
+MS_CAPACITY_OUTPUT = "mini_split_sky_air_capacity.json"
+# VALUE rows (col E) that feed the site. LDB is derivable (IDB - delta-T) and
+# is therefore not read.
+MS_CAPACITY_VALUE_TYPES = ("MBh", "S/T", "∆T", "LWB", "kW")
+
+
+def _cell_num(v):
+    """Numeric cell -> float, anything else ("-", None, text) -> None."""
+    return float(v) if isinstance(v, (int, float)) else None
+
+
+def convert_mini_split_capacity(input_path, output_path):
+    """Convert the mini split / Sky Air capacity workbook to JSON.
+
+    Output shape:
+      {
+        "matchups": {
+          "<ODU> - <IDU>": {
+            "axes":    {"eatDb":[...], "eatWb":[...], "oaCooling":[...], "airflow":[cfm]},
+            "cooling": {"<eatDb>|<eatWb>|<oaCooling>|<airflow>":
+                            [total BTU/h, sensible BTU/h, LAT DB, LAT WB, kW], ...},
+            "hpAxes":  {"oaDb":[65, ... -13], "eatDb":[59, ... 81]},   # heat pumps only
+            "hpOaWb":  {"47": 43, ...},        # outdoor DB -> matching outdoor WB
+            "hp":      {"<oaDb>|<eatDb>": [total BTU/h, kW], ...}
+          }, ...
+        }
+      }
+    The first three cooling values match the multi position capacity JSON
+    (total, sensible, LAT) so the same table math can serve both products.
+    Invalid / "-" combinations are omitted.
+    """
+    print(f"\nConverting: {os.path.basename(input_path)}")
+    wb = openpyxl.load_workbook(input_path, data_only=True)
+
+    matchups = {}
+    skipped_tabs = []
+    for sheet_name in wb.sheetnames:
+        name = sheet_name.strip()
+        if " - " not in name:
+            skipped_tabs.append(sheet_name)
+            continue
+        ws = wb[sheet_name]
+
+        combos = {}
+        axes = {"eatDb": set(), "eatWb": set(), "oaCooling": set(), "airflow": set()}
+        hp = {}
+        hp_oa_wb = {}
+        hp_oa = set()
+        hp_eat = set()
+
+        for r in range(2, ws.max_row + 1):
+            # Cooling table (A-F)
+            etype = ws.cell(row=r, column=5).value
+            if etype is not None and str(etype).strip() in MS_CAPACITY_VALUE_TYPES:
+                db = ws.cell(row=r, column=1).value
+                oa = ws.cell(row=r, column=2).value
+                cfm = ws.cell(row=r, column=3).value
+                wbv = ws.cell(row=r, column=4).value
+                if None not in (db, oa, cfm, wbv):
+                    combos.setdefault((db, oa, cfm, wbv), {})[str(etype).strip()] = \
+                        ws.cell(row=r, column=6).value
+                    axes["eatDb"].add(db)
+                    axes["oaCooling"].add(oa)
+                    axes["airflow"].add(cfm)
+                    axes["eatWb"].add(wbv)
+            # Heat-pump table (H-L): Ambient DB | Ambient WB | IDB | MBH | kW
+            oa_db = ws.cell(row=r, column=8).value
+            oa_wb = ws.cell(row=r, column=9).value
+            eat_db = ws.cell(row=r, column=10).value
+            cap = _cell_num(ws.cell(row=r, column=11).value)
+            kw = _cell_num(ws.cell(row=r, column=12).value)
+            if isinstance(oa_db, (int, float)) and isinstance(eat_db, (int, float)) \
+                    and cap is not None:
+                key = f"{_num_key(oa_db)}|{_num_key(eat_db)}"
+                hp[key] = [int(round(cap * 1000)), kw]
+                hp_oa.add(oa_db)
+                hp_eat.add(eat_db)
+                if isinstance(oa_wb, (int, float)):
+                    hp_oa_wb[_num_key(oa_db)] = oa_wb
+
+        cooling = {}
+        for (db, oa, cfm, wbv), vals in combos.items():
+            mbh = _cell_num(vals.get("MBh"))
+            st = _cell_num(vals.get("S/T"))
+            dt = _cell_num(vals.get("∆T"))
+            if None in (mbh, st, dt):
+                continue  # invalid ("-") or incomplete -> omit
+            lwb = _cell_num(vals.get("LWB"))
+            kw = _cell_num(vals.get("kW"))
+            key = f"{_num_key(db)}|{_num_key(wbv)}|{_num_key(oa)}|{_num_key(cfm)}"
+            ct = int(round(mbh * 1000))
+            cs = int(round(round(mbh * st, 3) * 1000))
+            lat_raw = db - dt
+            lat = int(lat_raw) if float(lat_raw).is_integer() else round(lat_raw, 2)
+            cooling[key] = [ct, cs, lat, lwb, kw]
+
+        entry = {
+            "axes": {k: sorted(v) for k, v in axes.items()},
+            "cooling": cooling,
+        }
+        if hp:
+            entry["hpAxes"] = {
+                "oaDb": sorted(hp_oa, reverse=True),
+                "eatDb": sorted(hp_eat),
+            }
+            entry["hpOaWb"] = hp_oa_wb
+            entry["hp"] = hp
+        matchups[name] = entry
+
+    payload = {
+        "matchups": matchups,
+        "_meta": {
+            "sourceFile":    os.path.basename(input_path),
+            "generatedAt":   datetime.now().isoformat(timespec="seconds"),
+            "matchupCount":  len(matchups),
+            "coolingKey":    "eatDb|eatWb|oaCooling|airflow",
+            "coolingValue":  "[total BTU/h, sensible BTU/h, LAT DB degF, LAT WB degF, kW]",
+            "hpKey":         "oaDb|eatDb",
+            "hpValue":       "[heat-pump total BTU/h, kW]",
+            "hpOaWb":        "outdoor DB -> outdoor WB (degF) the table was rated at",
+        },
+    }
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, separators=(",", ":"), ensure_ascii=False)
+
+    hp_count = sum(1 for m in matchups.values() if "hp" in m)
+    print(f"  -> {len(matchups)} matchups written to {os.path.basename(output_path)} "
+          f"({hp_count} with a heat-pump table, {len(matchups) - hp_count} cooling-only)")
     if skipped_tabs:
         print(f"     (skipped {len(skipped_tabs)} non-matchup tab(s): "
               f"{', '.join(skipped_tabs)})")
@@ -1659,7 +1808,7 @@ def main():
     all_xlsx = [f for f in sorted(os.listdir(script_dir))
                 if f.lower().endswith(".xlsx") and not f.startswith("~$")]
     candidates = [f for f in all_xlsx
-                  if f in (CAPACITY_FILE, GAS_PACK_CAPACITY_FILE)
+                  if f in (CAPACITY_FILE, MS_CAPACITY_FILE, GAS_PACK_CAPACITY_FILE)
                   or f in PRODUCT_CONFIGS]
     skipped = [f for f in all_xlsx if f not in candidates]
 
@@ -1675,6 +1824,16 @@ def main():
                 convert_capacity_tables(
                     input_path,
                     os.path.join(output_dir, CAPACITY_OUTPUT),
+                )
+                converted += 1
+            except Exception as e:
+                print(f"  ERROR processing {fname}: {e}")
+            continue
+        if fname == MS_CAPACITY_FILE:
+            try:
+                convert_mini_split_capacity(
+                    input_path,
+                    os.path.join(output_dir, MS_CAPACITY_OUTPUT),
                 )
                 converted += 1
             except Exception as e:

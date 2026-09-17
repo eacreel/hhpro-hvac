@@ -73,8 +73,8 @@
             // and the project-view schedule all act on whichever variant
             // is currently selected.
             kwVariants: {
-                variantColumn: 'L',
-                dependentColumns: ['M', 'O', 'P'],
+                variantColumn: 'M',
+                dependentColumns: ['N', 'P', 'Q'],
                 filterName: 'KW',
                 defaultValue: '-'
             }
@@ -273,6 +273,21 @@
     // In-memory cache for loaded product JSON (filled lazily by loadProduct)
     var productDataCache = {};
 
+    // One-time post-processing of a freshly loaded product JSON. Split
+    // system schedules leave their leaving-air cells (LDB / LWB, LAT (WB))
+    // blank in the Excel; the site fills them from each row's rated point
+    // (see HHpro.Capacity.fillLeavingAir). No-op for every other product.
+    function postProcess(productKey, data) {
+        if (HHpro.Capacity && typeof HHpro.Capacity.fillLeavingAir === 'function') {
+            try {
+                HHpro.Capacity.fillLeavingAir(productKey, data);
+            } catch (e) {
+                console.warn('HHpro.Data: leaving-air fill failed for ' + productKey, e);
+            }
+        }
+        return data;
+    }
+
     HHpro.Data = {
         /**
          * Products this person may see. The Permissions tab of the Users
@@ -324,7 +339,7 @@
                     // selections in order before caching.
                     var cont = data.continuationFiles;
                     if (!cont || !cont.length) {
-                        productDataCache[productKey] = data;
+                        productDataCache[productKey] = postProcess(productKey, data);
                         return data;
                     }
                     var dir = product.jsonFile.slice(0, product.jsonFile.lastIndexOf('/') + 1);
@@ -340,7 +355,7 @@
                         partList.forEach(function (part) {
                             data.selections = data.selections.concat(part.selections || []);
                         });
-                        productDataCache[productKey] = data;
+                        productDataCache[productKey] = postProcess(productKey, data);
                         return data;
                     });
                 });

@@ -941,6 +941,23 @@
                 }) : null;
             var gpCells = {};   // letter -> td, so the toggle can repaint
 
+            // Capacity dropdowns (Mini Split / Sky Air systems with a
+            // matching capacity table); null for every other product or
+            // system. Only the first row of a selection is driven: the
+            // multi-zone (MXM) systems that span several rows have no
+            // tables today, and the 1:1 systems that do are single-row.
+            var capCtrl = (HHpro.Capacity && HHpro.Capacity.rowController)
+                ? HHpro.Capacity.rowController({
+                    productKey: product && product.productKey,
+                    data: data,
+                    scheduleData: (sel.rows[0] && sel.rows[0].scheduleData) || {},
+                    // Design Search stamps __capacitySeed on verified
+                    // results so their dropdowns open at the evaluated
+                    // design conditions instead of the schedule defaults.
+                    initial: sel.__capacitySeed || null,
+                    onChange: null
+                }) : null;
+
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
                 if (gpCtrl) tr.classList.add('gp-design-row');
@@ -957,7 +974,10 @@
                     var td = document.createElement('td');
                     td.className = 'actions-cell';
                     if (sel.rows.length > 1) td.rowSpan = sel.rows.length;
-                    var actions = buildActionButtons(function () { return sel; }, product, data);
+                    // The capacity conditions chosen here ride along into
+                    // the cart on Select.
+                    var actions = buildActionButtons(function () { return sel; }, product, data,
+                        capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
                     if (gpCtrl) actions.appendChild(gpCtrl.button(repaintGpCells));
                     td.appendChild(actions);
                     tr.appendChild(td);
@@ -970,6 +990,13 @@
                     if (cell === null) return; // covered by rowSpan/colSpan from earlier
                     var td = document.createElement('td');
                     var value = cell.value;
+                    if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
+                        capCtrl.fillCell(td, colLetter);
+                        if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
+                        if (cell.colSpan > 1) td.colSpan = cell.colSpan;
+                        tr.appendChild(td);
+                        return;
+                    }
                     if (gpOv && Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
                         value = gpOv[colLetter];
                         td.classList.add('gp-design-cell');
@@ -987,6 +1014,8 @@
 
                 tbody.appendChild(tr);
             });
+
+            if (capCtrl) capCtrl.finalize();
 
             // Repaint just the swapped cells when the toggle flips, so the
             // table (and the user's scroll position) stays put.
