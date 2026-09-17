@@ -652,9 +652,9 @@
         // Material
         var matSec = section('Duct material');
         var matRow = document.createElement('div');
-        matRow.className = 'psy-field';
+        matRow.className = 'psy-field dt-material-field';
         var sel = document.createElement('select');
-        sel.className = 'filter-select psy-select';
+        sel.className = 'filter-select psy-select dt-material-select';
         sel.setAttribute('aria-label', 'Duct material');
         MATERIALS.forEach(function (m) {
             var o = document.createElement('option');

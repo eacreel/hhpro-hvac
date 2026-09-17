@@ -1520,6 +1520,11 @@
 
 .dt-shape-seg { align-self: flex-start; margin-left: 0; }
 
+/* Material dropdown: as wide as its longest entry so the whole name reads
+   without opening the list. */
+.dt-material-field { display: block; }
+.dt-material-select { width: 100%; max-width: 100%; }
+
 .dt-note {
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
