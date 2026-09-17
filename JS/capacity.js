@@ -11,7 +11,9 @@
        (CFM). Changing any of them looks up the table and fills
        Total / Sensible / LAT (DB) / LAT (WB). Mini split and Sky Air
        tables carry ONE rated airflow, so that cell is written as a
-       fixed value instead of a dropdown.
+       fixed value instead of a dropdown; and their entering DB/WB
+       come as fixed pairs (Daikin rates them on the wet bulb), so
+       only the WB is a dropdown and the DB cell follows it.
      - heat-pump dropdowns: Outdoor Ambient (DB) and, when the
        schedule has a heating EDB column and the table varies by it
        (mini splits / Sky Air), the heating Entering DB. Together
@@ -352,6 +354,27 @@
         if (best !== null) st[partner] = best;
     }
 
+    // True when entering DB and WB come as fixed PAIRS (mini split / Sky
+    // Air tables: 68/57, 72/61, ... - every rated WB pairs with exactly one
+    // DB). Daikin rates these units on the wet bulb, so the schedule offers
+    // ONE dropdown (WB) and writes the paired DB, instead of two menus that
+    // can never be moved independently. A full grid (multi position tables)
+    // keeps both dropdowns.
+    function pairedEnteringAir(matchup) {
+        if (matchup.__paired !== undefined) return matchup.__paired;
+        var dbsByWb = {};
+        Object.keys(matchup.cooling).forEach(function (k) {
+            var p = k.split('|');
+            (dbsByWb[p[1]] = dbsByWb[p[1]] || {})[p[0]] = true;
+        });
+        var wbs = Object.keys(dbsByWb);
+        var paired = wbs.length > 0 && wbs.every(function (wb) {
+            return Object.keys(dbsByWb[wb]).length === 1;
+        });
+        matchup.__paired = paired;
+        return paired;
+    }
+
     // Leaving wet bulb for a cooling result: stored in the table when the
     // workbook carried it (mini splits / Sky Air), otherwise computed from
     // the rated point (multi position tables).
@@ -631,6 +654,8 @@
         var hpEatSelect = hpTwoAxis && !!cols.hpEatDb;
         // A table rated at one airflow: the CFM cell is written, not picked.
         var airflowFixed = (matchup.axes.airflow || []).length === 1;
+        // Paired DB/WB: only the WB is picked; the DB cell is written.
+        var eatPaired = pairedEnteringAir(matchup);
 
         var st = seedCapacityState(matchup, cols, scheduleData, initial);
         function coolResult() { return matchup.cooling[coolKeyOf(st)]; }
@@ -663,12 +688,14 @@
         var inputCols = {};
         COOL_AXES.forEach(function (f) {
             if (f === 'airflow' && airflowFixed) return;
+            if (f === 'eatDb' && eatPaired) return;
             if (cols[f]) inputCols[cols[f]] = f;
         });
         if (hasHp) inputCols[cols.hpAmbient] = 'hpAmbient';
         if (hpEatSelect) inputCols[cols.hpEatDb] = 'hpEatDb';
         var outputCols = {};
         if (airflowFixed && cols.airflow) outputCols[cols.airflow] = 'airflow';
+        if (eatPaired && cols.eatDb) outputCols[cols.eatDb] = 'eatDb';
         if (cols.lat) outputCols[cols.lat] = 'lat';
         if (cols.lwb) outputCols[cols.lwb] = 'lwb';
         if (cols.coolTotal) outputCols[cols.coolTotal] = 'coolTotal';
@@ -710,6 +737,7 @@
         function outValue(field) {
             if (field === 'tempRise') return riseText();
             if (field === 'airflow') return st.airflow;
+            if (field === 'eatDb') return st.eatDb;
             if (field === 'hpTotal') {
                 var cap = hpResult();
                 return (cap == null) ? '-' : cap;
@@ -725,7 +753,7 @@
 
         function updateCooling() {
             var invalid = !coolResult();
-            ['coolTotal', 'coolSensible', 'lat', 'lwb', 'airflow'].forEach(function (f) {
+            ['coolTotal', 'coolSensible', 'lat', 'lwb', 'airflow', 'eatDb'].forEach(function (f) {
                 setOut(f, outValue(f));
             });
             COOL_AXES.forEach(function (f) {
@@ -915,6 +943,8 @@
             var field = opts.field;
             if ((field === 'hpAmbient' || field === 'hpEatDb') && !matchup.hp) return null;
             if (field === 'hpEatDb' && !matchup.hpAxes) return null;
+            // Paired DB/WB tables expose the WB only (the DB follows it).
+            if (field === 'eatDb' && pairedEnteringAir(matchup)) return null;
 
             var st = seedCapacityState(matchup, cols, opts.scheduleData || {},
                 opts.item && opts.item.capacityInputs);
