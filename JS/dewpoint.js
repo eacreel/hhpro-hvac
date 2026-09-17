@@ -47,8 +47,18 @@
             room: { db: 74, key: 'rh', value: 50 },
             ql: 6400,
             cfm: 700,
-            supplyDp: null            // dew point the unit delivers (optional check in 'dp' mode)
+            // The air the unit delivers, as dry bulb + one moisture property
+            // (dew point, wet bulb, RH or humidity ratio). Dew point or
+            // humidity ratio alone is enough; wet bulb / RH also need the
+            // dry bulb. Optional check in 'dp' mode, required otherwise.
+            supply: { db: null, key: 'dp', value: null }
         };
+    }
+
+    function keyLabel(key) {
+        var keys = Psy.INPUT_KEYS;
+        for (var i = 0; i < keys.length; i++) if (keys[i].key === key) return keys[i].label;
+        return key;
     }
 
     function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -58,8 +68,14 @@
         try {
             var p = deepClone(snap || {});
             Object.keys(p).forEach(function (k) {
-                if (k === 'room' && p.room && typeof p.room === 'object') {
-                    Object.keys(p.room).forEach(function (rk) { if (p.room[rk] !== undefined) d.room[rk] = p.room[rk]; });
+                if ((k === 'room' || k === 'supply') && p[k] && typeof p[k] === 'object') {
+                    Object.keys(p[k]).forEach(function (rk) { if (p[k][rk] !== undefined) d[k][rk] = p[k][rk]; });
+                } else if (k === 'supplyDp') {
+                    // Snapshots from before the supply condition selector
+                    // held the delivered dew point only.
+                    if (p.supplyDp !== null && p.supplyDp !== undefined && p.supplyDp !== '') {
+                        d.supply = { db: null, key: 'dp', value: Number(p.supplyDp) };
+                    }
                 } else if (p[k] !== undefined) d[k] = p[k];
             });
         } catch (e) { /* defaults */ }
@@ -123,12 +139,28 @@
         var res = { pressure: P, basis: basis, room: room, solve: s.solve };
         var HFG = Psy.HFG_LATENT;
 
-        function supplyFromDp() {
-            var dp = Number(s.supplyDp);
-            if (!isFinite(dp)) throw new Error('Enter the supply air dew point the unit delivers.');
-            if (dp >= room.dp) throw new Error('The supply dew point must be below the room dew point (' + fmtU('temp', room.dp) + ') to remove moisture.');
-            return Psy.state(room.db, 'dp', dp, P);
+        // The delivered supply air as an air state. Dew point and humidity
+        // ratio fix the moisture on their own (the dry bulb is optional and
+        // only changes the sensible side); wet bulb and RH need it.
+        var sp = s.supply || {};
+        var spKey = sp.key || 'dp';
+        var spNeedsDb = !(spKey === 'dp' || spKey === 'w');
+        function supplyGiven() {
+            if (toNum(sp.value, null) === null) return false;
+            return !spNeedsDb || toNum(sp.db, null) !== null;
         }
+        function supplyState(strict) {
+            var v = toNum(sp.value, null);
+            if (v === null) throw new Error('Enter the supply air condition the unit delivers.');
+            var db = toNum(sp.db, null);
+            if (spNeedsDb && db === null) throw new Error('Enter the supply air dry bulb that goes with its ' + keyLabel(spKey).toLowerCase() + '.');
+            var st = Psy.state(db === null ? room.db : db, spKey, v, P);
+            if (strict && st.dp >= room.dp) {
+                throw new Error('The supply dew point (' + fmtU('temp', st.dp) + ') must be below the room dew point (' + fmtU('temp', room.dp) + ') to remove moisture.');
+            }
+            return st;
+        }
+        function supplyFromDp() { return supplyState(true); }
 
         if (s.solve === 'dp') {
             var ql = toNum(s.ql, null), cfm = toNum(s.cfm, null);
@@ -136,8 +168,8 @@
             if (cfm === null) throw new Error('Enter the ventilation airflow.');
             var lim = Psy.latentLimit(room, ql, cfm, basis, P);
             res.ql = ql; res.cfm = cfm; res.limit = lim; res.massFlow = lim.massFlow; res.factor = lim.factor;
-            if (s.supplyDp !== null && s.supplyDp !== undefined && s.supplyDp !== '') {
-                var sup = Psy.state(room.db, 'dp', Number(s.supplyDp), P);
+            if (supplyGiven()) {
+                var sup = supplyState(false);
                 res.supply = sup;
                 res.supplyOk = sup.w <= lim.w * 1.02;
                 res.carried = Psy.latentCarried(room, sup, lim.massFlow);
@@ -164,6 +196,11 @@
         return res;
     }
 
+    // "55.0 °F DB / 54.0 °F WB / 92% RH" for the delivered supply air.
+    function describeSupply(st) {
+        return fmtU('temp', st.db) + ' DB / ' + fmtU('temp', st.wb) + ' WB / ' + fmt(st.rh * 100, 0) + '% RH';
+    }
+
     // Report model shared by the results panel and the PDF.
     function buildReport(res, s) {
         var blocks = [];
@@ -188,17 +225,20 @@
             rows.push(['Required supply humidity ratio', grains(L.w) + '  (max)']);
             rows.push(['Required supply dew point', fmtU('temp', L.dp) + '  (max)']);
             if (res.supply) {
+                rows.push(['Unit supply air', describeSupply(res.supply)]);
                 rows.push(['Unit supply dew point', fmtU('temp', res.supply.dp) + ' vs ' + fmtU('temp', L.dp) + ' max' + (res.supplyOk ? '  OK' : '  too humid')]);
                 rows.push(['Latent carried at that dew point', fmtPower(Math.max(0, res.carried)) + ' vs ' + fmtPower(res.ql)]);
                 if (res.minCfm !== undefined) rows.push(['Airflow needed at that dew point', fmtU('flow', res.minCfm)]);
             }
         } else if (res.solve === 'cfm') {
             rows.push(['Latent load', fmtPower(res.ql)]);
+            rows.push(['Unit supply air', describeSupply(res.supply)]);
             rows.push(['Unit supply dew point', fmtU('temp', res.supply.dp) + ' (' + grains(res.supply.w) + ')']);
             rows.push(['Moisture removed', grains(res.dW) + ' per lb of air']);
             rows.push(['Minimum ventilation airflow', fmtU('flow', res.cfm)]);
         } else {
             rows.push(['Ventilation airflow', fmtU('flow', res.cfm)]);
+            rows.push(['Unit supply air', describeSupply(res.supply)]);
             rows.push(['Unit supply dew point', fmtU('temp', res.supply.dp) + ' (' + grains(res.supply.w) + ')']);
             rows.push(['Moisture removed', grains(res.dW) + ' per lb of air']);
             rows.push(['Maximum latent load', fmtPower(res.ql)]);
@@ -382,6 +422,8 @@
             units: s.units, altitude: s.altitude, basis: s.basis,
             room: deepClone(s.room), ql: toNum(s.ql, null), cfm: toNum(s.cfm, null)
         };
+        // res.supply below carries the delivered dew point whichever
+        // property it was entered as.
         try {
             var res = evaluate(s);
             if (s.solve === 'cfm') seed.cfm = res.cfm;
@@ -430,10 +472,6 @@
         if (s.solve !== 'cfm') {
             g2.appendChild(numberField('Ventilation airflow', 'flow', s.cfm, { min: 0, step: 50 }, function (v) { s.cfm = v; }));
         }
-        var dpLabel = s.solve === 'dp' ? 'Unit supply dew point' : 'Unit supply dew point';
-        var dpField = numberField(dpLabel, 'temp', s.supplyDp, { step: 0.5 }, function (v) { s.supplyDp = v; });
-        if (s.solve === 'dp') dpField.querySelector('input').placeholder = 'optional';
-        g2.appendChild(dpField);
         inSec.appendChild(g2);
         inSec.appendChild(hint(s.solve === 'dp'
             ? 'Latent load from the space (people, infiltration, process). Ventilation airflow is the outdoor air delivered to the space (ASHRAE 62.1 Voz). Enter the dew point the unit can deliver to check it against the requirement.'
@@ -447,11 +485,23 @@
             basisRow.appendChild(radio('dp-basis', m[0], m[1], s.basis === m[0], function () { s.basis = m[0]; recompute(); }));
         });
         inSec.appendChild(basisRow);
+        form.appendChild(inSec);
+
+        // The air the unit delivers: dry bulb + any moisture property.
+        var supSec = section(s.solve === 'dp' ? 'Unit supply air (optional check)' : 'Unit supply air');
+        var g3 = fields();
+        var dbField = numberField('Dry bulb', 'temp', s.supply.db, { step: 0.5 }, function (v) { s.supply.db = v; });
+        dbField.querySelector('input').placeholder = 'if needed';
+        g3.appendChild(dbField);
+        g3.appendChild(buildSecondProperty(s.supply));
+        supSec.appendChild(g3);
+        supSec.appendChild(hint('Enter the supply air as its dew point, or as dry bulb with wet bulb, RH or humidity ratio (e.g. a coil leaving condition of 55 °F DB / 54 °F WB). ' +
+            'Dew point and humidity ratio stand on their own; wet bulb and RH need the dry bulb too.'));
         var err = document.createElement('p');
         err.className = 'psy-field-error';
-        inSec.appendChild(err);
+        supSec.appendChild(err);
         errorEl = err;
-        form.appendChild(inSec);
+        form.appendChild(supSec);
     }
 
     function section(titleText) {

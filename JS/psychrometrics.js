@@ -69,6 +69,9 @@
                 oa:  { enabled: false, db: 95, key: 'wb', value: 78 },
                 erv: { enabled: false, mode: 'mix', effS: 70, effL: 60, exhCfm: null },
                 ra:  { enabled: false, db: 75, key: 'rh', value: 50 },
+                // Known mixed / entering air, entered directly in place of
+                // outdoor + return air (uses totalCfm as the system airflow).
+                ma:  { enabled: false, db: 80, key: 'wb', value: 67 },
                 flowMode: 'each', basis: 'actual',           // actual air: what the Daikin selection software uses
                 oaCfm: 2000, raCfm: 8000, totalCfm: 10000, oaPct: 20,
                 econ: { enabled: false, mode: 'enthalpy', limitDb: 65 },
@@ -203,6 +206,9 @@
         erv_s: 'Sensible effectiveness: the fraction of the temperature difference between OA and RA that is recovered. 70% moves ER 70% of the way toward the RA temperature.',
         erv_l: 'Latent effectiveness: the fraction of the moisture difference recovered (wheels only; plates are near zero). Moves ER vertically toward the RA humidity ratio.',
         ra: 'Air returning from the space, normally at the room condition. Plots as RA; the other end of the mixing line.',
+        ma: 'A known mixed (entering) air condition, entered directly when it has been measured or given instead of being computed from outdoor and return air. Plots as MA and feeds the first stage; outdoor and return air are left off the chart.',
+        ma_db: 'Entering air dry bulb at the first stage.',
+        ma_second: 'Any one of wet bulb, RH, dew point, humidity ratio or enthalpy fixes the moisture in the entering air.',
         ra_db: 'Return air dry bulb. Moves RA left or right.',
         ra_second: 'Fixes the moisture in the return air. Moves RA up or down.',
         flowmode: 'Per stream: enter the outdoor and return CFM separately. Total + % outdoor air: enter the fan airflow and the outdoor fraction.',
@@ -700,6 +706,10 @@
           desc: 'Outdoor and return air mix ahead of the cooling coil. Add Reheat for hot gas reheat, Room check to size against the space load.',
           on: ['oa', 'ra', 'coil'],
           values: { oa: { db: 95, key: 'wb', value: 78 }, ra: { db: 75, key: 'rh', value: 50 } } },
+        { key: 'rtu_ma', label: 'Packaged RTU / split (mixed air known)', short: 'RTU (MA)',
+          desc: 'Start from a known mixed (entering) air condition instead of outdoor and return air. MA goes straight to the coil; no OA, RA or mixing line is drawn.',
+          on: ['ma', 'coil'],
+          values: { ma: { db: 80, key: 'wb', value: 67 } } },
         { key: 'doas', label: '100% outdoor air / DOAS', short: 'DOAS',
           desc: 'Dedicated outdoor air unit: cooling coil and reheat on 100% outdoor air. Add Energy recovery (with Return air as the exhaust) or Room check for the Law #1 supply dew point.',
           on: ['oa', 'coil', 'reheat', 'dewpoint'], erv: 'doas',
@@ -716,9 +726,9 @@
           desc: 'Start empty and add the streams and stages you need.',
           on: [] }
     ];
-    var STAGE_KEYS = ['oa', 'ra', 'erv', 'econ', 'preheat', 'coil', 'fan', 'reheat', 'hum', 'room', 'dewpoint'];
+    var STAGE_KEYS = ['oa', 'ra', 'ma', 'erv', 'econ', 'preheat', 'coil', 'fan', 'reheat', 'hum', 'room', 'dewpoint'];
     var COMPONENTS = [
-        ['oa', 'Outdoor air'], ['ra', 'Return air'], ['erv', 'Energy recovery'], ['econ', 'Economizer'],
+        ['oa', 'Outdoor air'], ['ra', 'Return air'], ['ma', 'Mixed air (known)'], ['erv', 'Energy recovery'], ['econ', 'Economizer'],
         ['preheat', 'Preheat / heating coil'], ['coil', 'Cooling coil'], ['fan', 'Fan heat'],
         ['reheat', 'Reheat'], ['hum', 'Humidifier'], ['room', 'Room check'], ['dewpoint', 'Supply air dew point']
     ];
@@ -739,9 +749,11 @@
     }
 
     // Recovery and the economizer compare outdoor to return air, so both
-    // streams have to be present for either to stay in the system.
+    // streams have to be present for either to stay in the system. A known
+    // mixed air replaces both streams, so it and they are exclusive.
     function enforceStreamRules() {
         var a = state.ahu;
+        if (a.ma.enabled) { a.oa.enabled = false; a.ra.enabled = false; }
         if (!(a.oa.enabled && a.ra.enabled)) { a.erv.enabled = false; a.econ.enabled = false; }
     }
 
@@ -806,10 +818,14 @@
             b.textContent = c[1];
             if ((key === 'erv' || key === 'econ') && !both) {
                 b.disabled = true;
-                b.title = 'Needs both outdoor and return air';
+                b.title = a.ma.enabled ? 'Not available with a known mixed air' : 'Needs both outdoor and return air';
             }
+            if (key === 'ma') b.title = 'Enter the entering air directly in place of outdoor + return air';
             b.addEventListener('click', function () {
                 a[key].enabled = !on;
+                // Known mixed air stands in for outdoor + return air.
+                if (key === 'ma' && a.ma.enabled) { a.oa.enabled = false; a.ra.enabled = false; }
+                if ((key === 'oa' || key === 'ra') && a[key].enabled) a.ma.enabled = false;
                 enforceStreamRules();
                 save(); buildForm(); recompute();
             });
@@ -865,8 +881,14 @@
             body.appendChild(buildStateFields(a.ra, 'ra', 'ra'));
         }, 'ra'));
 
+        // Known mixed air (in place of outdoor + return air)
+        if (a.ma.enabled) form.appendChild(stageSection('ma', 'Mixed air (known)', a.ma, function (sec, body) {
+            body.appendChild(hint('The entering (mixed) air condition is known, so it is entered directly and plots as MA. Outdoor and return air are not drawn; the chain starts here.'));
+            body.appendChild(buildStateFields(a.ma, 'ma', 'ma'));
+        }, 'ma'));
+
         // Airflow
-        if (a.oa.enabled || a.ra.enabled) {
+        if (a.oa.enabled || a.ra.enabled || a.ma.enabled) {
             var flow = document.createElement('div');
             flow.className = 'psy-section';
             flow.appendChild(sectionTitle('Airflow'));
@@ -1129,6 +1151,8 @@
             g.appendChild(numberField('Outdoor air', 'flow', a.oaCfm, { min: 0, step: 50 }, function (v) { a.oaCfm = v; }, 'oa_cfm'));
         } else if (a.ra.enabled) {
             g.appendChild(numberField('Return air', 'flow', a.raCfm, { min: 0, step: 50 }, function (v) { a.raCfm = v; }, 'ra_cfm'));
+        } else if (a.ma.enabled) {
+            g.appendChild(numberField('Total airflow', 'flow', a.totalCfm, { min: 0, step: 50 }, function (v) { a.totalCfm = v; }, 'total_cfm'));
         } else {
             g.appendChild(hint('Add an air stream with the chips above.'));
         }
@@ -1516,12 +1540,14 @@
 
         var oa = a.oa.enabled ? tryState(a.oa, 'oa', P, onError) : null;
         var ra = a.ra.enabled ? tryState(a.ra, 'ra', P, onError) : null;
+        var ma = a.ma.enabled ? tryState(a.ma, 'ma', P, onError) : null;
         var both = a.oa.enabled && a.ra.enabled;
         // Dedicated outdoor air arrangement: return air is the exhaust side
         // of the recovery device only and never enters the supply.
         var doas = both && a.erv.enabled && a.erv.mode === 'doas';
         if (oa) addPoint('oa', 'OA', oa, 'Outdoor air');
         if (ra) addPoint('ra', 'RA', ra, doas ? 'Return air (exhaust side only, not mixed)' : 'Return air');
+        if (ma) addPoint('ma', 'MA', ma, 'Mixed air (known)');
 
         // Airflow per stream
         var oaCfm = null, raCfm = null;
@@ -1556,7 +1582,8 @@
         var streams = [];
         if (a.oa.enabled && oaStream) streams.push({ id: oaStreamId, label: oaStreamId.toUpperCase(), state: oaStream, cfm: oaCfm, raw: oa });
         if (a.ra.enabled && ra && !doas) streams.push({ id: 'ra', label: 'RA', state: ra, cfm: raCfm, raw: ra });
-        var enabledCount = doas ? 1 : (a.oa.enabled ? 1 : 0) + (a.ra.enabled ? 1 : 0);
+        if (a.ma.enabled && ma) streams.push({ id: 'ma', label: 'MA', state: ma, cfm: toNum(a.totalCfm, null), raw: ma });
+        var enabledCount = doas ? 1 : (a.oa.enabled ? 1 : 0) + (a.ra.enabled ? 1 : 0) + (a.ma.enabled ? 1 : 0);
 
         var mixed = null, cur = null, curId = null, curLabel = null;
         if (enabledCount === 0) {
@@ -2130,7 +2157,8 @@
         if (p && p.short) bits.push(p.short);
         if (a.oa.enabled) bits.push('OA ' + fmt(a.oa.db, 0) + '°F');
         if (a.ra.enabled) bits.push('RA ' + fmt(a.ra.db, 0) + '°F');
-        var cfm = (a.oa.enabled && a.ra.enabled && a.flowMode === 'pct') ? a.totalCfm
+        if (a.ma && a.ma.enabled) bits.push('MA ' + fmt(a.ma.db, 0) + '°F');
+        var cfm = ((a.oa.enabled && a.ra.enabled && a.flowMode === 'pct') || (a.ma && a.ma.enabled)) ? a.totalCfm
             : ((a.oa.enabled ? Number(a.oaCfm) || 0 : 0) + (a.ra.enabled ? Number(a.raCfm) || 0 : 0));
         if (cfm) bits.push(fmt(cfm, 0) + ' CFM');
         var stagesOn = ['erv', 'preheat', 'coil', 'fan', 'reheat', 'hum', 'room', 'dewpoint'].filter(function (k) { return a[k] && a[k].enabled; });
