@@ -60,7 +60,7 @@
             mode: 'ahu',                                     // 'ahu' | 'points'
             dbMin: 20,
             view: null,                                      // zoomed viewport or null = default
-            show: { rh: true, wb: true, h: true, v: false, prot: true, shr: true },
+            show: { rh: true, wb: true, h: true, v: false },
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -1344,8 +1344,7 @@
         legend.className = 'psy-toolbar-label';
         legend.textContent = 'Lines:';
         toolbar.appendChild(legend);
-        [['rh', 'RH'], ['wb', 'Wet bulb'], ['h', 'Enthalpy'], ['v', 'Sp. volume'],
-         ['prot', 'Protractor'], ['shr', 'SHR scale']].forEach(function (t) {
+        [['rh', 'RH'], ['wb', 'Wet bulb'], ['h', 'Enthalpy'], ['v', 'Sp. volume']].forEach(function (t) {
             var lbl = document.createElement('label');
             lbl.className = 'psy-check';
             var cb = document.createElement('input');
