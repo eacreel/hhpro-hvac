@@ -1438,7 +1438,7 @@
     letter-spacing: 0.05em;
 }
 
-/* Wheel and duct drawing side by side; they stack on narrow panels. */
+/* Chart and duct drawing side by side; they stack on narrow panels. */
 .dt-visuals {
     display: flex;
     flex-wrap: wrap;
@@ -1447,24 +1447,46 @@
     justify-content: center;
 }
 
-.dt-wheel-wrap {
-    flex: 1 1 320px;
+.dt-chart-wrap {
+    flex: 1 1 460px;
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-xs);
     min-width: 0;
 }
 
-.dt-wheel {
-    /* Square, never wider than its column and never taller than the room
-       left under the headline numbers. */
-    width: min(100%, 520px, calc(100vh - 330px));
-    aspect-ratio: 1 / 1;
+.dt-chart {
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 760 / 560;
     height: auto;
     display: block;
     font-family: var(--font-family);
     user-select: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: crosshair;
 }
+
+.dt-chart-bg { fill: var(--color-bg-dark); }
+.dt-plot-frame { fill: none; stroke: var(--color-border-strong); stroke-width: 1; }
+.dt-design-band { fill: #1d3557; stroke: none; }
+.dt-band-label { fill: #93c5fd; font-size: 10px; font-style: italic; }
+.dt-grid { stroke: #24334a; stroke-width: 0.6; }
+.dt-grid-major { stroke: #3b4d68; stroke-width: 0.9; }
+.dt-axis-label { fill: #cbd5e1; font-size: 10.5px; }
+.dt-axis-title { fill: #e6edf3; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; }
+.dt-line-d { fill: none; stroke: #5ba9d8; stroke-width: 1.1; }
+.dt-line-v { fill: none; stroke: #6ee7b7; stroke-width: 0.9; stroke-dasharray: 5 4; }
+.dt-line-label-d { fill: #9cd3f5; font-size: 9.5px; }
+.dt-line-label-v { fill: #a7f3d0; font-size: 9.5px; }
+.dt-legend { fill: #94a3b8; font-size: 10px; }
+.dt-point { transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dt-cross { stroke: #fbbf24; stroke-width: 1; stroke-dasharray: 3 3; }
+.dt-point-dot { fill: #fbbf24; stroke: #78350f; stroke-width: 1.5; }
+.dt-point-label { fill: #fde68a; font-size: 12.5px; font-weight: 600; }
+.dt-point-note { fill: var(--color-warning); font-size: 10px; }
+.dt-readout { border-top: none; padding-top: 0; }
 
 .dt-duct-wrap {
     flex: 0 1 300px;
@@ -1497,29 +1519,6 @@
 .dt-duct-sub { fill: #94a3b8; font-size: 10.5px; }
 
 .dt-shape-seg { align-self: flex-start; margin-left: 0; }
-
-.dt-disk {
-    transform-origin: 310px 310px;
-    transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.dt-ring { fill: none; stroke: var(--color-border-strong); stroke-width: 1; }
-.dt-band { stroke: none; }
-.dt-band-friction { fill: #1d3557; }
-.dt-band-airflow { fill: #5c1f2b; }
-.dt-band-diameter { fill: #1f4d3a; }
-.dt-face { fill: var(--color-surface); stroke: var(--color-border-strong); stroke-width: 1.2; }
-.dt-hub { fill: var(--color-bg-dark); stroke: var(--color-border-strong); stroke-width: 1.2; }
-.dt-tick { stroke: #cbd5e1; stroke-width: 1; }
-.dt-tick-minor { stroke: #94a3b8; stroke-width: 0.6; }
-.dt-label { fill: #e6edf3; font-size: 11px; }
-.dt-label-small { fill: #cbd5e1; font-size: 9px; }
-.dt-scale-title { fill: #e6edf3; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; }
-.dt-arrow { fill: #fbbf24; stroke: #78350f; stroke-width: 1; }
-.dt-marker { stroke: #fbbf24; stroke-width: 2; }
-.dt-center-value { fill: #a5f3fc; font-size: 22px; font-weight: 700; }
-.dt-center-label { fill: #94a3b8; font-size: 10px; letter-spacing: 0.06em; }
-.dt-center-sub { fill: #e6edf3; font-size: 13px; }
 
 .dt-note {
     color: var(--color-text-muted);

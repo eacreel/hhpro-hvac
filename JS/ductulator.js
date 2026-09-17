@@ -25,17 +25,11 @@
    physical Ductulator assumes galvanized steel (medium smooth,
    0.0003 ft). Air density follows the site altitude at 70F.
 
-   The wheel on the right is our own drawing of the classic
-   instrument: a fixed friction ring, a rotating airflow disk with
-   an index arrow, and a fixed diameter scale on the hub. The disk
-   turns so the airflow lines up with the friction rate, and the
-   arrow lands on the round (or equivalent round) diameter - the
-   same move as the real one. Scales are logarithmic; the diameter
-   scale is laid out from the exact equations at 0.1 in. w.g./100 ft,
-   so the arrow is exact there and within a couple of percent
-   elsewhere (the power-law approximation every slide rule makes).
-   The numbers on the hub and in the results panel are always the
-   exact solution. Beside the wheel, a dimensioned cross-section of
+   The chart on the right is the standard log-log duct friction
+   chart (airflow vs friction rate with round-diameter and velocity
+   line families), computed from the same equations as the results
+   so the picture is exact, with the duct in hand plotted as a dot
+   and a hover readout. Beside it, a dimensioned cross-section of
    the selected duct is drawn to scale so the shape and size in the
    picture always match the numbers.
 
@@ -430,7 +424,7 @@
     HHpro.Calculators.register({
         key: 'ductulator',
         name: 'Ductulator',
-        description: 'Duct sizing slide rule for round and rectangular duct: airflow plus friction rate, velocity or size gives the rest, with a spinning wheel and a to-scale duct drawing.',
+        description: 'Duct sizing for round and rectangular duct: airflow plus friction rate, velocity or size gives the rest, plotted on the duct friction chart with a to-scale duct drawing.',
         icon: 'dial',
         view: 'ductulator',
         saved: { summarize: summarize, pdfBlob: pdfBlob, docType: 'DUCTULATOR (PDF)' }
@@ -770,15 +764,19 @@
         side.appendChild(visuals);
 
         var wrap = document.createElement('div');
-        wrap.className = 'dt-wheel-wrap';
+        wrap.className = 'dt-chart-wrap';
         var svg = document.createElementNS(SVG_NS, 'svg');
-        svg.setAttribute('viewBox', '0 0 620 620');
-        svg.setAttribute('class', 'dt-wheel');
+        svg.setAttribute('viewBox', '0 0 ' + CH_W + ' ' + CH_H);
+        svg.setAttribute('class', 'dt-chart');
         svg.setAttribute('role', 'img');
-        svg.setAttribute('aria-label', 'Ductulator wheel');
+        svg.setAttribute('aria-label', 'Duct friction chart');
         wrap.appendChild(svg);
+        var readout = document.createElement('div');
+        readout.className = 'psy-readout dt-readout';
+        wrap.appendChild(readout);
         visuals.appendChild(wrap);
         refs.svg = svg;
+        attachHover(svg, readout);
 
         var dwrap = document.createElement('div');
         dwrap.className = 'dt-duct-wrap';
@@ -793,8 +791,9 @@
 
         var note = document.createElement('p');
         note.className = 'dt-note';
-        note.textContent = 'Wheel: the disk turns so the airflow (red) lines up with the friction rate (blue); the arrow then points at the round or equivalent-round diameter (green). ' +
-            'Scales are logarithmic like the real slide rule, so the arrow is a close reading and the numbers on the hub are the exact solution. ' +
+        note.textContent = 'Chart: the standard duct friction chart. Find the airflow along the bottom and the friction rate up the side; ' +
+            'the dot is the duct in hand, the blue line through it is its round diameter and the green line its velocity. ' +
+            'A rectangular duct plots at its equivalent round, with its own velocity in the label. Every line is computed from the same equations as the results. ' +
             'Drawing: the selected duct, dimensioned and drawn to scale.';
         side.appendChild(note);
         return side;
@@ -838,91 +837,37 @@
     }
 
     // -----------------------------------------------------------------
-    // The wheel
+    // The friction chart
     // -----------------------------------------------------------------
-    // Geometry (SVG units, 620 x 620, centre C):
-    //   friction ring   fixed, band R 268..300, log scale, 0.1 at the top
-    //   airflow disk    rotating, band R 224..262, log scale, index arrow
-    //                   at disk angle 0 pointing at the hub
-    //   diameter hub    fixed, band R 150..192, laid out so the arrow
-    //                   reads the diameter for the aligned Q / friction
-    //   centre          fixed, exact readouts
-    // Angles are SVG degrees: 0 = +x (3 o'clock), clockwise positive.
-    var C = 310;
-    var DEG_PER_DECADE_Q = 60;                // airflow disk
-    var POWER_LAW_N = 1.9;                    // dp ~ Q^n at fixed D (slide-rule assumption)
-    var DEG_PER_DECADE_F = DEG_PER_DECADE_Q / POWER_LAW_N;
-    var Q0 = 1000, F0 = 0.1, F0_ANGLE = -90;  // 1000 cfm at disk angle 0; 0.1 in/100 ft at the top
-    var Q_MIN = 50, Q_MAX = 200000;
-    var F_MIN = 0.01, F_MAX = 5;
-    var D_MIN = 3, D_MAX = 90;
-    var lastRotation = 0;
+    // The log-log duct friction chart from the ASHRAE / SMACNA manuals:
+    // airflow across, friction rate up, a fan of round-diameter lines
+    // (blue) and a fan of velocity lines (green, dashed), all computed
+    // from the same Darcy-Weisbach / Colebrook equations as the results,
+    // so the picture is exact. The operating point is the dot; a
+    // rectangular duct plots at its equivalent round. Hovering reads the
+    // round size and velocity at any spot. Plain rect / line / path /
+    // text only, so the PDF writer can copy it.
+    var CH_W = 760, CH_H = 560;
+    var ML = 66, MR = 26, MT = 26, MB = 54;
+    var PX0 = ML, PX1 = CH_W - MR, PY0 = MT, PY1 = CH_H - MB;
+    var QX_MIN = 50, QX_MAX = 100000;       // CFM (internal)
+    var FY_MIN = 0.01, FY_MAX = 2;          // in. w.g. / 100 ft (internal)
+    var DIAMS = [4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 34, 38, 42, 48, 54, 60, 72, 84];
+    var VELS_IP = [400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000];
+    var VELS_SI = [2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25];      // m/s
+    var DESIGN_FR = [0.05, 0.10];           // shaded low-pressure design band
+    var LINE_SAMPLES = 40;
 
-    function diskAngle(Q) { return DEG_PER_DECADE_Q * Math.log10(Q / Q0); }
-    function ringAngle(fr) { return F0_ANGLE + DEG_PER_DECADE_F * Math.log10(fr / F0); }
-    function rotationFor(Q, fr) { return ringAngle(fr) - diskAngle(Q); }
-    // Hub angle for a diameter: where the arrow lands when Q(D) at the
-    // reference friction is aligned with that friction.
-    function hubAngle(D, rho, eps) {
-        var Qref = airflowAtFriction(D, F0, rho, eps);
-        return rotationFor(Qref, F0);
-    }
-    function airflowAtFriction(D, fr, rho, eps) {
-        var lo = 1, hi = 1e6;
-        for (var i = 0; i < 70; i++) {
-            var mid = Math.sqrt(lo * hi);
-            if (roundDuct(mid, D, rho, eps).dp100 < fr) lo = mid; else hi = mid;
-        }
-        return Math.sqrt(lo * hi);
-    }
-
-    function polar(R, deg) {
-        var a = deg * Math.PI / 180;
-        return [C + R * Math.cos(a), C + R * Math.sin(a)];
-    }
-    function pt(p) { return p[0].toFixed(2) + ' ' + p[1].toFixed(2); }
-
-    // Closed polygonal ring between radii r1 < r2 over [a1, a2] degrees.
-    function bandPath(r1, r2, a1, a2) {
-        var steps = Math.max(8, Math.ceil(Math.abs(a2 - a1) / 3));
-        var d = [];
-        for (var i = 0; i <= steps; i++) {
-            var a = a1 + (a2 - a1) * i / steps;
-            d.push((i ? 'L ' : 'M ') + pt(polar(r2, a)));
-        }
-        for (var j = steps; j >= 0; j--) {
-            var b = a1 + (a2 - a1) * j / steps;
-            d.push('L ' + pt(polar(r1, b)));
-        }
-        return d.join(' ') + ' Z';
-    }
-    function circlePath(R) {
-        var d = [];
-        for (var i = 0; i <= 120; i++) d.push((i ? 'L ' : 'M ') + pt(polar(R, i * 3)));
-        return d.join(' ') + ' Z';
-    }
+    function xOf(Q) { return PX0 + (PX1 - PX0) * Math.log10(Q / QX_MIN) / Math.log10(QX_MAX / QX_MIN); }
+    function yOf(fr) { return PY1 - (PY1 - PY0) * Math.log10(fr / FY_MIN) / Math.log10(FY_MAX / FY_MIN); }
+    function qAt(x) { return QX_MIN * Math.pow(QX_MAX / QX_MIN, (x - PX0) / (PX1 - PX0)); }
+    function frAt(y) { return FY_MIN * Math.pow(FY_MAX / FY_MIN, (PY1 - y) / (PY1 - PY0)); }
 
     function el(tag, attrs, cls) {
         var e = document.createElementNS(SVG_NS, tag);
         Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, String(attrs[k])); });
         if (cls) e.setAttribute('class', cls);
         return e;
-    }
-
-    function tick(parent, rIn, rOut, deg, cls) {
-        var a = polar(rIn, deg), b = polar(rOut, deg);
-        parent.appendChild(el('line', { x1: a[0].toFixed(2), y1: a[1].toFixed(2), x2: b[0].toFixed(2), y2: b[1].toFixed(2) }, cls));
-    }
-
-    // Text sitting on the circle at radius R, reading along the circle.
-    function arcLabel(parent, R, deg, text, cls) {
-        var p = polar(R, deg);
-        var t = el('text', {
-            transform: 'translate(' + p[0].toFixed(2) + ' ' + p[1].toFixed(2) + ') rotate(' + (deg + 90).toFixed(2) + ')',
-            'text-anchor': 'middle'
-        }, cls);
-        t.textContent = text;
-        parent.appendChild(t);
     }
 
     function logTicks(min, max) {
@@ -945,118 +890,233 @@
         return String(Number(v.toFixed(3)));
     }
 
-    // Draw the wheel. res = evaluate() result or null.
-    // opts.bake = true renders the disk at its rotation with plain
-    // coordinates (no transforms) so the PDF writer can copy it.
-    // On screen the scales only depend on the unit system, air density
-    // and roughness, so a wheel already drawn for the same settings is
-    // just turned (CSS transition) and its centre readouts refreshed;
-    // rebuilding the disk element would skip the animation.
-    function drawWheel(svg, res, opts) {
+    // Clip a polyline (pixel space) to the plot rectangle; returns the
+    // visible pieces. Lines are near-straight in log-log, so linear
+    // interpolation between samples is plenty.
+    function clipToPlot(points) {
+        function inside(p) { return p[0] >= PX0 - 0.01 && p[0] <= PX1 + 0.01 && p[1] >= PY0 - 0.01 && p[1] <= PY1 + 0.01; }
+        function clipSeg(a, b) {
+            // Liang-Barsky
+            var t0 = 0, t1 = 1, dx = b[0] - a[0], dy = b[1] - a[1];
+            var checks = [[-dx, a[0] - PX0], [dx, PX1 - a[0]], [-dy, a[1] - PY0], [dy, PY1 - a[1]]];
+            for (var i = 0; i < 4; i++) {
+                var p = checks[i][0], q = checks[i][1];
+                if (p === 0) { if (q < 0) return null; continue; }
+                var t = q / p;
+                if (p < 0) { if (t > t1) return null; if (t > t0) t0 = t; }
+                else { if (t < t0) return null; if (t < t1) t1 = t; }
+            }
+            return [[a[0] + t0 * dx, a[1] + t0 * dy], [a[0] + t1 * dx, a[1] + t1 * dy]];
+        }
+        var pieces = [], cur = null;
+        for (var i = 0; i < points.length - 1; i++) {
+            var seg = clipSeg(points[i], points[i + 1]);
+            if (!seg) { if (cur) { pieces.push(cur); cur = null; } continue; }
+            if (!cur) cur = [seg[0]];
+            cur.push(seg[1]);
+            if (!inside(points[i + 1])) { pieces.push(cur); cur = null; }
+        }
+        if (cur) pieces.push(cur);
+        return pieces;
+    }
+
+    function pathOf(points) {
+        return points.map(function (p, i) { return (i ? 'L ' : 'M ') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+    }
+
+    // Sample a family line: fn(Q) -> friction rate.
+    function sampleLine(fn) {
+        var pts = [];
+        for (var i = 0; i <= LINE_SAMPLES; i++) {
+            var Q = QX_MIN * Math.pow(QX_MAX / QX_MIN, i / LINE_SAMPLES);
+            var fr = fn(Q);
+            if (!isFinite(fr) || fr <= 0) continue;
+            pts.push([xOf(Q), yOf(fr)]);
+        }
+        return pts;
+    }
+
+    // Label a visible piece: at the point nearest the requested fraction
+    // of the piece's length, rotated along the line.
+    function lineLabel(parent, piece, frac, text, cls, dy) {
+        if (piece.length < 2) return;
+        var idx = Math.max(1, Math.min(piece.length - 1, Math.round((piece.length - 1) * frac)));
+        var a = piece[idx - 1], b = piece[idx];
+        var ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+        if (ang > 90) ang -= 180;
+        if (ang < -90) ang += 180;
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        var t = el('text', {
+            transform: 'translate(' + mx.toFixed(1) + ' ' + (my + (dy || -3)).toFixed(1) + ') rotate(' + ang.toFixed(1) + ')',
+            'text-anchor': 'middle'
+        }, cls);
+        t.textContent = text;
+        parent.appendChild(t);
+    }
+
+    function velocityList() { return sys() === 'SI' ? VELS_SI.map(function (v) { return v / 0.00508; }) : VELS_IP; }
+    function velocityLabel(vFpm) { return sys() === 'SI' ? String(Number((vFpm * 0.00508).toFixed(1))) : String(Math.round(vFpm)); }
+    function diameterLabel(Din) { return sys() === 'SI' ? String(Math.round(Din * 25.4)) : String(Din); }
+
+    // Draw the chart. res = evaluate() result or null. opts.bake = true
+    // renders the operating point with plain coordinates (no transforms)
+    // for the PDF; on screen the point sits in a translated group so it
+    // slides to its new place (CSS transition). The grid and line
+    // families depend only on the unit system, air density and roughness,
+    // so they are kept when those are unchanged.
+    function drawChart(svg, res, opts) {
         opts = opts || {};
         var rho = res ? res.rho : airDensity(state.altitude);
         var eps = res ? res.material[2] : materialOf(state.material)[2];
-        var rot = res ? rotationFor(res.Q, res.round.dp100) : rotationFor(1000, 0.1);
-        if (!opts.bake) {
-            // Keep turning the short way round between updates.
-            var k = Math.round((lastRotation - rot) / 360);
-            rot += 360 * k;
-            lastRotation = rot;
-            var key = sys() + '|' + rho.toFixed(6) + '|' + eps;
-            if (svg.__wheelKey === key) {
-                var diskEl = svg.querySelector('.dt-disk');
-                if (diskEl) diskEl.setAttribute('style', 'transform: rotate(' + rot.toFixed(3) + 'deg)');
-                var centre = svg.querySelector('.dt-centre');
-                if (centre) {
-                    while (centre.firstChild) centre.removeChild(centre.firstChild);
-                    drawCentre(centre, res);
-                }
-                return;
-            }
-            svg.__wheelKey = key;
+        var key = sys() + '|' + rho.toFixed(6) + '|' + eps;
+        if (!opts.bake && svg.__chartKey === key) {
+            var pg = svg.querySelector('.dt-point');
+            if (pg) { while (pg.firstChild) pg.removeChild(pg.firstChild); drawPoint(pg, res, false); }
+            return;
         }
+        if (!opts.bake) svg.__chartKey = key;
         while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-        // ---- fixed face + friction ring
-        svg.appendChild(el('path', { d: circlePath(300) }, 'dt-face psy-frame'));
-        var fA1 = ringAngle(F_MIN) - 4, fA2 = ringAngle(F_MAX) + 4;
-        svg.appendChild(el('path', { d: bandPath(268, 300, fA1, fA2) }, 'dt-band dt-band-friction psy-region'));
-        var ft = logTicks(F_MIN, F_MAX);
-        ft.minors.forEach(function (v) { tick(svg, 268, 276, ringAngle(v), 'dt-tick-minor psy-tick'); });
-        ft.majors.forEach(function (v) {
-            tick(svg, 268, 282, ringAngle(v), 'dt-tick psy-tick');
-            arcLabel(svg, 291, ringAngle(v), labelNum(v), 'dt-label psy-axis-label');
-        });
-        arcLabel(svg, 291, fA2 + 12, 'FRICTION ' + (sys() === 'SI' ? 'Pa/m' : 'in. w.g. / 100 ft'), 'dt-scale-title psy-axis-title');
-        svg.appendChild(el('path', { d: circlePath(268) }, 'dt-ring psy-frame-outline'));
+        // background + plot frame
+        svg.appendChild(el('rect', { x: 0, y: 0, width: CH_W, height: CH_H }, 'dt-chart-bg psy-frame'));
+        svg.appendChild(el('rect', { x: PX0, y: yOf(DESIGN_FR[1]), width: PX1 - PX0, height: yOf(DESIGN_FR[0]) - yOf(DESIGN_FR[1]) }, 'dt-design-band psy-region'));
+        var bandLabel = el('text', { x: PX0 + 6, y: yOf(DESIGN_FR[1]) + 12, 'text-anchor': 'start' }, 'dt-band-label psy-label-caption');
+        bandLabel.textContent = 'typical low-pressure design range';
+        svg.appendChild(bandLabel);
 
-        // ---- rotating airflow disk
-        var disk = el('g', {}, 'dt-disk');
-        var add = opts.bake ? rot : 0;
-        if (!opts.bake) disk.setAttribute('style', 'transform: rotate(' + rot.toFixed(3) + 'deg)');
-        disk.appendChild(el('path', { d: circlePath(262) }, 'dt-face psy-frame'));
-        var qA1 = diskAngle(Q_MIN) - 4 + add, qA2 = diskAngle(Q_MAX) + 4 + add;
-        disk.appendChild(el('path', { d: bandPath(224, 262, qA1, qA2) }, 'dt-band dt-band-airflow psy-region'));
-        var qt = logTicks(Q_MIN, Q_MAX);
-        qt.minors.forEach(function (v) { tick(disk, 254, 262, diskAngle(v) + add, 'dt-tick-minor psy-tick'); });
-        qt.majors.forEach(function (v) {
-            tick(disk, 248, 262, diskAngle(v) + add, 'dt-tick psy-tick');
-            arcLabel(disk, 238, diskAngle(v) + add, labelNum(v), 'dt-label psy-axis-label');
+        // grid + ticks in DISPLAY units
+        var S = sys();
+        var xt = logTicks(U.toDisp('flow', QX_MIN, S), U.toDisp('flow', QX_MAX, S));
+        xt.minors.forEach(function (v) {
+            var x = xOf(U.fromDisp('flow', v, S));
+            svg.appendChild(el('line', { x1: x.toFixed(1), y1: PY0, x2: x.toFixed(1), y2: PY1 }, 'dt-grid psy-grid-line'));
         });
-        arcLabel(disk, 238, qA1 - 14, 'AIRFLOW ' + U.unit('flow', sys()), 'dt-scale-title psy-axis-title');
-        disk.appendChild(el('path', { d: circlePath(224) }, 'dt-ring psy-frame-outline'));
-        // index arrow at disk angle 0, pointing inward at the hub scale
-        var tipR = 194, baseR = 216, half = 7;
-        var tip = polar(tipR, add), b1 = polar(baseR, add - half), b2 = polar(baseR, add + half);
-        disk.appendChild(el('path', { d: 'M ' + pt(tip) + ' L ' + pt(b1) + ' L ' + pt(b2) + ' Z' }, 'dt-arrow psy-line'));
-        tick(disk, 196, 224, add, 'dt-marker psy-line');
-        svg.appendChild(disk);
-
-        // ---- fixed diameter hub
-        var hub = el('g', {}, 'dt-hub-group');
-        hub.appendChild(el('path', { d: circlePath(192) }, 'dt-hub psy-frame'));
-        var dStops = [];
-        for (var d = D_MIN; d <= D_MAX; d += (d < 12 ? 1 : d < 30 ? 2 : d < 60 ? 5 : 10)) dStops.push(d);
-        if (dStops[dStops.length - 1] !== D_MAX) dStops.push(D_MAX);
-        var hA1 = hubAngle(D_MIN, rho, eps) + 4, hA2 = hubAngle(D_MAX, rho, eps) - 4;
-        hub.appendChild(el('path', { d: bandPath(150, 192, Math.min(hA1, hA2), Math.max(hA1, hA2)) }, 'dt-band dt-band-diameter psy-region'));
-        dStops.forEach(function (dv) {
-            var ang = hubAngle(dv, rho, eps);
-            var major = (dv <= 12) || (dv <= 30 && dv % 4 === 0) || (dv <= 60 && dv % 10 === 0) || dv % 20 === 0 || dv === D_MAX;
-            tick(hub, 178, 192, ang, major ? 'dt-tick psy-tick' : 'dt-tick-minor psy-tick');
-            if (major) {
-                var lbl = sys() === 'SI' ? String(Math.round(dv * 25.4)) : String(dv);
-                arcLabel(hub, 165, ang, lbl, 'dt-label-small psy-axis-label');
-            }
+        xt.majors.forEach(function (v) {
+            var x = xOf(U.fromDisp('flow', v, S));
+            svg.appendChild(el('line', { x1: x.toFixed(1), y1: PY0, x2: x.toFixed(1), y2: PY1 }, 'dt-grid-major psy-grid-major'));
+            var t = el('text', { x: x.toFixed(1), y: PY1 + 16, 'text-anchor': 'middle' }, 'dt-axis-label psy-axis-label');
+            t.textContent = labelNum(v);
+            svg.appendChild(t);
         });
-        arcLabel(hub, 165, Math.max(hA1, hA2) + 12, 'DIAMETER ' + U.unit('dim', sys()), 'dt-scale-title psy-axis-title');
-        hub.appendChild(el('path', { d: circlePath(150) }, 'dt-ring psy-frame-outline'));
+        var yt = logTicks(U.toDisp('friction', FY_MIN, S), U.toDisp('friction', FY_MAX, S));
+        yt.minors.forEach(function (v) {
+            var y = yOf(U.fromDisp('friction', v, S));
+            svg.appendChild(el('line', { x1: PX0, y1: y.toFixed(1), x2: PX1, y2: y.toFixed(1) }, 'dt-grid psy-grid-line'));
+        });
+        yt.majors.forEach(function (v) {
+            var y = yOf(U.fromDisp('friction', v, S));
+            svg.appendChild(el('line', { x1: PX0, y1: y.toFixed(1), x2: PX1, y2: y.toFixed(1) }, 'dt-grid-major psy-grid-major'));
+            var t = el('text', { x: PX0 - 6, y: (y + 3.5).toFixed(1), 'text-anchor': 'end' }, 'dt-axis-label psy-axis-label');
+            t.textContent = labelNum(v);
+            svg.appendChild(t);
+        });
+        var xTitle = el('text', { x: (PX0 + PX1) / 2, y: CH_H - 14, 'text-anchor': 'middle' }, 'dt-axis-title psy-axis-title');
+        xTitle.textContent = 'AIRFLOW, ' + U.unit('flow', S);
+        svg.appendChild(xTitle);
+        var yTitle = el('text', { transform: 'translate(16 ' + ((PY0 + PY1) / 2).toFixed(1) + ') rotate(-90)', 'text-anchor': 'middle' }, 'dt-axis-title psy-axis-title');
+        yTitle.textContent = 'FRICTION RATE, ' + U.unit('friction', S);
+        svg.appendChild(yTitle);
 
-        // centre readouts (exact) - kept in their own group so an update
-        // can refresh them without touching the scales.
-        var centre = el('g', {}, 'dt-centre');
-        drawCentre(centre, res);
-        hub.appendChild(centre);
-        svg.appendChild(hub);
+        // velocity lines (round duct), dashed green
+        velocityList().forEach(function (V) {
+            var pts = sampleLine(function (Q) { return roundDuct(Q, diameterForVelocity(Q, V), rho, eps).dp100; });
+            clipToPlot(pts).forEach(function (piece) {
+                svg.appendChild(el('path', { d: pathOf(piece) }, 'dt-line-v psy-wb'));
+                lineLabel(svg, piece, 0.78, velocityLabel(V), 'dt-line-label-v psy-label psy-label-wb');
+            });
+        });
+        // diameter lines, blue
+        DIAMS.forEach(function (D, i) {
+            var pts = sampleLine(function (Q) { return roundDuct(Q, D, rho, eps).dp100; });
+            clipToPlot(pts).forEach(function (piece) {
+                svg.appendChild(el('path', { d: pathOf(piece) }, 'dt-line-d psy-rh'));
+                lineLabel(svg, piece, i % 2 ? 0.86 : 0.7, diameterLabel(D), 'dt-line-label-d psy-label psy-label-rh');
+            });
+        });
+        var legend = el('text', { x: PX1 - 6, y: PY0 + 14, 'text-anchor': 'end' }, 'dt-legend psy-label-caption');
+        legend.textContent = 'blue: round diameter ' + U.unit('dim', S) + '   green: velocity ' + U.unit('velocity', S) + ' (round duct)';
+        svg.appendChild(legend);
+        svg.appendChild(el('rect', { x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, 'dt-plot-frame psy-frame-outline'));
+
+        // operating point
+        var pointGroup = el('g', {}, 'dt-point');
+        drawPoint(pointGroup, res, !!opts.bake);
+        svg.appendChild(pointGroup);
     }
 
-    function drawCentre(group, res) {
-        function centreText(y, text, cls) {
-            var t = el('text', { x: C, y: y, 'text-anchor': 'middle' }, cls);
-            t.textContent = text;
-            group.appendChild(t);
+    // Operating point: crosshairs to both axes, the dot and its label.
+    // On screen the group is translated to (x, y) and its children are
+    // drawn relative to 0,0 so the whole thing animates; baked, the
+    // children carry absolute coordinates.
+    function drawPoint(group, res, bake) {
+        if (!res) { group.removeAttribute('style'); return; }
+        var Q = Math.min(Math.max(res.Q, QX_MIN), QX_MAX);
+        var fr = res.shape === 'round' ? res.round.dp100 : res.rect.dp100;
+        var frc = Math.min(Math.max(fr, FY_MIN), FY_MAX);
+        var x = xOf(Q), y = yOf(frc);
+        var offX = bake ? x : 0, offY = bake ? y : 0;
+        if (!bake) group.setAttribute('style', 'transform: translate(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px)');
+        group.appendChild(el('line', { x1: (PX0 - x + offX).toFixed(1), y1: offY, x2: offX, y2: offY }, 'dt-cross psy-line-mix'));
+        group.appendChild(el('line', { x1: offX, y1: offY, x2: offX, y2: (PY1 - y + offY).toFixed(1) }, 'dt-cross psy-line-mix'));
+        group.appendChild(el('circle', { cx: offX, cy: offY, r: 6 }, 'dt-point-dot psy-point-oa'));
+        var label = res.shape === 'round'
+            ? fmtU('dim', res.round.D) + ' round · ' + fmtU('velocity', res.round.V)
+            : sizeText(res.rect.w, res.rect.h) + ' (eq. ' + fmtU('dim', res.rect.de) + ') · ' + fmtU('velocity', res.rect.V);
+        var above = y > PY0 + 40;
+        var t = el('text', { x: (offX + 10).toFixed(1), y: (offY + (above ? -10 : 18)).toFixed(1), 'text-anchor': 'start' }, 'dt-point-label psy-point-label');
+        t.textContent = label;
+        // keep the label inside the plot on the right edge
+        if (x > PX1 - 200) { t.setAttribute('x', (offX - 10).toFixed(1)); t.setAttribute('text-anchor', 'end'); }
+        group.appendChild(t);
+        var offChart = (res.Q !== Q) || (fr !== frc);
+        if (offChart) {
+            var w = el('text', { x: (offX + 10).toFixed(1), y: (offY + (above ? 6 : 34)).toFixed(1), 'text-anchor': 'start' }, 'dt-point-note psy-label-caption');
+            w.textContent = 'off the chart - shown at the edge';
+            group.appendChild(w);
         }
-        if (res) {
-            var r = res.round;
-            var rectMode = res.shape === 'rect';
-            centreText(C - 46, rectMode ? 'EQUIVALENT ROUND' : 'ROUND DIAMETER', 'dt-center-label psy-axis-label');
-            centreText(C - 20, fmtU('dim', r.D), 'dt-center-value psy-axis-title');
-            centreText(C + 8, rectMode ? sizeText(res.rect.w, res.rect.h) : fmtU('velocity', r.V), 'dt-center-sub psy-axis-label');
-            centreText(C + 30, fmtU('friction', rectMode ? res.rect.dp100 : r.dp100), 'dt-center-sub psy-axis-label');
-            centreText(C + 54, fmtU('flow', res.Q), 'dt-center-sub psy-axis-label');
-        } else {
-            centreText(C, 'Enter the inputs', 'dt-center-label psy-axis-label');
+    }
+
+    // Hover: pointer position -> airflow + friction -> round size + velocity.
+    function attachHover(svg, readout) {
+        function toViewBox(evt) {
+            var ptx = svg.createSVGPoint();
+            ptx.x = evt.clientX; ptx.y = evt.clientY;
+            var m = svg.getScreenCTM();
+            if (!m) return null;
+            var p = ptx.matrixTransform(m.inverse());
+            return [p.x, p.y];
         }
+        function hint() {
+            readout.innerHTML = '';
+            var h = document.createElement('span');
+            h.className = 'psy-readout-hint';
+            h.textContent = 'Move the pointer over the chart to read the round size and velocity at any airflow and friction rate.';
+            readout.appendChild(h);
+        }
+        function item(k, v) {
+            var it = document.createElement('span');
+            it.className = 'psy-readout-item';
+            var key = document.createElement('span'); key.className = 'psy-readout-key'; key.textContent = k;
+            var val = document.createElement('span'); val.className = 'psy-readout-val'; val.textContent = v;
+            it.appendChild(key); it.appendChild(val);
+            readout.appendChild(it);
+        }
+        svg.addEventListener('mousemove', function (evt) {
+            var p = toViewBox(evt);
+            if (!p || p[0] < PX0 || p[0] > PX1 || p[1] < PY0 || p[1] > PY1) { hint(); return; }
+            var Q = qAt(p[0]), fr = frAt(p[1]);
+            var rho = airDensity(state.altitude), eps = materialOf(state.material)[2];
+            var D = diameterForFriction(Q, fr, rho, eps);
+            var r = roundDuct(Q, D, rho, eps);
+            readout.innerHTML = '';
+            item('Airflow', fmtU('flow', Q, 0));
+            item('Friction', fmtU('friction', fr));
+            item('Round', fmtU('dim', D));
+            item('Velocity', fmtU('velocity', r.V));
+            item('VP', fmtU('pstat', r.vp));
+        });
+        svg.addEventListener('mouseleave', hint);
+        hint();
     }
 
     // -----------------------------------------------------------------
@@ -1169,7 +1229,7 @@
                 : fmt(Psy.inHgFromPsi(P), 2) + ' in Hg · ' + fmt(P, 3) + ' psia';
         }
         renderHero(res, err);
-        if (refs.svg) drawWheel(refs.svg, res, { bake: false });
+        if (refs.svg) drawChart(refs.svg, res, { bake: false });
         if (refs.duct) drawDuct(refs.duct, res);
         var box = refs.results;
         box.innerHTML = '';
@@ -1332,7 +1392,7 @@
     }
 
     // PDF from any snapshot (used by the page and by the project view).
-    // The wheel (rotation baked in) and the duct drawing share one SVG.
+    // The chart and the duct drawing share one SVG (chart on top).
     function pdfBlob(snapshot, meta) {
         init();
         meta = meta || {};
@@ -1342,10 +1402,10 @@
             var res = evaluate(state);
             var blocks = buildReport(res, state);
             var svg = document.createElementNS(SVG_NS, 'svg');
-            svg.setAttribute('viewBox', '0 0 ' + (620 + DUCT_W + 20) + ' 620');
-            drawWheel(svg, res, { bake: true });
+            svg.setAttribute('viewBox', '0 0 ' + CH_W + ' ' + (CH_H + DUCT_H + 20));
+            drawChart(svg, res, { bake: true });
             var ductSvg = document.createElementNS(SVG_NS, 'svg');
-            drawDuct(ductSvg, res, 640, 130);
+            drawDuct(ductSvg, res, (CH_W - DUCT_W) / 2, CH_H + 20);
             while (ductSvg.firstChild) svg.appendChild(ductSvg.firstChild);
             var sub = [];
             if (meta.projectName) sub.push(meta.projectName);
