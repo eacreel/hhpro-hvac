@@ -52,6 +52,13 @@
         volday:    scale('gal/day', 'L/day', 3.785412),
         hp:        scale('hp', 'kW', 0.7457),
         pct:       scale('%', '%', 1),
+        // Duct sizing (Ductulator calculator)
+        velocity:  scale('fpm', 'm/s', 0.00508),
+        friction:  scale('in. w.g./100 ft', 'Pa/m', 249.089 / 30.48),
+        dim:       scale('in', 'mm', 25.4),
+        length:    scale('ft', 'm', 0.3048),
+        pstat:     scale('in. w.g.', 'Pa', 249.089),
+        area:      scale('ft²', 'm²', 0.09290304),
         none:      scale('', '', 1)
     };
 
@@ -108,6 +115,12 @@
             case 'volrate': return 2;
             case 'volday': return 0;
             case 'hp': return 2;
+            case 'velocity': return sys === 'SI' ? 2 : 0;
+            case 'friction': return sys === 'SI' ? 2 : 3;
+            case 'dim': return sys === 'SI' ? 0 : 1;
+            case 'length': return sys === 'SI' ? 1 : 0;
+            case 'pstat': return sys === 'SI' ? 1 : 3;
+            case 'area': return sys === 'SI' ? 3 : 2;
             default: return 1;
         }
     }

@@ -1391,3 +1391,106 @@
     align-items: flex-start;
     gap: var(--space-xs);
 }
+
+/* ---------------------------------------------------------------
+   Ductulator calculator
+   --------------------------------------------------------------- */
+
+.dt-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    overflow-y: auto;
+}
+
+.dt-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md) var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-dark);
+}
+
+.dt-hero-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+}
+
+.dt-hero-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #a5f3fc;
+    letter-spacing: -0.01em;
+}
+
+.dt-hero-value.is-warn { color: var(--color-error-light); }
+
+.dt-hero-caption {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dt-wheel-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.dt-wheel {
+    /* Square, never wider than the panel and never taller than the room
+       left under the headline numbers. */
+    width: min(100%, 640px, calc(100vh - 330px));
+    aspect-ratio: 1 / 1;
+    height: auto;
+    display: block;
+    font-family: var(--font-family);
+    user-select: none;
+}
+
+.dt-disk {
+    transform-origin: 310px 310px;
+    transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dt-ring { fill: none; stroke: var(--color-border-strong); stroke-width: 1; }
+.dt-band { stroke: none; }
+.dt-band-friction { fill: #1d3557; }
+.dt-band-airflow { fill: #5c1f2b; }
+.dt-band-diameter { fill: #1f4d3a; }
+.dt-face { fill: var(--color-surface); stroke: var(--color-border-strong); stroke-width: 1.2; }
+.dt-hub { fill: var(--color-bg-dark); stroke: var(--color-border-strong); stroke-width: 1.2; }
+.dt-tick { stroke: #cbd5e1; stroke-width: 1; }
+.dt-tick-minor { stroke: #94a3b8; stroke-width: 0.6; }
+.dt-label { fill: #e6edf3; font-size: 11px; }
+.dt-label-small { fill: #cbd5e1; font-size: 9px; }
+.dt-scale-title { fill: #e6edf3; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; }
+.dt-arrow { fill: #fbbf24; stroke: #78350f; stroke-width: 1; }
+.dt-marker { stroke: #fbbf24; stroke-width: 2; }
+.dt-center-value { fill: #a5f3fc; font-size: 22px; font-weight: 700; }
+.dt-center-label { fill: #94a3b8; font-size: 10px; letter-spacing: 0.06em; }
+.dt-center-sub { fill: #e6edf3; font-size: 13px; }
+
+.dt-note {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.dt-solve-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+}
+
+.dt-rect-table td.psy-table-val { text-align: right; }
+.dt-rect-table .is-warn { color: var(--color-warning); }
