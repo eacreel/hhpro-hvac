@@ -23,14 +23,93 @@
         return document.getElementById('app-root');
     }
 
+    // -----------------------------------------------------------------
+    // Browser history
+    // -----------------------------------------------------------------
+    // Every showView() call records a history entry, so the browser's
+    // Back / Forward buttons move between the site's own pages instead
+    // of leaving the site (there used to be a single entry for the whole
+    // session). The address bar is left alone: the entry's state carries
+    // { view, id } and the view's params stay in memory under that id,
+    // so params that are not structured-cloneable are safe. Rules:
+    //   - re-rendering the SAME view with the same params (project_view
+    //     does this after every edit) replaces the entry, never stacks
+    //   - the sign-in / registration screens never pile up, and the page
+    //     shown right after them replaces them, so Back from the main
+    //     page does not land on a stale sign-in form
+    //   - a popped entry is re-checked against the session: signed out
+    //     -> sign-in; signed in but the entry is a sign-in screen -> main
+    var HIST_TAG = 'hhpro';
+    var AUTH_VIEWS = { login: true, register: true };
+    var paramsById = {};
+    var nextId = 1;
+    var current = null;     // { id, view, sig } of the entry on screen
+
+    function sig(viewName, params) {
+        try { return viewName + '|' + JSON.stringify(params || {}); }
+        catch (e) { return viewName + '|?'; }
+    }
+
+    function recordHistory(viewName, params, replace) {
+        var s = sig(viewName, params);
+        var same = !!(current && current.sig === s);
+        var useReplace = replace || same || !current ||
+            AUTH_VIEWS[viewName] || AUTH_VIEWS[current.view];
+        var id = same ? current.id : nextId++;
+        paramsById[id] = params;
+        var entry = { tag: HIST_TAG, id: id, view: viewName };
+        try {
+            if (useReplace) history.replaceState(entry, '');
+            else history.pushState(entry, '');
+        } catch (e) { /* history unavailable: navigation still works */ }
+        current = { id: id, view: viewName, sig: s };
+    }
+
+    function onPopState(e) {
+        var st = e.state;
+        var loggedIn = !!(HHpro.State && HHpro.State.isLoggedIn());
+        if (!st || st.tag !== HIST_TAG) {
+            // An entry from before the app took over (e.g. the one the
+            // registration link replaced) - land on the right start page.
+            HHpro.App.showView(loggedIn ? 'main' : 'login', {}, { replace: true });
+            return;
+        }
+        if (!loggedIn && !AUTH_VIEWS[st.view]) {
+            HHpro.App.showView('login', {}, { replace: true });
+            return;
+        }
+        if (loggedIn && AUTH_VIEWS[st.view]) {
+            HHpro.App.showView('main', {}, { replace: true });
+            return;
+        }
+        var params = paramsById[st.id] || {};
+        HHpro.App.showView(st.view, params, {
+            fromHistory: { id: st.id, view: st.view, sig: sig(st.view, params) }
+        });
+    }
+
     HHpro.App = {
-        showView: function (viewName, params) {
+        /**
+         * Render a view. opts (optional):
+         *   replace     - overwrite the current history entry instead of
+         *                 adding one (start pages, redirects)
+         *   fromHistory - internal: the entry being restored by Back /
+         *                 Forward, so no new entry is recorded
+         */
+        showView: function (viewName, params, opts) {
             var view = (HHpro.Views || {})[viewName];
             if (!view || typeof view.render !== 'function') {
                 console.error('HHpro.App: unknown view "' + viewName + '"');
                 return;
             }
-            view.render(root(), params || {});
+            params = params || {};
+            opts = opts || {};
+            view.render(root(), params);
+            if (opts.fromHistory) {
+                current = opts.fromHistory;
+                return;
+            }
+            recordHistory(viewName, params, !!opts.replace);
         },
 
         /** End the session on the server, forget it locally, back to sign-in. */
@@ -90,6 +169,8 @@
             HHpro.App.showView('login');
         });
     }
+
+    window.addEventListener('popstate', onPopState);
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
