@@ -1625,3 +1625,42 @@
 
 .dt-rect-table td.psy-table-val { text-align: right; }
 .dt-rect-table .is-warn { color: var(--color-warning); }
+
+/* ---------- Check results under a panel section ----------
+   The rows that used to be explainer boxes on the chart. Swatches are
+   tiny SVGs using the chart's own line / dot classes, so each row also
+   works as the key for the line it describes. */
+
+.psy-verdict {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: var(--space-xs);
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+}
+
+.psy-verdict[hidden] { display: none; }
+
+.psy-verdict-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+    color: var(--color-text);
+}
+
+.psy-verdict-row.is-no { color: var(--color-error-light); }
+
+.psy-verdict-swatch {
+    flex-shrink: 0;
+    width: 22px;
+    height: 10px;
+    margin-top: 3px;
+    overflow: visible;
+}
+
+.psy-label-room { fill: #c4b5fd; }

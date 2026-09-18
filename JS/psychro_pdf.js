@@ -149,6 +149,7 @@
         'psy-point-sf': { color: '#868e96' },
         'psy-label-econ':     { text: '#1f8f5f' },
         'psy-label-limit':    { text: '#a86a00' },
+        'psy-label-room':     { text: '#7b3fbf' },
         'psy-point-label':    { size: 12, bold: true },
         'psy-point-oa': { color: '#e8590c' }, 'psy-point-er': { color: '#d9480f' },
         'psy-point-ra': { color: '#1c7ed6' }, 'psy-point-ma': { color: '#2f9e44' },

@@ -836,7 +836,8 @@
             });
             // Paths: polylines in (db, w). `fill` closes and fills the shape,
             // `under` additionally clips it to the region under saturation,
-            // `label` puts a caption at the first or last point (kept
+            // `label` puts a caption at the first or last point, or with
+            // labelAt 'mid' beside the middle of the visible line (kept
             // inside the frame).
             current.paths.forEach(function (pth) {
                 if (!pth || !pth.pts || pth.pts.length < 2) return;
@@ -844,7 +845,14 @@
                 var d = pathFrom(pts) + (pth.fill ? ' Z' : '');
                 var target = pth.under ? gUnder : gPaths;
                 target.appendChild(el('path', { d: d }, (pth.fill ? 'psy-region ' : 'psy-path ') + (pth.cls || '')));
-                if (pth.label) {
+                if (pth.label && pth.labelAt === 'mid') {
+                    // Caption beside the middle of the visible part of the line.
+                    var vis = pts.filter(function (q) { return inFrame(q[0], q[1], 12); });
+                    if (vis.length) {
+                        var mp = vis[Math.floor(vis.length / 2)];
+                        gPaths.appendChild(text(mp[0] + 6, mp[1] + 13, pth.label, 'psy-path-label ' + (pth.labelCls || ''), 'start'));
+                    }
+                } else if (pth.label) {
                     var at = pth.labelAt === 'start' ? pts[0] : pts[pts.length - 1];
                     var lx = Math.min(Math.max(at[0], mL + 6), mL + pw - 6);
                     var ly = Math.min(Math.max(at[1], mT + 14), mT + ph - 6);
