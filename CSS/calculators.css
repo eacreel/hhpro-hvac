@@ -777,7 +777,7 @@
     font-style: italic;
 }
 
-/* Optional enthalpy detail: fine lines and the ruler outside saturation */
+/* Enthalpy detail: fine lines and the ruler outside saturation */
 .psy-h-fine {
     stroke-width: 0.5;
     stroke-dasharray: none;
@@ -813,14 +813,14 @@
 }
 
 .psy-prot-label {
-    font-size: 8px;
+    font-size: 7px;
     fill: var(--color-text-muted);
 }
 
 .psy-prot-label-shr { fill: var(--color-text); }
 
 .psy-prot-caption {
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 600;
     letter-spacing: 0.04em;
     fill: var(--color-text);
@@ -828,6 +828,12 @@
 
 /* Optional scales to the right of the plot: dew point, vapor pressure,
    enthalpy and the sensible heat factor */
+.psy-rscale-box {
+    fill: rgba(148, 163, 184, 0.06);
+    stroke: var(--color-border);
+    stroke-width: 0.8;
+}
+
 .psy-rscale-bar {
     stroke: var(--color-text-muted);
     stroke-width: 1;

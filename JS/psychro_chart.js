@@ -11,12 +11,12 @@
          pressure: psia,
          units: 'IP' | 'SI',                       // axis + curve labels
          viewport: { dbMin, dbMax, wMin, wMax },   // degF and lb/lb (IP always)
-         show: { rh: true, wb: true, h: true, v: false,   // curve families
-                 h1: false,        // enthalpy lines every 1 (needs h)
-                 hscale: false,    // enthalpy ruler outside the saturation curve
+         show: { rh: true, wb: true, h: true, v: false,   // curve families; h brings
+                                   // its fine lines and the ruler outside saturation
                  prot: false,      // SHR / dh:dW protractor, top-left
                  shr: false,       // sensible heat factor scale, right
                  rscale: false },  // dew point, vapor pressure, enthalpy columns, right
+         shrRef: { db: 75, rh: 0.5 },   // reference state for prot / shr (degF, fraction)
          points: [{ id: 'oa', label: 'OA', state: st, cls: 'psy-point-oa', title }],
          lines:  [{ from: 'oa', to: 'ra', cls: 'psy-line-mix', arrow: false }],
          paths:  [{ pts: [{ db, w }, ...], cls: 'psy-line-room' }]
@@ -51,7 +51,7 @@
     var GR = 7000;                 // grains per lb
     var V_SI_PER_IP = 0.0624280;   // m3/kg per ft3/lb
     var BTU_PER_KJ = 1 / 2.326;
-    var SHR_REF = { db: 80, rh: 0.5 };   // ASHRAE reference state for the SHR scales (80 degF, 50% RH)
+    var SHR_REF = { db: 75, rh: 0.5 };   // default reference state for the SHR scales (75 degF, 50% RH)
 
     function fToC(f) { return (f - 32) / 1.8; }
     function cToF(c) { return c * 1.8 + 32; }
@@ -179,7 +179,7 @@
         var W = 980, H = 640;
         // The right margin grows when the optional right-hand scales are
         // shown (see layout()); everything else is fixed.
-        var MR_BASE = 84, RSCALE_W = 136, SHR_W = 62;
+        var MR_BASE = 84, RSCALE_W = 162, SHR_W = 62;
         var mL = 36, mR = MR_BASE, mT = 28, mB = 58;
         var pw = W - mL - mR, ph = H - mT - mB;
 
@@ -256,6 +256,7 @@
         var current = {
             pressure: null,
             show: { rh: true, wb: true, h: true, v: false },
+            shrRef: { db: SHR_REF.db, rh: SHR_REF.rh },
             points: [], lines: [], paths: [], callouts: []
         };
         var viewportCb = null;
@@ -290,13 +291,19 @@
         }
 
         // -------- process-line geometry for the SHR scales --------
-        // Both scales are linearised at the ASHRAE reference state
-        // (80 degF, 50% RH). A process step dW < 0 with dt/dW degF per
-        // lb/lb points in pixel direction (-dtPerDw * kx, ky), so the
-        // angles follow the live viewport and stay correct when zoomed.
+        // Both scales are linearised at the reference state (75 degF,
+        // 50% RH unless the page passes another). A process step dW < 0
+        // with dt/dW degF per lb/lb points in pixel direction
+        // (-dtPerDw * kx, ky), so the angles follow the live viewport
+        // and stay correct when zoomed.
+        function refLabel(si) {
+            var r = current.shrRef;
+            return fmtTick(Math.round((si ? fToC(r.db) : r.db) * 10) / 10) + (si ? ' °C' : ' °F') + ', ' + fmtTick(Math.round(r.rh * 1000) / 10) + '% RH';
+        }
         function refThermo(P) {
-            var w = Psy.humRatioFromRh(SHR_REF.db, SHR_REF.rh, P);
-            return { db: SHR_REF.db, w: w, cp: Psy.cpMoist(w), hg: 1061 + 0.444 * SHR_REF.db };
+            var r = current.shrRef;
+            var w = Psy.humRatioFromRh(r.db, r.rh, P);
+            return { db: r.db, w: w, cp: Psy.cpMoist(w), hg: 1061 + 0.444 * r.db };
         }
         function processDir(dtPerDw) {
             if (dtPerDw === Infinity) return [-1, 0];
@@ -324,10 +331,10 @@
         // unit humidity-ratio change. Labels that would overlap an
         // earlier one are dropped (the tick stays), so the scale thins
         // itself at whatever the current axis proportions are.
-        var PROT = { R: 104, w: 308, h: 196 };
+        var PROT = { R: 78, w: 250, h: 166 };
         function drawProtractor(P, si) {
             var ref = refThermo(P);
-            var R = PROT.R, cx = mL + 8 + PROT.w / 2, cy = mT + 70;
+            var R = PROT.R, cx = mL + 8 + PROT.w / 2, cy = mT + 64;
             var g = el('g', null, 'psy-prot');
             gScales.appendChild(g);
             g.appendChild(el('rect', { x: mL + 8, y: mT + 40, width: PROT.w, height: PROT.h, rx: 3 }, 'psy-prot-bg'));
@@ -357,7 +364,7 @@
             // Captions inside the arc are placed first so the scale
             // labels keep clear of them.
             function caption(x, y, str, anchor) {
-                var hw = estWidth(str, 8) / 2;
+                var hw = estWidth(str, 7) / 2;
                 placed.push([anchor === 'start' ? x + hw : x, y - 2.5, hw]);
                 g.appendChild(text(x, y, str, 'psy-prot-caption', anchor || 'middle'));
             }
@@ -374,12 +381,12 @@
                 }
                 return {
                     at: function (x, y, str, anchor) {
-                        var hw = estWidth(str, 8) / 2;
+                        var hw = estWidth(str, 7) / 2;
                         var cxm = anchor === 'start' ? x + hw : (anchor === 'end' ? x - hw : x);
                         if (free(cxm, y, hw)) put(cxm, y, hw, x, str, anchor);
                     },
                     along: function (dir, r0, r1, str) {
-                        var hw = estWidth(str, 8) / 2;
+                        var hw = estWidth(str, 7) / 2;
                         var radii = [r0, r1, r1 + (r1 - r0)];   // up to three rings
                         for (var k = 0; k < radii.length; k++) {
                             var x = cx + dir[0] * radii[k], y = cy + dir[1] * radii[k];
@@ -425,7 +432,9 @@
         }
 
         // One vertical scale in the right margin: a bar at x with ticks
-        // [{ y, major, str }] and a rotated caption. Ticks outside the
+        // [{ y, major, str }] and a rotated caption, all inside a faint
+        // box so it is plain which caption goes with which scale. Returns
+        // the box group. Ticks outside the
         // frame height are dropped; a label that would land on the
         // previous one is skipped (its tick stays), so list the ticks in
         // the order labels should win.
@@ -437,13 +446,14 @@
                 yTop = Math.min(yTop, t.y); yBot = Math.max(yBot, t.y);
                 g.appendChild(el('line', { x1: x, y1: t.y, x2: x + (t.major ? 6 : 3), y2: t.y }, 'psy-rscale-tick'));
                 if (!t.major) return;
-                for (var i = 0; i < labelled.length; i++) if (Math.abs(labelled[i] - t.y) < 10) return;
+                for (var i = 0; i < labelled.length; i++) if (Math.abs(labelled[i] - t.y) < 12) return;
                 labelled.push(t.y);
                 g.appendChild(text(x + 9, t.y + 3.5, t.str, 'psy-rscale-label', 'start'));
             });
             if (!isFinite(yTop)) return;
+            g.insertBefore(el('rect', { x: x - 5, y: mT, width: labelW + 31, height: ph, rx: 3 }, 'psy-rscale-box'), g.firstChild);
             g.appendChild(el('line', { x1: x, y1: yTop, x2: x, y2: yBot }, 'psy-rscale-bar'));
-            g.appendChild(rtext(x + 9 + labelW + 10, mT + ph / 2, 90, caption, 'psy-rscale-caption', 'middle'));
+            g.appendChild(rtext(x + 9 + labelW + 8, mT + ph / 2, 90, caption, 'psy-rscale-caption', 'middle'));
             gScales.appendChild(g);
         }
 
@@ -483,7 +493,7 @@
                 var pvD = n * pvStep / 2, pvPsi = pvD / pvK;
                 ticks.push({ y: yOf(0.621945 * pvPsi / (P - pvPsi)), major: n % 2 === 0, str: pvD.toFixed(pvDec) });
             }
-            drawColumn(x0 + 50, ticks, 'Vapor Pressure (' + (si ? 'kPa' : 'in Hg') + ')', 20);
+            drawColumn(x0 + 59, ticks, 'Vapor Pressure (' + (si ? 'kPa' : 'in Hg') + ')', 20);
 
             // Enthalpy where the lines meet the right-hand edge.
             ticks = [];
@@ -492,7 +502,7 @@
                 var hv = n * hx.ruler.minor;
                 ticks.push({ y: yOf(hx.wOfH(hv, vp.dbMax)), major: isMultiple(hv, hx.ruler.label), str: fmtTick(hv) });
             }
-            drawColumn(x0 + 96, ticks, 'Enthalpy (' + (si ? 'kJ/kg' : 'Btu/lb') + ')', 14);
+            drawColumn(x0 + 116, ticks, 'Enthalpy (' + (si ? 'kJ/kg' : 'Btu/lb') + ')', 14);
         }
 
         // Sensible heat factor scale to the right of the plot, anchored
@@ -512,7 +522,7 @@
             }
             g.appendChild(el('path', { d: pathFrom(ring) }, 'psy-shr-ref'));
             var refTitle = el('title');
-            refTitle.textContent = 'SHF scale reference: ' + (si ? '26.7 °C' : '80 °F') + ', 50% RH';
+            refTitle.textContent = 'SHF scale reference: ' + refLabel(si);
             g.appendChild(refTitle);
 
             var barX = mL + pw + MR_BASE + (current.show.rscale ? RSCALE_W : 0) + 8;
@@ -536,9 +546,10 @@
                 }
             }
             if (!any) return;
+            g.insertBefore(el('rect', { x: barX - 5, y: mT, width: 53, height: ph, rx: 3 }, 'psy-rscale-box'), g.firstChild);
             g.appendChild(el('line', { x1: barX, y1: yTop, x2: barX, y2: yBot }, 'psy-rscale-bar'));
-            g.appendChild(rtext(barX + 42, mT + ph / 2, 90,
-                'Sensible Heat Factor (ref. ' + (si ? '26.7 °C' : '80 °F') + ', 50% RH)', 'psy-rscale-caption', 'middle'));
+            g.appendChild(rtext(barX + 39, mT + ph / 2, 90,
+                'Sensible Heat Factor (ref. ' + refLabel(si) + ')', 'psy-rscale-caption', 'middle'));
         }
 
         // -------- static layers: grid, axes, curve families --------
@@ -687,7 +698,7 @@
 
             // --- Enthalpy lines and ruler ---
             var hOf, wOfH, satDbForH, hCfg, hCaption, hRuler;
-            if (show.h || show.hscale || show.rscale) {
+            if (show.h || show.rscale) {
                 if (si) {
                     hOf = function (dbF, w) { var t = fToC(dbF); return 1.006 * t + w * (2501 + 1.86 * t); };
                     wOfH = function (h, dbF) { var t = fToC(dbF); return (h - 1.006 * t) / (2501 + 1.86 * t); };
@@ -712,9 +723,9 @@
                     : familySteps(hMax - hMin, [{ maxSpan: 12, minor: 0.2, label: 1 }, { maxSpan: 25, minor: 0.5, label: 2 }, { maxSpan: 1e9, minor: 1, label: 5 }]);
             }
             if (show.h) {
-                // "Every 1" adds the fine lines between the normal ones.
+                // Fine lines every 1 (2 in SI) between the normal ones.
                 var hFine = si ? 2 : 1;
-                var hStep = (show.h1 && hCfg.step > hFine) ? hFine : hCfg.step;
+                var hStep = hCfg.step > hFine ? hFine : hCfg.step;
                 for (var hn = Math.ceil(hMin / hStep - 1e-9); hn * hStep <= hMax; hn++) {
                     var h = hn * hStep;
                     var dbS = satDbForH(h);
@@ -726,14 +737,7 @@
                     }
                     if (hpts.length < 2) continue;
                     gCurves.appendChild(el('path', { d: pathFrom(hpts) }, isMultiple(h, hCfg.step) ? 'psy-h' : 'psy-h psy-h-fine'));
-                    // The ruler carries the values when it is shown.
-                    var wS = Psy.satHumRatio(dbS, P);
-                    if (!show.hscale && isMultiple(h, hCfg.label) && inView(dbS, wS) && yOf(wS) < labelBottom && xOf(dbS) > mL + 24) {
-                        gLabels.appendChild(text(xOf(dbS) - 8, yOf(wS) - 6, fmtTick(h), 'psy-label psy-label-h', 'end'));
-                    }
                 }
-            }
-            if (show.h || show.hscale) {
                 gLabels.appendChild(text(mL + 6, mT + 36, hCaption, 'psy-label psy-label-h psy-label-caption', 'start'));
             }
 
@@ -742,7 +746,7 @@
             // line with its enthalpy line, so a straightedge laid along
             // the lines reads the value. Past the point where saturation
             // leaves the view the ruler carries on along the top edge.
-            if (show.hscale) {
+            if (show.h) {
                 var lastTopX = -Infinity;
                 for (var rn = Math.ceil(hMin / hRuler.minor - 1e-9); rn * hRuler.minor <= hMax + 1e-9; rn++) {
                     var hv = rn * hRuler.minor, majorH = isMultiple(hv, hRuler.label);
@@ -1053,6 +1057,9 @@
                 data = data || {};
                 if (data.show) current.show = data.show;
                 if (data.pressure !== undefined) current.pressure = data.pressure;
+                if (data.shrRef && isFinite(data.shrRef.db) && data.shrRef.rh > 0 && data.shrRef.rh <= 1) {
+                    current.shrRef = { db: Number(data.shrRef.db), rh: Number(data.shrRef.rh) };
+                }
                 if (data.units) units = data.units === 'SI' ? 'SI' : 'IP';
                 if (data.viewport) vp = clampViewport(data.viewport);
                 layout();
@@ -1062,8 +1069,8 @@
                 current.callouts = data.callouts || (data.callout ? [data.callout] : []);
                 var key = [current.pressure, units, vp.dbMin, vp.dbMax, vp.wMin, vp.wMax,
                            current.show.rh, current.show.wb, current.show.h, current.show.v,
-                           current.show.h1, current.show.hscale, current.show.prot,
-                           current.show.shr, current.show.rscale].join('|');
+                           current.show.prot, current.show.shr, current.show.rscale,
+                           current.shrRef.db, current.shrRef.rh].join('|');
                 if (key !== lastStaticKey && current.pressure !== null) {
                     drawStatic(current.pressure);
                     lastStaticKey = key;

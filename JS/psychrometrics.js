@@ -61,7 +61,8 @@
             dbMin: 20,
             view: null,                                      // zoomed viewport or null = default
             show: { rh: true, wb: true, h: true, v: false,
-                    h1: false, hscale: false, prot: false, shr: false, rscale: false },   // optional detail, off by default
+                    prot: false, shr: false, rscale: false },   // optional scales, off by default
+            shrRef: { db: 75, rh: 50 },                      // reference state for the protractor / SHF scale (degF, %)
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -1369,9 +1370,12 @@
         legend.className = 'psy-toolbar-label';
         legend.textContent = 'Lines:';
         toolbar.appendChild(legend);
-        // [show key, label, tooltip]. 'h1' only means something while the
-        // enthalpy lines are on, so its box follows the 'h' box.
-        var showBoxes = {};
+        // [show key, label, tooltip]
+        var refInputs = [];
+        function syncRefInputs() {
+            var off = !(state.show.prot || state.show.shr);
+            refInputs.forEach(function (wrap) { setFieldsDisabled(wrap, off); });
+        }
         function addShowBox(t) {
             var lbl = document.createElement('label');
             lbl.className = 'psy-check';
@@ -1381,28 +1385,34 @@
             cb.checked = !!state.show[t[0]];
             cb.addEventListener('change', function () {
                 state.show[t[0]] = cb.checked;
-                if (showBoxes.h1) showBoxes.h1.disabled = !state.show.h;
+                syncRefInputs();
                 save(); recompute();
             });
-            showBoxes[t[0]] = cb;
             var span = document.createElement('span');
             span.textContent = t[1];
             lbl.appendChild(cb); lbl.appendChild(span);
             toolbar.appendChild(lbl);
         }
-        [['rh', 'RH'], ['wb', 'Wet bulb'], ['h', 'Enthalpy'],
-         ['h1', 'Enthalpy every ' + (sys() === 'SI' ? '2' : '1'), 'Fine enthalpy lines between the normal ones'],
+        [['rh', 'RH'], ['wb', 'Wet bulb'],
+         ['h', 'Enthalpy', 'Enthalpy lines with the scale outside the saturation curve and along the top edge'],
          ['v', 'Sp. volume']].forEach(addShowBox);
-        showBoxes.h1.disabled = !state.show.h;
 
         var scalesLegend = document.createElement('span');
         scalesLegend.className = 'psy-toolbar-label';
         scalesLegend.textContent = 'Scales:';
         toolbar.appendChild(scalesLegend);
-        [['hscale', 'Enthalpy scale', 'Enthalpy ruler outside the saturation curve and along the top edge'],
-         ['prot', 'SHR protractor', 'Sensible / total heat and enthalpy / humidity ratio protractor'],
-         ['shr', 'SHF scale', 'Sensible heat factor scale, read from the 80 °F / 50% RH reference point'],
+        [['prot', 'SHR protractor', 'Sensible / total heat and enthalpy / humidity ratio protractor'],
+         ['shr', 'SHF scale', 'Sensible heat factor scale, read from the reference point'],
          ['rscale', 'Right-hand scales', 'Dew point, vapor pressure and enthalpy columns']].forEach(addShowBox);
+
+        // Reference state the protractor and SHF scale are drawn for.
+        refInputs.push(numberField('Ref. point', 'temp', state.shrRef.db, { step: 1 }, function (v) { state.shrRef.db = v; }));
+        refInputs.push(numberField('RH', 'pct', state.shrRef.rh, { min: 1, max: 100, step: 5 }, function (v) { state.shrRef.rh = v; }));
+        refInputs.forEach(function (wrap) {
+            wrap.title = 'Reference point for the SHR protractor and SHF scale (75 / 50% is the usual one)';
+            toolbar.appendChild(wrap);
+        });
+        syncRefInputs();
 
         // Range + zoom controls
         var ctrl = document.createElement('div');
@@ -2054,6 +2064,15 @@
     // Recompute + render
     // -----------------------------------------------------------------
 
+    // Reference point in the chart's terms (degF, RH fraction); a blank
+    // or out-of-range entry falls back to 75 degF / 50%.
+    function chartShrRef(s) {
+        var r = s.shrRef || {};
+        var db = (r.db === null || r.db === undefined || !isFinite(r.db)) ? 75 : Number(r.db);
+        var rh = (isFinite(r.rh) && r.rh >= 1 && r.rh <= 100) ? Number(r.rh) : 50;
+        return { db: db, rh: rh / 100 };
+    }
+
     function recompute() {
         Object.keys(fieldErrorEls).forEach(function (k) { fieldErrorEls[k].textContent = ''; });
         var res = evaluate(state, function (id, msg) {
@@ -2070,6 +2089,7 @@
             units: sys(),
             viewport: currentViewport(),
             show: state.show,
+            shrRef: chartShrRef(state),
             points: res.points,
             lines: res.lines,
             paths: res.paths,
@@ -2279,7 +2299,7 @@
             var chart = Chart.create(holder);
             chart.update({
                 pressure: res.pressure, units: s.units, viewport: s.view || Chart.defaultViewport(s.dbMin),
-                show: s.show, points: res.points, lines: res.lines, paths: res.paths, callouts: res.callouts || []
+                show: s.show, shrRef: chartShrRef(s), points: res.points, lines: res.lines, paths: res.paths, callouts: res.callouts || []
             });
             var blocks = buildReport(res, s);
             var sub = [];
