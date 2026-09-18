@@ -60,7 +60,8 @@
             .replace(/→/g, '->').replace(/←/g, '<-')
             .replace(/−/g, '-').replace(/–|—/g, '-')
             .replace(/’/g, "'").replace(/“|”/g, '"')
-            .replace(/…/g, '...').replace(/✓|✔/g, 'OK').replace(/✗|✘/g, 'X');
+            .replace(/…/g, '...').replace(/✓|✔/g, 'OK').replace(/✗|✘/g, 'X')
+            .replace(/∞/g, 'inf').replace(/Δ/g, 'd');
     }
 
     function pdfString(str) {
@@ -112,7 +113,21 @@
         'psy-label-h':        { text: '#8a6600' },
         'psy-label-v':        { text: '#6a4fb5' },
         'psy-label-caption':  { size: 10 },
-        'psy-line':           { stroke: '#000000', width: 1.6 },
+        'psy-h-fine':         { stroke: '#d9c27a', width: 0.3, dash: null },
+        'psy-h-tick':         { stroke: '#a67c00', width: 0.7 },
+        'psy-h-edge-label':   { size: 10 },
+        'psy-prot-bg':        { fill: '#ffffff', stroke: '#b9c0c8', width: 0.6 },
+        'psy-prot-line':      { stroke: '#000000', width: 0.8 },
+        'psy-prot-tick':      { stroke: '#444444', width: 0.5 },
+        'psy-prot-label':     { text: '#444444', size: 8 },
+        'psy-prot-label-shr': { text: '#000000' },
+        'psy-prot-caption':   { text: '#000000', size: 8, bold: true },
+        'psy-rscale-bar':     { stroke: '#444444', width: 0.8 },
+        'psy-rscale-tick':    { stroke: '#444444', width: 0.5 },
+        'psy-rscale-label':   { text: '#333333', size: 9 },
+        'psy-rscale-caption': { text: '#111111', size: 9, bold: true },
+        'psy-shr-ref':        { stroke: '#000000', width: 1.0 },
+        'psy-line':          { stroke: '#000000', width: 1.6 },
         'psy-line-mix':       { stroke: '#666666', dash: [6, 4] },
         'psy-line-process':   { stroke: '#000000' },
         'psy-line-reheat':    { stroke: '#c0304a' },

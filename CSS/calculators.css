@@ -777,6 +777,85 @@
     font-style: italic;
 }
 
+/* Optional enthalpy detail: fine lines and the ruler outside saturation */
+.psy-h-fine {
+    stroke-width: 0.5;
+    stroke-dasharray: none;
+    opacity: 0.28;
+}
+
+.psy-h-tick {
+    stroke: #fbbf24;
+    stroke-width: 0.9;
+    opacity: 0.9;
+}
+
+.psy-h-edge-label { font-size: 10px; }
+
+/* Optional protractor (sensible heat / total heat and enthalpy /
+   humidity ratio) in the top-left corner */
+.psy-prot-bg {
+    fill: var(--color-bg);
+    stroke: var(--color-border);
+    stroke-width: 0.8;
+    opacity: 0.92;
+}
+
+.psy-prot-line {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1;
+}
+
+.psy-prot-tick {
+    stroke: var(--color-text-muted);
+    stroke-width: 0.8;
+}
+
+.psy-prot-label {
+    font-size: 8px;
+    fill: var(--color-text-muted);
+}
+
+.psy-prot-label-shr { fill: var(--color-text); }
+
+.psy-prot-caption {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    fill: var(--color-text);
+}
+
+/* Optional scales to the right of the plot: dew point, vapor pressure,
+   enthalpy and the sensible heat factor */
+.psy-rscale-bar {
+    stroke: var(--color-text-muted);
+    stroke-width: 1;
+}
+
+.psy-rscale-tick {
+    stroke: var(--color-text-muted);
+    stroke-width: 0.8;
+}
+
+.psy-rscale-label {
+    font-size: 9px;
+    fill: var(--color-text-muted);
+}
+
+.psy-rscale-caption {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    fill: var(--color-text);
+}
+
+.psy-shr-ref {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.2;
+}
+
 /* Hover crosshair */
 .psy-crosshair {
     stroke: var(--color-text-muted);

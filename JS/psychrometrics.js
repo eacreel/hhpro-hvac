@@ -60,7 +60,8 @@
             mode: 'ahu',                                     // 'ahu' | 'points'
             dbMin: 20,
             view: null,                                      // zoomed viewport or null = default
-            show: { rh: true, wb: true, h: true, v: false },
+            show: { rh: true, wb: true, h: true, v: false,
+                    h1: false, hscale: false, prot: false, shr: false, rscale: false },   // optional detail, off by default
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -1368,18 +1369,40 @@
         legend.className = 'psy-toolbar-label';
         legend.textContent = 'Lines:';
         toolbar.appendChild(legend);
-        [['rh', 'RH'], ['wb', 'Wet bulb'], ['h', 'Enthalpy'], ['v', 'Sp. volume']].forEach(function (t) {
+        // [show key, label, tooltip]. 'h1' only means something while the
+        // enthalpy lines are on, so its box follows the 'h' box.
+        var showBoxes = {};
+        function addShowBox(t) {
             var lbl = document.createElement('label');
             lbl.className = 'psy-check';
+            if (t[2]) lbl.title = t[2];
             var cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.checked = !!state.show[t[0]];
-            cb.addEventListener('change', function () { state.show[t[0]] = cb.checked; save(); recompute(); });
+            cb.addEventListener('change', function () {
+                state.show[t[0]] = cb.checked;
+                if (showBoxes.h1) showBoxes.h1.disabled = !state.show.h;
+                save(); recompute();
+            });
+            showBoxes[t[0]] = cb;
             var span = document.createElement('span');
             span.textContent = t[1];
             lbl.appendChild(cb); lbl.appendChild(span);
             toolbar.appendChild(lbl);
-        });
+        }
+        [['rh', 'RH'], ['wb', 'Wet bulb'], ['h', 'Enthalpy'],
+         ['h1', 'Enthalpy every ' + (sys() === 'SI' ? '2' : '1'), 'Fine enthalpy lines between the normal ones'],
+         ['v', 'Sp. volume']].forEach(addShowBox);
+        showBoxes.h1.disabled = !state.show.h;
+
+        var scalesLegend = document.createElement('span');
+        scalesLegend.className = 'psy-toolbar-label';
+        scalesLegend.textContent = 'Scales:';
+        toolbar.appendChild(scalesLegend);
+        [['hscale', 'Enthalpy scale', 'Enthalpy ruler outside the saturation curve and along the top edge'],
+         ['prot', 'SHR protractor', 'Sensible / total heat and enthalpy / humidity ratio protractor'],
+         ['shr', 'SHF scale', 'Sensible heat factor scale, read from the 80 °F / 50% RH reference point'],
+         ['rscale', 'Right-hand scales', 'Dew point, vapor pressure and enthalpy columns']].forEach(addShowBox);
 
         // Range + zoom controls
         var ctrl = document.createElement('div');
