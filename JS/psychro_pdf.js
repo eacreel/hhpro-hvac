@@ -466,15 +466,46 @@
         var kvBlocks = (spec.blocks || []).filter(function (b) { return b.rows; });
         var tableBlocks = (spec.blocks || []).filter(function (b) { return b.table; });
 
-        function blockHeight(b) {
-            return 14 + b.rows.length * 11 + 8;
+        var KV_SIZE = 8.5, KV_LINE = 11;
+
+        function wrapText(str, size, bold, firstW, restW) {
+            var words = sanitize(str).split(/\s+/), lines = [], cur = '';
+            words.forEach(function (w) {
+                var maxW = lines.length ? restW : firstW;
+                var t = cur ? cur + ' ' + w : w;
+                if (!cur || textWidth(t, size, bold) <= maxW) cur = t;
+                else { lines.push(cur); cur = w; }
+            });
+            if (cur) lines.push(cur);
+            return lines;
+        }
+
+        // Key on the left, value right-aligned. A value that does not fit
+        // beside its key wraps onto following lines across the whole
+        // column; when the key leaves too little room it starts below it.
+        function layoutRow(r) {
+            var k = fitText(String(r[0]), KV_SIZE, false, colW * 0.6);
+            var avail = colW - textWidth(k, KV_SIZE, false) - 8;
+            var v = sanitize(String(r[1]));
+            if (textWidth(v, KV_SIZE, false) <= avail) return { key: k, lines: [v], below: false };
+            var below = avail < colW * 0.35;
+            return { key: k, below: below, lines: below ? wrapText(v, KV_SIZE, false, colW, colW) : wrapText(v, KV_SIZE, false, avail, colW) };
+        }
+
+        var layouts = kvBlocks.map(function (b) { return b.rows.map(layoutRow); });
+
+        function blockHeight(layout) {
+            var h = 0;
+            layout.forEach(function (l) { h += (l.lines.length + (l.below ? 1 : 0)) * KV_LINE; });
+            return 14 + h + 8;
         }
 
         var col = [y, y];
         var colX = [MARGIN, MARGIN + colW + 16];
-        kvBlocks.forEach(function (b) {
+        kvBlocks.forEach(function (b, bi) {
+            var layout = layouts[bi];
             var c = col[0] >= col[1] ? 0 : 1;
-            var hNeeded = blockHeight(b);
+            var hNeeded = blockHeight(layout);
             if (col[c] - hNeeded < MARGIN) {
                 // Neither column fits: new page, restart both columns.
                 if (Math.max(col[0], col[1]) - hNeeded < MARGIN || Math.min(col[0], col[1]) - hNeeded < MARGIN) {
@@ -488,13 +519,13 @@
             textLine(x, yy - 10, b.title.toUpperCase(), 8, true, '#444444');
             rule(x, yy - 13, x + colW, '#cccccc', 0.5);
             yy -= 16;
-            b.rows.forEach(function (r) {
-                var k = fitText(String(r[0]), 8.5, false, colW * 0.55);
-                var v = fitText(String(r[1]), 8.5, false, colW * 0.6);
-                textLine(x, yy - 8, k, 8.5, false, '#333333');
-                var vw = textWidth(v, 8.5, false);
-                textLine(x + colW - vw, yy - 8, v, 8.5, false, '#000000');
-                yy -= 11;
+            layout.forEach(function (l) {
+                textLine(x, yy - 8, l.key, KV_SIZE, false, '#333333');
+                if (l.below) yy -= KV_LINE;
+                l.lines.forEach(function (ln) {
+                    textLine(x + colW - textWidth(ln, KV_SIZE, false), yy - 8, ln, KV_SIZE, false, '#000000');
+                    yy -= KV_LINE;
+                });
             });
             col[c] = yy - 8;
         });
