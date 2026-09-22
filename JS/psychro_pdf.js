@@ -339,29 +339,72 @@
         return ops.join('\n');
     }
 
-    // ---------------- page layout ----------------
+    // ---------------- company logo ----------------
+    // The site header logo is white on a transparent background, so the
+    // PDF paints its alpha channel as a 1-bit stencil mask in the brand
+    // colour. Decoded once in the background when this file loads;
+    // build() draws it when it is ready and simply omits it otherwise.
 
-    var PAGE_W = 612, PAGE_H = 792, MARGIN = 40;
-    var CONTENT_W = PAGE_W - 2 * MARGIN;
+    var LOGO_SRC = 'ASSETS/HH_FullLogo_white_header.png';
+    var LOGO_COLOR = '#0f4c75';
+    var logo = null;   // { w, h, data } - data is a binary string, 1 bit per pixel, rows padded to bytes
+
+    function loadLogo() {
+        try {
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var c = document.createElement('canvas');
+                    c.width = img.naturalWidth;
+                    c.height = img.naturalHeight;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    var px = ctx.getImageData(0, 0, c.width, c.height).data;
+                    var rowBytes = Math.ceil(c.width / 8), out = [];
+                    for (var y = 0; y < c.height; y++) {
+                        for (var bx = 0; bx < rowBytes; bx++) {
+                            var b = 0;
+                            for (var bit = 0; bit < 8; bit++) {
+                                var x = bx * 8 + bit;
+                                if (x < c.width && px[(y * c.width + x) * 4 + 3] >= 128) b |= (128 >> bit);
+                            }
+                            out.push(String.fromCharCode(b));
+                        }
+                    }
+                    logo = { w: c.width, h: c.height, data: out.join('') };
+                } catch (e) { /* no logo on the PDF */ }
+            };
+            img.src = LOGO_SRC;
+        } catch (e) { /* no logo on the PDF */ }
+    }
+    loadLogo();
+
+    // ---------------- page layout ----------------
+    // Page 1 is landscape and carries the chart as large as the page
+    // allows; the input / result blocks follow on portrait pages.
+
+    var PORTRAIT = { w: 612, h: 792 }, LANDSCAPE = { w: 792, h: 612 }, MARGIN = 40;
 
     function build(spec) {
-        var pages = [];      // array of op arrays
-        var page = [];
-        var y = PAGE_H - MARGIN;
+        var pages = [];      // [{ ops: [...], w, h }]
+        var page = null;
+        var y = 0;
 
-        function newPage() {
+        function newPage(size) {
+            page = { ops: [], w: size.w, h: size.h };
             pages.push(page);
-            page = [];
-            y = PAGE_H - MARGIN;
+            y = page.h - MARGIN;
         }
 
+        function contentW() { return page.w - 2 * MARGIN; }
+
         function textLine(x, yy, str, size, bold, color) {
-            page.push('BT ' + rgbOp(color || '#111111', false) + ' /' + (bold ? 'F2' : 'F1') + ' ' + num(size) + ' Tf ' +
+            page.ops.push('BT ' + rgbOp(color || '#111111', false) + ' /' + (bold ? 'F2' : 'F1') + ' ' + num(size) + ' Tf ' +
                 num(x) + ' ' + num(yy) + ' Td ' + pdfString(str) + ' Tj ET');
         }
 
         function rule(x1, yy, x2, color, width) {
-            page.push(rgbOp(color || '#bbbbbb', true) + ' ' + num(width || 0.5) + ' w [] 0 d ' + num(x1) + ' ' + num(yy) + ' m ' + num(x2) + ' ' + num(yy) + ' l S');
+            page.ops.push(rgbOp(color || '#bbbbbb', true) + ' ' + num(width || 0.5) + ' w [] 0 d ' + num(x1) + ' ' + num(yy) + ' m ' + num(x2) + ' ' + num(yy) + ' l S');
         }
 
         function fitText(str, size, bold, maxW) {
@@ -371,27 +414,55 @@
             return str + '...';
         }
 
-        // Header
-        textLine(MARGIN, y - 14, spec.title || 'Psychrometric calculation', 15, true);
-        y -= 20;
-        if (spec.subtitle) {
-            textLine(MARGIN, y - 10, spec.subtitle, 9, false, '#555555');
-            y -= 14;
+        // Logo in the brand colour with its top edge at `top`; returns the
+        // height actually used (0 when the image is not available).
+        function drawLogo(x, top, h) {
+            if (!logo) return 0;
+            var w = h * logo.w / logo.h;
+            page.ops.push('q ' + rgbOp(LOGO_COLOR, false) + ' ' + num(w) + ' 0 0 ' + num(h) + ' ' + num(x) + ' ' + num(top - h) + ' cm /Logo Do Q');
+            return h;
         }
-        rule(MARGIN, y - 4, PAGE_W - MARGIN, '#999999', 0.8);
-        y -= 12;
 
-        // Chart
+        // First page: logo, title and subtitle. Later pages: small logo
+        // and the title as a running head.
+        function header(full) {
+            if (full) {
+                var lh = drawLogo(MARGIN, y, 24);
+                if (lh) y -= lh + 10;
+                textLine(MARGIN, y - 14, spec.title || 'Psychrometric calculation', 15, true);
+                y -= 20;
+                if (spec.subtitle) {
+                    textLine(MARGIN, y - 10, spec.subtitle, 9, false, '#555555');
+                    y -= 14;
+                }
+            } else {
+                var lh2 = drawLogo(MARGIN, y, 14);
+                var t = fitText(spec.title || 'Psychrometric calculation', 9, true, contentW() - 140);
+                textLine(page.w - MARGIN - textWidth(t, 9, true), y - 10, t, 9, true, '#333333');
+                y -= Math.max(lh2, 12) + 2;
+            }
+            rule(MARGIN, y - 4, page.w - MARGIN, '#999999', 0.8);
+            y -= 12;
+        }
+
+        // Chart page
         if (spec.svg) {
+            newPage(LANDSCAPE);
+            header(true);
             var vb = (spec.svg.getAttribute('viewBox') || '0 0 980 640').split(/\s+/).map(Number);
-            var scale = CONTENT_W / vb[2];
-            var chartH = vb[3] * scale;
-            page.push('q ' + svgToOps(spec.svg, MARGIN, y, scale) + ' Q');
-            y -= chartH + 12;
+            var availW = contentW(), availH = y - MARGIN - 8;
+            var scale = Math.min(availW / vb[2], availH / vb[3]);
+            var x0 = MARGIN + (availW - vb[2] * scale) / 2;
+            page.ops.push('q ' + svgToOps(spec.svg, x0, y, scale) + ' Q');
+            newPage(PORTRAIT);
+            header(false);
+        } else {
+            newPage(PORTRAIT);
+            header(true);
         }
 
         // Key/value blocks flow in two columns; tables take the full width.
-        var colW = (CONTENT_W - 16) / 2;
+        var colW = (contentW() - 16) / 2;
         var kvBlocks = (spec.blocks || []).filter(function (b) { return b.rows; });
         var tableBlocks = (spec.blocks || []).filter(function (b) { return b.table; });
 
@@ -407,7 +478,8 @@
             if (col[c] - hNeeded < MARGIN) {
                 // Neither column fits: new page, restart both columns.
                 if (Math.max(col[0], col[1]) - hNeeded < MARGIN || Math.min(col[0], col[1]) - hNeeded < MARGIN) {
-                    newPage();
+                    newPage(PORTRAIT);
+                    header(false);
                     col = [y, y];
                     c = 0;
                 }
@@ -432,17 +504,18 @@
             var t = b.table;
             var rowH = 11, headH = 13;
             var hNeeded = 16 + headH + t.rows.length * rowH + 8;
-            if (y - hNeeded < MARGIN) newPage();
+            if (y - hNeeded < MARGIN) { newPage(PORTRAIT); header(false); }
+            var cw = contentW();
             textLine(MARGIN, y - 10, b.title.toUpperCase(), 8, true, '#444444');
-            rule(MARGIN, y - 13, PAGE_W - MARGIN, '#cccccc', 0.5);
+            rule(MARGIN, y - 13, page.w - MARGIN, '#cccccc', 0.5);
             y -= 16;
             var nCols = t.head.length;
-            var firstW = Math.min(150, CONTENT_W * 0.28);
-            var otherW = (CONTENT_W - firstW) / Math.max(1, nCols - 1);
+            var firstW = Math.min(150, cw * 0.28);
+            var otherW = (cw - firstW) / Math.max(1, nCols - 1);
             function cellX(i) { return i === 0 ? MARGIN : MARGIN + firstW + (i - 1) * otherW; }
             function cellW(i) { return i === 0 ? firstW : otherW; }
             // header
-            page.push(rgbOp('#eeeeee', false) + ' ' + num(MARGIN) + ' ' + num(y - headH) + ' ' + num(CONTENT_W) + ' ' + num(headH) + ' re f');
+            page.ops.push(rgbOp('#eeeeee', false) + ' ' + num(MARGIN) + ' ' + num(y - headH) + ' ' + num(cw) + ' ' + num(headH) + ' re f');
             t.head.forEach(function (hcell, i) {
                 var s = fitText(String(hcell), 8, true, cellW(i) - 6);
                 var xx = i === 0 ? cellX(i) + 3 : cellX(i) + cellW(i) - 3 - textWidth(s, 8, true);
@@ -451,31 +524,30 @@
             y -= headH;
             t.rows.forEach(function (row, ri) {
                 if (y - rowH < MARGIN) {
-                    newPage();
+                    newPage(PORTRAIT);
+                    header(false);
                 }
                 if (ri % 2 === 1) {
-                    page.push(rgbOp('#f7f7f7', false) + ' ' + num(MARGIN) + ' ' + num(y - rowH) + ' ' + num(CONTENT_W) + ' ' + num(rowH) + ' re f');
+                    page.ops.push(rgbOp('#f7f7f7', false) + ' ' + num(MARGIN) + ' ' + num(y - rowH) + ' ' + num(cw) + ' ' + num(rowH) + ' re f');
                 }
                 row.forEach(function (cell, i) {
                     var s = fitText(String(cell), 8, i === 0, cellW(i) - 6);
                     var xx = i === 0 ? cellX(i) + 3 : cellX(i) + cellW(i) - 3 - textWidth(s, 8, false);
                     textLine(xx, y - 8.5, s, 8, i === 0, i === 0 ? '#222222' : '#000000');
                 });
-                rule(MARGIN, y - rowH, PAGE_W - MARGIN, '#e2e2e2', 0.3);
+                rule(MARGIN, y - rowH, page.w - MARGIN, '#e2e2e2', 0.3);
                 y -= rowH;
             });
             y -= 10;
         });
 
-        pages.push(page);
-
         // Footer on every page
         var footer = spec.footer || 'HHpro Psychrometrics';
         pages.forEach(function (p, i) {
-            p.push('BT ' + rgbOp('#777777', false) + ' /F1 7.5 Tf ' + num(MARGIN) + ' ' + num(MARGIN - 16) + ' Td ' +
+            p.ops.push('BT ' + rgbOp('#777777', false) + ' /F1 7.5 Tf ' + num(MARGIN) + ' ' + num(MARGIN - 16) + ' Td ' +
                 pdfString(footer) + ' Tj ET');
             var pn = 'Page ' + (i + 1) + ' of ' + pages.length;
-            p.push('BT ' + rgbOp('#777777', false) + ' /F1 7.5 Tf ' + num(PAGE_W - MARGIN - textWidth(pn, 7.5, false)) + ' ' + num(MARGIN - 16) + ' Td ' +
+            p.ops.push('BT ' + rgbOp('#777777', false) + ' /F1 7.5 Tf ' + num(p.w - MARGIN - textWidth(pn, 7.5, false)) + ' ' + num(MARGIN - 16) + ' Td ' +
                 pdfString(pn) + ' Tj ET');
         });
 
@@ -490,13 +562,20 @@
 
         var fontN = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
         var fontB = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+        var logoN = 0;
+        if (logo) {
+            // Stencil mask: with Decode [1 0] a 1 bit paints the fill colour.
+            logoN = add('<< /Type /XObject /Subtype /Image /Width ' + logo.w + ' /Height ' + logo.h +
+                ' /ImageMask true /Decode [1 0] /BitsPerComponent 1 /Length ' + logo.data.length + ' >>\nstream\n' + logo.data + '\nendstream');
+        }
         var pagesN = add('PLACEHOLDER');
         var pageIds = [];
-        pages.forEach(function (ops) {
-            var content = ops.join('\n');
+        pages.forEach(function (p) {
+            var content = p.ops.join('\n');
             var cN = add('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream');
-            var pN = add('<< /Type /Page /Parent ' + pagesN + ' 0 R /MediaBox [0 0 ' + PAGE_W + ' ' + PAGE_H + '] ' +
+            var pN = add('<< /Type /Page /Parent ' + pagesN + ' 0 R /MediaBox [0 0 ' + p.w + ' ' + p.h + '] ' +
                 '/Resources << /Font << /F1 ' + fontN + ' 0 R /F2 ' + fontB + ' 0 R >> ' +
+                (logoN ? '/XObject << /Logo ' + logoN + ' 0 R >> ' : '') +
                 '/ExtGState << /GA << /ca 0.3 /CA 1 >> >> >> /Contents ' + cN + ' 0 R >>');
             pageIds.push(pN);
         });

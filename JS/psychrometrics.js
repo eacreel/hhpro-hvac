@@ -2089,6 +2089,18 @@
                          label: 'Max supply DP (latent) ' + fmtU('temp', lim.dp), labelAt: 'end', labelCls: 'psy-label-dplimit' });
         }
 
+        // Airflow at each point, for the properties table: the outdoor
+        // stream up to mixing, the return stream, then the whole supply
+        // airflow through the unit. The room has none; REQ carries the
+        // airflow the sensible check settled on.
+        var chainCfm = mixed ? mixed.cfm : null;
+        points.forEach(function (p) {
+            if (p.id === 'oa' || p.id === 'er') p.cfm = oaCfm;
+            else if (p.id === 'ra') p.cfm = raCfm;
+            else if (p.id === 'rm') p.cfm = null;
+            else if (p.id === 'rq') p.cfm = (res.room && res.room.required) ? res.room.required.cfm : null;
+            else p.cfm = chainCfm;
+        });
         res.tablePoints = points.slice();
         return res;
     }
@@ -2232,12 +2244,17 @@
         // Air properties (rows = points)
         if (res.tablePoints && res.tablePoints.length) {
             var S = sys();
-            var head = ['Point', 'DB ' + U.unit('temp', S), 'WB ' + U.unit('temp', S), 'DP ' + U.unit('temp', S), 'RH %',
-                        'W ' + U.unit('grains', S), 'h ' + U.unit('h', S), 'v ' + U.unit('v', S)];
+            var anyFlow = res.tablePoints.some(function (p) { return p.cfm !== null && p.cfm !== undefined && isFinite(p.cfm); });
+            var head = ['Point'];
+            if (anyFlow) head.push(U.unit('flow', S));   // airflow at the point; 'Airflow CFM' does not fit the PDF column
+            head.push('DB ' + U.unit('temp', S), 'WB ' + U.unit('temp', S), 'DP ' + U.unit('temp', S), 'RH %',
+                      'W ' + U.unit('grains', S), 'h ' + U.unit('h', S), 'v ' + U.unit('v', S));
             var rowsT = res.tablePoints.map(function (p) {
-                var st = p.state;
-                return [p.label, fmt(U.toDisp('temp', st.db, S), 1), fmt(U.toDisp('temp', st.wb, S), 1), fmt(U.toDisp('temp', st.dp, S), 1),
-                        fmt(st.rh * 100, 1), fmt(U.toDisp('grains', st.grains, S), 1), fmt(U.enthalpyDisp(st, S), 2), fmt(U.toDisp('v', st.v, S), 3)];
+                var st = p.state, row = [p.label];
+                if (anyFlow) row.push((p.cfm !== null && p.cfm !== undefined && isFinite(p.cfm)) ? fmt(U.toDisp('flow', p.cfm, S), 0) : '');
+                row.push(fmt(U.toDisp('temp', st.db, S), 1), fmt(U.toDisp('temp', st.wb, S), 1), fmt(U.toDisp('temp', st.dp, S), 1),
+                         fmt(st.rh * 100, 1), fmt(U.toDisp('grains', st.grains, S), 1), fmt(U.enthalpyDisp(st, S), 2), fmt(U.toDisp('v', st.v, S), 3));
+                return row;
             });
             blocks.push({ title: 'Air properties', table: { head: head, rows: rowsT }, cls: res.tablePoints.map(function (p) { return p.cls; }) });
             var head2 = ['Point', 'W ' + U.unit('w', S), 'Density ' + U.unit('density', S), 'Vapor pressure ' + U.unit('pressure', S)];
