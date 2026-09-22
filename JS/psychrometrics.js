@@ -85,11 +85,14 @@
                 fan: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
                 reheat: { enabled: false, db: 72 },
                 hum: { enabled: false, type: 'steam', key: 'rh', value: 40, eff: 85 },
-                // Space check. latentBy says what carries the space latent load:
-                // 'supply' = the whole supply airflow (mixed-air unit; sensible and
-                // latent both checked), 'vent' = the ventilation air alone (DOAS,
-                // Law #1; sensible is left to the zone equipment).
+                // Space check: two independent checks on one space condition.
+                // checkSens = sensible (room line, REQ, delivered sensible);
+                // checkLat = latent (maximum supply dew point). latentBy says
+                // what carries the latent load: 'supply' = the whole supply
+                // airflow (mixed-air unit), 'vent' = the ventilation air alone
+                // (DOAS, Law #1; the zone equipment runs dry).
                 room: { enabled: false, db: 75, key: 'rh', value: 50, qs: 120000, ql: 30000,
+                        checkSens: true, checkLat: true,
                         solve: 'db', cfm: null, dbSupply: 55,
                         latentBy: 'supply', vozCfm: null, supplyDp: null }
             }
@@ -160,6 +163,12 @@
             var oldRoom = parsed.ahu && parsed.ahu.room;
             if (oldRoom && oldRoom.latentOnly) d.ahu.room.latentBy = 'vent';
             if (d.ahu.room.latentBy !== 'vent') d.ahu.room.latentBy = 'supply';
+            // Before 2026-09-22 'vent' was a mode that also switched the
+            // sensible check off; now the two checks are separate flags.
+            if (oldRoom && oldRoom.checkSens === undefined) d.ahu.room.checkSens = d.ahu.room.latentBy !== 'vent';
+            if (oldRoom && oldRoom.checkLat === undefined) d.ahu.room.checkLat = true;
+            d.ahu.room.checkSens = !!d.ahu.room.checkSens;
+            d.ahu.room.checkLat = !!d.ahu.room.checkLat;
             delete d.ahu.room.latentOnly; delete d.dewpoint;
             d.points = pts.slice(0, MAX_POINTS);
             d.view = (view && isFinite(view.dbMin)) ? view : null;
@@ -203,7 +212,9 @@
 
     var HELP = {
         system: 'The kind of unit being modelled. Choosing one switches on the air streams and stages that belong to it and fills in typical design conditions for them; other numbers you have entered are kept. Add or remove components with the chips below, or take a stage out with the × in its header.',
-        room_latentby: 'Supply air: a conventional unit whose whole supply airflow removes the space sensible and latent loads; both are checked and the room line is drawn. Ventilation air only: Law #1 for dedicated outdoor air - the zone equipment (VRF, chilled beams, fan coils, sensible RTUs) runs dry and the ventilation air is the only thing removing moisture, so it must be dried to a dew point low enough that the ventilation airflow alone carries the space latent load. Draws the cyan maximum-dew-point line and checks the final supply point against it.',
+        room_sens: 'Sensible check. Draws the purple room line (every supply state that matches the space sensible / latent split), places REQ where your airflow or supply temperature lands on it, and compares the sensible cooling the final supply air delivers with the space sensible load. Switch it off for a dedicated outdoor air unit, where the zone equipment handles the sensible load.',
+        room_lat: 'Latent check. Finds the wettest supply air that still carries the space latent load on the chosen airflow, draws it as the cyan maximum-dew-point line, and checks the final supply dew point against it: Q latent = 0.69 × CFM × Δgr/lb (actual-air basis uses the real mass flow).',
+        room_latby: 'Whole supply airflow: a conventional mixed-air unit - the same airflow the sensible check uses. Ventilation air only: Law #1 for dedicated outdoor air - the zone equipment (VRF, chilled beams, fan coils, sensible RTUs) runs dry and the ventilation air is the only thing removing moisture, so it must be dried to a dew point low enough that the ventilation airflow alone carries the space latent load.',
         dewpoint: 'Law #1 for dedicated outdoor air: the ventilation air is the only thing removing moisture from the space, while the zone equipment (VRF, chilled beams, fan coils, sensible RTUs) runs dry. The supply must be dried to a dew point low enough that the ventilation airflow alone carries the space latent load. Draws the cyan maximum-dew-point line and checks the final supply point (and, if entered, the unit\u2019s rated supply dew point) against it. Same maths as the Supply air dew point calculator.',
         dp_ql: 'Space latent load: moisture gain from people, infiltration and processes. Sets how far below the room humidity the supply must be: Q latent = 0.69 \u00D7 CFM \u00D7 \u0394gr/lb.',
         dp_voz: 'Ventilation (outdoor) airflow delivered to the space, ASHRAE 62.1 Voz. Blank uses the outdoor airflow from the Airflow section (the note under the field shows the value in use). Less airflow calls for a lower supply dew point.',
@@ -253,7 +264,7 @@
         hum_type: 'Steam: choose a target RH, dew point or humidity ratio. Evaporative: choose an effectiveness; the air cools as it humidifies.',
         hum_target: 'Humidity to reach at the current dry bulb. Sets how far up HU sits.',
         hum_eff: 'Saturation effectiveness of the evaporative media. 100% reaches the wet-bulb temperature.',
-        room: 'The space being served: its design condition and loads. Draws the purple room line (every supply state that matches the space sensible / latent split), places REQ where your airflow lands on it, and checks the final supply air against the loads.',
+        room: 'The space being served: its design condition and loads, with two independent checks on the final supply air. Sensible: the purple room line and REQ, and whether the supply air carries the sensible load. Latent: the cyan maximum supply dew point, and whether the supply air is dry enough. Run one or both.',
         room_db: 'Space design dry bulb. Plots RM and anchors the room line.',
         room_second: 'Space design humidity. Moves RM up or down and shifts the whole room line with it.',
         room_qs: 'Sensible load: heat that raises the space temperature (solar, lights, equipment, people). With the latent load it sets the slope of the room line; more sensible flattens it.',
@@ -375,6 +386,8 @@
         applyPreset('doas');
         var dp = a.room;
         dp.enabled = true;
+        dp.checkSens = false;
+        dp.checkLat = true;
         dp.latentBy = 'vent';
         if (seed.room) {
             if (isFinite(seed.room.db)) dp.db = Number(seed.room.db);
@@ -527,6 +540,14 @@
         body.appendChild(results);
         refs.results = results;
 
+        // Re-check the choice rows whenever the panel changes width (or
+        // first becomes visible, when the initial measurement was 0).
+        if (typeof ResizeObserver === 'function') {
+            new ResizeObserver(function () { layoutRadioRows(); }).observe(form);
+        } else {
+            window.addEventListener('resize', layoutRadioRows);
+        }
+
         buildForm();
         return panel;
     }
@@ -625,6 +646,7 @@
         fieldErrorEls = {};
         verdictEls = {};
         refs.roomFlowNote = null;
+        refs.latFlowNote = null;
         if (state.mode === 'points') buildPointsForm(form);
         else buildAhuForm(form);
     }
@@ -722,15 +744,15 @@
         { key: 'rtu', label: 'Packaged RTU / split (mixed air)', short: 'RTU',
           desc: 'Outdoor and return air mix ahead of the cooling coil. Add Reheat for hot gas reheat, Space check to size against the space load.',
           on: ['oa', 'ra', 'coil'],
-          values: { oa: { db: 95, key: 'wb', value: 78 }, ra: { db: 75, key: 'rh', value: 50 }, room: { latentBy: 'supply' } } },
+          values: { oa: { db: 95, key: 'wb', value: 78 }, ra: { db: 75, key: 'rh', value: 50 }, room: { checkSens: true, checkLat: true, latentBy: 'supply' } } },
         { key: 'rtu_ma', label: 'Packaged RTU / split (mixed air known)', short: 'RTU (MA)',
           desc: 'Start from a known mixed (entering) air condition instead of outdoor and return air. MA goes straight to the coil; no OA, RA or mixing line is drawn.',
           on: ['ma', 'coil'],
-          values: { ma: { db: 80, key: 'wb', value: 67 }, room: { latentBy: 'supply' } } },
+          values: { ma: { db: 80, key: 'wb', value: 67 }, room: { checkSens: true, checkLat: true, latentBy: 'supply' } } },
         { key: 'doas', label: '100% outdoor air / DOAS', short: 'DOAS',
-          desc: 'Dedicated outdoor air unit: cooling coil and reheat on 100% outdoor air. The Space check finds the supply dew point the ventilation air needs to carry the space latent load (Law #1). Add Energy recovery with Return air as the exhaust.',
+          desc: 'Dedicated outdoor air unit: cooling coil and reheat on 100% outdoor air. The Space check runs the latent check only: the supply dew point the ventilation air needs to carry the space latent load (Law #1). Add Energy recovery with Return air as the exhaust.',
           on: ['oa', 'coil', 'reheat', 'room'], erv: 'doas',
-          values: { oa: { db: 95, key: 'wb', value: 78 }, room: { latentBy: 'vent' } } },
+          values: { oa: { db: 95, key: 'wb', value: 78 }, room: { checkSens: false, checkLat: true, latentBy: 'vent' } } },
         { key: 'mau', label: 'Makeup air / heating', short: 'Makeup air',
           desc: '100% outdoor air through a heating coil.',
           on: ['oa', 'preheat'],
@@ -1016,63 +1038,89 @@
             body.appendChild(errorLine('hum'));
         }, 'hum'));
 
-        // Space check: one space condition and one set of loads, checked
-        // either against the whole supply airflow or (DOAS, Law #1) against
-        // the ventilation air alone.
+        // Space check: one space condition and two independent checks on
+        // the final supply air. Sensible = room line + REQ + delivered
+        // sensible; Latent = maximum supply dew point, carried by the whole
+        // supply airflow or (DOAS, Law #1) by the ventilation air alone.
         if (a.room.enabled) form.appendChild(stageSection('rm', 'Space', a.room, function (sec, body) {
-            var vent = a.room.latentBy === 'vent';
-            body.appendChild(buildStateFields(a.room, 'room', 'room'));
-            var r0 = document.createElement('div');
-            r0.className = 'psy-radio-row';
-            r0.appendChild(inlineLabel('Latent load carried by:'));
-            r0.appendChild(help('room_latentby'));
-            [['supply', 'Supply air'], ['vent', 'Ventilation air only (DOAS)']].forEach(function (m) {
-                r0.appendChild(radio('psy-room-latentby', m[0], m[1], (vent ? 'vent' : 'supply') === m[0], function () {
-                    a.room.latentBy = m[0]; save(); buildForm(); recompute();
-                }));
-            });
-            body.appendChild(r0);
-            body.appendChild(hint(vent
-                ? 'The ventilation air alone removes the space moisture, so it has to be dried to the dew point found here. The sensible load is left to the zone equipment.'
-                : 'The supply air carries both loads. Draws the room sensible-heat-ratio line, sizes the supply air and checks the final supply point against the loads.'));
-            var g = fields();
-            if (!vent) g.appendChild(numberField('Sensible load', 'power', a.room.qs, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { a.room.qs = v; }, 'room_qs'));
-            g.appendChild(numberField('Latent load', 'power', a.room.ql, { min: 0, step: sys() === 'SI' ? 0.5 : 500 }, function (v) { a.room.ql = v; }, vent ? 'dp_ql' : 'room_ql'));
-            body.appendChild(g);
-            var g2 = fields();
-            var usesFlow = true;
-            if (vent) {
-                var vz = numberField('Ventilation airflow', 'flow', a.room.vozCfm, { min: 0, step: 50 }, function (v) { a.room.vozCfm = v; }, 'dp_voz');
-                vz.querySelector('input').placeholder = 'auto';
-                g2.appendChild(vz);
-                var ud = numberField('Unit supply dew point', 'temp', a.room.supplyDp, { step: 0.5 }, function (v) { a.room.supplyDp = v; }, 'dp_unit');
-                ud.querySelector('input').placeholder = 'optional';
-                g2.appendChild(ud);
-            } else {
+            var rmv = a.room, vent = rmv.latentBy === 'vent';
+            body.appendChild(buildStateFields(rmv, 'room', 'room'));
+            var loads = fields();
+            if (rmv.checkSens) loads.appendChild(numberField('Sensible load', 'power', rmv.qs, { min: 0, step: sys() === 'SI' ? 0.5 : 1000 }, function (v) { rmv.qs = v; }, 'room_qs'));
+            if (rmv.checkSens || rmv.checkLat) loads.appendChild(numberField('Latent load', 'power', rmv.ql, { min: 0, step: sys() === 'SI' ? 0.5 : 500 }, function (v) { rmv.ql = v; }, rmv.checkSens ? 'room_ql' : 'dp_ql'));
+            body.appendChild(loads);
+            body.appendChild(errorLine('room'));
+
+            function supplyCfmField() {
+                var f = numberField('Supply airflow', 'flow', rmv.cfm, { min: 0, step: 50 }, function (v) { rmv.cfm = v; }, 'room_cfm');
+                f.querySelector('input').placeholder = 'auto';
+                return f;
+            }
+
+            // Sensible check
+            var sens = subCheck('Sensible check', 'room line, required supply air', 'room', rmv.checkSens, 'room_sens',
+                function (on) { rmv.checkSens = on; save(); buildForm(); recompute(); });
+            body.appendChild(sens.el);
+            if (rmv.checkSens) {
                 var r = document.createElement('div');
                 r.className = 'psy-radio-row';
                 r.appendChild(inlineLabel('Solve for:'));
                 r.appendChild(help('room_solve'));
                 [['db', 'Supply temperature from airflow'], ['cfm', 'Airflow from supply temperature']].forEach(function (m) {
-                    r.appendChild(radio('psy-room-solve', m[0], m[1], a.room.solve === m[0], function () {
-                        a.room.solve = m[0]; save(); buildForm(); recompute();
+                    r.appendChild(radio('psy-room-solve', m[0], m[1], rmv.solve === m[0], function () {
+                        rmv.solve = m[0]; save(); buildForm(); recompute();
                     }));
                 });
-                body.appendChild(r);
-                if (a.room.solve === 'cfm') {
-                    usesFlow = false;
-                    g2.appendChild(numberField('Supply dry bulb', 'temp', a.room.dbSupply, { step: 0.5 }, function (v) { a.room.dbSupply = v; }, 'room_dbsupply'));
+                sens.body.appendChild(r);
+                var g2 = fields();
+                if (rmv.solve === 'cfm') {
+                    g2.appendChild(numberField('Supply dry bulb', 'temp', rmv.dbSupply, { step: 0.5 }, function (v) { rmv.dbSupply = v; }, 'room_dbsupply'));
                 } else {
-                    var f = numberField('Supply airflow', 'flow', a.room.cfm, { min: 0, step: 50 }, function (v) { a.room.cfm = v; }, 'room_cfm');
-                    f.querySelector('input').placeholder = 'auto';
-                    g2.appendChild(f);
+                    g2.appendChild(supplyCfmField());
                 }
+                sens.body.appendChild(g2);
+                // Says which airflow a blank field is using; filled by recompute().
+                if (rmv.solve !== 'cfm') { refs.roomFlowNote = hint(''); sens.body.appendChild(refs.roomFlowNote); }
+                sens.body.appendChild(errorLine('room_sens'));
+                sens.body.appendChild(verdictBox('room_sens'));
             }
-            body.appendChild(g2);
-            // Says which airflow a blank field is using; filled by recompute().
-            if (usesFlow) { refs.roomFlowNote = hint(''); body.appendChild(refs.roomFlowNote); }
-            body.appendChild(errorLine('room'));
-            body.appendChild(verdictBox('room'));
+
+            // Latent check
+            var lat = subCheck('Latent check', 'maximum supply dew point', 'dplimit', rmv.checkLat, 'room_lat',
+                function (on) { rmv.checkLat = on; save(); buildForm(); recompute(); });
+            body.appendChild(lat.el);
+            if (rmv.checkLat) {
+                var r0 = document.createElement('div');
+                r0.className = 'psy-radio-row';
+                r0.appendChild(inlineLabel('Latent load carried by:'));
+                r0.appendChild(help('room_latby'));
+                [['supply', 'Whole supply airflow'], ['vent', 'Ventilation air only (DOAS)']].forEach(function (m) {
+                    r0.appendChild(radio('psy-room-latentby', m[0], m[1], (vent ? 'vent' : 'supply') === m[0], function () {
+                        rmv.latentBy = m[0]; save(); buildForm(); recompute();
+                    }));
+                });
+                lat.body.appendChild(r0);
+                var g3 = fields();
+                if (vent) {
+                    var vz = numberField('Ventilation airflow', 'flow', rmv.vozCfm, { min: 0, step: 50 }, function (v) { rmv.vozCfm = v; }, 'dp_voz');
+                    vz.querySelector('input').placeholder = 'auto';
+                    g3.appendChild(vz);
+                    var ud = numberField('Unit supply dew point', 'temp', rmv.supplyDp, { step: 0.5 }, function (v) { rmv.supplyDp = v; }, 'dp_unit');
+                    ud.querySelector('input').placeholder = 'optional';
+                    g3.appendChild(ud);
+                    lat.body.appendChild(g3);
+                    refs.latFlowNote = hint(''); lat.body.appendChild(refs.latFlowNote);
+                } else if (!rmv.checkSens) {
+                    // No sensible check to share an airflow with: ask here.
+                    g3.appendChild(supplyCfmField());
+                    lat.body.appendChild(g3);
+                    refs.latFlowNote = hint(''); lat.body.appendChild(refs.latFlowNote);
+                } else {
+                    lat.body.appendChild(hint('Uses the supply airflow from the sensible check.'));
+                }
+                lat.body.appendChild(errorLine('room_lat'));
+                lat.body.appendChild(verdictBox('room_lat'));
+            }
         }, 'room'));
 
         if (!anyStageOn()) form.appendChild(hint('Add components with the chips above to build the system.'));
@@ -1227,6 +1275,38 @@
         return d;
     }
 
+    // One check inside the Space section: a checkbox header (title, the
+    // chart line it draws, a few words on what it does, help) and a body
+    // for its inputs and results. Off = header only.
+    function subCheck(title, sub, swatchKind, on, helpKey, onToggle) {
+        var el = document.createElement('div');
+        el.className = 'psy-subcheck' + (on ? ' is-on' : '');
+        var head = document.createElement('div');
+        head.className = 'psy-subcheck-head';
+        var lbl = document.createElement('label');
+        lbl.className = 'psy-check';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!on;
+        cb.addEventListener('change', function () { onToggle(cb.checked); });
+        var sp = document.createElement('span');
+        sp.textContent = title;
+        lbl.appendChild(cb);
+        lbl.appendChild(sp);
+        head.appendChild(lbl);
+        if (swatchKind) head.appendChild(verdictSwatch(swatchKind));
+        var s = document.createElement('span');
+        s.className = 'psy-subcheck-sub';
+        s.textContent = sub;
+        head.appendChild(s);
+        if (helpKey) head.appendChild(help(helpKey));
+        el.appendChild(head);
+        var body = document.createElement('div');
+        body.className = 'psy-subcheck-body';
+        el.appendChild(body);
+        return { el: el, body: body };
+    }
+
     // Line / dot sample matching what the chart draws, as a tiny SVG so the
     // chart's own classes style it.
     function verdictSwatch(kind) {
@@ -1265,7 +1345,12 @@
                 line.className = 'psy-verdict-row' + (row.swatch === 'no' ? ' is-no' : (row.swatch === 'ok' ? ' is-ok' : ''));
                 line.appendChild(verdictSwatch(row.swatch));
                 var t = document.createElement('span');
-                t.textContent = row.text;
+                if (row.lead) {
+                    var b = document.createElement('strong');
+                    b.textContent = row.lead + ': ';
+                    t.appendChild(b);
+                }
+                t.appendChild(document.createTextNode(row.text));
                 line.appendChild(t);
                 box.appendChild(line);
             });
@@ -1277,6 +1362,25 @@
         p.className = 'psy-field-error';
         fieldErrorEls[id] = p;
         return p;
+    }
+
+    // Choice rows keep their options on one line when they fit; a row that
+    // would wrap mid-way (options half under the label, half not) is
+    // stacked instead, one option per line at the left edge. Measured
+    // rather than guessed, since the panel width and the option text
+    // (units, SI / IP) both vary.
+    function layoutRadioRows() {
+        if (!refs.form) return;
+        var rows = refs.form.querySelectorAll('.psy-radio-row');
+        Array.prototype.forEach.call(rows, function (row) {
+            var opts = row.querySelectorAll('.psy-radio');
+            if (opts.length < 2) return;
+            row.classList.remove('is-stacked');
+            if (!row.offsetWidth) return;      // hidden: nothing to measure
+            var first = row.firstElementChild;
+            var last = opts[opts.length - 1];
+            if (last.offsetTop > first.offsetTop) row.classList.add('is-stacked');
+        });
     }
 
     function radio(name, value, labelText, checked, onChange) {
@@ -1842,126 +1946,116 @@
             }
         });
 
-        // Space check: one space condition and one latent load. latentBy
-        // says what has to carry that latent load - the whole supply airflow
-        // (sensible + latent check, room line, REQ) or the ventilation air
-        // alone (Law #1; sensible is left to the zone equipment).
+        // Space check: one space condition, two independent checks on the
+        // final supply air. Sensible: room line, REQ and the sensible cooling
+        // delivered. Latent: the wettest supply air that still carries the
+        // latent load on either the whole supply airflow or (DOAS, Law #1)
+        // the ventilation air alone.
         var rm = null;
         if (a.room.enabled) {
             rm = tryState(a.room, 'room', P, onError);
             if (rm) {
                 addPoint('rm', 'RM', rm, 'Room');
-                var ventMode = a.room.latentBy === 'vent';
-                var ql = toNum(a.room.ql, ventMode ? null : 0);
+                var rmc = a.room;
+                var ql = toNum(rmc.ql, null);
                 var sysCfm = mixed ? mixed.cfm : null;
                 var sysSource = a.ma.enabled ? 'mixed air' : (both && !doas ? 'outdoor + return air' : (a.oa.enabled ? 'outdoor air' : 'return air'));
-                var rrows = [];
+                var ownCfm = (rmc.cfm !== null && rmc.cfm !== undefined) ? Number(rmc.cfm) : null;
+                var supplyCfm = ownCfm !== null ? ownCfm : sysCfm;   // what a blank Supply airflow means
+                var flowNote = ownCfm !== null ? '' : (sysCfm !== null
+                    ? 'Using the system airflow, ' + fmtU('flow', sysCfm) + ' (' + sysSource + '). Type a value to override.'
+                    : 'No system airflow yet: add an air stream with airflow, or type a value.');
+                var srows = [], lrows = [];
+                var latCfm = null;   // airflow the sensible check settled on
 
-                if (!ventMode) {
-                    var qs = toNum(a.room.qs, null);
+                if (rmc.checkSens) {
+                    var qs = toNum(rmc.qs, null);
                     var roomRes = { state: rm, qs: qs, ql: ql };
-                    var latCfm = null;
-                    if (a.room.solve !== 'cfm' && (a.room.cfm === null || a.room.cfm === undefined)) {
-                        res.roomFlowNote = sysCfm !== null
-                            ? 'Using the system airflow, ' + fmtU('flow', sysCfm) + ' (' + sysSource + '). Type a value to override.'
-                            : 'No system airflow yet: add an air stream with airflow, or type a value.';
-                    }
+                    if (rmc.solve !== 'cfm') res.roomFlowNote = flowNote;
                     if (qs !== null && qs > 0) {
-                        var shr = qs / (qs + Math.max(0, ql));
+                        var shr = qs / (qs + Math.max(0, ql || 0));
                         roomRes.shr = shr;
                         var vpLow = (s.view && isFinite(s.view.dbMin)) ? s.view.dbMin : s.dbMin;
                         paths.push({ pts: Psy.roomLine(rm, shr, P, Math.min(vpLow, -20)), cls: 'psy-line-room',
-                                     label: 'Room SHR ' + fmt(shr, 2), labelAt: 'mid', labelCls: 'psy-label-room' });
+                                     label: 'Room line (sensible) SHR ' + fmt(shr, 2), labelAt: 'mid', labelCls: 'psy-label-room' });
                         try {
-                            var given = a.room.solve === 'cfm'
-                                ? { dbSupply: a.room.dbSupply }
-                                : { cfm: (a.room.cfm !== null && a.room.cfm !== undefined) ? a.room.cfm : sysCfm };
+                            var given = rmc.solve === 'cfm' ? { dbSupply: rmc.dbSupply } : { cfm: supplyCfm };
                             if (given.cfm === null) throw new Error('Enter a supply airflow (or include an air stream with airflow).');
-                            roomRes.required = Psy.supplyFromRoom(rm, qs, ql, given, basis, P);
+                            roomRes.required = Psy.supplyFromRoom(rm, qs, ql || 0, given, basis, P);
                             // A supply point nobody could build is reported, not plotted:
                             // it would drag the eye (and Fit) far down the saturation curve.
                             roomRes.practical = roomRes.required.feasible && roomRes.required.state.db >= REQ_MIN_DB;
                             if (roomRes.practical) addPoint('rq', 'REQ', roomRes.required.state, 'Required supply air');
                             latCfm = roomRes.required.cfm;
-                        } catch (e) { onError('room', e.message); }
+                        } catch (e) { onError('room_sens', e.message); }
                         if (res.final && m > 0) {
                             roomRes.delivered = Psy.process(rm, res.final, m); // positive = delivered cooling
                         }
                     } else {
-                        onError('room', 'Enter the room sensible load.');
-                    }
-
-                    // Latent side as a dew point: the wettest supply air that still
-                    // carries the room latent load on the supply airflow.
-                    if (latCfm !== null && ql !== null && ql > 0) {
-                        try {
-                            var limR = Psy.latentLimit(rm, ql, latCfm, basis, P);
-                            limR.source = 'supply airflow';
-                            roomRes.dpLimit = limR;
-                            drawDpLimit(limR);
-                            if (res.final) {
-                                limR.finalOk = res.final.w <= limR.w * 1.02;
-                                limR.carried = Psy.latentCarried(rm, res.final, limR.massFlow);
-                                if (res.final.w < rm.w) limR.minCfm = ql / (Psy.HFG_LATENT * (rm.w - res.final.w) * (limR.massFlow / latCfm));
-                            }
-                        } catch (e) { onError('room', e.message); }
+                        onError('room_sens', 'Enter the space sensible load.');
                     }
                     res.room = roomRes;
 
                     if (roomRes.shr !== undefined) {
-                        rrows.push({ swatch: 'room', text: 'Room line, SHR ' + fmt(roomRes.shr, 2) +
-                            ' - supply air on this line matches the room sensible/latent split' });
+                        srows.push({ swatch: 'room', text: 'Room line (sensible), SHR ' + fmt(roomRes.shr, 2) +
+                            ' - supply air on this line matches the space sensible / latent split' });
                         if (roomRes.required) {
                             var rq = roomRes.required;
-                            var rqText = a.room.solve === 'cfm'
+                            var rqText = rmc.solve === 'cfm'
                                 ? fmtU('flow', rq.cfm) + ' at ' + fmtU('temp', rq.state.db)
                                 : fmtU('temp', rq.state.db) + ' at ' + fmtU('flow', rq.cfm);
                             if (roomRes.practical) {
-                                rrows.push({ swatch: 'req', text: 'REQ = supply that carries the load: ' + rqText });
+                                srows.push({ swatch: 'req', text: 'REQ = supply that carries the load: ' + rqText });
                             } else {
-                                rrows.push({ swatch: 'no', text: 'Carrying the load would take ' + rqText + ' - not practical. Raise the airflow' +
+                                srows.push({ swatch: 'no', text: 'Carrying the load would take ' + rqText + ' - not practical. Raise the airflow' +
                                     (a.ra.enabled || a.ma.enabled ? '.' : ' or add return air.') + ' REQ is not plotted.' });
                             }
                         }
                     }
                     if (res.final && roomRes.delivered) {
                         var dd = roomRes.delivered, sOk = dd.sensible >= roomRes.qs * 0.98;
-                        rrows.push({ swatch: sOk ? 'ok' : 'no', text: 'Sensible: ' + res.finalLabel + ' delivers ' + fmtPower(dd.sensible) +
+                        srows.push({ swatch: sOk ? 'ok' : 'no', lead: 'Sensible', text: res.finalLabel + ' delivers ' + fmtPower(dd.sensible) +
                             ' of ' + fmtPower(roomRes.qs) + (sOk ? ' - OK' : ' - short') });
                     }
-                    if (roomRes.dpLimit) {
-                        var L1 = roomRes.dpLimit;
-                        rrows.push({ swatch: 'dplimit', text: 'Max supply dew point ' + fmtU('temp', L1.dp) + ' to carry ' + fmtPower(ql) +
-                            ' latent on ' + fmtU('flow', L1.cfm) });
-                        if (res.final) rrows.push({ swatch: L1.finalOk ? 'ok' : 'no', text: 'Latent: ' + res.finalLabel + ' dew point ' + fmtU('temp', res.final.dp) +
-                            (L1.finalOk ? ' - dry enough' : ' - too humid, dry to ' + fmtU('temp', L1.dp)) });
-                    }
-                } else {
-                    // Law #1: ventilation air carries all the space latent load.
+                }
+
+                if (rmc.checkLat) {
+                    var ventMode = rmc.latentBy === 'vent';
                     var vCfm = null, vSource = '';
-                    if (a.room.vozCfm !== null && a.room.vozCfm !== undefined) { vCfm = Number(a.room.vozCfm); vSource = 'ventilation airflow'; }
-                    else if (a.oa.enabled && oaCfm !== null) { vCfm = oaCfm; vSource = 'outdoor airflow'; }
-                    else if (mixed) { vCfm = mixed.cfm; vSource = 'system airflow'; }
-                    if (a.room.vozCfm === null || a.room.vozCfm === undefined) {
-                        res.roomFlowNote = vCfm !== null
-                            ? 'Using the ' + vSource + ', ' + fmtU('flow', vCfm) + '. Type a value to override.'
-                            : 'No outdoor airflow yet: add Outdoor air, or type a value.';
+                    if (ventMode) {
+                        if (rmc.vozCfm !== null && rmc.vozCfm !== undefined) { vCfm = Number(rmc.vozCfm); vSource = 'ventilation airflow'; }
+                        else if (a.oa.enabled && oaCfm !== null) { vCfm = oaCfm; vSource = 'outdoor airflow'; }
+                        else if (mixed) { vCfm = mixed.cfm; vSource = 'system airflow'; }
+                        if (rmc.vozCfm === null || rmc.vozCfm === undefined) {
+                            res.latFlowNote = vCfm !== null
+                                ? 'Using the ' + vSource + ', ' + fmtU('flow', vCfm) + '. Type a value to override.'
+                                : 'No outdoor airflow yet: add Outdoor air, or type a value.';
+                        }
+                    } else if (rmc.checkSens) {
+                        vCfm = latCfm; vSource = 'supply airflow';
+                    } else {
+                        vCfm = supplyCfm; vSource = 'supply airflow';
+                        res.latFlowNote = flowNote;
                     }
-                    if (ql === null) onError('room', 'Enter the space latent load.');
-                    else if (vCfm === null) onError('room', 'Enter the ventilation airflow.');
-                    else {
+                    if (ql === null || !(ql > 0)) onError('room_lat', 'Enter the space latent load.');
+                    else if (vCfm === null) {
+                        // With the sensible check sharing its airflow, that check
+                        // has already said what is missing.
+                        if (ventMode) onError('room_lat', 'Enter the ventilation airflow.');
+                        else if (!rmc.checkSens) onError('room_lat', 'Enter a supply airflow (or include an air stream with airflow).');
+                    } else {
                         try {
                             var lim = Psy.latentLimit(rm, ql, vCfm, basis, P);
                             lim.source = vSource;
-                            var dpRes = { room: rm, ownRoom: true, ql: ql, cfm: vCfm, limit: lim };
+                            var dpRes = { room: rm, ownRoom: true, ql: ql, cfm: vCfm, limit: lim, carrier: ventMode ? 'vent' : 'supply' };
                             drawDpLimit(lim);
                             if (res.final) {
                                 dpRes.finalOk = res.final.w <= lim.w * 1.02;
                                 dpRes.carried = Psy.latentCarried(rm, res.final, lim.massFlow);
                                 if (res.final.w < rm.w) dpRes.minCfm = ql / (Psy.HFG_LATENT * (rm.w - res.final.w) * (lim.massFlow / vCfm));
                             }
-                            var sdp = a.room.supplyDp;
-                            if (sdp !== null && sdp !== undefined && isFinite(Number(sdp))) {
+                            var sdp = rmc.supplyDp;
+                            if (ventMode && sdp !== null && sdp !== undefined && isFinite(Number(sdp))) {
                                 var us = Psy.state(rm.db, 'dp', Number(sdp), P);
                                 dpRes.unit = us;
                                 dpRes.unitOk = us.w <= lim.w * 1.02;
@@ -1970,20 +2064,19 @@
                             }
                             res.dewpoint = dpRes;
 
-                            rrows.push({ swatch: 'dplimit', text: 'Max supply dew point ' + fmtU('temp', lim.dp) + ' (' + fmtU('grains', lim.grains) +
-                                ') to carry ' + fmtPower(ql) + ' latent on ' + fmtU('flow', vCfm) });
-                            if (res.final) rrows.push({ swatch: dpRes.finalOk ? 'ok' : 'no', text: res.finalLabel + ' dew point ' + fmtU('temp', res.final.dp) +
+                            lrows.push({ swatch: 'dplimit', text: 'Max supply DP (latent) ' + fmtU('temp', lim.dp) + ' (' + fmtU('grains', lim.grains) +
+                                ') to carry ' + fmtPower(ql) + ' on ' + fmtU('flow', vCfm) + ' of ' + vSource });
+                            if (res.final) lrows.push({ swatch: dpRes.finalOk ? 'ok' : 'no', lead: 'Latent', text: res.finalLabel + ' dew point ' + fmtU('temp', res.final.dp) +
                                 (dpRes.finalOk ? ' - dry enough' : ' - too humid, dry to ' + fmtU('temp', lim.dp)) });
-                            if (dpRes.unit) rrows.push({ swatch: dpRes.unitOk ? 'ok' : 'no', text: 'Unit rated ' + fmtU('temp', dpRes.unit.dp) +
+                            if (dpRes.unit) lrows.push({ swatch: dpRes.unitOk ? 'ok' : 'no', lead: 'Unit', text: 'rated ' + fmtU('temp', dpRes.unit.dp) +
                                 (dpRes.unitOk ? ' - meets the requirement' : ' - too humid; needs ' + fmtU('flow', dpRes.unitMinCfm !== undefined ? dpRes.unitMinCfm : NaN) + ' at that dew point') });
-                        } catch (e) { onError('room', e.message); }
+                        } catch (e) { onError('room_lat', e.message); }
                     }
                 }
 
-                if (rrows.length) {
-                    res.callouts = res.callouts || [];
-                    res.callouts.push({ id: 'room', title: 'Space check', rows: rrows });
-                }
+                res.callouts = res.callouts || [];
+                if (srows.length) res.callouts.push({ id: 'room_sens', title: 'Sensible check', rows: srows });
+                if (lrows.length) res.callouts.push({ id: 'room_lat', title: 'Latent check', rows: lrows });
             }
         }
 
@@ -1993,7 +2086,7 @@
             paths.unshift({ pts: [{ db: dbLoL, w: lim.w }, { db: dbHiL, w: lim.w }, { db: dbHiL, w: wTopL }, { db: dbLoL, w: wTopL }],
                             cls: 'psy-dp-region', fill: true, under: true });
             paths.push({ pts: [{ db: dbLoL, w: lim.w }, { db: dbHiL, w: lim.w }], cls: 'psy-line-dplimit', under: true,
-                         label: 'Max supply DP ' + fmtU('temp', lim.dp), labelAt: 'end', labelCls: 'psy-label-dplimit' });
+                         label: 'Max supply DP (latent) ' + fmtU('temp', lim.dp), labelAt: 'end', labelCls: 'psy-label-dplimit' });
         }
 
         res.tablePoints = points.slice();
@@ -2101,20 +2194,14 @@
                     rr.push(['Required supply humidity', fmtU('grains', q.state.grains) + ' (' + fmt(q.state.rh * 100, 0) + '% RH)']);
                     if (!q.feasible && q.note) rr.push(['Note', q.note]);
                 }
-                if (r.dpLimit) {
-                    var L = r.dpLimit;
-                    rr.push(['Max supply dew point for the latent load', fmtU('temp', L.dp) + ' (' + fmtU('grains', L.grains) + ') on ' + fmtU('flow', L.cfm)]);
-                    if (res.final) rr.push([res.finalLabel + ' dew point', fmtU('temp', res.final.dp) + ' vs ' + fmtU('temp', L.dp) + ' max' + (L.finalOk ? '  OK' : '  too humid')]);
-                }
                 if (r.delivered && res.final) {
                     var d = r.delivered;
-                    var sensOk = d.sensible >= r.qs * 0.98, latOk = d.latent >= r.ql * 0.98;
+                    var sensOk = d.sensible >= r.qs * 0.98;
                     rr.push(['Delivered sensible (' + res.finalLabel + ')', fmtPower(d.sensible) + ' vs ' + fmtPower(r.qs) + (sensOk ? '  OK' : '  short')]);
-                    rr.push(['Delivered latent (' + res.finalLabel + ')', fmtPower(d.latent) + ' vs ' + fmtPower(r.ql) + (latOk ? '  OK' : '  short')]);
                     rr.push(['Supply SHR vs room SHR', fmt(d.total ? d.sensible / d.total : 0, 3) + ' vs ' + fmt(r.shr, 3)]);
-                    rr.push(['Result', sensOk && latOk ? 'Supply air meets the room load' : 'Supply air does not meet the room load']);
+                    rr.push(['Result', sensOk ? 'Supply air carries the space sensible load' : 'Supply air does not carry the space sensible load']);
                 }
-                blocks.push({ title: 'Room (RM)', rows: rr });
+                blocks.push({ title: 'Sensible check (room line)', rows: rr });
             }
 
             if (res.dewpoint) {
@@ -2122,7 +2209,8 @@
                 dr.push(['Space condition', fmtU('temp', D.room.db) + ' DB / ' + fmt(D.room.rh * 100, 0) + '% RH']);
                 dr.push(['Room dew point', fmtU('temp', D.room.dp) + ' (' + fmtU('grains', D.room.grains) + ')']);
                 dr.push(['Latent load', fmtPower(D.ql)]);
-                dr.push(['Ventilation airflow', fmtU('flow', D.cfm) + ' (' + L2.source + ')']);
+                dr.push(['Latent load carried by', D.carrier === 'vent' ? 'Ventilation air only (DOAS, Law #1)' : 'Whole supply airflow']);
+                dr.push([D.carrier === 'vent' ? 'Ventilation airflow' : 'Supply airflow', fmtU('flow', D.cfm) + ' (' + L2.source + ')']);
                 dr.push(['Moisture to remove', fmtU('grains', L2.dW * Psy.GRAINS_PER_LB) + ' per lb of air']);
                 dr.push(['Required supply humidity ratio', fmtU('grains', L2.grains) + '  (max)']);
                 dr.push(['Required supply dew point', fmtU('temp', L2.dp) + '  (max)']);
@@ -2137,7 +2225,7 @@
                     dr.push(['Latent carried at the rated dew point', fmtPower(Math.max(0, D.unitCarried)) + ' vs ' + fmtPower(D.ql)]);
                     if (D.unitMinCfm !== undefined) dr.push(['Airflow needed at the rated dew point', fmtU('flow', D.unitMinCfm)]);
                 }
-                blocks.push({ title: 'Supply air dew point (Law #1)', rows: dr });
+                blocks.push({ title: 'Latent check (max supply dew point)', rows: dr });
             }
         }
 
@@ -2208,8 +2296,13 @@
             refs.roomFlowNote.textContent = res.roomFlowNote || '';
             refs.roomFlowNote.hidden = !res.roomFlowNote;
         }
+        if (refs.latFlowNote) {
+            refs.latFlowNote.textContent = res.latFlowNote || '';
+            refs.latFlowNote.hidden = !res.latFlowNote;
+        }
         renderResults(buildReport(res, state));
         updateAddState();
+        layoutRadioRows();
     }
 
     function renderResults(blocks) {
@@ -2300,7 +2393,11 @@
         else parts.push('Psychrometrics');
         if (a.coil.enabled) parts.push('cooling coil');
         if (a.reheat.enabled) parts.push('reheat');
-        if (a.room.enabled) parts.push(a.room.latentBy === 'vent' ? 'dew point check' : 'room check');
+        if (a.room.enabled) {
+            if (a.room.checkSens && a.room.checkLat) parts.push('space check');
+            else if (a.room.checkLat) parts.push('dew point check');
+            else if (a.room.checkSens) parts.push('room check');
+        }
         return parts.join(' + ');
     }
 

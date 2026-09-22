@@ -387,6 +387,14 @@
     gap: var(--space-xs) var(--space-md);
 }
 
+/* A choice row that cannot fit on one line stacks instead of wrapping
+   mid-row: the label keeps the first line and every option starts at
+   the left edge on its own line. layoutRadioRows() in psychrometrics.js
+   decides which rows need it. */
+.psy-radio-row.is-stacked .psy-radio {
+    flex-basis: 100%;
+}
+
 .psy-inline-label {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
@@ -1654,6 +1662,45 @@
 }
 
 .psy-verdict-row.is-no { color: var(--color-error-light); }
+
+.psy-verdict-row strong { font-weight: 600; }
+
+/* ---------- Space section: the two checks ---------- */
+
+.psy-subcheck {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+    padding: 2px 0 2px var(--space-sm);
+    border-left: 2px solid var(--color-border);
+}
+
+.psy-subcheck.is-on { border-left-color: var(--color-text-muted); }
+
+.psy-subcheck-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-sm);
+}
+
+.psy-subcheck-head .psy-check { font-weight: 600; }
+
+.psy-subcheck-head .psy-verdict-swatch { margin-top: 0; }
+
+.psy-subcheck-sub {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.psy-subcheck-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.psy-subcheck-body:empty { display: none; }
 
 .psy-verdict-swatch {
     flex-shrink: 0;
