@@ -1,8 +1,11 @@
 /* ============================================================
-   HHpro - GAS PACK RTUS product extension
+   HHpro - DAIKIN LIGHT COMMERCIAL RTUS product extension
    ------------------------------------------------------------
-   Gas packs use the default single-row schedule rendering from
-   base.js. What lives here is HHpro.GasPackDesign: the bridge
+   Product key gas_packs: gas packs plus heat pumps (LC RTU DATA).
+   They use the kW-variant schedule rendering from base.js (heat
+   pumps collapse per aux heat kW). What lives here is
+   HHpro.GasPackDesign - gas packs only, since only they have
+   capacity tables so far: the bridge
    between a Design Search result and the schedule row it maps to.
 
    Every number on the Gas Pack schedule came from a selection run
@@ -37,8 +40,8 @@
     // The degree sign is matched loosely because the JSON carries it as a
     // mojibake'd byte pair in some builds.
     var COLUMN_LABELS = {
-        model: 'MODEL NUMBER',
-        tons: 'NOM TONS',
+        model: 'MODEL NUMBER',        // "Model Number (Daikin)"; normalise drops the (...)
+        tons: 'NOMINAL TONS',
         cfm: 'CFM',
         total: 'TOTAL CAPACITY (BTU/h)',
         sensible: 'SENSIBLE CAPACITY (BTU/h)',

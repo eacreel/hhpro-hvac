@@ -31,12 +31,36 @@
      */
     var PRODUCTS = [
         {
+            // Gas packs AND heat pumps (LC RTU DATA.xlsx). The key and JSON
+            // name predate the heat pumps; they stay so saved projects and
+            // the Users permissions sheet keep resolving.
             productKey: 'gas_packs',
             displayName: 'Daikin Light Commercial RTUs',
             jsonFile: 'DATA/JSON/gas_packs.json',
             pictureFile: 'DATA/PICTURES/GAS PACK RTUS.jpg',
-            assetsFolder: 'ASSETS/GAS PACKS',
-            tileClass: 'tile-gas-packs'
+            assetsFolder: 'ASSETS/DAIKIN LIGHT COMMERCIAL RTU',
+            tileClass: 'tile-gas-packs',
+            // Heat pumps are listed once per AUX. ELECTRIC HEAT kW; collapse
+            // them into one row with a kW dropdown that swaps MCA / MOCP
+            // (and the submittal). Gas packs have no kW variants, so each is
+            // a one-variant family and shows its "-" as plain text.
+            kwVariants: {
+                variantColumn: 'W',
+                dependentColumns: ['AB', 'AC'],
+                defaultValue: '-',
+                singleAsText: true
+            },
+            // Each unit type fills its own heating columns and leaves the
+            // other type's as "-". When every unit in view is one TYPE, the
+            // other type's columns are hidden, so a gas-only project shows
+            // exactly the old gas pack schedule.
+            typeColumns: {
+                filter: 'TYPE',
+                columns: {
+                    'GAS': ['N', 'O', 'P', 'Q', 'R'],            // gas heating
+                    'HEAT PUMP': ['S', 'T', 'U', 'V', 'W']      // heat pump heating + aux heat
+                }
+            }
         },
         {
             productKey: 'mini_splits',
@@ -309,6 +333,15 @@
                 }
             }
             return null;
+        },
+
+        /**
+         * A product's JSON if loadProduct has already fetched it, else
+         * null. For synchronous callers that can cope without the data
+         * (e.g. schedule_templates.js deciding a firm layout fits).
+         */
+        getLoadedProduct: function (productKey) {
+            return productDataCache[productKey] || null;
         },
 
         /**

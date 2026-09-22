@@ -2242,6 +2242,13 @@
                 if (hidden.indexOf(l) < 0) hidden.push(l);
             });
         }
+        // typeColumns products (LC RTUs): a gas-only project drops the heat
+        // pump columns and a heat-pump-only one drops the gas heating ones.
+        if (HHpro.Schedule && HHpro.Schedule.typeHiddenColumns) {
+            HHpro.Schedule.typeHiddenColumns(product, sels).forEach(function (l) {
+                if (hidden.indexOf(l) < 0) hidden.push(l);
+            });
+        }
         return hidden;
     }
 
@@ -3117,7 +3124,8 @@
                     if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
                         capCtrl.fillCell(td, colLetter);
                     } else if (kwVariants && rowIndex === 0 && kwFamilyInfo &&
-                        colLetter === kwVariants.variantColumn) {
+                        colLetter === kwVariants.variantColumn &&
+                        (kwFamilyInfo.family.variants.length > 1 || !kwVariants.singleAsText)) {
                         td.classList.add('kw-variant-cell');
                         td.appendChild(buildProjectKwSelect(
                             kwFamilyInfo, item, productKey, data,

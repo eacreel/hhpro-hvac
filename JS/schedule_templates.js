@@ -246,21 +246,21 @@
                 { band: 'top', label: 'TAG:', derive: function (g) { return s(g.item.tag); } },
                 { band: 'top', label: 'MANUFACTURER:', derive: function (g) { return g.cell('A'); } },
                 { band: 'top', label: 'UNIT MODEL NUMBER:', derive: function (g) { return g.cell('B'); } },
-                { band: 'top', label: 'WEIGHT:', derive: function (g) { return g.cell('Y'); } },
+                { band: 'top', label: 'WEIGHT:', derive: function (g) { return g.cell('AD'); } },
 
                 { band: 'main', label: 'NOTES', editable: true, fieldKey: 'refresco_rtu_notes' },
                 { band: 'main', label: 'SUPPLY  CFM', derive: function (g) { return g.cell('D'); } },
-                { band: 'main', label: 'SUPPLY FAN HP', derive: function (g) { return g.cell('V'); } },
+                { band: 'main', label: 'SUPPLY FAN HP', derive: function (g) { return g.cell('AA'); } },
                 { band: 'main', label: 'EXTERNAL  STATIC  PRESSURE  (IN.  OF WATER)', derive: function (g) { return g.cell('E'); } },
                 { band: 'main', label: 'NOMINAL  CAPACITY  (TONS)', derive: function (g) { return g.cell('C'); } },
                 { band: 'main', label: 'GROSS  TOT COOLING  CAP.  (BTU/h)', derive: function (g) { return g.cell('G'); } },
                 { band: 'main', label: 'EFFICIENCY', derive: function (g) { return g.cell('I'); } },
-                { band: 'main', label: 'COOLING STAGES', derive: function (g) { return g.cell('T'); } },
+                { band: 'main', label: 'COOLING STAGES', derive: function (g) { return g.cell('Y'); } },
                 { band: 'main', label: 'INPUT HEATING  CAP.  (MBH)  -  NAT.  GAS', derive: function (g) { return g.cell('N'); } },
                 { band: 'main', label: 'OUTPUT HEATING  CAP.  (MBH)', derive: function (g) { return g.cell('O'); } },
                 { band: 'main', label: 'HEATING  STAGES', derive: function (g) { return g.cell('P'); } },
-                { band: 'main', label: 'VOLTAGE/PHASE', derive: function (g) { return g.cell('U'); } },
-                { band: 'main', label: 'SINGLE  POINT ELEC.  CONN.   MCA(A)/MOP(A)', derive: function (g) { return slash(g.cell('W'), g.cell('X')); } },
+                { band: 'main', label: 'VOLTAGE/PHASE', derive: function (g) { return g.cell('Z'); } },
+                { band: 'main', label: 'SINGLE  POINT ELEC.  CONN.   MCA(A)/MOP(A)', derive: function (g) { return slash(g.cell('AB'), g.cell('AC')); } },
                 { band: 'main', label: 'SEISMIC IMPORTANCE  FACTOR  (IP)', editable: true, fieldKey: 'refresco_rtu_seismic' }
             ],
             notesTitle: 'NOTES:',
@@ -400,17 +400,17 @@
                 { scope: 'item', derive: function (g) { return g.cell('K'); } },
                 { scope: 'item', derive: function (g) { return g.cell('D'); } },
                 { scope: 'item', derive: function (g) { return g.cell('E'); } },
-                { scope: 'item', derive: function (g) { return g.cell('V'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AA'); } },
                 { scope: 'item', editable: true, fieldKey: 'bw_rtu_oa_cfm' },
                 { scope: 'item', derive: function () { return 'GAS'; } },
                 { scope: 'item', derive: function (g) { return g.cell('N'); } },
                 { scope: 'item', derive: function (g) { return g.cell('O'); } },
-                { scope: 'item', derive: function (g) { return g.cell('U'); } },
-                { scope: 'item', derive: function (g) { return g.cell('W'); } },
-                { scope: 'item', derive: function (g) { return g.cell('X'); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AB'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AC'); } },
                 { scope: 'item', derive: function (g) { return combine(g.cell('A'), g.cell('B')); } },
                 { scope: 'item', derive: function (g) { return g.cell('I'); } },
-                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AD'); } },
                 { scope: 'item', derive: function () { return '① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨'; } }
             ],
             notesTitle: '',
@@ -830,19 +830,19 @@
                 { scope: 'item', derive: function (g) { return g.cell('D'); } },
                 { scope: 'item', editable: true, fieldKey: 'saber_rtu_oa_cfm' },
                 { scope: 'item', derive: function (g) { return g.cell('E'); } },
-                { scope: 'item', derive: function (g) { return g.cell('V'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AA'); } },
                 { scope: 'item', editable: true, fieldKey: 'saber_rtu_fan_rpm' },
                 { scope: 'item', derive: function (g) { return div1000(g.cell('G')); } },
                 { scope: 'item', derive: function (g) { return div1000(g.cell('H')); } },
                 { scope: 'item', derive: function (g) { return g.cell('N'); } },
                 { scope: 'item', derive: function (g) { return g.cell('O'); } },
-                { scope: 'item', derive: function (g) { return g.cell('U'); } },
-                { scope: 'item', derive: function (g) { return g.cell('W'); } },
-                { scope: 'item', derive: function (g) { return g.cell('X'); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AB'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AC'); } },
                 { scope: 'item', derive: function (g) { return combine2(g.cell('A'), g.cell('B')); } },
                 { scope: 'item', derive: function (g) { return g.cell('C'); } },
                 { scope: 'item', derive: function (g) { return g.cell('I'); } },
-                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AD'); } },
                 { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8'; } }
             ],
             notesTitle: 'NOTES:',
@@ -1175,8 +1175,8 @@
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function () { return '-'; } },
-                { scope: 'item', derive: function (g) { return voltOnly(g.cell('U')); } },
-                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('U')); } },
+                { scope: 'item', derive: function (g) { return voltOnly(g.cell('Z')); } },
+                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('Z')); } },
                 // --- Cooling performance ---
                 { scope: 'item', derive: function (g) { return slash(g.cell('J'), g.cell('K')); } },
                 { scope: 'item', derive: function (g) { return div1000(g.cell('G')); } },
@@ -1207,13 +1207,13 @@
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function () { return '-'; } },
-                { scope: 'item', derive: function (g) { return g.cell('W'); } },
-                { scope: 'item', derive: function (g) { return g.cell('X'); } },
-                { scope: 'item', derive: function (g) { return voltOnly(g.cell('U')); } },
-                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('U')); } },
+                { scope: 'item', derive: function (g) { return g.cell('AB'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AC'); } },
+                { scope: 'item', derive: function (g) { return voltOnly(g.cell('Z')); } },
+                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('Z')); } },
                 // --- Model / weight / remarks ---
                 { scope: 'item', derive: function (g) { return g.cell('B'); } },
-                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AD'); } },
                 { scope: 'item', editable: true, fieldKey: 'mswg_rtu_remarks' }
             ],
             notesTitle: '',
@@ -1279,6 +1279,50 @@
         }
     };
 
+    // Firm layouts that only fit some of a product's units. The Light
+    // Commercial RTU schedule (gas_packs) mixes gas packs and heat pumps,
+    // but every firm's RTU layout above is a gas-heat layout and no firm has
+    // a heat pump one yet. So a firm layout applies only while EVERY unit on
+    // that schedule is a gas pack; a single heat pump drops the schedule to
+    // the standard (Hoffman) layout. `fromLabel` classifies a cart item
+    // before the product JSON has loaded - its label always carries the
+    // model number, and Daikin's third letter is G for gas, H for heat pump.
+    var UNIT_TYPE_LIMITS = {
+        gas_packs: {
+            filter: 'TYPE',
+            only: 'GAS',
+            fromLabel: function (label) {
+                return /\bD[A-Z]G\d{3}/i.test(String(label || '')) ? 'GAS' : 'HEAT PUMP';
+            }
+        }
+    };
+
+    function itemUnitType(item, data, limit) {
+        var sels = (data && data.selections) || [];
+        for (var i = 0; i < sels.length; i++) {
+            if (sels[i].id !== item.selectionId) continue;
+            var fd = (sels[i].rows && sels[i].rows[0] && sels[i].rows[0].filterData) || {};
+            if (fd[limit.filter] != null) return String(fd[limit.filter]).trim().toUpperCase();
+            break;
+        }
+        return limit.fromLabel(item.label);
+    }
+
+    // True when every unit on the active project's schedule for this
+    // product suits the firm layouts (always true for unrestricted
+    // products and for an empty schedule).
+    function unitsFitTemplates(productKey) {
+        var limit = UNIT_TYPE_LIMITS[productKey];
+        if (!limit) return true;
+        var st = (HHpro.Cart && HHpro.Cart.getActiveState) ? HHpro.Cart.getActiveState() : null;
+        var data = (HHpro.Data && HHpro.Data.getLoadedProduct)
+            ? HHpro.Data.getLoadedProduct(productKey) : null;
+        return ((st && st.items) || []).every(function (item) {
+            return item.productKey !== productKey ||
+                itemUnitType(item, data, limit) === limit.only;
+        });
+    }
+
     var ENGINEERS = [
         { key: 'hoffman', label: 'Hoffman & Hoffman' },
         { key: 'refresco', label: 'Refresco' },
@@ -1311,14 +1355,17 @@
         /**
          * Returns a template object for (engineerKey, productKey), or
          * null to fall back to the native scheduleHeader layout. Returns
-         * null when the current login isn't allowed this engineer.
+         * null when the current login isn't allowed this engineer, or when
+         * the project's units for this product don't suit the firm's
+         * layout (UNIT_TYPE_LIMITS - e.g. a heat pump on the RTU schedule).
          */
         getTemplate: function (engineerKey, productKey) {
             if (!isAllowed(engineerKey)) return null;
             var byProduct = REGISTRY[engineerKey || 'hoffman'];
             if (!byProduct) return null;
             var factory = byProduct[productKey];
-            return factory ? factory() : null;
+            if (!factory || !unitsFitTemplates(productKey)) return null;
+            return factory();
         }
     };
 })();

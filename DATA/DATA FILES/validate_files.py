@@ -15,7 +15,8 @@ What it does:
     3. For each JSON, looks at every selection's documentationData:
        for every (column, filename) entry, checks that
            HHpro\ASSETS\<assetsFolder>\<docFolder>\<filename>.<ext>
-       actually exists on disk.
+       actually exists on disk. A filename may carry one subfolder
+       ("Gas Pack/DSG0363DM" -> SUBMITTALS\Gas Pack\DSG0363DM.pdf).
     4. Reports any mismatches: missing files, folders that don't exist,
        and (optionally) orphan files on disk that aren't referenced by
        any JSON.
@@ -78,14 +79,20 @@ def find_hhpro_root():
 
 
 def list_files_in(folder_path):
-    """Return the list of regular filenames in a folder (not directories).
-    Returns [] if the folder doesn't exist."""
+    """Return every regular file under a folder as a path relative to it,
+    using "/" separators, e.g. "DSG0363DM.pdf" or "Gas Pack/DSG0363DM.pdf"
+    (products with docSubfolders keep one more level, and their JSON
+    filenames carry that "Gas Pack/" prefix). Returns [] if the folder
+    doesn't exist."""
     if not os.path.isdir(folder_path):
         return []
-    return sorted(
-        name for name in os.listdir(folder_path)
-        if os.path.isfile(os.path.join(folder_path, name))
-    )
+    out = []
+    for dirpath, _dirs, files in os.walk(folder_path):
+        rel_dir = os.path.relpath(dirpath, folder_path)
+        for name in files:
+            rel = name if rel_dir == "." else os.path.join(rel_dir, name)
+            out.append(rel.replace(os.sep, "/"))
+    return sorted(out)
 
 
 # -----------------------------------------------------------------------------
@@ -249,7 +256,7 @@ def validate_product(json_name, payload, hhpro_root, report_orphans=True):
             for fname in actual:
                 if fname in referenced or fname.lower() in referenced_lower:
                     continue
-                rel = os.path.join("ASSETS", assets_folder, folder_name, fname)
+                rel = os.path.normpath(os.path.join("ASSETS", assets_folder, folder_name, fname))
                 result["orphans"].append(rel)
 
     result["refCount"] = total_refs

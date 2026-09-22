@@ -64,6 +64,7 @@
     var MODEL_HEADER_SET = {
         'MODEL': true,
         'MODEL NUMBER': true,
+        'MODEL NUMBER (DAIKIN)': true,
         'MODEL#': true,
         'MODEL #': true,
         'GPS MODEL': true
@@ -108,8 +109,34 @@
         // on the browse page, the project schedule, and the exports.
         emptyDataColumns: function (data, selections) {
             return emptyDataColumns(data, selections);
+        },
+        // Columns owned by a unit TYPE that isn't among `selections`
+        // (products with typeColumns in data.js - the LC RTUs hide the
+        // heat pump columns on a gas-only schedule and vice versa). Same
+        // three callers as emptyDataColumns.
+        typeHiddenColumns: function (product, selections) {
+            return typeHiddenColumns(product, selections);
         }
     };
+
+    function typeHiddenColumns(product, selections) {
+        var cfg = product && product.typeColumns;
+        if (!cfg || !Array.isArray(selections) || !selections.length) return [];
+        var present = {};
+        selections.forEach(function (sel) {
+            var fd = (sel && sel.rows && sel.rows[0] && sel.rows[0].filterData) || {};
+            var t = fd[cfg.filter];
+            if (t != null) present[String(t).trim().toUpperCase()] = true;
+        });
+        var out = [];
+        Object.keys(cfg.columns).forEach(function (type) {
+            if (present[type]) return;
+            cfg.columns[type].forEach(function (l) {
+                if (out.indexOf(l) < 0) out.push(l);
+            });
+        });
+        return out;
+    }
 
     /**
      * Return the schedule column letters that have NO value in any row
@@ -844,6 +871,11 @@
                 hiddenSet[letter] = true;
             });
         }
+        // Products with typeColumns (LC RTUs): filtering to one unit TYPE
+        // hides the other type's all-dash heating columns.
+        typeHiddenColumns(product, selections).forEach(function (letter) {
+            hiddenSet[letter] = true;
+        });
         table.appendChild(buildScheduleHead(data, hiddenSet));
         table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));
         return table;
@@ -1263,12 +1295,28 @@
                 onChange: null
             }) : null;
 
+        // Gas Pack rows a Design Search result was selected onto carry the
+        // standard/design values toggle (same as the plain-row path in
+        // buildScheduleBody). Design results only ever land on gas packs,
+        // which have no kW variants, so it only applies to one-variant
+        // families and never has to follow the dropdown.
+        var gpCtrl = (fam.variants.length === 1 && HHpro.GasPackDesign &&
+                      HHpro.GasPackDesign.rowController)
+            ? HHpro.GasPackDesign.rowController({
+                productKey: product && product.productKey,
+                data: data,
+                selection: getCurrentSel()
+            }) : null;
+        var gpCells = {};   // letter -> td, so the toggle can repaint
+        if (gpCtrl) tr.classList.add('gp-design-row');
+
         // Actions cell -- buttons read the live variant via getSel; the
         // capacity conditions chosen here ride along into the cart on Select.
         var actionsTd = document.createElement('td');
         actionsTd.className = 'actions-cell';
         var actionsRow = buildActionButtons(getCurrentSel, product, data,
             capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
+        if (gpCtrl) actionsRow.appendChild(gpCtrl.button(repaintGpCells));
         actionsTd.appendChild(actionsRow);
         tr.appendChild(actionsTd);
 
@@ -1279,13 +1327,17 @@
         var depCols = kwVariants.dependentColumns || [];
         var depColSet = {};
         depCols.forEach(function (c) { depColSet[c] = true; });
+        // singleAsText: a family with nothing to choose shows its kW as
+        // plain text rather than a one-option dropdown.
+        var kwDropdown = fam.variants.length > 1 || !kwVariants.singleAsText;
+        var gpOv = gpCtrl ? gpCtrl.overrides() : null;
 
         colLetters.forEach(function (colLetter) {
             var td = document.createElement('td');
 
             if (capCtrl && capCtrl.handles(colLetter)) {
                 capCtrl.fillCell(td, colLetter);
-            } else if (colLetter === variantCol) {
+            } else if (colLetter === variantCol && kwDropdown) {
                 td.classList.add('kw-variant-cell');
                 td.appendChild(buildKwSelect(fam, currentIdx, function (newIdx) {
                     currentIdx = newIdx;
@@ -1297,7 +1349,15 @@
                 }));
             } else {
                 var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
-                td.textContent = formatCellValue(sd[colLetter], colLetter, product && product.productKey);
+                var value = sd[colLetter];
+                if (gpOv && Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
+                    value = gpOv[colLetter];
+                    td.classList.add('gp-design-cell');
+                    gpCells[colLetter] = td;
+                } else if (gpCtrl && gpCtrl.handles(colLetter)) {
+                    gpCells[colLetter] = td;
+                }
+                td.textContent = formatCellValue(value, colLetter, product && product.productKey);
                 if (depColSet[colLetter]) depCells[colLetter] = td;
             }
 
@@ -1305,6 +1365,19 @@
         });
 
         if (capCtrl) capCtrl.finalize();
+
+        function repaintGpCells() {
+            if (!gpCtrl) return;
+            var ov = gpCtrl.overrides();
+            var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
+            Object.keys(gpCells).forEach(function (L) {
+                var td = gpCells[L];
+                var useDesign = Object.prototype.hasOwnProperty.call(ov, L);
+                td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
+                    product && product.productKey);
+                td.classList.toggle('gp-design-cell', useDesign);
+            });
+        }
 
         function refreshDependents() {
             var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};

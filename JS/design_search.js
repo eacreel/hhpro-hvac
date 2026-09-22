@@ -719,7 +719,9 @@
         hint.className = 'design-search-hint';
         hint.textContent = 'Results come from Daikin’s published capacity tables, not from the ' +
             'schedule’s stored selection. A condition between rated points is evaluated at the ' +
-            'harsher bracketing point, so the capacity shown is never optimistic.';
+            'harsher bracketing point, so the capacity shown is never optimistic. Gas pack RTUs ' +
+            'only for now: heat pump RTUs are on the product page until their capacity tables ' +
+            'are added.';
         box.appendChild(hint);
 
         // ----- Unit constraints -----

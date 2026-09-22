@@ -60,7 +60,7 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #   productType        Human-readable product name for the site.
 #   outputFileName     Name of the JSON file this produces (no folder path).
 #   headerRows         Number of header rows below row 1 but above the data.
-#                      e.g. GAS PACKS has schedule-title in row 2 and column
+#                      e.g. LC RTU has schedule-title in row 2 and column
 #                      headers in rows 3-4 -> headerRows = 3.
 #   dataStartRow       1-based row where the first data row begins.
 #   supportsMultiRow   True if one selection can span multiple rows (detected
@@ -68,6 +68,11 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #   assetsFolder       Name of this product's folder under HHpro/ASSETS/.
 #                      Used by validate_files.py to check filenames against
 #                      real files on disk.
+#   docSubfolders      Optional. Sorts some document folders into
+#                      subfolders by a FILTER column value, e.g. LC RTU
+#                      submittals live in SUBMITTALS\Gas Pack or
+#                      SUBMITTALS\Heat Pump according to the TYPE filter.
+#                      See apply_doc_subfolders below.
 #   searchSchema       Drives the Design Search page on the site. Two parts:
 #                        displayName  - shown in the category picker
 #                        description  - one-line blurb shown above the form
@@ -84,13 +89,23 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 # -----------------------------------------------------------------------------
 
 PRODUCT_CONFIGS = {
-    "GAS PACKS DATA.xlsx": {
-        "productType": "GAS PACK RTUS",
+    # Daikin light commercial rooftops: gas packs AND heat pumps on one
+    # schedule. The output keeps the historical gas_packs.json name (and the
+    # site keeps the gas_packs product key) so saved projects still resolve.
+    "LC RTU DATA.xlsx": {
+        "productType": "DAIKIN LIGHT COMMERCIAL RTUS",
         "outputFileName": "gas_packs.json",
         "headerRows": 3,
         "dataStartRow": 5,
         "supportsMultiRow": False,
-        "assetsFolder": "GAS PACKS",
+        "assetsFolder": "DAIKIN LIGHT COMMERCIAL RTU",
+        # Submittals are split into SUBMITTALS\Gas Pack and
+        # SUBMITTALS\Heat Pump by the TYPE filter column.
+        "docSubfolders": {
+            "filter": "TYPE",
+            "folders": ["SUBMITTALS"],
+            "map": {"GAS": "Gas Pack", "HEAT PUMP": "Heat Pump"},
+        },
         "searchSchema": {
             "displayName": "Daikin Light Commercial RTUs",
             "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
@@ -609,7 +624,7 @@ def convert_mini_split_capacity(input_path, output_path):
 GAS_PACK_CAPACITY_FILE = "Daikin LC RTU Capacity Tables.xlsx"
 GAS_PACK_CAPACITY_OUTPUT = "gas_pack_capacity.json"
 
-# Model-number voltage digit -> the VOLT/PH spelling used by GAS PACKS DATA.
+# Model-number voltage digit -> the VOLT/PH spelling used by LC RTU DATA.
 GAS_PACK_VOLTAGES = {"3": "208/3", "4": "460/3"}
 # Cabinet prefix -> the Efficiency filter value on the Design Search form.
 # DSG is Daikin's standard-efficiency line, DHG the high-efficiency one.
@@ -877,6 +892,9 @@ def convert_gas_pack_capacity(input_path, output_path):
 #   HHpro\ASSETS\<product>\CONTROLS\             (.pdf)
 #   HHpro\ASSETS\<product>\OPERATION MANUAL\     (.pdf)
 #
+# A product can add one more level inside a folder via docSubfolders in
+# PRODUCT_CONFIGS (LC RTU: SUBMITTALS\Gas Pack and SUBMITTALS\Heat Pump).
+#
 # Order matters: longer / more specific prefixes must come BEFORE shorter
 # ones so that e.g. "OPERATION MANUAL" is matched before any hypothetical
 # shorter prefix.
@@ -1055,6 +1073,42 @@ def extract_doc_columns(ws, doc_cols):
             "fileExtension": mapping["fileExtension"],
         })
     return docs
+
+
+def apply_doc_subfolders(selections, doc_columns, config):
+    """Prefix document filenames with a per-row subfolder (docSubfolders).
+
+    A row's FILTER value picks the subfolder, e.g. TYPE "HEAT PUMP" turns
+    submittal "6-Ton - SE - 460/3 - 5kW" into
+    "Heat Pump/6-Ton - SE - 460-3 - 5kW". A "/" inside the name itself
+    becomes "-" first: Daikin writes voltages as 460/3, which Windows can't
+    put in a file name, so the PDFs on disk read 460-3. The site builds the
+    URL straight from the value, so no JS change is needed for new folders.
+    Rows whose filter value isn't in the map keep the bare filename.
+    """
+    rules = config.get("docSubfolders")
+    if not rules:
+        return
+    folders = set(rules["folders"])
+    cols = [dc["name"] for dc in doc_columns if dc["folder"] in folders]
+    unmapped = set()
+    for sel in selections:
+        for row in sel["rows"]:
+            kind = row["filterData"].get(rules["filter"])
+            sub = rules["map"].get(str(kind).strip().upper()) if kind is not None else None
+            docs = row["documentationData"]
+            for name in cols:
+                value = docs.get(name)
+                if value is None:
+                    continue
+                if sub is None:
+                    unmapped.add(kind)
+                    continue
+                docs[name] = f"{sub}/{str(value).replace('/', '-')}"
+    if unmapped:
+        print(f"  WARNING: no {rules['filter']} subfolder for "
+              f"{', '.join(sorted(str(u) for u in unmapped))}; those rows "
+              f"keep their bare filenames.")
 
 
 def extract_refrigerant_columns(ws, refrigerant_cols):
@@ -1673,6 +1727,7 @@ def convert_file(input_path, config, output_path):
         filter_columns, doc_columns, cell_to_merge,
         refrigerant_columns_meta=refrigerant_columns or None,
     )
+    apply_doc_subfolders(selections, doc_columns, config)
 
     schedule_notes = extract_schedule_notes(wb, config.get("notesFormat"))
 

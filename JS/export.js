@@ -294,6 +294,12 @@ WHAT'S IN THE GRID
                     if (hidden.indexOf(l) < 0) hidden.push(l);
                 });
             }
+            // typeColumns products (LC RTUs): same as the on-screen default.
+            if (HHpro.Schedule && HHpro.Schedule.typeHiddenColumns) {
+                HHpro.Schedule.typeHiddenColumns(hepProduct, defSels).forEach(function (l) {
+                    if (hidden.indexOf(l) < 0) hidden.push(l);
+                });
+            }
         }
         var hiddenSet = {};
         hidden.forEach(function (l) { hiddenSet[l] = true; });

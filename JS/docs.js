@@ -12,7 +12,9 @@
 
        <product.assetsFolder>/<docColumn.folder>/<filename>.<docColumn.fileExtension>
 
-   Example:  ASSETS/GAS PACKS/SUBMITTALS/DSG0363DM.pdf
+   Example:  ASSETS/MARVAIR/SUBMITTALS/MARVAIR MGH DATASHEET.pdf
+   A filename may carry a subfolder (docSubfolders in the converter):
+             ASSETS/DAIKIN LIGHT COMMERCIAL RTU/SUBMITTALS/Gas Pack/DSG0363DM.pdf
 
    Public API:
      HHpro.Docs.openSubmittal(product, selection, data)
@@ -219,7 +221,7 @@
         var ext = (docColumn && docColumn.fileExtension) || '';
         var path = assets + '/' + folder + '/' + filename + '.' + ext;
         // Encode spaces and other URL-unsafe characters while preserving
-        // the slash separators. Local file paths like "ASSETS/GAS PACKS/..."
+        // the slash separators. Local file paths like "ASSETS/GRILLES/..."
         // must be encoded or the browser will fail to fetch them.
         return encodeURI(path);
     }
