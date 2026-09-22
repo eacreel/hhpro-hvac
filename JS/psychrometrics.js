@@ -2013,9 +2013,13 @@
                         }
                     }
                     if (res.final && roomRes.delivered) {
+                        // Passes within 2% of the load; a pass that needs the
+                        // allowance says so rather than a bare OK.
                         var dd = roomRes.delivered, sOk = dd.sensible >= roomRes.qs * 0.98;
+                        roomRes.sensOk = sOk;
+                        roomRes.sensClose = sOk && dd.sensible < roomRes.qs;
                         srows.push({ swatch: sOk ? 'ok' : 'no', lead: 'Sensible', text: res.finalLabel + ' delivers ' + fmtPower(dd.sensible) +
-                            ' of ' + fmtPower(roomRes.qs) + (sOk ? ' - OK' : ' - short') });
+                            ' of ' + fmtPower(roomRes.qs) + (roomRes.sensClose ? ' - within 2% of the load, accepted' : (sOk ? ' - OK' : ' - short')) });
                     }
                 }
 
@@ -2050,7 +2054,10 @@
                             var dpRes = { room: rm, ownRoom: true, ql: ql, cfm: vCfm, limit: lim, carrier: ventMode ? 'vent' : 'supply' };
                             drawDpLimit(lim);
                             if (res.final) {
+                                // Passes within 2% of the limit (about 1 gr/lb here);
+                                // 'close' marks a pass that needed the allowance.
                                 dpRes.finalOk = res.final.w <= lim.w * 1.02;
+                                dpRes.finalClose = dpRes.finalOk && res.final.w > lim.w;
                                 dpRes.carried = Psy.latentCarried(rm, res.final, lim.massFlow);
                                 if (res.final.w < rm.w) dpRes.minCfm = ql / (Psy.HFG_LATENT * (rm.w - res.final.w) * (lim.massFlow / vCfm));
                             }
@@ -2059,6 +2066,7 @@
                                 var us = Psy.state(rm.db, 'dp', Number(sdp), P);
                                 dpRes.unit = us;
                                 dpRes.unitOk = us.w <= lim.w * 1.02;
+                                dpRes.unitClose = dpRes.unitOk && us.w > lim.w;
                                 dpRes.unitCarried = Psy.latentCarried(rm, us, lim.massFlow);
                                 if (us.w < rm.w) dpRes.unitMinCfm = ql / (Psy.HFG_LATENT * (rm.w - us.w) * (lim.massFlow / vCfm));
                             }
@@ -2067,9 +2075,11 @@
                             lrows.push({ swatch: 'dplimit', text: 'Max supply DP (latent) ' + fmtU('temp', lim.dp) + ' (' + fmtU('grains', lim.grains) +
                                 ') to carry ' + fmtPower(ql) + ' on ' + fmtU('flow', vCfm) + ' of ' + vSource });
                             if (res.final) lrows.push({ swatch: dpRes.finalOk ? 'ok' : 'no', lead: 'Latent', text: res.finalLabel + ' dew point ' + fmtU('temp', res.final.dp) +
-                                (dpRes.finalOk ? ' - dry enough' : ' - too humid, dry to ' + fmtU('temp', lim.dp)) });
+                                (dpRes.finalClose ? ' - within 2% of the ' + fmtU('temp', lim.dp) + ' limit, accepted'
+                                    : (dpRes.finalOk ? ' - dry enough' : ' - too humid, dry to ' + fmtU('temp', lim.dp))) });
                             if (dpRes.unit) lrows.push({ swatch: dpRes.unitOk ? 'ok' : 'no', lead: 'Unit', text: 'rated ' + fmtU('temp', dpRes.unit.dp) +
-                                (dpRes.unitOk ? ' - meets the requirement' : ' - too humid; needs ' + fmtU('flow', dpRes.unitMinCfm !== undefined ? dpRes.unitMinCfm : NaN) + ' at that dew point') });
+                                (dpRes.unitClose ? ' - within 2% of the ' + fmtU('temp', lim.dp) + ' limit, accepted'
+                                    : (dpRes.unitOk ? ' - meets the requirement' : ' - too humid; needs ' + fmtU('flow', dpRes.unitMinCfm !== undefined ? dpRes.unitMinCfm : NaN) + ' at that dew point')) });
                         } catch (e) { onError('room_lat', e.message); }
                     }
                 }
@@ -2209,7 +2219,8 @@
                 if (r.delivered && res.final) {
                     var d = r.delivered;
                     var sensOk = d.sensible >= r.qs * 0.98;
-                    rr.push(['Delivered sensible (' + res.finalLabel + ')', fmtPower(d.sensible) + ' vs ' + fmtPower(r.qs) + (sensOk ? '  OK' : '  short')]);
+                    rr.push(['Delivered sensible (' + res.finalLabel + ')', fmtPower(d.sensible) + ' vs ' + fmtPower(r.qs) +
+                        (r.sensClose ? '  within 2%, accepted' : (sensOk ? '  OK' : '  short'))]);
                     rr.push(['Supply SHR vs room SHR', fmt(d.total ? d.sensible / d.total : 0, 3) + ' vs ' + fmt(r.shr, 3)]);
                     rr.push(['Result', sensOk ? 'Supply air carries the space sensible load' : 'Supply air does not carry the space sensible load']);
                 }
@@ -2228,12 +2239,14 @@
                 dr.push(['Required supply dew point', fmtU('temp', L2.dp) + '  (max)']);
                 if (sys() === 'IP') dr.push(['Formula', 'Q = ' + fmt(L2.factor, 2) + ' × CFM × Δgr/lb' + (a.basis === 'actual' ? ' (actual air)' : ' (standard air)')]);
                 if (res.final) {
-                    dr.push([res.finalLabel + ' dew point', fmtU('temp', res.final.dp) + ' vs ' + fmtU('temp', L2.dp) + ' max' + (D.finalOk ? '  OK' : '  too humid')]);
+                    dr.push([res.finalLabel + ' dew point', fmtU('temp', res.final.dp) + ' vs ' + fmtU('temp', L2.dp) + ' max' +
+                        (D.finalClose ? '  within 2%, accepted' : (D.finalOk ? '  OK' : '  too humid'))]);
                     dr.push(['Latent carried at ' + res.finalLabel, fmtPower(Math.max(0, D.carried)) + ' vs ' + fmtPower(D.ql)]);
                     if (D.minCfm !== undefined) dr.push(['Airflow needed at ' + res.finalLabel + ' dew point', fmtU('flow', D.minCfm)]);
                 }
                 if (D.unit) {
-                    dr.push(['Unit rated supply dew point', fmtU('temp', D.unit.dp) + ' vs ' + fmtU('temp', L2.dp) + ' max' + (D.unitOk ? '  OK' : '  too humid')]);
+                    dr.push(['Unit rated supply dew point', fmtU('temp', D.unit.dp) + ' vs ' + fmtU('temp', L2.dp) + ' max' +
+                        (D.unitClose ? '  within 2%, accepted' : (D.unitOk ? '  OK' : '  too humid'))]);
                     dr.push(['Latent carried at the rated dew point', fmtPower(Math.max(0, D.unitCarried)) + ' vs ' + fmtPower(D.ql)]);
                     if (D.unitMinCfm !== undefined) dr.push(['Airflow needed at the rated dew point', fmtU('flow', D.unitMinCfm)]);
                 }
