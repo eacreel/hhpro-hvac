@@ -619,6 +619,12 @@ def convert_mini_split_capacity(input_path, output_path):
 # workbook never held 575V or single phase. Combinations printed "-" in the
 # spec sheet - and the three cells Daikin misprinted as 240.0, which are blank
 # in the workbook - are simply omitted, so the site only ever sees rated data.
+#
+# The workbook also holds the DSH / DHH / DVH heat pumps (Cooling and
+# Electrical Data rows, plus a "Heat Pump" heating sheet, added 9/23/2026).
+# They are skipped here - only DSG / DHG rows are read - until the heat pump
+# side of Design Search is built; the per-kW heat pump electrical rows would
+# otherwise overwrite each other under one voltage + motor key.
 # -----------------------------------------------------------------------------
 
 GAS_PACK_CAPACITY_FILE = "Daikin LC RTU Capacity Tables.xlsx"
@@ -681,6 +687,11 @@ def _gp_cabinet(model):
     return str(model).split("*")[0].strip()[:6]
 
 
+def _gp_is_gas(model):
+    """True for gas pack rows (DSG / DHG); False for the heat pump rows."""
+    return str(model).strip()[:3] in GAS_PACK_EFFICIENCY
+
+
 def convert_gas_pack_capacity(input_path, output_path):
     """Convert the LC RTU capacity workbook to a cabinet-keyed JSON.
 
@@ -737,7 +748,7 @@ def convert_gas_pack_capacity(input_path, output_path):
     skipped_cells = 0
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model:
+        if not model or not _gp_is_gas(model):
             continue
         name = _gp_cabinet(model)
         low_stage = "70%" in str(model)
@@ -776,7 +787,7 @@ def convert_gas_pack_capacity(input_path, output_path):
     h = _gp_headers(ws)
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model:
+        if not model or not _gp_is_gas(model):
             continue
         entry = cab(str(model).strip())
         if entry["tons"] is None:
@@ -798,7 +809,7 @@ def convert_gas_pack_capacity(input_path, output_path):
     no_hp = []
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model:
+        if not model or not _gp_is_gas(model):
             continue
         model = str(model).strip()
         volt = GAS_PACK_VOLTAGES.get(model[6:7])
