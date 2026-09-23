@@ -572,6 +572,92 @@
             y -= 10;
         });
 
+        // Closing page(s): definitions and the worked calculations
+        // (psychro_appendix.js). Full width: term in bold with its
+        // definition run in after it, then each formula in brand navy with
+        // its worked numbers beside it, or below when they do not fit.
+        if (spec.appendix && spec.appendix.sections && spec.appendix.sections.length) {
+            var ap = spec.appendix;
+            var AP_TEXT = 8, AP_LINE = 10.5, AP_FORM_LINE = 10, AP_INDENT = 12, AP_WORK_INDENT = 24;
+            var FORMULA_COLOR = '#0f4c75';
+
+            newPage(PORTRAIT);
+            header(false);
+            var acw = contentW();
+            textLine(MARGIN, y - 12, ap.title || 'Definitions and calculations', 12, true, '#111111');
+            y -= 20;
+            (ap.intro || []).forEach(function (p) {
+                wrapText(p, 7.5, false, acw, acw).forEach(function (ln) {
+                    textLine(MARGIN, y - 8, ln, 7.5, false, '#555555');
+                    y -= 9.5;
+                });
+                y -= 2;
+            });
+            y -= 4;
+
+            // Lay an item out first so it can move to a new page whole.
+            var layoutItem = function (it) {
+                var term = sanitize(it.term) + (it.text ? ':' : '');
+                var termW = textWidth(term, AP_TEXT, true);
+                var defLines = it.text ? wrapText(it.text, AP_TEXT, false, acw - termW - 4, acw) : [];
+                var forms = (it.lines || []).map(function (pair) {
+                    var f = sanitize(pair[0]), w = pair[1] ? sanitize(pair[1]) : '';
+                    var fw = textWidth(f, AP_TEXT, false);
+                    var inline = w && (fw + 10 + textWidth(w, AP_TEXT, false) <= acw - AP_INDENT);
+                    return {
+                        f: f, fw: fw, inline: inline, w: w,
+                        workLines: (w && !inline) ? wrapText(w, AP_TEXT, false, acw - AP_WORK_INDENT, acw - AP_WORK_INDENT) : []
+                    };
+                });
+                var h = Math.max(1, defLines.length) * AP_LINE;
+                forms.forEach(function (fm) { h += (1 + fm.workLines.length) * AP_FORM_LINE; });
+                return { term: term, termW: termW, defLines: defLines, forms: forms, h: h + 3 };
+            };
+
+            var drawItem = function (L) {
+                textLine(MARGIN, y - 8, L.term, AP_TEXT, true, '#111111');
+                if (L.defLines.length) {
+                    L.defLines.forEach(function (ln, i) {
+                        textLine(i === 0 ? MARGIN + L.termW + 4 : MARGIN, y - 8, ln, AP_TEXT, false, '#333333');
+                        y -= AP_LINE;
+                    });
+                } else {
+                    y -= AP_LINE;
+                }
+                L.forms.forEach(function (fm) {
+                    textLine(MARGIN + AP_INDENT, y - 8, fm.f, AP_TEXT, false, FORMULA_COLOR);
+                    if (fm.inline) textLine(MARGIN + AP_INDENT + fm.fw + 10, y - 8, fm.w, AP_TEXT, false, '#222222');
+                    y -= AP_FORM_LINE;
+                    fm.workLines.forEach(function (ln) {
+                        textLine(MARGIN + AP_WORK_INDENT, y - 8, ln, AP_TEXT, false, '#222222');
+                        y -= AP_FORM_LINE;
+                    });
+                });
+                y -= 3;
+            };
+
+            ap.sections.forEach(function (sec) {
+                var items = (sec.items || []).map(layoutItem);
+                var noteLines = sec.note ? wrapText(sec.note, 7.5, false, acw, acw) : [];
+                var headH = 17 + noteLines.length * 9.5 + (noteLines.length ? 2 : 0);
+                // Keep the heading with at least its first item.
+                if (y - headH - (items.length ? items[0].h : 0) < MARGIN) { newPage(PORTRAIT); header(false); }
+                textLine(MARGIN, y - 10, String(sec.title).toUpperCase(), 8, true, '#444444');
+                rule(MARGIN, y - 13, page.w - MARGIN, '#cccccc', 0.5);
+                y -= 17;
+                noteLines.forEach(function (ln) {
+                    textLine(MARGIN, y - 8, ln, 7.5, false, '#666666');
+                    y -= 9.5;
+                });
+                if (noteLines.length) y -= 2;
+                items.forEach(function (L) {
+                    if (y - L.h < MARGIN) { newPage(PORTRAIT); header(false); }
+                    drawItem(L);
+                });
+                y -= 6;
+            });
+        }
+
         // Footer on every page
         var footer = spec.footer || 'HHpro Psychrometrics';
         pages.forEach(function (p, i) {
