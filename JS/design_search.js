@@ -1610,7 +1610,14 @@
         btn.disabled = !match;
         btn.addEventListener('click', function () {
             if (!match) return;
-            HHpro.GasPackDesign.set(match.selection.id, HHpro.GasPackDesign.payloadFor(r));
+            // The row's other kW / heat-size variants lose any older design
+            // values, so the schedule opens on the one picked here.
+            var fam = (HHpro.Schedule && HHpro.Schedule.findKwFamilyForSelection)
+                ? HHpro.Schedule.findKwFamilyForSelection(state.productData, state.productKey,
+                                                          match.selection.id)
+                : null;
+            var siblings = fam ? fam.family.variants.map(function (v) { return v.sel.id; }) : [];
+            HHpro.GasPackDesign.set(match.selection.id, HHpro.GasPackDesign.payloadFor(r), siblings);
             HHpro.App.showView('product', {
                 productKey: state.productKey,
                 focusSelectionId: match.selection.id

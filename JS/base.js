@@ -1288,10 +1288,14 @@
         var currentIdx = fam.defaultIdx;
         // A heat pump family whose kit was picked in Design Search opens on
         // that kit, so the design values it carries are what shows first.
+        // If more than one variant carries a payload (stored before Select
+        // cleared siblings), the most recent selection wins.
         if (fam.variants.length > 1 && HHpro.GasPackDesign && HHpro.GasPackDesign.get &&
             product && product.productKey === HHpro.GasPackDesign.PRODUCT) {
+            var latest = -1;
             for (var vi = 0; vi < fam.variants.length; vi++) {
-                if (HHpro.GasPackDesign.get(fam.variants[vi].sel.id)) { currentIdx = vi; break; }
+                var entry = HHpro.GasPackDesign.get(fam.variants[vi].sel.id);
+                if (entry && (entry.at || 0) > latest) { latest = entry.at || 0; currentIdx = vi; }
             }
         }
         function getCurrentSel() { return fam.variants[currentIdx].sel; }

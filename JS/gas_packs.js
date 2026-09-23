@@ -331,11 +331,19 @@
         try { sessionStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) { /* full/blocked */ }
     }
 
-    function setDesign(selectionId, payload) {
+    /**
+     * siblingIds: the other kW / heat-size variants on the same schedule
+     * row. A new selection replaces whatever was stored on them, so the
+     * row opens on the variant just picked rather than an older one.
+     */
+    function setDesign(selectionId, payload, siblingIds) {
         var store = readStore();
+        (siblingIds || []).forEach(function (id) {
+            if (id !== selectionId) delete store[id];
+        });
         // A freshly selected result starts ON: the engineer just asked for
         // these numbers, so showing the standard ones would be surprising.
-        store[selectionId] = { payload: payload, on: true, warned: false };
+        store[selectionId] = { payload: payload, on: true, warned: false, at: Date.now() };
         writeStore(store);
     }
     function getDesign(selectionId) {
