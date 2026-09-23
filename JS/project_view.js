@@ -3107,11 +3107,13 @@
                     tr.appendChild(buildIndoorTagCell(item, rowIndex));
                 }
 
-                // Schedule data cells
+                // Schedule data cells. The item's variant dimension is its
+                // family's (kW, or gas heat size on LC RTU gas packs).
                 var depCells = {};
                 var depColSet = {};
-                if (kwVariants && rowIndex === 0) {
-                    (kwVariants.dependentColumns || []).forEach(function (c) {
+                var varCfg = (kwFamilyInfo && kwFamilyInfo.family && kwFamilyInfo.family.cfg) || kwVariants;
+                if (varCfg && rowIndex === 0) {
+                    (varCfg.dependentColumns || []).forEach(function (c) {
                         depColSet[c] = true;
                     });
                 }
@@ -3123,13 +3125,13 @@
 
                     if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
                         capCtrl.fillCell(td, colLetter);
-                    } else if (kwVariants && rowIndex === 0 && kwFamilyInfo &&
-                        colLetter === kwVariants.variantColumn &&
-                        (kwFamilyInfo.family.variants.length > 1 || !kwVariants.singleAsText)) {
+                    } else if (varCfg && rowIndex === 0 && kwFamilyInfo &&
+                        colLetter === varCfg.variantColumn &&
+                        (kwFamilyInfo.family.variants.length > 1 || !varCfg.singleAsText)) {
                         td.classList.add('kw-variant-cell');
                         td.appendChild(buildProjectKwSelect(
                             kwFamilyInfo, item, productKey, data,
-                            depCells, kwVariants, capCtrl));
+                            depCells, varCfg, capCtrl));
                     } else {
                         td.textContent = formatCellValue(cell.value, colLetter, productKey);
                         if (depColSet[colLetter]) depCells[colLetter] = td;
@@ -3241,13 +3243,14 @@
 
         var select = document.createElement('select');
         select.className = 'kw-variant-select';
-        select.setAttribute('aria-label', 'Aux electric heat (kW)');
+        select.setAttribute('aria-label', kwVariants.ariaLabel || 'Aux electric heat (kW)');
 
         variants.forEach(function (v, idx) {
             var opt = document.createElement('option');
             opt.value = String(idx);
             var kw = v.kw;
-            opt.textContent = (kw === null || kw === undefined || kw === '') ? '' : String(kw);
+            opt.textContent = (v.label != null) ? v.label
+                : ((kw === null || kw === undefined || kw === '') ? '' : String(kw));
             if (idx === currentIdx) opt.selected = true;
             select.appendChild(opt);
         });

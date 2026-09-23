@@ -7,8 +7,10 @@
    HHpro.GasPackDesign: the bridge between a Design Search result
    and the schedule row it maps to. A heat pump result lands on the
    row for its heat kit (the kW dropdown opens on that kit), and
-   swaps cooling and electrical only - the heat pump heating
-   columns stay the AHRI 47 / 17 F ratings.
+   swaps cooling and electrical plus the design OA heating column
+   ("88480 (20°F OA)") - the 47 / 17 F heating columns stay the
+   AHRI ratings. Gas packs land on the row for their heat size
+   (the Input dropdown opens on it).
 
    Every number on the Gas Pack schedule came from a selection run
    by hand in Daikin's software at one condition (80/67 EAT, 95
@@ -32,7 +34,15 @@
     'use strict';
     window.HHpro = window.HHpro || {};
     HHpro.ProductExtensions = HHpro.ProductExtensions || {};
-    HHpro.ProductExtensions.gas_packs = {};
+    HHpro.ProductExtensions.gas_packs = {
+        // Every other empty cell on this schedule is a "-" in the Excel; a
+        // blank one (the heat pump design OA column, filled only by Design
+        // Search) reads the same way on screen and in exports.
+        formatScheduleCellValue: function (colLetter, val) {
+            if (val === null || val === undefined || val === '') return '-';
+            return undefined;
+        }
+    };
 
     var PRODUCT = 'gas_packs';
     var STORE_KEY = 'hhpro.gasPackDesign.v1';
@@ -61,6 +71,15 @@
         hp: 'INDOOR MOTOR HP',
         mca: 'Unit MCA',
         mop: 'Unit MOCP'
+    };
+
+    // Columns whose header only differs from a neighbour inside the
+    // parentheses ("BTU/h (47°F ...)", "BTU/h (17°F ...)"), so they are
+    // matched on the WHOLE label, letters and digits only. Any of the
+    // spellings listed resolves the column.
+    var FULL_LABELS = {
+        // Heat pump heating at the Design Search heating temperature.
+        hpDesign: ['BTU/h (Design OA, 70°F Indoor DB)', 'BTU/h (70°F Indoor DB)']
     };
 
     var WARNING =
@@ -111,8 +130,21 @@
             }
             cols[key] = null;
         });
+        Object.keys(FULL_LABELS).forEach(function (key) {
+            var wants = FULL_LABELS[key].map(normaliseFull);
+            cols[key] = null;
+            for (var i = 0; i < letters.length; i++) {
+                if (wants.indexOf(normaliseFull(leaf[letters[i]])) >= 0) { cols[key] = letters[i]; return; }
+            }
+        });
         data.__gasPackCols = cols;
         return cols;
+    }
+
+    // Whole-label key: letters and digits only ("BTU/h (70°F Indoor DB)"
+    // -> "BTUH70FINDOORDB"), which also drops a mojibake'd degree sign.
+    function normaliseFull(s) {
+        return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9]+/g, '');
     }
 
     // -----------------------------------------------------------------
@@ -246,8 +278,16 @@
             out[cols.lwb] = (payload.cooling.lwb == null) ? '-' : round1(payload.cooling.lwb);
         }
 
-        // Gas heat only - a heat pump's heating columns are AHRI 47 / 17 F
-        // ratings and stay as scheduled.
+        // Heat pumps: the 47 / 17 F columns are AHRI ratings and stay as
+        // scheduled; the design OA column gets the capacity Design Search
+        // read at the chosen heating temperature, e.g. "88480 (20°F OA)".
+        if (payload.type === 'HEAT PUMP' && payload.hpHeat && cols.hpDesign &&
+            payload.hpHeat.capacity != null) {
+            out[cols.hpDesign] = Math.round(payload.hpHeat.capacity) + ' (' +
+                payload.hpHeat.designDb + '°F OA)';
+        }
+
+        // Gas heat.
         if (payload.heat) {
             put('heatInput', payload.heat.inputHigh);
             put('heatOutput', payload.heat.outputHigh);
@@ -352,9 +392,9 @@
             function hpNote() {
                 var h = entry.payload.hpHeat;
                 if (entry.payload.type !== 'HEAT PUMP') return '';
-                return ' Heating columns stay the AHRI 47/17 °F ratings' +
-                    (h ? ' (Design Search: ' + Math.round(h.capacity).toLocaleString() +
-                         ' BTU/h at ' + h.designDb + ' °F).' : '.');
+                return ' The 47/17 °F heating columns stay the AHRI ratings' +
+                    (h ? '; the design OA column shows ' + Math.round(h.capacity).toLocaleString() +
+                         ' BTU/h at ' + h.designDb + ' °F outdoor.' : '.');
             }
             function paint() {
                 btn.textContent = on ? 'Design values' : 'Standard values';

@@ -42,13 +42,26 @@
             tileClass: 'tile-gas-packs',
             // Heat pumps are listed once per AUX. ELECTRIC HEAT kW; collapse
             // them into one row with a kW dropdown that swaps MCA / MOCP
-            // (and the submittal). Gas packs have no kW variants, so each is
-            // a one-variant family and shows its "-" as plain text.
+            // (and the submittal).
             kwVariants: {
-                variantColumn: 'W',
-                dependentColumns: ['AB', 'AC'],
+                variantColumn: 'X',
+                dependentColumns: ['AC', 'AD'],
                 defaultValue: '-',
-                singleAsText: true
+                singleAsText: true,
+                // Gas packs are listed once per gas heat size (Low / Medium /
+                // High); collapse them into one row with a dropdown in the
+                // Input (MBH) column. Besides the model number, output and
+                // LAT, some units were selected at a different airflow per
+                // heat size, so the CFM and cooling cells follow it too.
+                alternates: [{
+                    filter: 'TYPE',
+                    value: 'GAS',
+                    variantColumn: 'N',
+                    dependentColumns: ['B', 'D', 'G', 'H', 'L', 'M', 'O', 'R'],
+                    labelFilter: 'HIGH/MEDIUM/LOW GAS HEAT',
+                    ariaLabel: 'Gas heat input (MBH)',
+                    singleAsText: true
+                }]
             },
             // Each unit type fills its own heating columns and leaves the
             // other type's as "-". When every unit in view is one TYPE, the
@@ -57,8 +70,9 @@
             typeColumns: {
                 filter: 'TYPE',
                 columns: {
-                    'GAS': ['N', 'O', 'P', 'Q', 'R'],            // gas heating
-                    'HEAT PUMP': ['S', 'T', 'U', 'V', 'W']      // heat pump heating + aux heat
+                    'GAS': ['N', 'O', 'P', 'Q', 'R'],                 // gas heating
+                    // heat pump heating (47 F, 17 F, design OA, COPs) + aux heat
+                    'HEAT PUMP': ['S', 'T', 'U', 'V', 'W', 'X']
                 }
             }
         },

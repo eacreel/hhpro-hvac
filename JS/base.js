@@ -97,6 +97,7 @@
         // and the project-view schedule both render one row per
         // family with a kW dropdown.
         getKwVariants: function (productKey) { return getKwVariantsConfig(productKey); },
+        variantCfgFor: function (sel, kwVariants) { return variantCfgFor(sel, kwVariants); },
         groupKwFamilies: function (selections, kwVariants) {
             return groupKwFamilies(selections, kwVariants);
         },
@@ -1343,10 +1344,13 @@
         // Track the plain value tds so they can be repainted when the
         // dropdown changes (dependent columns) or the design toggle flips.
         var valueCells = {};
-        var variantCol = kwVariants.variantColumn;
+        // The family's own variant dimension (kW, or gas heat size on LC
+        // RTU gas packs - see variantCfgFor).
+        var cfg = fam.cfg || kwVariants;
+        var variantCol = cfg.variantColumn;
         // singleAsText: a family with nothing to choose shows its kW as
         // plain text rather than a one-option dropdown.
-        var kwDropdown = fam.variants.length > 1 || !kwVariants.singleAsText;
+        var kwDropdown = fam.variants.length > 1 || !cfg.singleAsText;
 
         colLetters.forEach(function (colLetter) {
             var td = document.createElement('td');
@@ -1417,12 +1421,13 @@
 
         var select = document.createElement('select');
         select.className = 'kw-variant-select';
-        select.setAttribute('aria-label', 'Aux electric heat (kW)');
+        select.setAttribute('aria-label',
+            (fam.cfg && fam.cfg.ariaLabel) || 'Aux electric heat (kW)');
 
         fam.variants.forEach(function (v, idx) {
             var opt = document.createElement('option');
             opt.value = String(idx);
-            opt.textContent = formatKwLabel(v.kw);
+            opt.textContent = (v.label != null) ? v.label : formatKwLabel(v.kw);
             if (idx === initialIdx) opt.selected = true;
             select.appendChild(opt);
         });
@@ -1459,14 +1464,47 @@
     }
 
     /**
+     * The variant dimension a selection belongs to. Normally the product's
+     * kwVariants config itself; an entry in kwVariants.alternates whose
+     * filter matches the row replaces it (LC RTUs: gas packs vary by gas
+     * heat size in the Input column, heat pumps by kW).
+     */
+    function variantCfgFor(sel, kwVariants) {
+        var alts = (kwVariants && kwVariants.alternates) || [];
+        var fd = (sel && sel.rows && sel.rows[0] && sel.rows[0].filterData) || {};
+        for (var i = 0; i < alts.length; i++) {
+            var v = fd[alts[i].filter];
+            if (v != null && String(v).trim().toUpperCase() === String(alts[i].value).toUpperCase()) {
+                return alts[i];
+            }
+        }
+        return kwVariants;
+    }
+
+    // Dropdown label for one variant: the variant cell's value, plus the
+    // row's labelFilter value when the config names one ("45 (Low)").
+    function variantLabelFor(sel, cfg) {
+        var kw = readVariantKw(sel, cfg.variantColumn);
+        var text = formatKwLabel(kw);
+        if (!cfg.labelFilter) return text;
+        var fd = (sel.rows && sel.rows[0] && sel.rows[0].filterData) || {};
+        var tag = fd[cfg.labelFilter];
+        if (tag == null || tag === '' || tag === '-') return text;
+        tag = String(tag).toLowerCase().replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+        return text + ' (' + tag + ')';
+    }
+
+    /**
      * Group a flat selection list into "kW families." Two selections
-     * are in the same family iff they agree on every scheduleData
-     * column EXCEPT the variant column and its dependent columns.
+     * are in the same family iff they share a variant dimension (see
+     * variantCfgFor) and agree on every scheduleData column EXCEPT that
+     * dimension's variant column and its dependent columns.
      *
      * Returns an array of:
-     *   { defaultSel, defaultIdx, variants: [{kw, sel}, ...] }
+     *   { defaultSel, defaultIdx, cfg, variants: [{kw, label, sel}, ...] }
      * with variants sorted so the configured defaultValue (e.g. "-"
-     * or 0) comes first, then the rest numerically ascending.
+     * or 0) comes first, then the rest numerically ascending. `cfg` is
+     * the family's variant dimension (variantColumn, dependentColumns ...).
      */
     function groupKwFamilies(selections, kwVariants) {
         if (!Array.isArray(selections) || !selections.length) return [];
@@ -1475,21 +1513,27 @@
                 return {
                     defaultSel: sel,
                     defaultIdx: 0,
+                    cfg: null,
                     variants: [{ kw: null, sel: sel }]
                 };
             });
         }
 
-        var variantCol = kwVariants.variantColumn;
-        var dependents = kwVariants.dependentColumns || [];
-        var ignored = {};
-        ignored[variantCol] = true;
-        dependents.forEach(function (c) { ignored[c] = true; });
+        var cfgs = [kwVariants].concat(kwVariants.alternates || []);
+        var ignoredByCfg = cfgs.map(function (cfg) {
+            var ignored = {};
+            ignored[cfg.variantColumn] = true;
+            (cfg.dependentColumns || []).forEach(function (c) { ignored[c] = true; });
+            return ignored;
+        });
 
         var families = [];
         var byKey = {};
 
         selections.forEach(function (sel) {
+            var cfg = variantCfgFor(sel, kwVariants);
+            var variant = { kw: readVariantKw(sel, cfg.variantColumn),
+                            label: variantLabelFor(sel, cfg), sel: sel };
             // Multi-row selections aren't expected for kW-merging
             // products, but if one shows up just treat it as its
             // own family rather than mis-merging.
@@ -1497,22 +1541,24 @@
                 families.push({
                     defaultSel: sel,
                     defaultIdx: 0,
-                    variants: [{ kw: readVariantKw(sel, variantCol), sel: sel }]
+                    cfg: cfg,
+                    variants: [variant]
                 });
                 return;
             }
-            var key = familyKey(sel.rows[0].scheduleData || {}, ignored);
+            var ci = cfgs.indexOf(cfg);
+            var key = ci + '#' + familyKey(sel.rows[0].scheduleData || {}, ignoredByCfg[ci]);
             var fam = byKey[key];
             if (!fam) {
-                fam = { defaultSel: null, defaultIdx: 0, variants: [] };
+                fam = { defaultSel: null, defaultIdx: 0, cfg: cfg, variants: [] };
                 byKey[key] = fam;
                 families.push(fam);
             }
-            fam.variants.push({ kw: readVariantKw(sel, variantCol), sel: sel });
+            fam.variants.push(variant);
         });
 
-        var defaultValue = kwVariants.defaultValue;
         families.forEach(function (fam) {
+            var defaultValue = fam.cfg.defaultValue;
             fam.variants.sort(function (a, b) { return compareKw(a.kw, b.kw, defaultValue); });
             fam.defaultIdx = 0;
             for (var i = 0; i < fam.variants.length; i++) {

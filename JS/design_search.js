@@ -1838,7 +1838,10 @@
                 var td = document.createElement('td');
                 if (col.cls) td.className = col.cls;
                 var r0 = g.variants[0];
-                if (col.variant && col.variant === r0.type && g.variants.length > 1) {
+                // Gas rows keep the dropdown even with one size left, so the
+                // sizes Daikin rules out at this airflow show (greyed out).
+                var rejected = (r0.heatRejected || []).length;
+                if (col.variant && col.variant === r0.type && (g.variants.length > 1 || rejected)) {
                     td.classList.add('kw-variant-cell');
                     td.appendChild(buildVariantSelect(g, cur, function (idx) {
                         cur = idx;
@@ -1909,13 +1912,33 @@
         select.className = 'kw-variant-select';
         select.setAttribute('aria-label', g.variants[0].type === 'HEAT PUMP'
             ? 'Electric heat (kW)' : 'Gas heat size');
-        g.variants.forEach(function (v, i) {
+        // Offered sizes, plus (gas only) the sizes whose high-stage temp rise
+        // at this airflow falls outside Daikin's published range - listed in
+        // size order but disabled, with the reason in the tooltip.
+        var entries = g.variants.map(function (v, i) {
+            return { rank: variantRank(v), label: variantLabel(v), value: String(i) };
+        });
+        var rejected = g.variants[0].heatRejected || [];
+        rejected.forEach(function (h) {
+            entries.push({ rank: GAS_HEAT_ORDER[h.size] || 0,
+                           label: h.size + ' (' + fmt(h.riseHigh, 1) + ' °F rise)', value: '', off: true });
+        });
+        entries.sort(function (a, b) { return a.rank - b.rank; });
+        entries.forEach(function (e) {
             var opt = document.createElement('option');
-            opt.value = String(i);
-            opt.textContent = variantLabel(v);
-            if (i === idx) opt.selected = true;
+            opt.value = e.value;
+            opt.textContent = e.label;
+            if (e.off) opt.disabled = true;
+            else if (e.value === String(idx)) opt.selected = true;
             select.appendChild(opt);
         });
+        if (rejected.length) {
+            select.title = 'Not available at ' + rejected[0].airflow + ' CFM - high-stage temp rise ' +
+                'outside Daikin’s published range: ' + rejected.map(function (h) {
+                    return h.size + ' ' + fmt(h.riseHigh, 1) + ' °F (' +
+                        (h.range ? h.range[0] + '–' + h.range[1] + ' °F' : 'no range') + ')';
+                }).join(', ') + '.';
+        }
         select.addEventListener('change', function () {
             onChange(parseInt(select.value, 10) || 0);
         });

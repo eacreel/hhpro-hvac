@@ -603,6 +603,16 @@
                 return;
             }
 
+            // Heat sizes Daikin doesn't allow at this airflow (high-stage rise
+            // outside the published range). They produce no result, but ride
+            // along on the others so the UI can say why they're missing.
+            var heatRejected = [];
+            (cab.heat || []).forEach(function (h) {
+                if (heatAt(h, r.airflow)) return;
+                heatRejected.push({ size: h.size, riseHigh: riseFor(h.outputHigh, r.airflow),
+                                    range: h.riseHigh, airflow: r.airflow });
+            });
+
             // Voltage x motor x heat size -> one result each.
             Object.keys(cab.electrical || {}).forEach(function (voltage) {
                 if (c.electrical && voltage !== c.electrical) return;
@@ -636,6 +646,7 @@
                                 cooling: coolingOut,
                                 offGrid: offGrid,
                                 heat: heat,
+                                heatRejected: heatRejected,
                                 hpHeat: null,
                                 kitKw: null,
                                 electrical: elec,
