@@ -84,13 +84,13 @@
       [
         {
           "col": "A",
-          "value": "MAKE",
+          "value": "Make",
           "colspan": 1,
           "rowspan": 2
         },
         {
           "col": "B",
-          "value": "Model Number (Daikin)",
+          "value": "Model Number",
           "colspan": 1,
           "rowspan": 2
         },
@@ -9397,7 +9397,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -9450,7 +9452,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1504",
+            "CAD (SYSTEM)": "DSH1504"
           }
         }
       ]
@@ -9503,7 +9507,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1804",
+            "CAD (SYSTEM)": "DSH1804"
           }
         }
       ]
@@ -9556,7 +9562,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -9609,7 +9617,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 460-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1504",
+            "CAD (SYSTEM)": "DSH1504"
           }
         }
       ]
@@ -9662,7 +9672,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1804",
+            "CAD (SYSTEM)": "DSH1804"
           }
         }
       ]
@@ -9715,7 +9727,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0604",
+            "CAD (SYSTEM)": "DHH0604"
           }
         }
       ]
@@ -9768,7 +9782,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0604",
+            "CAD (SYSTEM)": "DHH0604"
           }
         }
       ]
@@ -9821,7 +9837,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -9874,7 +9892,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -9927,7 +9947,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -9980,7 +10002,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10.0-Ton - MZVAV - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1204",
+            "CAD (SYSTEM)": "DVH1204"
           }
         }
       ]
@@ -10033,7 +10057,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10.0-Ton - MZVAV - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1203",
+            "CAD (SYSTEM)": "DVH1203"
           }
         }
       ]
@@ -10086,7 +10112,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - MZVAV - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1024",
+            "CAD (SYSTEM)": "DVH1024"
           }
         }
       ]
@@ -10139,7 +10167,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - MZVAV - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1023",
+            "CAD (SYSTEM)": "DVH1023"
           }
         }
       ]
@@ -10192,7 +10222,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - MZVAV - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH0904",
+            "CAD (SYSTEM)": "DVH0904"
           }
         }
       ]
@@ -10245,7 +10277,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - MZVAV - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH0903",
+            "CAD (SYSTEM)": "DVH0903"
           }
         }
       ]
@@ -10298,7 +10332,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -10351,7 +10387,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -10404,7 +10442,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -10457,7 +10497,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -10510,7 +10552,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -10563,7 +10607,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -10616,7 +10662,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0603",
+            "CAD (SYSTEM)": "DHH0603"
           }
         }
       ]
@@ -10669,7 +10717,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -10722,7 +10772,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -10775,7 +10827,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0724",
+            "CAD (SYSTEM)": "DHH0724"
           }
         }
       ]
@@ -10828,7 +10882,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 460-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0604",
+            "CAD (SYSTEM)": "DHH0604"
           }
         }
       ]
@@ -10881,7 +10937,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0604",
+            "CAD (SYSTEM)": "DHH0604"
           }
         }
       ]
@@ -10934,7 +10992,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0603",
+            "CAD (SYSTEM)": "DHH0603"
           }
         }
       ]
@@ -10987,7 +11047,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0604",
+            "CAD (SYSTEM)": "DHH0604"
           }
         }
       ]
@@ -11040,7 +11102,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0603",
+            "CAD (SYSTEM)": "DHH0603"
           }
         }
       ]
@@ -11093,7 +11157,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0483",
+            "CAD (SYSTEM)": "DHH0483"
           }
         }
       ]
@@ -11146,7 +11212,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0483",
+            "CAD (SYSTEM)": "DHH0483"
           }
         }
       ]
@@ -11199,7 +11267,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0483",
+            "CAD (SYSTEM)": "DHH0483"
           }
         }
       ]
@@ -11252,7 +11322,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0363",
+            "CAD (SYSTEM)": "DHH0363"
           }
         }
       ]
@@ -11305,7 +11377,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0603",
+            "CAD (SYSTEM)": "DHH0603"
           }
         }
       ]
@@ -11358,7 +11432,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0484",
+            "CAD (SYSTEM)": "DHH0484"
           }
         }
       ]
@@ -11411,7 +11487,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0484",
+            "CAD (SYSTEM)": "DHH0484"
           }
         }
       ]
@@ -11464,7 +11542,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0484",
+            "CAD (SYSTEM)": "DHH0484"
           }
         }
       ]
@@ -11517,7 +11597,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0484",
+            "CAD (SYSTEM)": "DHH0484"
           }
         }
       ]
@@ -11570,7 +11652,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 460-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0484",
+            "CAD (SYSTEM)": "DHH0484"
           }
         }
       ]
@@ -11623,7 +11707,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0483",
+            "CAD (SYSTEM)": "DHH0483"
           }
         }
       ]
@@ -11676,7 +11762,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - HE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0483",
+            "CAD (SYSTEM)": "DHH0483"
           }
         }
       ]
@@ -11729,7 +11817,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0364",
+            "CAD (SYSTEM)": "DHH0364"
           }
         }
       ]
@@ -11782,7 +11872,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0364",
+            "CAD (SYSTEM)": "DHH0364"
           }
         }
       ]
@@ -11835,7 +11927,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0364",
+            "CAD (SYSTEM)": "DHH0364"
           }
         }
       ]
@@ -11888,7 +11982,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0364",
+            "CAD (SYSTEM)": "DHH0364"
           }
         }
       ]
@@ -11941,7 +12037,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0363",
+            "CAD (SYSTEM)": "DHH0363"
           }
         }
       ]
@@ -11994,7 +12092,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0363",
+            "CAD (SYSTEM)": "DHH0363"
           }
         }
       ]
@@ -12047,7 +12147,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - HE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0363",
+            "CAD (SYSTEM)": "DHH0363"
           }
         }
       ]
@@ -12100,7 +12202,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - HE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
+            "REVIT (SYSTEM)": "DHH0603",
+            "CAD (SYSTEM)": "DHH0603"
           }
         }
       ]
@@ -12153,7 +12257,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1504",
+            "CAD (SYSTEM)": "DSH1504"
           }
         }
       ]
@@ -12206,7 +12312,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 460-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1804",
+            "CAD (SYSTEM)": "DSH1804"
           }
         }
       ]
@@ -12259,7 +12367,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
           }
         }
       ]
@@ -12312,7 +12422,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
           }
         }
       ]
@@ -12365,7 +12477,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 75kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
           }
         }
       ]
@@ -12418,7 +12532,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
           }
         }
       ]
@@ -12471,7 +12587,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
           }
         }
       ]
@@ -12524,7 +12642,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 208-3 - 75kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2403",
+            "CAD (SYSTEM)": "DSH2403"
           }
         }
       ]
@@ -12577,7 +12697,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 208-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2403",
+            "CAD (SYSTEM)": "DSH2403"
           }
         }
       ]
@@ -12630,7 +12752,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2403",
+            "CAD (SYSTEM)": "DSH2403"
           }
         }
       ]
@@ -12683,7 +12807,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2403",
+            "CAD (SYSTEM)": "DSH2403"
           }
         }
       ]
@@ -12736,7 +12862,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2403",
+            "CAD (SYSTEM)": "DSH2403"
           }
         }
       ]
@@ -12789,7 +12917,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1804",
+            "CAD (SYSTEM)": "DSH1804"
           }
         }
       ]
@@ -12842,7 +12972,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 208-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1803",
+            "CAD (SYSTEM)": "DSH1803"
           }
         }
       ]
@@ -12895,7 +13027,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1803",
+            "CAD (SYSTEM)": "DSH1803"
           }
         }
       ]
@@ -12948,7 +13082,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1803",
+            "CAD (SYSTEM)": "DSH1803"
           }
         }
       ]
@@ -13001,7 +13137,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/15.0-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH1803",
+            "CAD (SYSTEM)": "DSH1803"
           }
         }
       ]
@@ -13054,7 +13192,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1504",
+            "CAD (SYSTEM)": "DSH1504"
           }
         }
       ]
@@ -13107,7 +13247,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1504",
+            "CAD (SYSTEM)": "DSH1504"
           }
         }
       ]
@@ -13160,7 +13302,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 208-3 - 60kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1503",
+            "CAD (SYSTEM)": "DSH1503"
           }
         }
       ]
@@ -13213,7 +13357,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1204",
+            "CAD (SYSTEM)": "DSH1204"
           }
         }
       ]
@@ -13266,7 +13412,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1503",
+            "CAD (SYSTEM)": "DSH1503"
           }
         }
       ]
@@ -13319,7 +13467,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1503",
+            "CAD (SYSTEM)": "DSH1503"
           }
         }
       ]
@@ -13372,7 +13522,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1503",
+            "CAD (SYSTEM)": "DSH1503"
           }
         }
       ]
@@ -13425,7 +13577,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/12.5-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1503",
+            "CAD (SYSTEM)": "DSH1503"
           }
         }
       ]
@@ -13478,7 +13632,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1204",
+            "CAD (SYSTEM)": "DSH1204"
           }
         }
       ]
@@ -13531,7 +13687,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1023",
+            "CAD (SYSTEM)": "DSH1023"
           }
         }
       ]
@@ -13584,7 +13742,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1203",
+            "CAD (SYSTEM)": "DSH1203"
           }
         }
       ]
@@ -13637,7 +13797,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1203",
+            "CAD (SYSTEM)": "DSH1203"
           }
         }
       ]
@@ -13690,7 +13852,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1204",
+            "CAD (SYSTEM)": "DSH1204"
           }
         }
       ]
@@ -13743,7 +13907,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1204",
+            "CAD (SYSTEM)": "DSH1204"
           }
         }
       ]
@@ -13796,7 +13962,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1204",
+            "CAD (SYSTEM)": "DSH1204"
           }
         }
       ]
@@ -13849,7 +14017,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1203",
+            "CAD (SYSTEM)": "DSH1203"
           }
         }
       ]
@@ -13902,7 +14072,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1203",
+            "CAD (SYSTEM)": "DSH1203"
           }
         }
       ]
@@ -13955,7 +14127,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1024",
+            "CAD (SYSTEM)": "DSH1024"
           }
         }
       ]
@@ -14008,7 +14182,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1024",
+            "CAD (SYSTEM)": "DSH1024"
           }
         }
       ]
@@ -14061,7 +14237,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1024",
+            "CAD (SYSTEM)": "DSH1024"
           }
         }
       ]
@@ -14114,7 +14292,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1024",
+            "CAD (SYSTEM)": "DSH1024"
           }
         }
       ]
@@ -14167,7 +14347,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1023",
+            "CAD (SYSTEM)": "DSH1023"
           }
         }
       ]
@@ -14220,7 +14402,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1023",
+            "CAD (SYSTEM)": "DSH1023"
           }
         }
       ]
@@ -14273,7 +14457,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH1023",
+            "CAD (SYSTEM)": "DSH1023"
           }
         }
       ]
@@ -14326,7 +14512,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 460-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0904",
+            "CAD (SYSTEM)": "DSH0904"
           }
         }
       ]
@@ -14379,7 +14567,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0904",
+            "CAD (SYSTEM)": "DSH0904"
           }
         }
       ]
@@ -14432,7 +14622,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0904",
+            "CAD (SYSTEM)": "DSH0904"
           }
         }
       ]
@@ -14485,7 +14677,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0904",
+            "CAD (SYSTEM)": "DSH0904"
           }
         }
       ]
@@ -14538,7 +14732,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 208-3 - 45kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0903",
+            "CAD (SYSTEM)": "DSH0903"
           }
         }
       ]
@@ -14591,7 +14787,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0903",
+            "CAD (SYSTEM)": "DSH0903"
           }
         }
       ]
@@ -14644,7 +14842,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0903",
+            "CAD (SYSTEM)": "DSH0903"
           }
         }
       ]
@@ -14697,7 +14897,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (7.5-12.5)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (7.5-12.5)",
+            "REVIT (SYSTEM)": "DSH0903",
+            "CAD (SYSTEM)": "DSH0903"
           }
         }
       ]
@@ -14750,7 +14952,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -14803,7 +15007,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -14856,7 +15062,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -14909,7 +15117,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -14962,7 +15172,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0724",
+            "CAD (SYSTEM)": "DSH0724"
           }
         }
       ]
@@ -15015,7 +15227,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 30kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -15068,7 +15282,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -15121,7 +15337,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -15174,7 +15392,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -15227,7 +15447,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0723",
+            "CAD (SYSTEM)": "DSH0723"
           }
         }
       ]
@@ -15280,7 +15502,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0604",
+            "CAD (SYSTEM)": "DSH0604"
           }
         }
       ]
@@ -15333,7 +15557,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0604",
+            "CAD (SYSTEM)": "DSH0604"
           }
         }
       ]
@@ -15386,7 +15612,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0604",
+            "CAD (SYSTEM)": "DSH0604"
           }
         }
       ]
@@ -15439,7 +15667,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0604",
+            "CAD (SYSTEM)": "DSH0604"
           }
         }
       ]
@@ -15492,7 +15722,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0603",
+            "CAD (SYSTEM)": "DSH0603"
           }
         }
       ]
@@ -15545,7 +15777,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0603",
+            "CAD (SYSTEM)": "DSH0603"
           }
         }
       ]
@@ -15598,7 +15832,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0603",
+            "CAD (SYSTEM)": "DSH0603"
           }
         }
       ]
@@ -15651,7 +15887,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/5-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0603",
+            "CAD (SYSTEM)": "DSH0603"
           }
         }
       ]
@@ -15704,7 +15942,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 460-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0484",
+            "CAD (SYSTEM)": "DSH0484"
           }
         }
       ]
@@ -15757,7 +15997,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0484",
+            "CAD (SYSTEM)": "DSH0484"
           }
         }
       ]
@@ -15810,7 +16052,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0484",
+            "CAD (SYSTEM)": "DSH0484"
           }
         }
       ]
@@ -15863,7 +16107,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0484",
+            "CAD (SYSTEM)": "DSH0484"
           }
         }
       ]
@@ -15916,7 +16162,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0484",
+            "CAD (SYSTEM)": "DSH0484"
           }
         }
       ]
@@ -15969,7 +16217,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 208-3 - 20kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0483",
+            "CAD (SYSTEM)": "DSH0483"
           }
         }
       ]
@@ -16022,7 +16272,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0483",
+            "CAD (SYSTEM)": "DSH0483"
           }
         }
       ]
@@ -16075,7 +16327,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0483",
+            "CAD (SYSTEM)": "DSH0483"
           }
         }
       ]
@@ -16128,7 +16382,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0483",
+            "CAD (SYSTEM)": "DSH0483"
           }
         }
       ]
@@ -16181,7 +16437,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/4-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0483",
+            "CAD (SYSTEM)": "DSH0483"
           }
         }
       ]
@@ -16234,7 +16492,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 460-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0364",
+            "CAD (SYSTEM)": "DSH0364"
           }
         }
       ]
@@ -16287,7 +16547,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 460-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0364",
+            "CAD (SYSTEM)": "DSH0364"
           }
         }
       ]
@@ -16340,7 +16602,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 460-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0364",
+            "CAD (SYSTEM)": "DSH0364"
           }
         }
       ]
@@ -16393,7 +16657,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0364",
+            "CAD (SYSTEM)": "DSH0364"
           }
         }
       ]
@@ -16446,7 +16712,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 208-3 - 15kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0363",
+            "CAD (SYSTEM)": "DSH0363"
           }
         }
       ]
@@ -16499,7 +16767,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 208-3 - 10kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0363",
+            "CAD (SYSTEM)": "DSH0363"
           }
         }
       ]
@@ -16552,7 +16822,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 208-3 - 5kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0363",
+            "CAD (SYSTEM)": "DSH0363"
           }
         }
       ]
@@ -16605,7 +16877,9 @@
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Heat Pump/3-Ton - SE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (3-6)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)"
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (3-6)",
+            "REVIT (SYSTEM)": "DSH0363",
+            "CAD (SYSTEM)": "DSH0363"
           }
         }
       ]
@@ -16625,7 +16899,7 @@
   },
   "_meta": {
     "sourceFile": "LC RTU DATA.xlsx",
-    "generatedAt": "2026-09-22T17:34:59",
+    "generatedAt": "2026-09-23T07:17:53",
     "dataRowCount": 299,
     "selectionCount": 299
   }
