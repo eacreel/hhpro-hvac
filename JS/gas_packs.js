@@ -4,9 +4,11 @@
    Product key gas_packs: gas packs plus heat pumps (LC RTU DATA).
    They use the kW-variant schedule rendering from base.js (heat
    pumps collapse per aux heat kW). What lives here is
-   HHpro.GasPackDesign - gas packs only, since only they have
-   capacity tables so far: the bridge
-   between a Design Search result and the schedule row it maps to.
+   HHpro.GasPackDesign: the bridge between a Design Search result
+   and the schedule row it maps to. A heat pump result lands on the
+   row for its heat kit (the kW dropdown opens on that kit), and
+   swaps cooling and electrical only - the heat pump heating
+   columns stay the AHRI 47 / 17 F ratings.
 
    Every number on the Gas Pack schedule came from a selection run
    by hand in Daikin's software at one condition (80/67 EAT, 95
@@ -54,6 +56,7 @@
         heatEat: 'EAT',
         heatLat: 'LAT',
         hgrh: 'MODULATING HOT GAS REHEAT',
+        auxKw: 'AUX. ELECTRIC HEAT',
         voltage: 'VOLT/PH',
         hp: 'INDOOR MOTOR HP',
         mca: 'Unit MCA',
@@ -117,7 +120,9 @@
     // -----------------------------------------------------------------
     /** Freeze a Design Search result into the shape the schedule needs. */
     function payloadFor(result) {
+        var hp = result.hpHeat;
         return {
+            type: result.type || 'GAS',
             model: result.model,
             cabinet: result.cabinet,
             tons: result.tons,
@@ -125,7 +130,8 @@
             voltage: result.voltage,
             motor: result.motor,
             motorLabel: result.motorLabel,
-            heatSize: result.heat.size,
+            heatSize: result.heat ? result.heat.size : null,
+            kitKw: result.kitKw == null ? null : result.kitKw,
             hgrh: result.hgrh,
             cooling: {
                 airflow: result.cooling.airflow,
@@ -136,12 +142,19 @@
                 sensible: result.cooling.sensible,
                 lat: result.cooling.lat
             },
-            heat: {
+            heat: result.heat ? {
                 inputHigh: result.heat.inputHigh,
                 outputHigh: result.heat.outputHigh,
                 riseHigh: result.heat.riseHigh,
                 thermalEff: result.heat.thermalEff
-            },
+            } : null,
+            // Heat pumps: what Design Search showed for heating. Not written
+            // to the schedule (its heating columns are AHRI 47/17 F ratings);
+            // kept so the row's tooltip can say what was evaluated.
+            hpHeat: hp ? {
+                designDb: hp.designDb, oa: hp.oa, basis: hp.basis,
+                capacity: hp.capacity, cop: hp.cop
+            } : null,
             electrical: {
                 mca: result.electrical.mca,
                 mop: result.electrical.mop,
@@ -161,11 +174,15 @@
      * (D) models, so a high-static result has no row of its own. The toggle
      * rewrites the motor letter in the model number instead - which is why
      * the model shown changes when Design values are on.
+     *
+     * Heat pumps match on cabinet + voltage + heat kit kW (the row's AUX.
+     * ELECTRIC HEAT, "-" = none); no row for that kit -> no match.
      */
     function matchSelection(data, result) {
         var G = HHpro.GasPackCapacity;
         var cols = resolveColumns(data);
         var best = null;
+        var isHp = result.type === 'HEAT PUMP';
         (data.selections || []).forEach(function (sel) {
             var sd = sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
             if (!sd) return;
@@ -173,6 +190,15 @@
             if (!parts) return;
             if (parts.cabinet !== result.cabinet) return;
             if (parts.voltage !== result.voltage) return;
+            if (isHp) {
+                if (parts.type !== 'HEAT PUMP' || !cols.auxKw) return;
+                var rowKw = parseFloat(sd[cols.auxKw]);
+                if ((isFinite(rowKw) ? rowKw : 0) !== Number(result.kitKw || 0)) return;
+                // First matching row wins (LC RTU DATA has a couple of
+                // duplicated heat pump rows; they carry the same values).
+                if (!best) best = { selection: sel, score: 0, parts: parts };
+                return;
+            }
             if (parts.heat !== result.heat.size) return;
             var rowHgrh = cols.hgrh ? String(sd[cols.hgrh] || 'NO').toUpperCase() : 'NO';
             var score = (rowHgrh === String(result.hgrh).toUpperCase()) ? 0 : 1;
@@ -215,18 +241,26 @@
         // would be the only fabricated number on the row.
         if (cols.lwb) out[cols.lwb] = '-';
 
-        put('heatInput', payload.heat.inputHigh);
-        put('heatOutput', payload.heat.outputHigh);
-        if (cols.heatLat) {
-            var eat = cols.heatEat ? parseFloat(scheduleData[cols.heatEat]) : NaN;
-            if (isFinite(eat) && payload.heat.riseHigh != null) {
-                out[cols.heatLat] = round1(eat + payload.heat.riseHigh);
+        // Gas heat only - a heat pump's heating columns are AHRI 47 / 17 F
+        // ratings and stay as scheduled.
+        if (payload.heat) {
+            put('heatInput', payload.heat.inputHigh);
+            put('heatOutput', payload.heat.outputHigh);
+            if (cols.heatLat) {
+                var eat = cols.heatEat ? parseFloat(scheduleData[cols.heatEat]) : NaN;
+                if (isFinite(eat) && payload.heat.riseHigh != null) {
+                    out[cols.heatLat] = round1(eat + payload.heat.riseHigh);
+                }
             }
         }
 
         put('voltage', payload.voltage);
         put('mca', payload.electrical.mca);
-        put('mop', payload.electrical.mop);
+        // DVH1203W's published MOP is misprinted and left blank in the
+        // tables - show a dash rather than the standard row's MOCP.
+        if (cols.mop) {
+            out[cols.mop] = (payload.electrical.mop == null) ? '-' : payload.electrical.mop;
+        }
         // The eight DSG 3-6 ton high-static models have no published indoor
         // motor HP yet (SS-DSG3-R32 was not to hand when the tables were
         // built). Show a dash rather than leave the standard-static value
@@ -310,13 +344,20 @@
                 notifyWarning();          // banner follows the toggle both ways
                 if (typeof onChange === 'function') onChange(on);
             });
+            function hpNote() {
+                var h = entry.payload.hpHeat;
+                if (entry.payload.type !== 'HEAT PUMP') return '';
+                return ' Heating columns stay the AHRI 47/17 °F ratings' +
+                    (h ? ' (Design Search: ' + Math.round(h.capacity).toLocaleString() +
+                         ' BTU/h at ' + h.designDb + ' °F).' : '.');
+            }
             function paint() {
                 btn.textContent = on ? 'Design values' : 'Standard values';
                 btn.classList.toggle('is-on', on);
                 btn.title = on
                     ? 'Showing capacity-table values at ' + entry.payload.cooling.eatDb + '/' +
                       entry.payload.cooling.eatWb + ' °F EAT, ' + entry.payload.cooling.ambient +
-                      ' °F ambient. Click to show the standard selection. ' + WARNING
+                      ' °F ambient.' + hpNote() + ' Click to show the standard selection. ' + WARNING
                     : 'Showing the standard selection run in Daikin’s software. ' +
                       'Click to show your design-condition values.';
             }

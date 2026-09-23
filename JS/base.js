@@ -603,7 +603,14 @@
             var wantId = params && params.focusSelectionId;
             if (!wantId) return;
             var visible = applyFilters(data.selections || [], filterValues);
-            var idx = visible.findIndex(function (s) { return s.id === wantId; });
+            // kW-variant products render one row per family, not per
+            // selection, so count families to find the row.
+            var kwCfg = product && product.kwVariants;
+            var idx = kwCfg
+                ? groupKwFamilies(visible, kwCfg).findIndex(function (fam) {
+                    return fam.variants.some(function (v) { return v.sel.id === wantId; });
+                })
+                : visible.findIndex(function (s) { return s.id === wantId; });
             if (idx < 0) return;
             var rows = table.querySelectorAll('tbody tr');
             var tr = rows[idx];
@@ -1278,6 +1285,14 @@
         var tr = document.createElement('tr');
 
         var currentIdx = fam.defaultIdx;
+        // A heat pump family whose kit was picked in Design Search opens on
+        // that kit, so the design values it carries are what shows first.
+        if (fam.variants.length > 1 && HHpro.GasPackDesign && HHpro.GasPackDesign.get &&
+            product && product.productKey === HHpro.GasPackDesign.PRODUCT) {
+            for (var vi = 0; vi < fam.variants.length; vi++) {
+                if (HHpro.GasPackDesign.get(fam.variants[vi].sel.id)) { currentIdx = vi; break; }
+            }
+        }
         function getCurrentSel() { return fam.variants[currentIdx].sel; }
 
         // Capacity dropdowns (Multi Position Split systems with a matching
@@ -1295,20 +1310,22 @@
                 onChange: null
             }) : null;
 
-        // Gas Pack rows a Design Search result was selected onto carry the
+        // LC RTU rows a Design Search result was selected onto carry the
         // standard/design values toggle (same as the plain-row path in
-        // buildScheduleBody). Design results only ever land on gas packs,
-        // which have no kW variants, so it only applies to one-variant
-        // families and never has to follow the dropdown.
-        var gpCtrl = (fam.variants.length === 1 && HHpro.GasPackDesign &&
-                      HHpro.GasPackDesign.rowController)
-            ? HHpro.GasPackDesign.rowController({
-                productKey: product && product.productKey,
-                data: data,
-                selection: getCurrentSel()
-            }) : null;
-        var gpCells = {};   // letter -> td, so the toggle can repaint
-        if (gpCtrl) tr.classList.add('gp-design-row');
+        // buildScheduleBody). The payload belongs to ONE kW variant (a heat
+        // pump result names its heat kit), so the controller follows the
+        // dropdown: other kits show their standard values and no toggle.
+        function makeGpCtrl() {
+            return (HHpro.GasPackDesign && HHpro.GasPackDesign.rowController)
+                ? HHpro.GasPackDesign.rowController({
+                    productKey: product && product.productKey,
+                    data: data,
+                    selection: getCurrentSel()
+                }) : null;
+        }
+        var gpCtrl = makeGpCtrl();
+        var gpButton = null;
+        tr.classList.toggle('gp-design-row', !!gpCtrl);
 
         // Actions cell -- buttons read the live variant via getSel; the
         // capacity conditions chosen here ride along into the cart on Select.
@@ -1316,21 +1333,20 @@
         actionsTd.className = 'actions-cell';
         var actionsRow = buildActionButtons(getCurrentSel, product, data,
             capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
-        if (gpCtrl) actionsRow.appendChild(gpCtrl.button(repaintGpCells));
+        if (gpCtrl) {
+            gpButton = gpCtrl.button(repaintCells);
+            actionsRow.appendChild(gpButton);
+        }
         actionsTd.appendChild(actionsRow);
         tr.appendChild(actionsTd);
 
-        // Track tds for the variant column + dependent columns so we
-        // can re-render them when the dropdown changes.
-        var depCells = {};
+        // Track the plain value tds so they can be repainted when the
+        // dropdown changes (dependent columns) or the design toggle flips.
+        var valueCells = {};
         var variantCol = kwVariants.variantColumn;
-        var depCols = kwVariants.dependentColumns || [];
-        var depColSet = {};
-        depCols.forEach(function (c) { depColSet[c] = true; });
         // singleAsText: a family with nothing to choose shows its kW as
         // plain text rather than a one-option dropdown.
         var kwDropdown = fam.variants.length > 1 || !kwVariants.singleAsText;
-        var gpOv = gpCtrl ? gpCtrl.overrides() : null;
 
         colLetters.forEach(function (colLetter) {
             var td = document.createElement('td');
@@ -1344,34 +1360,26 @@
                     refreshDependents();
                     // Temperature rise is derived from kW AND the airflow
                     // dropdown, so the capacity controller owns that cell
-                    // (it isn't in depCells) - hand it the new kW.
+                    // (it isn't a value cell) - hand it the new kW.
                     if (capCtrl) capCtrl.setAuxKw(fam.variants[newIdx].kw);
                 }));
             } else {
-                var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
-                var value = sd[colLetter];
-                if (gpOv && Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
-                    value = gpOv[colLetter];
-                    td.classList.add('gp-design-cell');
-                    gpCells[colLetter] = td;
-                } else if (gpCtrl && gpCtrl.handles(colLetter)) {
-                    gpCells[colLetter] = td;
-                }
-                td.textContent = formatCellValue(value, colLetter, product && product.productKey);
-                if (depColSet[colLetter]) depCells[colLetter] = td;
+                valueCells[colLetter] = td;
             }
 
             tr.appendChild(td);
         });
+        repaintCells();
 
         if (capCtrl) capCtrl.finalize();
 
-        function repaintGpCells() {
-            if (!gpCtrl) return;
-            var ov = gpCtrl.overrides();
+        // Every value cell from the live variant, with its design values
+        // laid over when the toggle is on.
+        function repaintCells() {
+            var ov = gpCtrl ? gpCtrl.overrides() : {};
             var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
-            Object.keys(gpCells).forEach(function (L) {
-                var td = gpCells[L];
+            Object.keys(valueCells).forEach(function (L) {
+                var td = valueCells[L];
                 var useDesign = Object.prototype.hasOwnProperty.call(ov, L);
                 td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
                     product && product.productKey);
@@ -1380,11 +1388,18 @@
         }
 
         function refreshDependents() {
-            var sd = (getCurrentSel().rows[0] && getCurrentSel().rows[0].scheduleData) || {};
-            depCols.forEach(function (col) {
-                var td = depCells[col];
-                if (td) td.textContent = formatCellValue(sd[col], col, product && product.productKey);
-            });
+            // The design payload belongs to one variant: rebuild the
+            // controller (and its toggle button) for the variant now shown.
+            var nextCtrl = makeGpCtrl();
+            if (gpButton && gpButton.parentNode) gpButton.parentNode.removeChild(gpButton);
+            gpButton = null;
+            gpCtrl = nextCtrl;
+            if (gpCtrl) {
+                gpButton = gpCtrl.button(repaintCells);
+                actionsRow.appendChild(gpButton);
+            }
+            tr.classList.toggle('gp-design-row', !!gpCtrl);
+            repaintCells();
             // Variants can differ in submittal availability
             if (actionsRow.refreshDocState) actionsRow.refreshDocState();
         }

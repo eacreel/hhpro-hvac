@@ -51,13 +51,17 @@
     // at MY condition", not "which stored row is closest". The defaults are
     // the conditions those manual selections used, so an untouched form
     // reproduces the schedule.
+    // Heat pump heating defaults to 17 F outdoor - the AHRI low-temperature
+    // rating point, so the result lines up with the schedule's 17 F column.
     function freshGasPackState() {
         return {
+            type: null,                            // 'GAS' | 'HEAT PUMP' | null = All
             tons: null, electrical: null, motor: null,
-            efficiency: null, hgrh: null,          // null = All
+            efficiency: null, hgrh: null, kw: null, // null = All
             ambient: 95, eatDb: 80, eatWb: 67,     // degF
-            cfm: null, coolTotal: null, coolSensible: null, heatRise: null,
-            tols: { cfm: 10, coolTotal: 10, coolSensible: 10, heatRise: 10 },
+            heatAmbient: 17,                       // heat pump heating design OA DB, degF
+            cfm: null, coolTotal: null, coolSensible: null, heatRise: null, hpHeating: null,
+            tols: { cfm: 10, coolTotal: 10, coolSensible: 10, heatRise: 10, hpHeating: 10 },
             convOutlet: false, powerExhaust: false
         };
     }
@@ -699,7 +703,8 @@
         { key: 'cfm', label: 'Supply CFM', unit: 'CFM' },
         { key: 'coolTotal', label: 'Cooling Total Capacity', unit: 'BTU/h' },
         { key: 'coolSensible', label: 'Cooling Sensible Capacity', unit: 'BTU/h' },
-        { key: 'heatRise', label: 'Gas Heating High Stage Temp Rise', unit: '°F' }
+        { key: 'heatRise', label: 'Gas Heating High Stage Temp Rise', unit: '°F' },
+        { key: 'hpHeating', label: 'Heat Pump Heating Capacity', unit: 'BTU/h' }
     ];
 
     function buildGasPackSection() {
@@ -719,14 +724,13 @@
         hint.className = 'design-search-hint';
         hint.textContent = 'Results come from Daikin’s published capacity tables, not from the ' +
             'schedule’s stored selection. A condition between rated points is evaluated at the ' +
-            'harsher bracketing point, so the capacity shown is never optimistic. Gas pack RTUs ' +
-            'only for now: heat pump RTUs are on the product page until their capacity tables ' +
-            'are added.';
+            'harsher bracketing point, so the capacity shown is never optimistic.';
         box.appendChild(hint);
 
         // ----- Unit constraints -----
         var fgrid = document.createElement('div');
         fgrid.className = 'design-filter-grid';
+        if (opts.types.length > 1) fgrid.appendChild(gpSelect('Type', 'type', opts.types));
         fgrid.appendChild(gpSelect('Nominal Tons', 'tons',
             opts.tons.map(function (t) { return { value: String(t), label: String(t) }; })));
         fgrid.appendChild(gpSelect('Efficiency', 'efficiency', opts.efficiencies));
@@ -736,19 +740,37 @@
         fgrid.appendChild(gpSelect('Hot Gas Reheat', 'hgrh', [
             { value: 'YES', label: 'Yes' }, { value: 'NO', label: 'No' }
         ]));
-        fgrid.appendChild(gpSelect('Outdoor Ambient (°F)', 'ambient',
-            opts.ambients.map(function (a) { return { value: String(a), label: String(a) }; }),
-            true));
+        if (opts.kits.length) {
+            fgrid.appendChild(gpSelect('Electric Heat (Heat Pump)', 'kw', opts.kits));
+        }
         box.appendChild(fgrid);
 
-        // ----- Entering air -----
+        // ----- Design conditions -----
+        // Outdoor ambient is typed rather than picked: the DVH tables add two
+        // dozen odd rated ambients (66, 79, 83 ...) that would swamp a list,
+        // and an off-grid value simply snaps to the harsher rated point.
+        var hasHp = opts.types.some(function (t) { return t.value === 'HEAT PUMP'; });
         var condGrid = document.createElement('div');
         condGrid.className = 'design-cond-grid';
-        condGrid.appendChild(buildCondGroup('Cooling entering air', [
+        condGrid.appendChild(buildCondGroup('Cooling', [
+            gpCondField('Outdoor Ambient (DB)', 'ambient'),
             gpCondField('Cooling EAT (DB)', 'eatDb'),
             gpCondField('Cooling EAT (WB)', 'eatWb')
         ]));
+        if (hasHp) {
+            condGrid.appendChild(buildCondGroup('Heat pump heating (70 °F EAT)', [
+                gpCondField('Heating Outdoor Ambient (DB)', 'heatAmbient')
+            ]));
+        }
         box.appendChild(condGrid);
+        if (hasHp) {
+            var hpHint = document.createElement('p');
+            hpHint.className = 'design-search-hint';
+            hpHint.textContent = 'Heat pump heating snaps DOWN to the next colder rated ' +
+                'temperature. DVH tables are rated on outdoor wet bulb, so DVH is read at ' +
+                'DB − ' + G.HP_WB_DEPRESSION + ' °F.';
+            box.appendChild(hpHint);
+        }
 
         // ----- Targets -----
         var thint = document.createElement('p');
@@ -1366,9 +1388,15 @@
         state.gasPackError = null;
 
         var missing = [];
-        if (gp.ambient == null) missing.push('Outdoor Ambient');
+        if (gp.ambient == null || isNaN(gp.ambient)) missing.push('Outdoor Ambient');
         if (gp.eatDb == null || isNaN(gp.eatDb)) missing.push('Cooling EAT (DB)');
         if (gp.eatWb == null || isNaN(gp.eatWb)) missing.push('Cooling EAT (WB)');
+        // Heating is optional (heat pumps then list with heating blank),
+        // unless a heating capacity target has to be judged.
+        if (gp.hpHeating != null && !isNaN(gp.hpHeating) &&
+            (gp.heatAmbient == null || isNaN(gp.heatAmbient))) {
+            missing.push('Heating Outdoor Ambient');
+        }
         if (missing.length) {
             state.gasPackError = 'Enter ' + missing.join(', ') +
                 ' — capacity can only be read at a stated condition.';
@@ -1387,13 +1415,16 @@
             return { value: gp[key], tol: gp.tols[key] };
         }
         var criteria = {
+            type: gp.type,
             tons: gp.tons, electrical: gp.electrical, motor: gp.motor,
-            efficiency: gp.efficiency, hgrh: gp.hgrh,
+            efficiency: gp.efficiency, hgrh: gp.hgrh, kw: gp.kw,
             ambient: gp.ambient, eatDb: gp.eatDb, eatWb: gp.eatWb,
+            heatAmbient: (gp.heatAmbient == null || isNaN(gp.heatAmbient)) ? null : gp.heatAmbient,
             cfm: target('cfm'),
             coolTotal: target('coolTotal'),
             coolSensible: target('coolSensible'),
             heatRise: target('heatRise'),
+            hpHeating: target('hpHeating'),
             convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust
         };
         var out = HHpro.GasPackCapacity.search(criteria);
@@ -1410,13 +1441,20 @@
     // product schedule: this table reports only what was asked for plus the
     // values derived from it, so nothing here can be mistaken for the
     // manually-run selection stored on the product page.
+    // `only` columns belong to one unit type and are dropped when no result
+    // of that type is listed (a gas-only search shows exactly the old table);
+    // `mixedOnly` columns appear only when both types are listed.
     var GP_COLUMNS = [
         { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
+        { label: 'Type', get: function (r) { return r.type === 'HEAT PUMP' ? 'Heat Pump' : 'Gas'; },
+          mixedOnly: true },
         { label: 'Nom Tons', get: function (r) { return r.tons; } },
-        { label: 'Efficiency', get: function (r) { return r.efficiency === 'HIGH' ? 'High' : 'Low'; } },
+        { label: 'Efficiency', get: function (r) {
+            return HHpro.GasPackCapacity.EFFICIENCY_LABELS[r.efficiency] || r.efficiency;
+        } },
         { label: 'Volt/PH', get: function (r) { return r.voltage; } },
         { label: 'Motor', get: function (r) { return r.motorLabel; } },
-        { label: 'HGRH', get: function (r) { return r.hgrh; } },
+        { label: 'HGRH', get: function (r) { return r.hgrh; }, only: 'GAS' },
         { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling' },
         { label: 'OA DB (°F)', get: function (r) { return r.cooling.ambient; }, group: 'Cooling' },
         { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling' },
@@ -1424,19 +1462,53 @@
         { label: 'LDB (°F)', get: function (r) { return fmt(r.cooling.lat, 1); }, group: 'Cooling' },
         { label: 'Total (BTU/h)', get: function (r) { return fmtInt(r.cooling.total); }, group: 'Cooling' },
         { label: 'Sensible (BTU/h)', get: function (r) { return fmtInt(r.cooling.sensible); }, group: 'Cooling' },
-        { label: 'Gas Heat', get: function (r) { return r.heat.size; }, group: 'Heating' },
-        { label: 'High In (MBH)', get: function (r) { return r.heat.inputHigh; }, group: 'Heating' },
-        { label: 'High Out (MBH)', get: function (r) { return r.heat.outputHigh; }, group: 'Heating' },
-        { label: 'High Rise (°F)', get: function (r) { return fmt(r.heat.riseHigh, 1); }, group: 'Heating' },
-        { label: 'Low In (MBH)', get: function (r) { return r.heat.inputLow; }, group: 'Heating' },
-        { label: 'Low Out (MBH)', get: function (r) { return r.heat.outputLow; }, group: 'Heating' },
-        { label: 'Low Rise (°F)', get: function (r) { return fmt(r.heat.riseLow, 1); }, group: 'Heating' },
-        { label: 'T.E. (%)', get: function (r) { return r.heat.thermalEff; }, group: 'Heating' },
+        { label: 'Gas Heat', get: gasCell('size'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'High In (MBH)', get: gasCell('inputHigh'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'High Out (MBH)', get: gasCell('outputHigh'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'High Rise (°F)', get: gasCell('riseHigh', 1), group: 'Gas Heating', only: 'GAS' },
+        { label: 'Low In (MBH)', get: gasCell('inputLow'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'Low Out (MBH)', get: gasCell('outputLow'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'Low Rise (°F)', get: gasCell('riseLow', 1), group: 'Gas Heating', only: 'GAS' },
+        { label: 'T.E. (%)', get: gasCell('thermalEff'), group: 'Gas Heating', only: 'GAS' },
+        // The rated outdoor point actually read: DB for DSH / DHH, WB for DVH.
+        { label: 'OA (°F)', get: function (r) {
+            if (!r.hpHeat) return null;
+            return r.hpHeat.oa + (r.hpHeat.basis === 'WB' ? ' WB' : '');
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        { label: 'Capacity (BTU/h)', get: function (r) {
+            return r.hpHeat ? fmtInt(r.hpHeat.capacity) : null;
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        { label: 'COP', get: function (r) { return r.hpHeat ? r.hpHeat.cop : null; },
+          group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        { label: 'Elec Heat (kW)', get: function (r) {
+            if (r.type !== 'HEAT PUMP') return null;
+            return r.kitKw ? r.kitKw : 'None';
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
         { label: 'MCA', get: function (r) { return r.electrical.mca; }, group: 'Electrical' },
         { label: 'MOP', get: function (r) { return r.electrical.mop; }, group: 'Electrical' },
         { label: 'Motor HP', get: function (r) { return r.electrical.hp == null ? '—' : r.electrical.hp; },
           group: 'Electrical' }
     ];
+
+    // Gas heating cell getter; blank on heat pump rows.
+    function gasCell(key, places) {
+        return function (r) {
+            if (!r.heat) return null;
+            var v = r.heat[key];
+            return places == null ? v : fmt(v, places);
+        };
+    }
+
+    function gpColumnsFor(rows) {
+        var types = {};
+        rows.forEach(function (r) { types[r.type || 'GAS'] = true; });
+        var mixed = Object.keys(types).length > 1;
+        return GP_COLUMNS.filter(function (col) {
+            if (col.only && !types[col.only]) return false;
+            if (col.mixedOnly && !mixed) return false;
+            return true;
+        });
+    }
 
     function fmt(v, places) {
         if (v == null || isNaN(v)) return '—';
@@ -1478,15 +1550,24 @@
         note.className = 'design-gp-match';
         if (!match) {
             note.textContent = 'no schedule row';
-            note.title = 'This combination has no row in the Gas Pack schedule.';
+            note.title = 'This combination has no row in the LC RTU schedule.';
         } else {
             var schedModel = match.selection.rows[0].scheduleData[
                 HHpro.GasPackDesign.resolveColumns(state.productData).model];
-            note.textContent = '→ ' + schedModel;
-            note.title = (schedModel === r.model)
-                ? 'Selects this row on the Gas Pack RTU schedule.'
-                : 'Selects schedule row ' + schedModel + '; switching to design values ' +
-                  'renames it ' + r.model + ' for the high-static motor.';
+            var isHp = r.type === 'HEAT PUMP';
+            var kwText = isHp ? (r.kitKw ? r.kitKw + ' kW' : 'no electric heat') : '';
+            note.textContent = '→ ' + schedModel + (isHp ? ' · ' + kwText : '');
+            if (schedModel === r.model) {
+                note.title = 'Selects this row on the LC RTU schedule.';
+            } else if (isHp) {
+                // Heat pump rows carry no motor letter; design values spell
+                // the full model (D or W).
+                note.title = 'Selects schedule row ' + schedModel + ' (' + kwText + '); ' +
+                    'design values show it as ' + r.model + '.';
+            } else {
+                note.title = 'Selects schedule row ' + schedModel + '; switching to design values ' +
+                    'renames it ' + r.model + ' for the high-static motor.';
+            }
         }
         wrap.appendChild(note);
         return wrap;
@@ -1534,7 +1615,9 @@
         (res.skipped || []).forEach(function (s) {
             var note = document.createElement('p');
             note.className = 'design-search-note';
-            note.textContent = s.cabinet + ' (' + s.tons + ' ton) was not evaluated: ' + s.reason + '.';
+            note.textContent = s.partial
+                ? s.cabinet + ' (' + s.tons + ' ton) heat pump heating not shown: ' + s.reason + '.'
+                : s.cabinet + ' (' + s.tons + ' ton) was not evaluated: ' + s.reason + '.';
             wrap.appendChild(note);
         });
 
@@ -1559,10 +1642,17 @@
     }
 
     function gasPackChips(c) {
-        var chips = [
-            c.eatDb + '/' + c.eatWb + ' °F EAT DB/WB',
-            c.ambient + ' °F ambient'
-        ];
+        var G = HHpro.GasPackCapacity;
+        var chips = [];
+        if (c.type) chips.push(G.TYPE_LABELS[c.type] || c.type);
+        chips.push(c.eatDb + '/' + c.eatWb + ' °F EAT DB/WB');
+        chips.push(c.ambient + ' °F ambient');
+        if (c.type !== 'GAS' && c.heatAmbient != null) {
+            chips.push('heat pump heating at ' + c.heatAmbient + ' °F');
+        }
+        if (c.kw != null) {
+            chips.push(Number(c.kw) === 0 ? 'no electric heat' : c.kw + ' kW electric heat');
+        }
         GP_NUMERIC.forEach(function (def) {
             var t = c[def.key];
             if (t && t.value != null && !isNaN(t.value)) {
@@ -1591,12 +1681,13 @@
         groupRow.appendChild(actionsHead);
 
         // Group header: one merged cell per run of columns sharing a group.
+        var columns = gpColumnsFor(rows);
         var i = 0;
-        while (i < GP_COLUMNS.length) {
-            var g = GP_COLUMNS[i].group || null;
+        while (i < columns.length) {
+            var g = columns[i].group || null;
             var span = 1;
-            while (i + span < GP_COLUMNS.length &&
-                   (GP_COLUMNS[i + span].group || null) === g) span++;
+            while (i + span < columns.length &&
+                   (columns[i + span].group || null) === g) span++;
             var th = document.createElement('th');
             th.colSpan = span;
             th.textContent = g || '';
@@ -1604,7 +1695,7 @@
             groupRow.appendChild(th);
             i += span;
         }
-        GP_COLUMNS.forEach(function (col) {
+        columns.forEach(function (col) {
             var th = document.createElement('th');
             th.textContent = col.label;
             headRow.appendChild(th);
@@ -1622,21 +1713,39 @@
             actionsTd.appendChild(buildGasPackActions(r));
             tr.appendChild(actionsTd);
 
-            GP_COLUMNS.forEach(function (col) {
+            columns.forEach(function (col) {
                 var td = document.createElement('td');
                 if (col.cls) td.className = col.cls;
                 var v = col.get(r);
                 td.textContent = (v == null || v === '') ? '—' : String(v);
+                if (col.label === 'MOP' && v == null) {
+                    td.title = 'Daikin’s published MOP for this unit is misprinted; ' +
+                        'confirm with Daikin (see the Notes sheet of the capacity workbook).';
+                }
                 tr.appendChild(td);
             });
 
             // A row evaluated off-grid says so on the row itself, not just
             // in a summary line that scrolls away.
+            var notes = [];
             if (r.offGrid) {
-                tr.title = 'Evaluated at the harsher bracketing rated point: ' +
+                notes.push('Cooling evaluated at the harsher bracketing rated point: ' +
                     Object.keys(r.offGrid).map(function (k) {
                         return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
-                    }).join(', ');
+                    }).join(', '));
+            }
+            if (r.hpHeat && (r.hpHeat.offGrid || r.hpHeat.basis === 'WB')) {
+                notes.push('Heating read at ' + r.hpHeat.oa + ' °F outdoor ' + r.hpHeat.basis +
+                    (r.hpHeat.basis === 'WB'
+                        ? ' (design ' + r.hpHeat.designDb + ' °F DB − ' +
+                          HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F, rounded down)'
+                        : ' (design ' + r.hpHeat.designDb + ' °F, rounded down)'));
+            }
+            if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
+                notes.push('Heating not evaluated: ' + r.hpHeatNote + '.');
+            }
+            if (notes.length) {
+                tr.title = notes.join('\n');
                 tr.classList.add('design-gp-offgrid');
             }
             tbody.appendChild(tr);

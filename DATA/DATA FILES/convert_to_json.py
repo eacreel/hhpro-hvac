@@ -598,10 +598,10 @@ def convert_mini_split_capacity(input_path, output_path):
 # -----------------------------------------------------------------------------
 # GAS PACK RTU CAPACITY TABLES
 # -----------------------------------------------------------------------------
-# "Daikin LC RTU Capacity Tables.xlsx" - four sheets covering the DSG
-# (standard efficiency) and DHG (high efficiency) packaged rooftops, extracted
-# from Daikin's spec sheets. It drives the condition-aware Gas Pack RTU section
-# of Design Search, which is why the output is keyed by CABINET (DSG036,
+# "Daikin LC RTU Capacity Tables.xlsx" - sheets covering the DSG (standard
+# efficiency) and DHG (high efficiency) gas packs and the DSH / DHH / DVH heat
+# pumps, extracted from Daikin's spec sheets. It drives the condition-aware LC
+# RTU section of Design Search, which is why the output is keyed by CABINET (DSG036,
 # DHG090, ...) rather than by schedule model number: a cooling table is
 # published per cabinet and applies to every voltage and motor built on it.
 #
@@ -620,11 +620,14 @@ def convert_mini_split_capacity(input_path, output_path):
 # spec sheet - and the three cells Daikin misprinted as 240.0, which are blank
 # in the workbook - are simply omitted, so the site only ever sees rated data.
 #
-# The workbook also holds the DSH / DHH / DVH heat pumps (Cooling and
-# Electrical Data rows, plus a "Heat Pump" heating sheet, added 9/23/2026).
-# They are skipped here - only DSG / DHG rows are read - until the heat pump
-# side of Design Search is built; the per-kW heat pump electrical rows would
-# otherwise overwrite each other under one voltage + motor key.
+# Heat pumps (DSH / DHH / DVH, added 9/23/2026) share the Cooling and
+# Electrical Data sheets and add a fifth:
+#   Heat Pump       one row per model / CFM / EAT / outdoor temperature ->
+#                   heating MBh, temp rise, kW, COP. DSH / DHH are rated on
+#                   outdoor DRY bulb, DVH on outdoor WET bulb, so each cabinet
+#                   records which ("basis").
+# and their Electrical Data rows are one per heat kit ("Electric Heat kW"),
+# stored under "kits" so the kW rows don't overwrite each other.
 # -----------------------------------------------------------------------------
 
 GAS_PACK_CAPACITY_FILE = "Daikin LC RTU Capacity Tables.xlsx"
@@ -633,8 +636,13 @@ GAS_PACK_CAPACITY_OUTPUT = "gas_pack_capacity.json"
 # Model-number voltage digit -> the VOLT/PH spelling used by LC RTU DATA.
 GAS_PACK_VOLTAGES = {"3": "208/3", "4": "460/3"}
 # Cabinet prefix -> the Efficiency filter value on the Design Search form.
-# DSG is Daikin's standard-efficiency line, DHG the high-efficiency one.
-GAS_PACK_EFFICIENCY = {"DSG": "LOW", "DHG": "HIGH"}
+# DSG / DSH are Daikin's standard-efficiency lines, DHG / DHH the
+# high-efficiency ones, DVH the variable-speed heat pump.
+GAS_PACK_EFFICIENCY = {"DSG": "LOW", "DHG": "HIGH",
+                       "DSH": "LOW", "DHH": "HIGH", "DVH": "VARIABLE"}
+# Cabinet prefix -> unit TYPE, spelled like LC RTU DATA's TYPE filter.
+GAS_PACK_TYPES = {"DSG": "GAS", "DHG": "GAS",
+                  "DSH": "HEAT PUMP", "DHH": "HEAT PUMP", "DVH": "HEAT PUMP"}
 
 _RANGE_RE = re.compile(r"^\s*(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)\s*$")
 
@@ -687,9 +695,9 @@ def _gp_cabinet(model):
     return str(model).split("*")[0].strip()[:6]
 
 
-def _gp_is_gas(model):
-    """True for gas pack rows (DSG / DHG); False for the heat pump rows."""
-    return str(model).strip()[:3] in GAS_PACK_EFFICIENCY
+def _gp_known(model):
+    """True for a model family this converter understands (DSG/DHG/DSH/DHH/DVH)."""
+    return str(model).strip()[:3] in GAS_PACK_TYPES
 
 
 def convert_gas_pack_capacity(input_path, output_path):
@@ -707,11 +715,19 @@ def convert_gas_pack_capacity(input_path, output_path):
                       "inputLow": 33.75, "outputLow": 27.38,
                       "riseHigh": [15,45], "riseLow": [5,35], "thermalEff": 80}, ...],
             "electrical": {"208/3": {"D": {...}, "W": {...}}, "460/3": {...}}
+          },
+          "DSH036": {
+            "family": "DSH", "type": "HEAT PUMP", ...,       # cooling as above
+            "hpHeat": {"basis": "DB",                        # DVH: "WB"
+                       "axes": {"eatDb":[70], "oa":[-5,...,65], "airflow":[1220]},
+                       "points": {"<eatDb>|<oa>|<airflow>": [BTU/h, rise, kW, COP]}},
+            "electrical": {"208/3": {"D": {..., "kits": {"0": {...}, "5": {...}}}}}
           }, ...
         }
       }
     Capacities are BTU/h (the workbook is MBh) to match the schedule columns.
-    LAT is EAT-DB minus the published delta-T.
+    LAT is EAT-DB minus the published delta-T. A heat pump's top-level
+    electrical figures are its no-heat-kit (0 kW) row; "kits" holds every kit.
     """
     print(f"\nConverting: {os.path.basename(input_path)}")
     wb = openpyxl.load_workbook(input_path, data_only=True)
@@ -723,6 +739,7 @@ def convert_gas_pack_capacity(input_path, output_path):
         if e is None:
             e = cabinets[name] = {
                 "family": name[:3],
+                "type": GAS_PACK_TYPES.get(name[:3], "GAS"),
                 "efficiency": GAS_PACK_EFFICIENCY.get(name[:3], "LOW"),
                 "tons": None,
                 "axes": {"eatDb": set(), "eatWb": set(),
@@ -748,7 +765,7 @@ def convert_gas_pack_capacity(input_path, output_path):
     skipped_cells = 0
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model or not _gp_is_gas(model):
+        if not model or not _gp_known(model):
             continue
         name = _gp_cabinet(model)
         low_stage = "70%" in str(model)
@@ -787,7 +804,7 @@ def convert_gas_pack_capacity(input_path, output_path):
     h = _gp_headers(ws)
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model or not _gp_is_gas(model):
+        if not model or not _gp_known(model):
             continue
         entry = cab(str(model).strip())
         if entry["tons"] is None:
@@ -803,13 +820,53 @@ def convert_gas_pack_capacity(input_path, output_path):
             "thermalEff": _gp_trim(row[h["Thermal Efficiency (%)"] - 1]),
         })
 
+    # ----- Heat pump heating ---------------------------------------------
+    # DSH / DHH publish 70F EAT at nominal CFM against outdoor DRY bulb; DVH
+    # publishes 6 EATs x 3 airflows against outdoor WET bulb. Blank MBh cells
+    # (DHH036 at 5F, a Daikin misprint) are left out, never filled.
+    hp_skipped = 0
+    if "Heat Pump" in wb.sheetnames:
+        ws = wb["Heat Pump"]
+        h = _gp_headers(ws)
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            model = row[h["Model"] - 1]
+            if not model or not _gp_known(model):
+                continue
+            entry = cab(_gp_cabinet(model))
+            mbh = row[h["MBh"] - 1]
+            if not isinstance(mbh, (int, float)):
+                hp_skipped += 1
+                continue
+            oa_db = row[h["OA DB (°F)"] - 1]
+            oa_wb = row[h["OA WB (°F)"] - 1]
+            basis, oa = ("WB", oa_wb) if oa_db is None else ("DB", oa_db)
+            eat = row[h["EAT DB (°F)"] - 1]
+            cfm = row[h["CFM"] - 1]
+            t = entry.get("_hp")
+            if t is None:
+                t = entry["_hp"] = {"basis": basis, "eatDb": set(), "oa": set(),
+                                    "airflow": set(), "points": {}}
+            t["eatDb"].add(eat)
+            t["oa"].add(oa)
+            t["airflow"].add(cfm)
+            dt = row[h["∆T (°F)"] - 1]
+            kw = row[h["kW"] - 1]
+            cop = row[h["COP"] - 1]
+            t["points"]["|".join(_num_key(v) for v in (eat, oa, cfm))] = [
+                int(round(mbh * 1000)),
+                _gp_trim(dt) if isinstance(dt, (int, float)) else None,
+                _gp_trim(kw) if isinstance(kw, (int, float)) else None,
+                _gp_trim(cop) if isinstance(cop, (int, float)) else None,
+            ]
+
     # ----- Electrical ----------------------------------------------------
     ws = wb["Electrical Data"]
     h = _gp_headers(ws)
     no_hp = []
+    no_mop = []
     for row in ws.iter_rows(min_row=2, values_only=True):
         model = row[h["Model"] - 1]
-        if not model or not _gp_is_gas(model):
+        if not model or not _gp_known(model):
             continue
         model = str(model).strip()
         volt = GAS_PACK_VOLTAGES.get(model[6:7])
@@ -820,9 +877,7 @@ def convert_gas_pack_capacity(input_path, output_path):
         if entry["tons"] is None:
             entry["tons"] = row[h["Tons"] - 1]
         hp = row[h["Indoor Motor HP"] - 1] if "Indoor Motor HP" in h else None
-        if hp is None:
-            no_hp.append(model)
-        entry["electrical"].setdefault(volt, {})[motor] = {
+        rec = {
             "model": model,
             "mca": _gp_first_num(row[h["MCA - Base Unit"] - 1]),
             "mop": _gp_first_num(row[h["MOP - Base Unit"] - 1]),
@@ -836,6 +891,31 @@ def convert_gas_pack_capacity(input_path, output_path):
             "mcaBoth": _gp_first_num(row[h["MCA - w/ Conv. Outlet + Pwr Exhaust"] - 1]),
             "mopBoth": _gp_first_num(row[h["MOP - w/ Conv. Outlet + Pwr Exhaust"] - 1]),
         }
+        kit_kw = row[h["Electric Heat kW"] - 1] if "Electric Heat kW" in h else None
+        if kit_kw is None:
+            # Gas pack: one row per model.
+            if hp is None:
+                no_hp.append(model)
+            entry["electrical"].setdefault(volt, {})[motor] = rec
+            continue
+        # Heat pump: one row per heat kit. The 0 kW (no kit) row also fills
+        # the top-level figures, so code that ignores kits still reads the
+        # base unit.
+        kit_kw = _gp_trim(float(kit_kw))
+        kit = dict(rec)
+        del kit["model"]
+        kit["kw"] = kit_kw
+        kit["kit"] = row[h["Electric Heat Kit"] - 1] if "Electric Heat Kit" in h else None
+        kit["kitFla"] = (_gp_first_num(row[h["Electric Heat FLA"] - 1])
+                         if "Electric Heat FLA" in h else None)
+        if kit["mop"] is None:
+            no_mop.append(f"{model} {kit_kw}kW")
+        slot = entry["electrical"].setdefault(volt, {}).setdefault(motor, {"kits": {}})
+        slot["kits"][str(kit_kw)] = kit
+        if kit_kw == 0:
+            slot.update(rec)
+            if hp is None:
+                no_hp.append(model)
 
     # ----- Finalise ------------------------------------------------------
     no_cooling = []
@@ -846,6 +926,14 @@ def convert_gas_pack_capacity(input_path, output_path):
         if low_cooling:
             entry["lowStage"] = {"axes": low_axes, "cooling": low_cooling}
         entry["motors"] = sorted({m for v in entry["electrical"].values() for m in v})
+        t = entry.pop("_hp", None)
+        if t is not None:
+            entry["hpHeat"] = {
+                "basis": t["basis"],
+                "axes": {"eatDb": sorted(t["eatDb"]), "oa": sorted(t["oa"]),
+                         "airflow": sorted(t["airflow"])},
+                "points": t["points"],
+            }
         if not entry["cooling"]:
             # DSG150 today: SS-DSG7-R32 reprints the DSG120 tables under the
             # DSG150 heading, so no real 12.5-ton standard-efficiency cooling
@@ -863,8 +951,11 @@ def convert_gas_pack_capacity(input_path, output_path):
             "coolingKey": "eatDb|eatWb|oaCooling|airflow",
             "coolingValue": "[total BTU/h, sensible BTU/h, LAT degF]",
             "heat": "MBH input/output per stage; rise ranges as [min, max] degF",
+            "hpHeatKey": "eatDb|oa|airflow (oa is outdoor DB or WB per hpHeat.basis)",
+            "hpHeatValue": "[heating BTU/h, temp rise degF, kW, COP]",
             "electrical": "208V figure of each 208/230V pair; MCA/MOP per "
-                          "convenience-outlet / power-exhaust combination",
+                          "convenience-outlet / power-exhaust combination; "
+                          "heat pumps add kits keyed by nominal heat kit kW",
         },
     }
     with open(output_path, "w", encoding="utf-8") as f:
@@ -873,12 +964,21 @@ def convert_gas_pack_capacity(input_path, output_path):
     cool_n = sum(len(e["cooling"]) for e in cabinets.values())
     low_n = sum(len(e["lowStage"]["cooling"]) for e in cabinets.values()
                 if "lowStage" in e)
-    print(f"  -> {len(cabinets)} cabinets written to {os.path.basename(output_path)} "
+    hp_n = sum(len(e["hpHeat"]["points"]) for e in cabinets.values() if "hpHeat" in e)
+    n_hp_cabs = sum(1 for e in cabinets.values() if e["type"] == "HEAT PUMP")
+    print(f"  -> {len(cabinets)} cabinets ({n_hp_cabs} heat pump) written to "
+          f"{os.path.basename(output_path)} "
           f"({cool_n} cooling points, {low_n} low-stage, "
-          f"{sum(len(e['heat']) for e in cabinets.values())} heat sizes)")
+          f"{sum(len(e['heat']) for e in cabinets.values())} gas heat sizes, "
+          f"{hp_n} heat pump heating points)")
     if skipped_cells:
         print(f"     ({skipped_cells} cooling row(s) skipped - blank/misprinted "
               f"in the source spec sheet)")
+    if hp_skipped:
+        print(f"     ({hp_skipped} heat pump heating row(s) skipped - blank/misprinted "
+              f"in the source spec sheet)")
+    if no_mop:
+        print(f"     (no published MOP: {', '.join(no_mop)})")
     if no_cooling:
         print(f"     (no cooling data: {', '.join(sorted(no_cooling))})")
     if no_hp:

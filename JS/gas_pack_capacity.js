@@ -1,8 +1,9 @@
 /* ============================================================
-   HHpro - Gas Pack RTU capacity tables (HHpro.GasPackCapacity)
+   HHpro - LC RTU capacity tables (HHpro.GasPackCapacity)
    ------------------------------------------------------------
-   Backs the condition-aware Gas Pack RTU section of Design
-   Search. Every number on the schedule today came from a
+   Backs the condition-aware Light Commercial RTU section of
+   Design Search: DSG / DHG gas packs and DSH / DHH / DVH heat
+   pumps. Every number on the schedule today came from a
    selection Eric ran by hand at one condition (80/67 EAT, 95
    ambient, 0.5" ESP); these tables let the site answer for any
    condition Daikin publishes, without re-running the software
@@ -10,10 +11,17 @@
 
    Data: DATA/JSON/gas_pack_capacity.json (built by
    convert_to_json.py from "Daikin LC RTU Capacity Tables.xlsx").
-   Keyed by CABINET - DSG036, DHG090, ... - because Daikin
+   Keyed by CABINET - DSG036, DHG090, DSH036, ... - because Daikin
    publishes one cooling table per cabinet that applies to every
    voltage and motor built on it. Voltage and motor only change
-   the electrical block.
+   the electrical block (and, for heat pumps, the heat kit).
+
+   Heat pump heating is read at a heating design outdoor DRY
+   bulb with 70 F entering air (the only indoor temperature the
+   DSH / DHH tables publish). DVH tables are rated on outdoor WET
+   bulb, so DVH is looked up at DB - 2 F (AHRI's 17 F DB / 15 F
+   WB spread). Colder is the harsher side for heating, so an
+   off-grid heating temperature snaps DOWN to the next rated one.
 
    The off-grid policy (worst-case, never interpolate) lives in
    capacity_core.js and is shared with Multi Position Splits.
@@ -44,7 +52,12 @@
     // size name (DSG0363D**M** is the medium heat exchanger).
     var HEAT_LETTERS = { L: 'Low', M: 'Medium', H: 'High' };
     var HEAT_TO_LETTER = { Low: 'L', Medium: 'M', High: 'H' };
-    var EFFICIENCY_LABELS = { LOW: 'Low', HIGH: 'High' };
+    var EFFICIENCY_LABELS = { LOW: 'Low', HIGH: 'High', VARIABLE: 'Variable Speed' };
+    var TYPE_LABELS = { 'GAS': 'Gas', 'HEAT PUMP': 'Heat Pump' };
+    // Heat pump heating: coil entering air, and the outdoor wet bulb
+    // depression used for the wet-bulb-rated DVH tables.
+    var HP_EAT = 70;
+    var HP_WB_DEPRESSION = 2;
     // Hot gas reheat is a DHG-only option, and only up to 12.5 tons.
     var HGRH_MAX_TONS = 12.5;
 
@@ -83,27 +96,47 @@
     // -----------------------------------------------------------------
     /**
      * Split a schedule model number into its parts.
-     * 'DSG0363DM' -> { cabinet:'DSG036', voltage:'208/3', motor:'D',
-     *                  heatLetter:'M', heat:'Medium' }
-     * Returns null for anything that isn't a gas pack model number.
+     * 'DSG0363DM' -> { type:'GAS', cabinet:'DSG036', voltage:'208/3',
+     *                  motor:'D', heatLetter:'M', heat:'Medium' }
+     * 'DSH0363'   -> { type:'HEAT PUMP', cabinet:'DSH036', voltage:'208/3',
+     *                  motor:'D', heatLetter:null, heat:null }
+     * Heat pump schedule rows carry no motor letter (they are the
+     * standard-static selections), so a bare one reads as D.
+     * Returns null for anything that isn't an LC RTU model number.
      */
     function parseModel(model) {
         var s = String(model || '').trim().toUpperCase();
-        if (!/^D[SH]G\d{3}[34][DLW][LMH]?$/.test(s)) return null;
-        var letter = s.charAt(8) || null;
-        return {
-            cabinet: s.slice(0, 6),
-            voltage: s.charAt(6) === '3' ? '208/3' : '460/3',
-            motor: s.charAt(7),
-            heatLetter: letter,
-            heat: letter ? HEAT_LETTERS[letter] : null
-        };
+        var voltage = s.charAt(6) === '3' ? '208/3' : '460/3';
+        if (/^D[SH]G\d{3}[34][DLW][LMH]?$/.test(s)) {
+            var letter = s.charAt(8) || null;
+            return {
+                type: 'GAS',
+                cabinet: s.slice(0, 6),
+                voltage: voltage,
+                motor: s.charAt(7),
+                heatLetter: letter,
+                heat: letter ? HEAT_LETTERS[letter] : null
+            };
+        }
+        if (/^D[SHV]H\d{3}[34][DW]?$/.test(s)) {
+            return {
+                type: 'HEAT PUMP',
+                cabinet: s.slice(0, 6),
+                voltage: voltage,
+                motor: s.charAt(7) || 'D',
+                heatLetter: null,
+                heat: null
+            };
+        }
+        return null;
     }
 
     /** Rebuild a model number from its parts (the motor letter is what the
-     *  design-values toggle rewrites when High Static is chosen). */
+     *  design-values toggle rewrites when High Static is chosen). Heat
+     *  pumps have no heat-exchanger letter. */
     function buildModel(parts) {
         var volt = parts.voltage === '460/3' ? '4' : '3';
+        if (parts.type === 'HEAT PUMP') return parts.cabinet + volt + parts.motor;
         var letter = parts.heatLetter || HEAT_TO_LETTER[parts.heat] || '';
         return parts.cabinet + volt + parts.motor + letter;
     }
@@ -113,11 +146,19 @@
     // -----------------------------------------------------------------
     function formOptions() {
         var cabs = cabinets();
-        var tons = {}, volts = {}, ambients = {}, effs = {};
+        var tons = {}, volts = {}, ambients = {}, effs = {}, types = {}, kits = {};
         Object.keys(cabs).forEach(function (name) {
             var c = cabs[name];
             if (c.tons != null) tons[c.tons] = true;
-            Object.keys(c.electrical || {}).forEach(function (v) { volts[v] = true; });
+            types[c.type || 'GAS'] = true;
+            Object.keys(c.electrical || {}).forEach(function (v) {
+                volts[v] = true;
+                Object.keys(c.electrical[v]).forEach(function (m) {
+                    Object.keys(c.electrical[v][m].kits || {}).forEach(function (kw) {
+                        kits[kw] = true;
+                    });
+                });
+            });
             (((c.axes || {}).oaCooling) || []).forEach(function (a) { ambients[a] = true; });
             if (c.efficiency) effs[c.efficiency] = true;
         });
@@ -125,16 +166,93 @@
             return Object.keys(o).map(Number).sort(function (a, b) { return a - b; });
         }
         return {
+            types: ['GAS', 'HEAT PUMP'].filter(function (t) { return types[t]; })
+                .map(function (t) { return { value: t, label: TYPE_LABELS[t] }; }),
             tons: nums(tons),
             electrical: Object.keys(volts).sort(),
             motors: OFFERED_MOTORS.map(function (m) {
                 return { value: m, label: MOTOR_LABELS[m] };
             }),
             ambients: nums(ambients),
+            // Heat pump electric heat kits; 0 = no kit.
+            kits: nums(kits).map(function (k) {
+                return { value: String(k), label: k === 0 ? 'None' : k + ' kW' };
+            }),
             // Low before High -- ascending efficiency, not alphabetical.
-            efficiencies: ['LOW', 'HIGH'].filter(function (e) { return effs[e]; })
+            efficiencies: ['LOW', 'HIGH', 'VARIABLE'].filter(function (e) { return effs[e]; })
                 .map(function (e) { return { value: e, label: EFFICIENCY_LABELS[e] }; })
         };
+    }
+
+    // -----------------------------------------------------------------
+    // Heat pump heating
+    // -----------------------------------------------------------------
+    /**
+     * Heat pump heating at a heating design outdoor DRY bulb, 70 F EAT.
+     *
+     * Colder is harsher, so an off-grid temperature snaps DOWN to the
+     * next rated point; a rated point the workbook left blank (a Daikin
+     * misprint) is passed over for the next colder one. Nothing outside
+     * the table is extrapolated.
+     *
+     * Returns { available:false, reason, outOfRange? } or
+     *   { available:true, basis:'DB'|'WB', designDb, lookup, oa, airflow,
+     *     eatDb, capacity (BTU/h), rise, kw, cop, offGrid:bool }
+     * where `lookup` is the temperature looked up (DB, or DB - 2 for the
+     * wet-bulb DVH tables) and `oa` the rated point actually used.
+     */
+    function hpHeatAt(cab, designDb, airflow) {
+        var t = cab && cab.hpHeat;
+        if (!t || !t.points) {
+            return { available: false, reason: 'no published heat pump heating data' };
+        }
+        var d = Number(designDb);
+        if (designDb == null || !isFinite(d)) {
+            return { available: false, reason: 'no heating design temperature entered' };
+        }
+        var wb = t.basis === 'WB';
+        var x = wb ? d - HP_WB_DEPRESSION : d;
+        var axes = t.axes || {};
+        if ((axes.eatDb || []).map(Number).indexOf(HP_EAT) < 0) {
+            return { available: false, reason: 'heating not rated at ' + HP_EAT + ' °F entering air' };
+        }
+        var oas = (axes.oa || []).map(Number).filter(isFinite)
+            .sort(function (a, b) { return a - b; });
+        if (!oas.length) return { available: false, reason: 'no published heat pump heating data' };
+        var lo = oas[0], hi = oas[oas.length - 1];
+        if (x < lo || x > hi) {
+            return {
+                available: false, outOfRange: true,
+                reason: 'heating design temperature outside the rated table (' + lo + ' to ' + hi +
+                    ' °F outdoor ' + (wb ? 'WB, looked up at DB − ' + HP_WB_DEPRESSION + ' °F' : 'DB') + ')'
+            };
+        }
+        // DSH / DHH publish heating only at the nominal CFM; DVH's three
+        // heating airflows are the same as its cooling ones, so the cooling
+        // airflow is used when it is one of them (else the nearest, lower
+        // on a tie - less airflow is the conservative side for heating).
+        var flows = (axes.airflow || []).map(Number).filter(isFinite)
+            .sort(function (a, b) { return a - b; });
+        var a = Number(airflow);
+        var cfm = flows[0];
+        if (isFinite(a)) {
+            flows.forEach(function (f) {
+                if (Math.abs(f - a) < Math.abs(cfm - a)) cfm = f;
+            });
+        }
+        var below = oas.filter(function (o) { return o <= x; }).sort(function (p, q) { return q - p; });
+        for (var i = 0; i < below.length; i++) {
+            var p = t.points[[HP_EAT, below[i], cfm].map(core.numStr).join('|')];
+            if (!p || !isFinite(core.capNum(p[0]))) continue;
+            return {
+                available: true,
+                basis: wb ? 'WB' : 'DB',
+                designDb: d, lookup: x, oa: below[i], airflow: cfm, eatDb: HP_EAT,
+                capacity: core.capNum(p[0]), rise: p[1], kw: p[2], cop: p[3],
+                offGrid: below[i] !== d
+            };
+        }
+        return { available: false, reason: 'no rated heating point at or below the design temperature' };
     }
 
     // -----------------------------------------------------------------
@@ -185,12 +303,19 @@
      * MCA / MOP / HP for a cabinet at a voltage and motor, for the
      * electrical options ticked on the form.
      * opts = { convOutlet: bool, powerExhaust: bool }
+     * kw   = heat pump heat kit (nominal kW, 0 = none); ignored for gas
+     *        packs, which have no kits. null when that kit isn't offered.
      */
-    function electricalFor(cabinet, voltage, motor, opts) {
+    function electricalFor(cabinet, voltage, motor, opts, kw) {
         var cab = cabinets()[cabinet];
-        var e = cab && cab.electrical && cab.electrical[voltage] &&
+        var slot = cab && cab.electrical && cab.electrical[voltage] &&
                 cab.electrical[voltage][motor];
-        if (!e) return null;
+        if (!slot) return null;
+        var e = slot;
+        if (slot.kits) {
+            e = slot.kits[String(kw == null ? 0 : Number(kw))];
+            if (!e) return null;
+        }
         var conv = !!(opts && opts.convOutlet);
         var pe = !!(opts && opts.powerExhaust);
         var mca = e.mca, mop = e.mop;
@@ -198,10 +323,14 @@
         else if (conv) { mca = e.mcaConv; mop = e.mopConv; }
         else if (pe) { mca = e.mcaPe; mop = e.mopPe; }
         return {
-            model: e.model, voltage: voltage, motor: motor,
+            model: slot.model, voltage: voltage, motor: motor,
             mca: mca, mop: mop, hp: e.hp,
             convOutlet: conv, powerExhaust: pe,
-            convFla: e.convFla, peFla: e.peFla
+            convFla: e.convFla, peFla: e.peFla,
+            // Heat pumps only: the heat kit this MCA / MOP includes.
+            kitKw: slot.kits ? e.kw : null,
+            kit: slot.kits ? (e.kit || null) : null,
+            kitFla: slot.kits ? (e.kitFla == null ? null : e.kitFla) : null
         };
     }
 
@@ -226,38 +355,59 @@
         return all.filter(function (a) { return within(a, cfm, tolPct); });
     }
 
+    function hasTarget(t) {
+        return !!(t && t.value != null && isFinite(t.value) && t.value > 0);
+    }
+
     /**
      * Run a design search.
      *
      * criteria = {
+     *   type,                                        // 'GAS' | 'HEAT PUMP' | null = both
      *   tons, electrical, motor, efficiency, hgrh,   // hard filters, null = any
+     *   kw,                                          // heat pump heat kit kW, 0 = none, null = any
      *   ambient,                                     // degF, required
      *   eatDb, eatWb,                                // degF, required
+     *   heatAmbient,                                 // heat pump heating design OA DB (degF)
      *   cfm:{value,tol}, coolTotal:{value,tol}, coolSensible:{value,tol},
-     *   heatRise:{value,tol},
+     *   heatRise:{value,tol},                        // gas packs
+     *   hpHeating:{value,tol},                       // heat pumps, BTU/h at heatAmbient
      *   convOutlet, powerExhaust                     // booleans
      * }
      *
-     * Returns { results:[...], skipped:[{cabinet, reason}] } with results
-     * sorted best-match first. One result per cabinet + voltage + motor +
-     * heat size, because those are four genuinely different units.
+     * Returns { results:[...], skipped:[{cabinet, reason, partial?}] } with
+     * results sorted best-match first. One result per cabinet + voltage +
+     * motor + gas heat size (gas packs) or heat kit (heat pumps), because
+     * those are genuinely different units. A target only one unit type can
+     * meet (gas temp rise, heat pump heating) rules the other type out.
      */
     function search(criteria) {
         var c = criteria || {};
         var cabs = cabinets();
         var results = [];
         var skipped = [];
+        var wantRise = hasTarget(c.heatRise);
+        var wantHp = hasTarget(c.hpHeating);
 
         Object.keys(cabs).forEach(function (name) {
             var cab = cabs[name];
+            var isHp = cab.type === 'HEAT PUMP';
 
+            if (c.type && (cab.type || 'GAS') !== c.type) return;
+            if (isHp && wantRise) return;
+            if (!isHp && wantHp) return;
+            // Gas packs have no electric heat: they pass "None", not a kit size.
+            if (!isHp && c.kw != null && Number(c.kw) !== 0) return;
+
+            if (c.tons != null && Number(cab.tons) !== Number(c.tons)) return;
+            if (c.efficiency && cab.efficiency !== c.efficiency) return;
+            // After the unit filters, so a 5-ton search doesn't report the
+            // 12.5-ton DSG150 gap.
             if (cab.coolingUnavailable) {
                 skipped.push({ cabinet: name, tons: cab.tons,
                                reason: 'no published cooling data' });
                 return;
             }
-            if (c.tons != null && Number(cab.tons) !== Number(c.tons)) return;
-            if (c.efficiency && cab.efficiency !== c.efficiency) return;
 
             // Hot gas reheat is not in the capacity tables at all - it is a
             // factory option that exists as its own row in the schedule, and
@@ -297,6 +447,79 @@
             if (!within(r.sensible, c.coolSensible && c.coolSensible.value,
                         c.coolSensible && c.coolSensible.tol)) return;
 
+            var coolingOut = {
+                airflow: r.airflow,
+                eatDb: r.eatDb, eatWb: r.eatWb,
+                ambient: r.oaCooling,
+                total: r.total, sensible: r.sensible,
+                lat: r.lat
+            };
+            // Which axes were snapped to a harsher rated point (null when
+            // the design point was rated exactly).
+            var offGrid = Object.keys(cool.offGrid || {}).length ? cool.offGrid : null;
+            var coolScore =
+                deviation(r.total, c.coolTotal && c.coolTotal.value) +
+                deviation(r.sensible, c.coolSensible && c.coolSensible.value) +
+                deviation(r.airflow, cfmTarget);
+
+            if (isHp) {
+                var hp = hpHeatAt(cab, c.heatAmbient, r.airflow);
+                if (!hp.available && wantHp) {
+                    // A heating target can't be judged without heating data.
+                    skipped.push({ cabinet: name, tons: cab.tons, reason: hp.reason });
+                    return;
+                }
+                var before = results.length;
+                if (hp.available && !within(hp.capacity, c.hpHeating && c.hpHeating.value,
+                                            c.hpHeating && c.hpHeating.tol)) return;
+                var hpScore = coolScore +
+                    (hp.available ? deviation(hp.capacity, c.hpHeating && c.hpHeating.value) : 0);
+
+                // Voltage x motor x heat kit -> one result each.
+                Object.keys(cab.electrical || {}).forEach(function (voltage) {
+                    if (c.electrical && voltage !== c.electrical) return;
+                    OFFERED_MOTORS.forEach(function (motor) {
+                        if (c.motor && motor !== c.motor) return;
+                        var slot = cab.electrical[voltage][motor];
+                        if (!slot) return;
+                        Object.keys(slot.kits || { 0: true }).map(Number)
+                            .sort(function (a, b) { return a - b; })
+                            .forEach(function (kw) {
+                                if (c.kw != null && Number(c.kw) !== kw) return;
+                                var elec = electricalFor(name, voltage, motor, c, kw);
+                                if (!elec) return;
+                                results.push({
+                                    type: 'HEAT PUMP',
+                                    cabinet: name,
+                                    family: cab.family,
+                                    efficiency: cab.efficiency,
+                                    tons: cab.tons,
+                                    model: buildModel({ type: 'HEAT PUMP', cabinet: name,
+                                                        voltage: voltage, motor: motor }),
+                                    voltage: voltage,
+                                    motor: motor,
+                                    motorLabel: MOTOR_LABELS[motor],
+                                    hgrh: 'NO',
+                                    cooling: coolingOut,
+                                    offGrid: offGrid,
+                                    heat: null,
+                                    hpHeat: hp.available ? hp : null,
+                                    hpHeatNote: hp.available ? null : hp.reason,
+                                    kitKw: kw,
+                                    electrical: elec,
+                                    score: hpScore
+                                });
+                            });
+                    });
+                });
+                // Listed without heating: say why, once per cabinet.
+                if (!hp.available && results.length > before) {
+                    skipped.push({ cabinet: name, tons: cab.tons, reason: hp.reason,
+                                   partial: true });
+                }
+                return;
+            }
+
             // Voltage x motor x heat size -> one result each.
             Object.keys(cab.electrical || {}).forEach(function (voltage) {
                 if (c.electrical && voltage !== c.electrical) return;
@@ -311,14 +534,12 @@
                         if (!within(heat.riseHigh, c.heatRise && c.heatRise.value,
                                     c.heatRise && c.heatRise.tol)) return;
 
-                        var score =
-                            deviation(r.total, c.coolTotal && c.coolTotal.value) +
-                            deviation(r.sensible, c.coolSensible && c.coolSensible.value) +
-                            deviation(r.airflow, cfmTarget) +
+                        var score = coolScore +
                             deviation(heat.riseHigh, c.heatRise && c.heatRise.value);
 
                         hgrhOptions.forEach(function (hgrh) {
                             results.push({
+                                type: 'GAS',
                                 cabinet: name,
                                 family: cab.family,
                                 efficiency: cab.efficiency,
@@ -329,19 +550,11 @@
                                 motor: motor,
                                 motorLabel: MOTOR_LABELS[motor],
                                 hgrh: hgrh,
-                                cooling: {
-                                    airflow: r.airflow,
-                                    eatDb: r.eatDb, eatWb: r.eatWb,
-                                    ambient: r.oaCooling,
-                                    total: r.total, sensible: r.sensible,
-                                    lat: r.lat
-                                },
-                                // Which axes were snapped to a harsher rated
-                                // point (null when the design point was rated
-                                // exactly).
-                                offGrid: Object.keys(cool.offGrid || {}).length
-                                    ? cool.offGrid : null,
+                                cooling: coolingOut,
+                                offGrid: offGrid,
                                 heat: heat,
+                                hpHeat: null,
+                                kitKw: null,
                                 electrical: elec,
                                 score: score
                             });
@@ -354,6 +567,8 @@
         results.sort(function (a, b) {
             if (a.score !== b.score) return a.score - b.score;
             if (a.model !== b.model) return a.model < b.model ? -1 : 1;
+            // Same heat pump with different heat kits: smallest kit first.
+            if (a.kitKw !== b.kitKw) return (a.kitKw || 0) - (b.kitKw || 0);
             // Same cabinet built both ways: plain unit before the reheat one,
             // so the pair is ordered rather than arbitrary.
             return (a.hgrh === b.hgrh) ? 0 : (a.hgrh === 'NO' ? -1 : 1);
@@ -378,10 +593,14 @@
         buildModel: buildModel,
         riseFor: riseFor,
         heatAt: heatAt,
+        hpHeatAt: hpHeatAt,
         electricalFor: electricalFor,
         search: search,
         MOTOR_LABELS: MOTOR_LABELS,
-        HEAT_LETTERS: HEAT_LETTERS
+        HEAT_LETTERS: HEAT_LETTERS,
+        TYPE_LABELS: TYPE_LABELS,
+        EFFICIENCY_LABELS: EFFICIENCY_LABELS,
+        HP_WB_DEPRESSION: HP_WB_DEPRESSION
     };
 
     core.register(PRODUCT, HHpro.GasPackCapacity);
