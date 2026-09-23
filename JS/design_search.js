@@ -707,10 +707,86 @@
         { key: 'hpHeating', label: 'Heat Pump Heating Capacity', unit: 'BTU/h' }
     ];
 
+    // Picking a Type re-scopes every other list to that unit type. Any
+    // choice the new type can't have (Variable Speed or a heat kit on Gas,
+    // hot gas reheat or 25 tons on Heat Pump, the other type's heating
+    // target) is cleared, so a control that is no longer shown can't keep
+    // filtering the search.
+    function pruneGasPackForType() {
+        var gp = state.gasPack;
+        var opts = HHpro.GasPackCapacity.formOptions(gp.type);
+        function keep(key, choices) {
+            if (gp[key] == null) return;
+            var ok = choices.some(function (c) { return String(c.value) === String(gp[key]); });
+            if (!ok) gp[key] = null;
+        }
+        keep('tons', opts.tons.map(function (t) { return { value: t }; }));
+        keep('efficiency', opts.efficiencies);
+        keep('electrical', opts.electrical.map(function (v) { return { value: v }; }));
+        keep('kw', opts.kits);
+        if (!opts.hgrh) gp.hgrh = null;
+        if (!opts.hasGas) gp.heatRise = null;
+        if (!opts.hasHeatPump) gp.hpHeating = null;
+    }
+
+    // The conditions the manual selections were run at (and the AHRI 17 F
+    // heat pump point) - the defaults whenever the tables publish them.
+    var GP_DEFAULT_CONDITIONS = { ambient: 95, eatDb: 80, eatWb: 67, heatAmbient: 17 };
+
+    // Design conditions are picked from the values the capacity tables
+    // publish for the units in scope (Type, Tons, Efficiency; the WB list
+    // also follows the EAT DB). When a filter change takes away the current
+    // pick, fall back to the default if it is offered, else the nearest
+    // published value. Returns the form options for that scope.
+    function reconcileGasPackConditions() {
+        var gp = state.gasPack;
+        var G = HHpro.GasPackCapacity;
+        function pick(key, list) {
+            if (!list.length) { gp[key] = null; return; }
+            var cur = (gp[key] == null) ? NaN : Number(gp[key]);
+            if (list.indexOf(cur) >= 0) return;
+            var d = GP_DEFAULT_CONDITIONS[key];
+            if (list.indexOf(d) >= 0) { gp[key] = d; return; }
+            var ref = isFinite(cur) ? cur : d;
+            gp[key] = list.reduce(function (best, v) {
+                return Math.abs(v - ref) < Math.abs(best - ref) ? v : best;
+            }, list[0]);
+        }
+        var opts = G.formOptions(gp.type, { tons: gp.tons, efficiency: gp.efficiency });
+        pick('ambient', opts.ambients);
+        pick('eatDb', opts.eatDbs);
+        opts = G.formOptions(gp.type, { tons: gp.tons, efficiency: gp.efficiency, eatDb: gp.eatDb });
+        pick('eatWb', opts.eatWbs);
+        if (opts.hasHeatPump) pick('heatAmbient', opts.heatAmbients);
+        return opts;
+    }
+
+    function gpValueChoices(values) {
+        return values.map(function (v) { return { value: String(v), label: String(v) }; });
+    }
+
+    // A titled block of dropdowns, laid out like the unit constraints.
+    function gpCondGroup(title, nodes) {
+        var group = document.createElement('div');
+        group.className = 'design-cond-group';
+        var lbl = document.createElement('div');
+        lbl.className = 'design-cond-group-title';
+        lbl.textContent = title;
+        group.appendChild(lbl);
+        var grid = document.createElement('div');
+        grid.className = 'design-filter-grid';
+        nodes.forEach(function (n) { grid.appendChild(n); });
+        group.appendChild(grid);
+        return group;
+    }
+
     function buildGasPackSection() {
         var G = HHpro.GasPackCapacity;
-        var opts = G.formOptions();
         var gp = state.gasPack;
+        var opts = reconcileGasPackConditions();
+        // Filters that change which conditions are published re-render the
+        // form so the condition lists follow them.
+        function rescope() { rerenderWorkArea(); }
 
         var box = document.createElement('section');
         box.className = 'design-search-section design-capacity-section';
@@ -723,52 +799,59 @@
         var hint = document.createElement('p');
         hint.className = 'design-search-hint';
         hint.textContent = 'Results come from Daikin’s published capacity tables, not from the ' +
-            'schedule’s stored selection. A condition between rated points is evaluated at the ' +
-            'harsher bracketing point, so the capacity shown is never optimistic.';
+            'schedule’s stored selection. Conditions are picked from the values those tables ' +
+            'publish, so every number shown is a rated point; a unit with no rating at the ' +
+            'chosen condition is left out.';
         box.appendChild(hint);
 
         // ----- Unit constraints -----
         var fgrid = document.createElement('div');
         fgrid.className = 'design-filter-grid';
-        if (opts.types.length > 1) fgrid.appendChild(gpSelect('Type', 'type', opts.types));
-        fgrid.appendChild(gpSelect('Nominal Tons', 'tons',
-            opts.tons.map(function (t) { return { value: String(t), label: String(t) }; })));
-        fgrid.appendChild(gpSelect('Efficiency', 'efficiency', opts.efficiencies));
+        if (opts.types.length > 1) {
+            fgrid.appendChild(gpSelect('Type', 'type', opts.types, false, function () {
+                pruneGasPackForType();
+                rerenderWorkArea();
+            }));
+        }
+        fgrid.appendChild(gpSelect('Nominal Tons', 'tons', gpValueChoices(opts.tons), false, rescope));
+        fgrid.appendChild(gpSelect('Efficiency', 'efficiency', opts.efficiencies, false, rescope));
         fgrid.appendChild(gpSelect('Electrical', 'electrical',
             opts.electrical.map(function (v) { return { value: v, label: v }; })));
         fgrid.appendChild(gpSelect('Motor', 'motor', opts.motors));
-        fgrid.appendChild(gpSelect('Hot Gas Reheat', 'hgrh', [
-            { value: 'YES', label: 'Yes' }, { value: 'NO', label: 'No' }
-        ]));
+        if (opts.hgrh) {
+            fgrid.appendChild(gpSelect('Hot Gas Reheat', 'hgrh', [
+                { value: 'YES', label: 'Yes' }, { value: 'NO', label: 'No' }
+            ]));
+        }
         if (opts.kits.length) {
             fgrid.appendChild(gpSelect('Electric Heat (Heat Pump)', 'kw', opts.kits));
         }
         box.appendChild(fgrid);
 
         // ----- Design conditions -----
-        // Outdoor ambient is typed rather than picked: the DVH tables add two
-        // dozen odd rated ambients (66, 79, 83 ...) that would swamp a list,
-        // and an off-grid value simply snaps to the harsher rated point.
-        var hasHp = opts.types.some(function (t) { return t.value === 'HEAT PUMP'; });
+        // Picked, not typed: each list holds only the values the tables
+        // publish for the units in scope, so nothing is ever read off-grid.
+        var hasHp = opts.hasHeatPump;
         var condGrid = document.createElement('div');
-        condGrid.className = 'design-cond-grid';
-        condGrid.appendChild(buildCondGroup('Cooling', [
-            gpCondField('Outdoor Ambient (DB)', 'ambient'),
-            gpCondField('Cooling EAT (DB)', 'eatDb'),
-            gpCondField('Cooling EAT (WB)', 'eatWb')
+        condGrid.className = 'design-cond-grid design-gp-conds';
+        condGrid.appendChild(gpCondGroup('Cooling', [
+            gpSelect('Outdoor Ambient DB (°F)', 'ambient', gpValueChoices(opts.ambients), true),
+            gpSelect('Cooling EAT DB (°F)', 'eatDb', gpValueChoices(opts.eatDbs), true, rescope),
+            gpSelect('Cooling EAT WB (°F)', 'eatWb', gpValueChoices(opts.eatWbs), true)
         ]));
         if (hasHp) {
-            condGrid.appendChild(buildCondGroup('Heat pump heating (70 °F EAT)', [
-                gpCondField('Heating Outdoor Ambient (DB)', 'heatAmbient')
+            condGrid.appendChild(gpCondGroup('Heat pump heating (70 °F EAT)', [
+                gpSelect('Heating Outdoor Ambient DB (°F)', 'heatAmbient',
+                    gpValueChoices(opts.heatAmbients), true)
             ]));
         }
         box.appendChild(condGrid);
         if (hasHp) {
             var hpHint = document.createElement('p');
             hpHint.className = 'design-search-hint';
-            hpHint.textContent = 'Heat pump heating snaps DOWN to the next colder rated ' +
-                'temperature. DVH tables are rated on outdoor wet bulb, so DVH is read at ' +
-                'DB − ' + G.HP_WB_DEPRESSION + ' °F.';
+            hpHint.textContent = 'DVH tables are rated on outdoor wet bulb, so a DVH unit is ' +
+                'read at DB − ' + G.HP_WB_DEPRESSION + ' °F and shows heating only where ' +
+                'that wet bulb is published.';
             box.appendChild(hpHint);
         }
 
@@ -781,7 +864,12 @@
 
         var grid = document.createElement('div');
         grid.className = 'design-target-grid';
-        GP_NUMERIC.forEach(function (def) { grid.appendChild(gpTargetRow(def)); });
+        GP_NUMERIC.forEach(function (def) {
+            // Each unit type's heating target only while that type is in scope.
+            if (def.key === 'heatRise' && !opts.hasGas) return;
+            if (def.key === 'hpHeating' && !opts.hasHeatPump) return;
+            grid.appendChild(gpTargetRow(def));
+        });
         box.appendChild(grid);
 
         // ----- Electrical options -----
@@ -808,8 +896,8 @@
     }
 
     // Dropdown bound to a gasPack state key. `required` drops the "All"
-    // option (outdoor ambient always has to resolve to a rated column).
-    function gpSelect(labelText, key, choices, required) {
+    // option; `onChange` runs after the state is updated.
+    function gpSelect(labelText, key, choices, required, onChange) {
         var group = document.createElement('div');
         group.className = 'filter-group';
 
@@ -838,37 +926,16 @@
         });
         select.addEventListener('change', function () {
             var raw = select.value;
-            if (raw === '') { state.gasPack[key] = null; return; }
-            var n = parseFloat(raw);
-            state.gasPack[key] = (String(n) === raw) ? n : raw;
+            if (raw === '') {
+                state.gasPack[key] = null;
+            } else {
+                var n = parseFloat(raw);
+                state.gasPack[key] = (String(n) === raw) ? n : raw;
+            }
+            if (typeof onChange === 'function') onChange();
         });
         group.appendChild(select);
         return group;
-    }
-
-    function gpCondField(labelText, key) {
-        var wrap = document.createElement('div');
-        wrap.className = 'design-cond-field';
-        var label = document.createElement('label');
-        label.className = 'design-cond-label';
-        label.textContent = labelText;
-        wrap.appendChild(label);
-        var input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'design-cond-value';
-        input.step = 'any';
-        input.setAttribute('aria-label', labelText + ' (°F)');
-        if (state.gasPack[key] != null) input.value = state.gasPack[key];
-        input.addEventListener('input', function () {
-            var raw = input.value.trim();
-            state.gasPack[key] = raw === '' ? null : parseFloat(raw);
-        });
-        wrap.appendChild(input);
-        var unit = document.createElement('span');
-        unit.className = 'design-cond-unit';
-        unit.textContent = '°F';
-        wrap.appendChild(unit);
-        return wrap;
     }
 
     function gpTargetRow(def) {
@@ -1398,7 +1465,7 @@
             missing.push('Heating Outdoor Ambient');
         }
         if (missing.length) {
-            state.gasPackError = 'Enter ' + missing.join(', ') +
+            state.gasPackError = 'Pick ' + missing.join(', ') +
                 ' — capacity can only be read at a stated condition.';
             state.results = null;
             rerenderWorkArea();
@@ -1425,7 +1492,10 @@
             coolSensible: target('coolSensible'),
             heatRise: target('heatRise'),
             hpHeating: target('hpHeating'),
-            convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust
+            convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust,
+            // Conditions are picked from published values: read them there,
+            // never at a snapped neighbour.
+            exact: true
         };
         var out = HHpro.GasPackCapacity.search(criteria);
         state.results = {
@@ -1443,7 +1513,9 @@
     // manually-run selection stored on the product page.
     // `only` columns belong to one unit type and are dropped when no result
     // of that type is listed (a gas-only search shows exactly the old table);
-    // `mixedOnly` columns appear only when both types are listed.
+    // `mixedOnly` columns appear only when both types are listed. The
+    // `variant` column of a unit's type becomes its heat size / heat kit
+    // dropdown when the unit has more than one.
     var GP_COLUMNS = [
         { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
         { label: 'Type', get: function (r) { return r.type === 'HEAT PUMP' ? 'Heat Pump' : 'Gas'; },
@@ -1460,9 +1532,10 @@
         { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling' },
         { label: 'EWB (°F)', get: function (r) { return r.cooling.eatWb; }, group: 'Cooling' },
         { label: 'LDB (°F)', get: function (r) { return fmt(r.cooling.lat, 1); }, group: 'Cooling' },
+        { label: 'LWB (°F)', get: function (r) { return fmt(r.cooling.lwb, 1); }, group: 'Cooling' },
         { label: 'Total (BTU/h)', get: function (r) { return fmtInt(r.cooling.total); }, group: 'Cooling' },
         { label: 'Sensible (BTU/h)', get: function (r) { return fmtInt(r.cooling.sensible); }, group: 'Cooling' },
-        { label: 'Gas Heat', get: gasCell('size'), group: 'Gas Heating', only: 'GAS' },
+        { label: 'Gas Heat', get: gasCell('size'), group: 'Gas Heating', only: 'GAS', variant: 'GAS' },
         { label: 'High In (MBH)', get: gasCell('inputHigh'), group: 'Gas Heating', only: 'GAS' },
         { label: 'High Out (MBH)', get: gasCell('outputHigh'), group: 'Gas Heating', only: 'GAS' },
         { label: 'High Rise (°F)', get: gasCell('riseHigh', 1), group: 'Gas Heating', only: 'GAS' },
@@ -1483,7 +1556,7 @@
         { label: 'Elec Heat (kW)', get: function (r) {
             if (r.type !== 'HEAT PUMP') return null;
             return r.kitKw ? r.kitKw : 'None';
-        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP', variant: 'HEAT PUMP' },
         { label: 'MCA', get: function (r) { return r.electrical.mca; }, group: 'Electrical' },
         { label: 'MOP', get: function (r) { return r.electrical.mop; }, group: 'Electrical' },
         { label: 'Motor HP', get: function (r) { return r.electrical.hp == null ? '—' : r.electrical.hp; },
@@ -1573,9 +1646,46 @@
         return wrap;
     }
 
+    // One results row per orderable unit: the heat sizes of a gas pack (and
+    // the heat kits of a heat pump) become a dropdown on that row instead of
+    // rows of their own. Hot gas reheat stays a separate row - it is a
+    // different schedule row and a different unit. Groups keep the order of
+    // their best-scoring variant; each opens on that variant (ties go to the
+    // smallest heat size / kit).
+    var GAS_HEAT_ORDER = { Low: 0, Medium: 1, High: 2 };
+
+    function variantRank(r) {
+        return r.type === 'HEAT PUMP' ? (r.kitKw || 0) : (GAS_HEAT_ORDER[r.heat && r.heat.size] || 0);
+    }
+
+    function variantLabel(r) {
+        if (r.type === 'HEAT PUMP') return r.kitKw ? String(r.kitKw) : 'None';
+        return r.heat ? r.heat.size : '';
+    }
+
+    function groupGasPackResults(rows) {
+        var groups = [];
+        var byKey = {};
+        rows.forEach(function (r) {
+            var key = [r.type, r.cabinet, r.voltage, r.motor, r.hgrh].join('|');
+            var g = byKey[key];
+            if (!g) { g = byKey[key] = { variants: [] }; groups.push(g); }
+            g.variants.push(r);
+        });
+        groups.forEach(function (g) {
+            g.variants.sort(function (a, b) { return variantRank(a) - variantRank(b); });
+            g.defaultIdx = 0;
+            g.variants.forEach(function (v, i) {
+                if (v.score < g.variants[g.defaultIdx].score) g.defaultIdx = i;
+            });
+        });
+        return groups;
+    }
+
     function buildGasPackResults() {
         var res = state.results;
         var rows = res.results;
+        var groups = groupGasPackResults(rows);
         var wrap = document.createElement('section');
         wrap.className = 'design-search-results';
 
@@ -1588,7 +1698,7 @@
         title.appendChild(titleText);
         var count = document.createElement('span');
         count.className = 'design-search-count';
-        count.textContent = rows.length + ' match' + (rows.length === 1 ? '' : 'es');
+        count.textContent = groups.length + ' match' + (groups.length === 1 ? '' : 'es');
         title.appendChild(count);
         hdr.appendChild(title);
 
@@ -1615,9 +1725,16 @@
         (res.skipped || []).forEach(function (s) {
             var note = document.createElement('p');
             note.className = 'design-search-note';
-            note.textContent = s.partial
-                ? s.cabinet + ' (' + s.tons + ' ton) heat pump heating not shown: ' + s.reason + '.'
-                : s.cabinet + ' (' + s.tons + ' ton) was not evaluated: ' + s.reason + '.';
+            if (s.notRated) {
+                var c = res.criteria;
+                note.textContent = 'Not listed - no published rating at ' + c.ambient +
+                    ' °F ambient, ' + c.eatDb + '/' + c.eatWb + ' °F EAT: ' +
+                    s.cabinets.join(', ') + '.';
+            } else {
+                note.textContent = s.partial
+                    ? s.cabinet + ' (' + s.tons + ' ton) heat pump heating not shown: ' + s.reason + '.'
+                    : s.cabinet + ' (' + s.tons + ' ton) was not evaluated: ' + s.reason + '.';
+            }
             wrap.appendChild(note);
         });
 
@@ -1637,7 +1754,7 @@
             return wrap;
         }
 
-        wrap.appendChild(buildGasPackTable(rows));
+        wrap.appendChild(buildGasPackTable(groups));
         return wrap;
     }
 
@@ -1664,7 +1781,9 @@
         return chips;
     }
 
-    function buildGasPackTable(rows) {
+    function buildGasPackTable(groups) {
+        var rows = [];
+        groups.forEach(function (g) { rows = rows.concat(g.variants); });
         var tableWrap = document.createElement('div');
         tableWrap.className = 'schedule-wrap design-search-schedule-wrap';
         var table = document.createElement('table');
@@ -1705,49 +1824,70 @@
         table.appendChild(thead);
 
         var tbody = document.createElement('tbody');
-        rows.forEach(function (r) {
+        groups.forEach(function (g) {
             var tr = document.createElement('tr');
+            var cur = g.defaultIdx;
 
             var actionsTd = document.createElement('td');
             actionsTd.className = 'actions-cell';
-            actionsTd.appendChild(buildGasPackActions(r));
             tr.appendChild(actionsTd);
 
+            // Value cells repaint from the variant picked in the dropdown.
+            var cells = [];
             columns.forEach(function (col) {
                 var td = document.createElement('td');
                 if (col.cls) td.className = col.cls;
-                var v = col.get(r);
-                td.textContent = (v == null || v === '') ? '—' : String(v);
-                if (col.label === 'MOP' && v == null) {
-                    td.title = 'Daikin’s published MOP for this unit is misprinted; ' +
-                        'confirm with Daikin (see the Notes sheet of the capacity workbook).';
+                var r0 = g.variants[0];
+                if (col.variant && col.variant === r0.type && g.variants.length > 1) {
+                    td.classList.add('kw-variant-cell');
+                    td.appendChild(buildVariantSelect(g, cur, function (idx) {
+                        cur = idx;
+                        paint();
+                    }));
+                } else {
+                    cells.push({ col: col, td: td });
                 }
                 tr.appendChild(td);
             });
 
-            // A row evaluated off-grid says so on the row itself, not just
-            // in a summary line that scrolls away.
-            var notes = [];
-            if (r.offGrid) {
-                notes.push('Cooling evaluated at the harsher bracketing rated point: ' +
-                    Object.keys(r.offGrid).map(function (k) {
-                        return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
-                    }).join(', '));
-            }
-            if (r.hpHeat && (r.hpHeat.offGrid || r.hpHeat.basis === 'WB')) {
-                notes.push('Heating read at ' + r.hpHeat.oa + ' °F outdoor ' + r.hpHeat.basis +
-                    (r.hpHeat.basis === 'WB'
-                        ? ' (design ' + r.hpHeat.designDb + ' °F DB − ' +
-                          HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F, rounded down)'
-                        : ' (design ' + r.hpHeat.designDb + ' °F, rounded down)'));
-            }
-            if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
-                notes.push('Heating not evaluated: ' + r.hpHeatNote + '.');
-            }
-            if (notes.length) {
+            function paint() {
+                var r = g.variants[cur];
+                cells.forEach(function (c) {
+                    var v = c.col.get(r);
+                    c.td.textContent = (v == null || v === '') ? '—' : String(v);
+                    c.td.title = (c.col.label === 'MOP' && v == null)
+                        ? 'Daikin’s published MOP for this unit is misprinted; ' +
+                          'confirm with Daikin (see the Notes sheet of the capacity workbook).'
+                        : '';
+                });
+                actionsTd.innerHTML = '';
+                actionsTd.appendChild(buildGasPackActions(r));
+
+                // Anything worth knowing about how a row was read says so on
+                // the row itself, not just in a summary line that scrolls away.
+                var notes = [];
+                if (r.offGrid) {
+                    notes.push('Cooling evaluated at the harsher bracketing rated point: ' +
+                        Object.keys(r.offGrid).map(function (k) {
+                            return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
+                        }).join(', '));
+                }
+                if (r.hpHeat && r.hpHeat.basis === 'WB') {
+                    notes.push('Heating read at ' + r.hpHeat.oa + ' °F outdoor WB (' +
+                        r.hpHeat.designDb + ' °F DB − ' +
+                        HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F).');
+                }
+                if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
+                    notes.push('Heating not shown: ' + r.hpHeatNote + '.');
+                }
+                if (r.cooling.lwbSaturated) {
+                    notes.push('LWB: the leaving air works out at saturation, so LWB = LDB.');
+                }
                 tr.title = notes.join('\n');
-                tr.classList.add('design-gp-offgrid');
+                // Only a snapped (harsher-point) reading earns the warning mark.
+                tr.classList.toggle('design-gp-offgrid', !!r.offGrid);
             }
+            paint();
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
@@ -1758,6 +1898,34 @@
             if (table.isConnected) HHpro.Schedule.applyStickyHeaderOffsets(table);
         });
         return tableWrap;
+    }
+
+    // Heat size / heat kit dropdown for a grouped results row, styled like
+    // the schedule's kW dropdown.
+    function buildVariantSelect(g, idx, onChange) {
+        var wrap = document.createElement('span');
+        wrap.className = 'kw-variant-control';
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', g.variants[0].type === 'HEAT PUMP'
+            ? 'Electric heat (kW)' : 'Gas heat size');
+        g.variants.forEach(function (v, i) {
+            var opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = variantLabel(v);
+            if (i === idx) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.addEventListener('change', function () {
+            onChange(parseInt(select.value, 10) || 0);
+        });
+        var chevron = document.createElement('span');
+        chevron.className = 'kw-variant-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '▾';
+        wrap.appendChild(select);
+        wrap.appendChild(chevron);
+        return wrap;
     }
 
     function buildResults() {

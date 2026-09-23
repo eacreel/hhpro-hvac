@@ -78,11 +78,15 @@
      *           higher capacity (so with no targets the max-capacity
      *           airflow is reported).
      * opts    - { airflows } to restrict the airflows considered (the Gas
-     *           Pack search narrows to the CFM the engineer typed).
+     *           Pack search narrows to the CFM the engineer typed);
+     *           { exact:true } to accept only a published point - no
+     *           snapping to a harsher neighbour (the LC RTU search, whose
+     *           conditions are picked from the rated values).
      *
      * Returns one of:
      *   { applicable:false }
      *   { applicable:true, outOfRange:true, ranges:{axis:{min,max}} }
+     *   { applicable:true, notRated:true }            (exact only)
      *   { applicable:true, noData:true, offGrid }
      *   { applicable:true, offGrid, result:{eatDb,eatWb,oaCooling,airflow,
      *                                       total,sensible,lat} }
@@ -103,6 +107,10 @@
             if (br[f].outOfRange) { out = true; ranges[f] = br[f]; }
         });
         if (out) return { applicable: true, outOfRange: true, ranges: ranges };
+        if (opts && opts.exact &&
+            (br.eatDb.exact == null || br.eatWb.exact == null || br.oaCooling.exact == null)) {
+            return { applicable: true, notRated: true };
+        }
 
         var db = harsher(br.eatDb), wb = harsher(br.eatWb), oa = harsher(br.oaCooling);
         var offGrid = {};
@@ -153,7 +161,10 @@
     // Uses the vendored PsychroLib (loaded later in index.html - resolved
     // lazily, at call time). Returns null when it isn't available or the
     // inputs don't make sense.
-    function leavingAir(eatDb, eatWb, cfm, totalBtuh, sensibleBtuh) {
+    // knownLdb (optional): a published leaving dry bulb to use instead of
+    // the 1.08 x CFM figure, so LWB sits on the same LDB the table prints
+    // (Daikin's LC RTU delta-T uses 1.10).
+    function leavingAir(eatDb, eatWb, cfm, totalBtuh, sensibleBtuh, knownLdb) {
         var lib = window.psychrolib;
         var db = Number(eatDb), wb = Number(eatWb), q = Number(cfm);
         var tot = capNum(totalBtuh), sen = capNum(sensibleBtuh);
@@ -169,7 +180,8 @@
         var P = lib.GetStandardAtmPressure(0);
         var w1 = lib.GetHumRatioFromTWetBulb(db, wb, P);
         var h1 = lib.GetMoistAirEnthalpy(db, w1);
-        var ldb = db - sen / (1.08 * q);
+        var ldb = (knownLdb != null && isFinite(Number(knownLdb)))
+            ? Number(knownLdb) : db - sen / (1.08 * q);
         var h2 = h1 - tot / (4.5 * q);
         var w2 = lib.GetHumRatioFromEnthalpyAndTDryBulb(h2, ldb);
         if (w2 > w1) w2 = w1;

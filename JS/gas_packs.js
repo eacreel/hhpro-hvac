@@ -140,7 +140,8 @@
                 ambient: result.cooling.ambient,
                 total: result.cooling.total,
                 sensible: result.cooling.sensible,
-                lat: result.cooling.lat
+                lat: result.cooling.lat,
+                lwb: result.cooling.lwb == null ? null : result.cooling.lwb
             },
             heat: result.heat ? {
                 inputHigh: result.heat.inputHigh,
@@ -237,9 +238,13 @@
         put('edb', payload.cooling.eatDb);
         put('ewb', payload.cooling.eatWb);
         put('ldb', round1(payload.cooling.lat));
-        // The capacity tables publish no leaving wet bulb, and inventing one
-        // would be the only fabricated number on the row.
-        if (cols.lwb) out[cols.lwb] = '-';
+        // The capacity tables publish no leaving wet bulb; Design Search
+        // computes it psychrometrically from the table's own total,
+        // sensible and LDB at the rated airflow (CapacityCore.leavingAir).
+        // A payload saved before that existed has none, and shows a dash.
+        if (cols.lwb) {
+            out[cols.lwb] = (payload.cooling.lwb == null) ? '-' : round1(payload.cooling.lwb);
+        }
 
         // Gas heat only - a heat pump's heating columns are AHRI 47 / 17 F
         // ratings and stay as scheduled.

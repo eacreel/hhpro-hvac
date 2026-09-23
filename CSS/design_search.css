@@ -477,6 +477,12 @@
     gap: var(--space-xs);
 }
 
+/* LC RTU conditions are dropdowns: give each group the full form width
+   so they line up with the unit-constraint dropdowns above. */
+.design-gp-conds .design-cond-group {
+    flex: 1 1 100%;
+}
+
 .design-cond-group-title {
     font-size: var(--font-size-xs);
     font-weight: 600;

@@ -20,11 +20,15 @@
    bulb with 70 F entering air (the only indoor temperature the
    DSH / DHH tables publish). DVH tables are rated on outdoor WET
    bulb, so DVH is looked up at DB - 2 F (AHRI's 17 F DB / 15 F
-   WB spread). Colder is the harsher side for heating, so an
-   off-grid heating temperature snaps DOWN to the next rated one.
+   WB spread).
 
-   The off-grid policy (worst-case, never interpolate) lives in
-   capacity_core.js and is shared with Multi Position Splits.
+   Design Search picks every condition (ambient, EAT DB / WB,
+   heating ambient) from the values these tables publish, and the
+   search runs with `exact`: a unit is read only at a published
+   point, never snapped to a harsher neighbour, and a unit with no
+   rating at the chosen condition is left out (and named). The
+   snapping policy in capacity_core.js still exists for callers
+   that don't ask for exact.
    Airflow is handled here rather than there: a cabinet qualifies
    only if one of its three rated airflows falls inside the CFM
    tolerance the engineer entered, and capacity is then read at a
@@ -52,7 +56,7 @@
     // size name (DSG0363D**M** is the medium heat exchanger).
     var HEAT_LETTERS = { L: 'Low', M: 'Medium', H: 'High' };
     var HEAT_TO_LETTER = { Low: 'L', Medium: 'M', High: 'H' };
-    var EFFICIENCY_LABELS = { LOW: 'Low', HIGH: 'High', VARIABLE: 'Variable Speed' };
+    var EFFICIENCY_LABELS = { LOW: 'Standard', HIGH: 'High', VARIABLE: 'Variable Speed' };
     var TYPE_LABELS = { 'GAS': 'Gas', 'HEAT PUMP': 'Heat Pump' };
     // Heat pump heating: coil entering air, and the outdoor wet bulb
     // depression used for the wet-bulb-rated DVH tables.
@@ -144,13 +148,36 @@
     // -----------------------------------------------------------------
     // Form options
     // -----------------------------------------------------------------
-    function formOptions() {
+    /** Hot gas reheat is a DHG-only factory option, up to 12.5 tons. */
+    function hgrhCapable(cab) {
+        return cab.family === 'DHG' && Number(cab.tons) <= HGRH_MAX_TONS;
+    }
+
+    /**
+     * Dropdown choices for the form. `type` ('GAS' | 'HEAT PUMP' | null)
+     * scopes every list except `types` to that unit type, so a Gas search
+     * never offers Variable Speed or heat kits, and a Heat Pump search
+     * never offers 25 tons or hot gas reheat.
+     *
+     * The design-condition lists (ambients, eatDbs, eatWbs, heatAmbients)
+     * are the values the tables actually publish for the units in scope -
+     * `scope` = { tons, efficiency, eatDb } narrows them further. eatWbs
+     * holds only wet bulbs rated at scope.eatDb, and heatAmbients are
+     * outdoor DRY bulbs (a wet-bulb DVH point shows as WB + 2).
+     */
+    function formOptions(type, scope) {
+        scope = scope || {};
         var cabs = cabinets();
-        var tons = {}, volts = {}, ambients = {}, effs = {}, types = {}, kits = {};
+        var tons = {}, volts = {}, effs = {}, types = {}, kits = {};
+        var ambients = {}, eatDbs = {}, eatWbs = {}, heatAmbients = {};
+        var hgrh = false;
+        var wantDb = scope.eatDb != null ? core.numStr(scope.eatDb) : null;
         Object.keys(cabs).forEach(function (name) {
             var c = cabs[name];
-            if (c.tons != null) tons[c.tons] = true;
             types[c.type || 'GAS'] = true;
+            if (type && (c.type || 'GAS') !== type) return;
+            if (c.tons != null) tons[c.tons] = true;
+            if (hgrhCapable(c)) hgrh = true;
             Object.keys(c.electrical || {}).forEach(function (v) {
                 volts[v] = true;
                 Object.keys(c.electrical[v]).forEach(function (m) {
@@ -159,8 +186,27 @@
                     });
                 });
             });
-            (((c.axes || {}).oaCooling) || []).forEach(function (a) { ambients[a] = true; });
             if (c.efficiency) effs[c.efficiency] = true;
+
+            // Rated design conditions, for the units in scope.
+            if (scope.tons != null && Number(c.tons) !== Number(scope.tons)) return;
+            if (scope.efficiency && c.efficiency !== scope.efficiency) return;
+            if (!c.coolingUnavailable) {
+                (((c.axes || {}).oaCooling) || []).forEach(function (a) { ambients[a] = true; });
+                (((c.axes || {}).eatDb) || []).forEach(function (d) { eatDbs[d] = true; });
+                Object.keys(c.cooling || {}).forEach(function (k) {
+                    var p = k.split('|');
+                    if (wantDb == null || p[0] === wantDb) eatWbs[p[1]] = true;
+                });
+            }
+            var t = c.hpHeat;
+            if (t && t.points) {
+                var shift = t.basis === 'WB' ? HP_WB_DEPRESSION : 0;
+                Object.keys(t.points).forEach(function (k) {
+                    var p = k.split('|');
+                    if (Number(p[0]) === HP_EAT) heatAmbients[Number(p[1]) + shift] = true;
+                });
+            }
         });
         function nums(o) {
             return Object.keys(o).map(Number).sort(function (a, b) { return a - b; });
@@ -168,12 +214,19 @@
         return {
             types: ['GAS', 'HEAT PUMP'].filter(function (t) { return types[t]; })
                 .map(function (t) { return { value: t, label: TYPE_LABELS[t] }; }),
+            // Which unit types the scoped lists cover.
+            hasGas: !!types['GAS'] && type !== 'HEAT PUMP',
+            hasHeatPump: !!types['HEAT PUMP'] && type !== 'GAS',
+            hgrh: hgrh,
             tons: nums(tons),
             electrical: Object.keys(volts).sort(),
             motors: OFFERED_MOTORS.map(function (m) {
                 return { value: m, label: MOTOR_LABELS[m] };
             }),
             ambients: nums(ambients),
+            eatDbs: nums(eatDbs),
+            eatWbs: nums(eatWbs),
+            heatAmbients: nums(heatAmbients),
             // Heat pump electric heat kits; 0 = no kit.
             kits: nums(kits).map(function (k) {
                 return { value: String(k), label: k === 0 ? 'None' : k + ' kW' };
@@ -190,18 +243,20 @@
     /**
      * Heat pump heating at a heating design outdoor DRY bulb, 70 F EAT.
      *
-     * Colder is harsher, so an off-grid temperature snaps DOWN to the
-     * next rated point; a rated point the workbook left blank (a Daikin
-     * misprint) is passed over for the next colder one. Nothing outside
-     * the table is extrapolated.
+     * exact = true (Design Search): only a published point is read - a
+     * temperature the unit isn't rated at (or a blank misprint cell)
+     * returns available:false with notRated.
+     * Otherwise colder is harsher, so an off-grid temperature snaps DOWN
+     * to the next rated point, and a blank cell is passed over for the
+     * next colder one. Nothing outside the table is extrapolated.
      *
-     * Returns { available:false, reason, outOfRange? } or
+     * Returns { available:false, reason, outOfRange?, notRated? } or
      *   { available:true, basis:'DB'|'WB', designDb, lookup, oa, airflow,
      *     eatDb, capacity (BTU/h), rise, kw, cop, offGrid:bool }
      * where `lookup` is the temperature looked up (DB, or DB - 2 for the
      * wet-bulb DVH tables) and `oa` the rated point actually used.
      */
-    function hpHeatAt(cab, designDb, airflow) {
+    function hpHeatAt(cab, designDb, airflow, exact) {
         var t = cab && cab.hpHeat;
         if (!t || !t.points) {
             return { available: false, reason: 'no published heat pump heating data' };
@@ -241,6 +296,19 @@
             });
         }
         var below = oas.filter(function (o) { return o <= x; }).sort(function (p, q) { return q - p; });
+        if (exact) {
+            var hit = t.points[[HP_EAT, x, cfm].map(core.numStr).join('|')];
+            if (below[0] !== x || !hit || !isFinite(core.capNum(hit[0]))) {
+                return {
+                    available: false, notRated: true,
+                    reason: wb
+                        ? 'heating not published at ' + d + ' °F (DVH is rated on outdoor WB; ' +
+                          d + ' − ' + HP_WB_DEPRESSION + ' = ' + x + ' °F WB is not a rated point)'
+                        : 'heating not published at ' + d + ' °F outdoor'
+                };
+            }
+            below = [x];
+        }
         for (var i = 0; i < below.length; i++) {
             var p = t.points[[HP_EAT, below[i], cfm].map(core.numStr).join('|')];
             if (!p || !isFinite(core.capNum(p[0]))) continue;
@@ -372,20 +440,24 @@
      *   cfm:{value,tol}, coolTotal:{value,tol}, coolSensible:{value,tol},
      *   heatRise:{value,tol},                        // gas packs
      *   hpHeating:{value,tol},                       // heat pumps, BTU/h at heatAmbient
-     *   convOutlet, powerExhaust                     // booleans
+     *   convOutlet, powerExhaust,                    // booleans
+     *   exact                                        // true: published points only
      * }
      *
-     * Returns { results:[...], skipped:[{cabinet, reason, partial?}] } with
-     * results sorted best-match first. One result per cabinet + voltage +
-     * motor + gas heat size (gas packs) or heat kit (heat pumps), because
-     * those are genuinely different units. A target only one unit type can
-     * meet (gas temp rise, heat pump heating) rules the other type out.
+     * Returns { results:[...], skipped:[...] } with results sorted
+     * best-match first. One result per cabinet + voltage + motor + gas heat
+     * size (gas packs) or heat kit (heat pumps), because those are genuinely
+     * different units. A target only one unit type can meet (gas temp rise,
+     * heat pump heating) rules the other type out. skipped entries are
+     * {cabinet, tons, reason, partial?} or, for units with no rating at
+     * an exact condition, one {notRated:true, cabinets:[...]} summary.
      */
     function search(criteria) {
         var c = criteria || {};
         var cabs = cabinets();
         var results = [];
         var skipped = [];
+        var notRated = [];
         var wantRise = hasTarget(c.heatRise);
         var wantHp = hasTarget(c.hpHeating);
 
@@ -415,9 +487,9 @@
             // rather than filtered: a cabinet that can be built either way
             // yields BOTH variants when the filter is left on All, because
             // both are genuinely orderable units.
-            var hgrhCapable = (cab.family === 'DHG' && Number(cab.tons) <= HGRH_MAX_TONS);
-            if (c.hgrh === 'YES' && !hgrhCapable) return;
-            var hgrhOptions = c.hgrh ? [c.hgrh] : (hgrhCapable ? ['NO', 'YES'] : ['NO']);
+            var canHgrh = hgrhCapable(cab);
+            if (c.hgrh === 'YES' && !canHgrh) return;
+            var hgrhOptions = c.hgrh ? [c.hgrh] : (canHgrh ? ['NO', 'YES'] : ['NO']);
 
             var cfmTarget = (c.cfm && c.cfm.value) || null;
             var cfmTol = (c.cfm && c.cfm.tol);
@@ -431,9 +503,15 @@
                     total: (c.coolTotal && c.coolTotal.value) || null,
                     sensible: (c.coolSensible && c.coolSensible.value) || null
                 },
-                { airflows: airflows }
+                { airflows: airflows, exact: !!c.exact }
             );
-            if (!cool.applicable || cool.outOfRange || cool.noData || !cool.result) {
+            if (!cool.applicable || cool.outOfRange || cool.noData || cool.notRated || !cool.result) {
+                // Exact search: an unrated condition (including a DB / WB
+                // pair the table prints as "-") just isn't this unit's.
+                if (c.exact && (cool.notRated || cool.noData || cool.outOfRange)) {
+                    notRated.push(name);
+                    return;
+                }
                 if (cool.outOfRange) {
                     skipped.push({ cabinet: name, tons: cab.tons,
                                    reason: 'design condition outside the rated table',
@@ -447,12 +525,17 @@
             if (!within(r.sensible, c.coolSensible && c.coolSensible.value,
                         c.coolSensible && c.coolSensible.tol)) return;
 
+            // Leaving wet bulb isn't published; it is computed from the
+            // table's own total / sensible / LDB at the rated airflow.
+            var leaving = core.leavingAir(r.eatDb, r.eatWb, r.airflow, r.total, r.sensible, r.lat);
             var coolingOut = {
                 airflow: r.airflow,
                 eatDb: r.eatDb, eatWb: r.eatWb,
                 ambient: r.oaCooling,
                 total: r.total, sensible: r.sensible,
-                lat: r.lat
+                lat: r.lat,
+                lwb: leaving ? leaving.lwb : null,
+                lwbSaturated: leaving ? leaving.saturated : false
             };
             // Which axes were snapped to a harsher rated point (null when
             // the design point was rated exactly).
@@ -463,7 +546,7 @@
                 deviation(r.airflow, cfmTarget);
 
             if (isHp) {
-                var hp = hpHeatAt(cab, c.heatAmbient, r.airflow);
+                var hp = hpHeatAt(cab, c.heatAmbient, r.airflow, !!c.exact);
                 if (!hp.available && wantHp) {
                     // A heating target can't be judged without heating data.
                     skipped.push({ cabinet: name, tons: cab.tons, reason: hp.reason });
@@ -573,6 +656,9 @@
             // so the pair is ordered rather than arbitrary.
             return (a.hgrh === b.hgrh) ? 0 : (a.hgrh === 'NO' ? -1 : 1);
         });
+        if (notRated.length) {
+            skipped.push({ notRated: true, cabinets: notRated.sort() });
+        }
         return { results: results, skipped: skipped };
     }
 
