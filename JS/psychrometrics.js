@@ -1820,7 +1820,11 @@
                     mixed.oaPctVolume = mixed.cfm > 0 ? mixed.oaCfm / mixed.cfm * 100 : 0;
                     mixed.oaPctMass = a.oa.enabled ? mixed.fractions[0] * 100 : 0;
                     if (res.erv) {
-                        res.erv.massFlow = Psy.massFlow(oa, oaCfm, basis);
+                        // Same dry air through the wheel as into the mix /
+                        // coil: the mass the ER stream carries above, not a
+                        // second figure from the OA state (on the actual-air
+                        // basis that differed by the OA / ER volume ratio).
+                        res.erv.massFlow = Psy.massFlow(oaStream, oaCfm, basis);
                         res.erv.load = Psy.process(res.erv.from, res.erv.to, res.erv.massFlow);
                     }
                     if (mixed.single) {
