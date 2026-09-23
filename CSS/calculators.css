@@ -1199,10 +1199,18 @@
 
 /* Air properties with the airflow column: eight value columns. At the
    default 66px they overran the panel and squeezed the point column to
-   nothing. 50px still fits "14.728" and leaves ~56px for the point. */
+   nothing. The airflow ("10,000") and specific volume ("14.728")
+   columns need a little more than the rest; the point keeps ~48px. */
 .psy-table-cols-9 th.psy-table-col,
 .psy-table-cols-9 td.psy-table-val {
     width: 50px;
+}
+
+.psy-table-cols-9 th.psy-table-col:nth-child(2),
+.psy-table-cols-9 td.psy-table-val:nth-child(2),
+.psy-table-cols-9 th.psy-table-col:last-child,
+.psy-table-cols-9 td.psy-table-val:last-child {
+    width: 54px;
 }
 
 .psy-table-cols-4 th.psy-table-col,
