@@ -719,9 +719,10 @@
         var input = document.createElement('input');
         input.type = 'number';
         input.className = opts.cls || 'psy-input';
-        input.step = opts.step !== undefined ? String(opts.step) : 'any';
         if (opts.min !== undefined) input.min = String(opts.min);
         if (opts.max !== undefined) input.max = String(opts.max);
+        // Any typed value is valid; the arrow keys still move by opts.step.
+        HHpro.UI.stepNumberInput(input, opts.step, opts.min, opts.max);
         input.value = (value === null || value === undefined || value === '') ? '' : String(value);
         input.inputMode = 'decimal';
         return input;

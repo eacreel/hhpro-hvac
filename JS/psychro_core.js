@@ -371,6 +371,41 @@
         return fromDbWClamped(db, w, P);
     }
 
+    // Same device, rated by sensible and TOTAL (enthalpy) effectiveness -
+    // the pair selection software prints (Daikin: "Wheel Total / Sensible
+    // Effectiveness"). Dry bulb follows the sensible effectiveness as
+    // above; the humidity ratio is whatever puts the leaving enthalpy at
+    // the total effectiveness, i.e. the latent effectiveness the pair
+    // implies at these two air states.
+    function ervTotal(oa, exhaust, effSPct, effTPct, P, flowRatio) {
+        var es = Number(effSPct) / 100, et = Number(effTPct) / 100;
+        if (!isFinite(es) || es < 0 || es > 1) throw new Error('Sensible effectiveness must be 0 to 100%');
+        if (!isFinite(et) || et < 0 || et > 1) throw new Error('Total effectiveness must be 0 to 100%');
+        var k = (isFinite(flowRatio) && flowRatio >= 0) ? Math.min(1, flowRatio) : 1;
+        var db = oa.db - es * k * (oa.db - exhaust.db);
+        var h = oa.h - et * k * (oa.h - exhaust.h);
+        var w = lib.GetHumRatioFromEnthalpyAndTDryBulb(h, db);
+        if (w < 0) w = 0;
+        return fromDbWClamped(db, w, P);
+    }
+
+    // Effectiveness a recovery device actually delivered between two
+    // states, as fractions (null where OA and exhaust don't differ).
+    // Lets the page show the latent effectiveness a sensible + total pair
+    // implies, or the total that a sensible + latent pair works out to.
+    function ervEffectiveness(oa, exhaust, leaving, flowRatio) {
+        var k = (isFinite(flowRatio) && flowRatio > 0) ? Math.min(1, flowRatio) : 1;
+        function eff(a, b, c) {
+            var d = k * (a - b);
+            return Math.abs(d) > 1e-12 ? (a - c) / d : null;
+        }
+        return {
+            sensible: eff(oa.db, exhaust.db, leaving.db),
+            latent: eff(oa.w, exhaust.w, leaving.w),
+            total: eff(oa.h, exhaust.h, leaving.h)
+        };
+    }
+
     // ----- Room sensible-heat-ratio line -----
     // Points (db, w) from the room state toward lower dry bulb such that
     // every point delivers the room's SHR. Stops at saturation.
@@ -607,6 +642,8 @@
         steam: steam,
         fanHeat: fanHeat,
         erv: erv,
+        ervTotal: ervTotal,
+        ervEffectiveness: ervEffectiveness,
         roomLine: roomLine,
         supplyFromRoom: supplyFromRoom,
         latentLimit: latentLimit,

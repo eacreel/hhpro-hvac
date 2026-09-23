@@ -72,7 +72,9 @@
             ahu: {
                 preset: 'custom',                            // system type; opens on Custom (no stages)
                 oa:  { enabled: false, db: 95, key: 'wb', value: 78 },
-                erv: { enabled: false, mode: 'mix', effS: 70, effL: 60, exhCfm: null },
+                // effBasis: 'total' = sensible + total, as selection software
+                // prints it; 'latent' = sensible + latent (AHRI 1060 style).
+                erv: { enabled: false, mode: 'mix', effBasis: 'total', effS: 70, effT: 65, effL: 60, exhCfm: null },
                 ra:  { enabled: false, db: 75, key: 'rh', value: 50 },
                 // Known mixed / entering air, entered directly in place of
                 // outdoor + return air (uses totalCfm as the system airflow).
@@ -169,6 +171,11 @@
             if (oldRoom && oldRoom.checkLat === undefined) d.ahu.room.checkLat = true;
             d.ahu.room.checkSens = !!d.ahu.room.checkSens;
             d.ahu.room.checkLat = !!d.ahu.room.checkLat;
+            // Saved before 2026-09-23, when recovery was always sensible +
+            // latent: keep reading those numbers that way.
+            var oldErv = parsed.ahu && parsed.ahu.erv;
+            if (oldErv && oldErv.effBasis === undefined) d.ahu.erv.effBasis = 'latent';
+            if (d.ahu.erv.effBasis !== 'latent') d.ahu.erv.effBasis = 'total';
             delete d.ahu.room.latentOnly; delete d.dewpoint;
             d.points = pts.slice(0, MAX_POINTS);
             d.view = (view && isFinite(view.dbMin)) ? view : null;
@@ -228,7 +235,9 @@
         erv_mode: 'Return air mixes: the recovery device treats the outdoor air, then ER mixes with the recirculated return air (MA) before the coil. Dedicated outdoor air unit: return air is only the exhaust side of the device and never enters the supply; the coil sees ER directly and no mixing line is drawn.',
         erv_exh: 'Airflow through the exhaust side of the device. Blank means equal to the outdoor airflow. When the exhaust is smaller than the outdoor air the recovery on the outdoor side drops in proportion (AHRI 1060), so ER moves less far toward RA.',
         exh_cfm: 'Building exhaust airflow through the recovery device. It sets the flow correction: exhaust smaller than the outdoor air reduces the recovery. It does not add to the supply.',
+        erv_basis: 'How the device’s effectiveness is entered. Selection software (Daikin and most others) prints sensible and total effectiveness; AHRI 1060 ratings list sensible and latent. Either pair fixes the same ER point, and the results show the third value it works out to. Switching converts the current numbers so ER stays put.',
         erv_s: 'Sensible effectiveness: the fraction of the temperature difference between OA and RA that is recovered. 70% moves ER 70% of the way toward the RA temperature.',
+        erv_t: 'Total effectiveness: the fraction of the enthalpy difference between OA and RA that is recovered, sensible and latent together ("Wheel Total Effectiveness" in Daikin’s software). With the sensible effectiveness it sets how far ER moves toward the RA humidity; the latent effectiveness that implies is shown in the results.',
         erv_l: 'Latent effectiveness: the fraction of the moisture difference recovered (wheels only; plates are near zero). Moves ER vertically toward the RA humidity ratio.',
         ra: 'Air returning from the space, normally at the room condition. Plots as RA; the other end of the mixing line.',
         ma: 'A known mixed (entering) air condition, entered directly when it has been measured or given instead of being computed from outdoor and return air. Plots as MA and feeds the first stage; outdoor and return air are left off the chart.',
@@ -790,6 +799,21 @@
         enforceStreamRules();
     }
 
+    // Switching how recovery effectiveness is entered keeps the ER point:
+    // the newly shown field starts at the value the current pair works
+    // out to (from the last computed result), rounded to 0.1%.
+    function switchErvBasis(basis) {
+        var e = state.ahu.erv;
+        if (e.effBasis === basis) return;
+        var eff = refs.lastResult && refs.lastResult.erv && refs.lastResult.erv.eff;
+        var v = eff ? (basis === 'latent' ? eff.latent : eff.total) : null;
+        if (v !== null && isFinite(v) && v >= 0 && v <= 1) {
+            if (basis === 'latent') e.effL = Number((v * 100).toFixed(1));
+            else e.effT = Number((v * 100).toFixed(1));
+        }
+        e.effBasis = basis;
+    }
+
     // Recovery and the economizer compare outdoor to return air, so both
     // streams have to be present for either to stay in the system. A known
     // mixed air replaces both streams, so it and they are exclusive.
@@ -903,9 +927,25 @@
                 }));
             });
             body.appendChild(r);
+            // Sensible + total (how selection software prints it) or
+            // sensible + latent.
+            var rb = document.createElement('div');
+            rb.className = 'psy-radio-row';
+            rb.appendChild(inlineLabel('Effectiveness:'));
+            rb.appendChild(help('erv_basis'));
+            [['total', 'Sensible + total'], ['latent', 'Sensible + latent']].forEach(function (m) {
+                rb.appendChild(radio('psy-erv-basis', m[0], m[1], a.erv.effBasis === m[0], function () {
+                    switchErvBasis(m[0]); save(); buildForm(); recompute();
+                }));
+            });
+            body.appendChild(rb);
             var g = fields();
             g.appendChild(numberField('Sensible eff.', 'pct', a.erv.effS, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effS = v; }, 'erv_s'));
-            g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }, 'erv_l'));
+            if (a.erv.effBasis === 'latent') {
+                g.appendChild(numberField('Latent eff.', 'pct', a.erv.effL, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effL = v; }, 'erv_l'));
+            } else {
+                g.appendChild(numberField('Total eff.', 'pct', a.erv.effT, { min: 0, max: 100, step: 1 }, function (v) { a.erv.effT = v; }, 'erv_t'));
+            }
             if (a.erv.mode !== 'doas') {
                 var ex = numberField('Exhaust airflow', 'flow', a.erv.exhCfm, { min: 0, step: 50 }, function (v) { a.erv.exhCfm = v; }, 'erv_exh');
                 ex.querySelector('input').placeholder = '= outdoor';
@@ -1410,9 +1450,10 @@
         var input = document.createElement('input');
         input.type = 'number';
         input.className = opts.cls || 'psy-input';
-        input.step = opts.step !== undefined ? String(opts.step) : 'any';
         if (opts.min !== undefined) input.min = String(opts.min);
         if (opts.max !== undefined) input.max = String(opts.max);
+        // Any typed value is valid; the arrow keys still move by opts.step.
+        HHpro.UI.stepNumberInput(input, opts.step, opts.min, opts.max);
         input.value = (value === null || value === undefined || value === '') ? '' : String(value);
         input.inputMode = 'decimal';
         return input;
@@ -1788,11 +1829,16 @@
                     var exhCfm = doas ? raCfm
                         : ((a.erv.exhCfm !== null && a.erv.exhCfm !== undefined) ? Number(a.erv.exhCfm) : oaCfm);
                     var ratio = (oaCfm > 0 && exhCfm !== null && isFinite(exhCfm)) ? Math.min(1, exhCfm / oaCfm) : 1;
-                    var er = Psy.erv(oa, ra, a.erv.effS, a.erv.effL, P, ratio);
+                    var byTotal = a.erv.effBasis !== 'latent';
+                    var er = byTotal
+                        ? Psy.ervTotal(oa, ra, a.erv.effS, a.erv.effT, P, ratio)
+                        : Psy.erv(oa, ra, a.erv.effS, a.erv.effL, P, ratio);
                     addPoint('er', 'ER', er, 'Outdoor air leaving energy recovery');
                     lines.push({ from: 'oa', to: 'er', cls: 'psy-line-process', arrow: true });
                     oaStream = er; oaStreamId = 'er';
-                    res.erv = { from: oa, to: er, mode: doas ? 'doas' : 'mix', exhCfm: exhCfm, ratio: ratio };
+                    res.erv = { from: oa, to: er, mode: doas ? 'doas' : 'mix', exhCfm: exhCfm, ratio: ratio,
+                                basis: byTotal ? 'total' : 'latent',
+                                eff: Psy.ervEffectiveness(oa, ra, er, ratio) };
                 } catch (e) { onError('erv', e.message); }
             }
         }
@@ -2145,6 +2191,18 @@
                 er.push(['Arrangement', e.mode === 'doas' ? 'Dedicated OA unit, return air is exhaust only' : 'Return air mixes with outdoor air']);
                 if (e.exhCfm !== null && isFinite(e.exhCfm)) er.push(['Exhaust airflow', fmtU('flow', e.exhCfm)]);
                 if (e.ratio < 0.999) er.push(['Flow correction', 'Exhaust is ' + fmt(e.ratio * 100, 0) + '% of outdoor flow; recovery scaled to match']);
+                // The two entered effectiveness values, then the third one
+                // they work out to at these conditions.
+                var byT = e.basis === 'total';
+                var pctIn = function (v) { return String(Number(Number(v).toFixed(1))) + ' %'; };
+                er.push(['Effectiveness (entered)', 'Sensible ' + pctIn(a.erv.effS) + ' / ' +
+                    (byT ? 'Total ' + pctIn(a.erv.effT) : 'Latent ' + pctIn(a.erv.effL))]);
+                var third = e.eff ? (byT ? e.eff.latent : e.eff.total) : null;
+                if (third !== null && isFinite(third)) {
+                    var off = third < -0.005 || third > 1.005;
+                    er.push([byT ? 'Latent eff. (implied)' : 'Total eff. (implied)', fmt(third * 100, 1) + ' %' +
+                        (off ? '  outside 0-100%, check the entered pair' : '')]);
+                }
                 er.push(['OA leaving ER', fmtU('temp', e.to.db) + ' DB / ' + fmtU('temp', e.to.wb) + ' WB']);
                 if (e.load) {
                     var cooling = e.load.total >= 0;
@@ -2363,7 +2421,7 @@
             dt.textContent = r[0];
             var dd = document.createElement('dd');
             dd.textContent = r[1];
-            if (/\bshort\b|does not meet|Not available|too humid/.test(r[1])) dd.classList.add('is-warn');
+            if (/\bshort\b|does not meet|Not available|too humid|check the entered/.test(r[1])) dd.classList.add('is-warn');
             if (/\bOK\b|meets the room|^Available/.test(r[1])) dd.classList.add('is-ok');
             dl.appendChild(dt); dl.appendChild(dd);
         });

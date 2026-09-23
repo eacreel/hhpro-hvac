@@ -431,6 +431,61 @@
             header.appendChild(actions);
 
             return header;
+        },
+
+        /**
+         * Arrow-key stepping for a number input without the browser's step
+         * validation. With step="50" the browser calls 510 invalid and
+         * shows "the two nearest valid values are 500 and 550" on hover,
+         * though the calculators use whatever is typed. So the input takes
+         * any value (step="any") and ArrowUp / ArrowDown (or the wheel
+         * while focused) move to the next multiple of `step` here instead,
+         * clamped to min / max. Typing is untouched.
+         *
+         * @param {HTMLInputElement} input
+         * @param {number} step - nudge size; nothing is attached if not > 0
+         * @param {number} [min]
+         * @param {number} [max]
+         */
+        stepNumberInput: function (input, step, min, max) {
+            input.step = 'any';
+            var s = Number(step);
+            if (!isFinite(s) || s <= 0) return;
+            var lo = (min === undefined || min === null) ? -Infinity : Number(min);
+            var hi = (max === undefined || max === null) ? Infinity : Number(max);
+            // Decimals in the step, so 0.1 steps don't print 72.30000000001.
+            var places = (String(s).split('.')[1] || '').length;
+
+            function nudge(dir) {
+                var cur = parseFloat(input.value);
+                var next;
+                if (!isFinite(cur)) {
+                    next = isFinite(lo) ? lo : 0;
+                } else {
+                    // Off-grid values land on the next grid line in that
+                    // direction (510 -> 550 up, 500 down); on-grid ones
+                    // move one step.
+                    var k = cur / s;
+                    var r = Math.round(k);
+                    if (Math.abs(k - r) < 1e-9) k = r;
+                    next = (dir > 0 ? Math.floor(k) + 1 : Math.ceil(k) - 1) * s;
+                }
+                next = Math.min(hi, Math.max(lo, next));
+                input.value = String(Number(next.toFixed(places)));
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+                e.preventDefault();
+                nudge(e.key === 'ArrowUp' ? 1 : -1);
+            });
+            input.addEventListener('wheel', function (e) {
+                if (document.activeElement !== input || !e.deltaY) return;
+                e.preventDefault();
+                nudge(e.deltaY < 0 ? 1 : -1);
+            }, { passive: false });
         }
     };
 })();
