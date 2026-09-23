@@ -169,9 +169,14 @@
         scope = scope || {};
         var cabs = cabinets();
         var tons = {}, volts = {}, effs = {}, types = {}, kits = {};
+        // Condition value -> { family: true } for every family publishing it,
+        // plus the families in scope, so a value only some of them publish
+        // can say so in the dropdown ("22 (DVH only)").
         var ambients = {}, eatDbs = {}, eatWbs = {}, heatAmbients = {};
+        var coolFams = {}, heatFams = {};
         var hgrh = false;
         var wantDb = scope.eatDb != null ? core.numStr(scope.eatDb) : null;
+        function mark(map, v, fam) { (map[v] = map[v] || {})[fam] = true; }
         Object.keys(cabs).forEach(function (name) {
             var c = cabs[name];
             types[c.type || 'GAS'] = true;
@@ -191,25 +196,45 @@
             // Rated design conditions, for the units in scope.
             if (scope.tons != null && Number(c.tons) !== Number(scope.tons)) return;
             if (scope.efficiency && c.efficiency !== scope.efficiency) return;
+            var fam = c.family || name.slice(0, 3);
             if (!c.coolingUnavailable) {
-                (((c.axes || {}).oaCooling) || []).forEach(function (a) { ambients[a] = true; });
-                (((c.axes || {}).eatDb) || []).forEach(function (d) { eatDbs[d] = true; });
+                coolFams[fam] = true;
+                (((c.axes || {}).oaCooling) || []).forEach(function (a) { mark(ambients, a, fam); });
+                (((c.axes || {}).eatDb) || []).forEach(function (d) { mark(eatDbs, d, fam); });
                 Object.keys(c.cooling || {}).forEach(function (k) {
                     var p = k.split('|');
-                    if (wantDb == null || p[0] === wantDb) eatWbs[p[1]] = true;
+                    if (wantDb == null || p[0] === wantDb) mark(eatWbs, p[1], fam);
                 });
             }
             var t = c.hpHeat;
             if (t && t.points) {
+                heatFams[fam] = true;
                 var shift = t.basis === 'WB' ? HP_WB_DEPRESSION : 0;
                 Object.keys(t.points).forEach(function (k) {
                     var p = k.split('|');
-                    if (Number(p[0]) === HP_EAT) heatAmbients[Number(p[1]) + shift] = true;
+                    if (Number(p[0]) === HP_EAT) mark(heatAmbients, Number(p[1]) + shift, fam);
                 });
             }
         });
         function nums(o) {
             return Object.keys(o).map(Number).sort(function (a, b) { return a - b; });
+        }
+        // Dropdown choices; a value that not every family in scope
+        // publishes names who does ("22 (DVH only)") or who doesn't
+        // ("85 (not DVH)"), whichever is shorter.
+        function choices(map, fams) {
+            var all = Object.keys(fams).sort();
+            return nums(map).map(function (v) {
+                var have = all.filter(function (f) { return map[v][f]; });
+                var label = String(v);
+                if (have.length < all.length) {
+                    var missing = all.filter(function (f) { return !map[v][f]; });
+                    label += (have.length <= missing.length)
+                        ? ' (' + have.join('/') + ' only)'
+                        : ' (not ' + missing.join('/') + ')';
+                }
+                return { value: String(v), label: label };
+            });
         }
         return {
             types: ['GAS', 'HEAT PUMP'].filter(function (t) { return types[t]; })
@@ -227,6 +252,10 @@
             eatDbs: nums(eatDbs),
             eatWbs: nums(eatWbs),
             heatAmbients: nums(heatAmbients),
+            ambientChoices: choices(ambients, coolFams),
+            eatDbChoices: choices(eatDbs, coolFams),
+            eatWbChoices: choices(eatWbs, coolFams),
+            heatAmbientChoices: choices(heatAmbients, heatFams),
             // Heat pump electric heat kits; 0 = no kit.
             kits: nums(kits).map(function (k) {
                 return { value: String(k), label: k === 0 ? 'None' : k + ' kW' };
@@ -299,12 +328,21 @@
         if (exact) {
             var hit = t.points[[HP_EAT, x, cfm].map(core.numStr).join('|')];
             if (below[0] !== x || !hit || !isFinite(core.capNum(hit[0]))) {
+                // Name the nearest temperatures this unit IS rated at (as
+                // outdoor DB, so they match the dropdown).
+                var shift = wb ? HP_WB_DEPRESSION : 0;
+                var rated = oas.filter(function (o) {
+                    var q = t.points[[HP_EAT, o, cfm].map(core.numStr).join('|')];
+                    return q && isFinite(core.capNum(q[0]));
+                }).map(function (o) { return o + shift; });
+                var dn = rated.filter(function (o) { return o < d; }).pop();
+                var up = rated.filter(function (o) { return o > d; })[0];
+                var near = [dn, up].filter(function (o) { return o != null; });
                 return {
                     available: false, notRated: true,
-                    reason: wb
-                        ? 'heating not published at ' + d + ' °F (DVH is rated on outdoor WB; ' +
-                          d + ' − ' + HP_WB_DEPRESSION + ' = ' + x + ' °F WB is not a rated point)'
-                        : 'heating not published at ' + d + ' °F outdoor'
+                    reason: 'heating not published at ' + d + ' °F outdoor' +
+                        (near.length ? ' - nearest rated: ' + near.join(' and ') + ' °F' : '') +
+                        (wb ? ' (DVH is rated on outdoor WB, read at DB − ' + HP_WB_DEPRESSION + ' °F)' : '')
                 };
             }
             below = [x];

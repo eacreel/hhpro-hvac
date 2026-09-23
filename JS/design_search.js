@@ -834,15 +834,17 @@
         var hasHp = opts.hasHeatPump;
         var condGrid = document.createElement('div');
         condGrid.className = 'design-cond-grid design-gp-conds';
+        // A value only some unit families publish is labelled with them
+        // ("22 (DVH only)"): pick it and the others have no rating to show.
         condGrid.appendChild(gpCondGroup('Cooling', [
-            gpSelect('Outdoor Ambient DB (°F)', 'ambient', gpValueChoices(opts.ambients), true),
-            gpSelect('Cooling EAT DB (°F)', 'eatDb', gpValueChoices(opts.eatDbs), true, rescope),
-            gpSelect('Cooling EAT WB (°F)', 'eatWb', gpValueChoices(opts.eatWbs), true)
+            gpSelect('Outdoor Ambient DB (°F)', 'ambient', opts.ambientChoices, true),
+            gpSelect('Cooling EAT DB (°F)', 'eatDb', opts.eatDbChoices, true, rescope),
+            gpSelect('Cooling EAT WB (°F)', 'eatWb', opts.eatWbChoices, true)
         ]));
         if (hasHp) {
             condGrid.appendChild(gpCondGroup('Heat pump heating (70 °F EAT)', [
                 gpSelect('Heating Outdoor Ambient DB (°F)', 'heatAmbient',
-                    gpValueChoices(opts.heatAmbients), true)
+                    opts.heatAmbientChoices, true)
             ]));
         }
         box.appendChild(condGrid);
