@@ -4,8 +4,8 @@
    Builds the closing page(s) of the psychrometric PDF: what each
    item on the report means and the formula behind it, worked with
    this calculation's own numbers. Only the parts of the report
-   that exist (mixing, energy recovery, each stage, the space
-   checks) get a section.
+   that exist (mixing, energy recovery, outdoor air load, each
+   stage, the space checks) get a section.
 
      HHpro.PsychroAppendix.build(res, state)
        -> { title, intro: [..], sections: [{ title, items: [
@@ -195,6 +195,35 @@
                      ['QL = Q − Qs', '= ' + I(Math.abs(e.load.total)) + ' − ' + I(Math.abs(e.load.sensible)) + ' = ' + I(Math.abs(e.load.latent)) + ' Btu/h']]));
             }
             sections.push({ title: 'Energy recovery (OA → ER)', items: eItems });
+        }
+
+        // ---------------- Outdoor air load ----------------
+        var ol = res.oaLoad;
+        if (ol) {
+            var oS = ol.oa, rS = ol.ref, rl = ol.refLabel, om = ol.massFlow, OL = ol.load, olItems = [];
+            olItems.push(item('Outdoor air load', (rl === 'RA'
+                ? 'Heat the outdoor air brings in beyond the return air it replaces, on the outdoor stream\'s dry-air mass flow. '
+                : 'Heat the outdoor air brings in beyond the space condition (no return air on this report), on the outdoor dry-air mass flow: the ventilation load. ') +
+                'It is the figure used to weigh energy recovery or a dedicated outdoor air unit.',
+                [['Q = m OA × (h OA − h ' + rl + ')', '= ' + I(om) + ' × (' + H(oS.h) + ' − ' + H(rS.h) + ') = ' + I(OL.total) + ' Btu/h (' + n(OL.tons, 2) + ' tons)'],
+                 ['Qs = m OA × cp × (DB OA − DB ' + rl + '), cp = 0.240 + 0.444 × W ' + rl,
+                  '= ' + I(om) + ' × ' + n(cp(rS.w), 4) + ' × (' + T(oS.db) + ' − ' + T(rS.db) + ') = ' + I(OL.sensible) + ' Btu/h'],
+                 ['QL = Q − Qs', '= ' + I(OL.total) + ' − ' + I(OL.sensible) + ' = ' + I(OL.latent) + ' Btu/h']]));
+            var toCoil = OL;
+            if (ol.after && e) {
+                var Af = ol.after;
+                toCoil = Af;
+                olItems.push(item('After energy recovery', 'What is left once the device has pre-conditioned the outdoor air; the device took the difference (Recovered, above).',
+                    [['Q = m OA × (h ER − h ' + rl + ')', '= ' + I(om) + ' × (' + H(e.to.h) + ' − ' + H(rS.h) + ') = ' + I(Af.total) + ' Btu/h'],
+                     ['captured = (Q no recovery − Q after) ÷ Q no recovery × 100',
+                      '= (' + I(OL.total) + ' − ' + I(Af.total) + ') ÷ ' + I(OL.total) + ' × 100 = ' + (OL.total ? pct((OL.total - Af.total) / OL.total) : '-')]]));
+            }
+            if (ol.share !== undefined && ol.coil) {
+                olItems.push(item('Share of cooling coil', 'Part of the cooling coil load the outdoor air' + (ol.after ? ', after recovery,' : '') + ' accounts for.' +
+                    (ol.coil.fromLabel === 'MA' ? ' The rest, m × (h ' + rl + ' − h ' + ol.coil.label + ') on the whole airflow, is the return air side.' : ''),
+                    [['share = Q ÷ Q coil × 100', '= ' + I(toCoil.total) + ' ÷ ' + I(ol.coil.load.total) + ' × 100 = ' + pct(ol.share)]]));
+            }
+            sections.push({ title: 'Outdoor air load (OA → ' + rl + ')', items: olItems });
         }
 
         // ---------------- Economizer ----------------

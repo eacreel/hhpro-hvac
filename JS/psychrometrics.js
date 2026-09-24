@@ -2145,6 +2145,25 @@
             }
         }
 
+        // Outdoor air load: what the outdoor air brings in beyond the return
+        // air, m OA x (h OA - h RA). Mixing is mass-weighted, so a coil fed
+        // by the mixed air splits its load exactly into this part and the
+        // return air side. Without return air the space condition stands in
+        // (the ventilation load of a 100% outdoor air unit).
+        var oaRef = ra || (!a.ra.enabled ? rm : null);
+        if (oa && oaRef && mixed && mixed.streams[0].mass > 0) {
+            var coilSt = null;
+            stages.forEach(function (st) { if (st.id === 'sa') coilSt = st; });
+            var mOa = mixed.streams[0].mass;
+            var ol = { oa: oa, ref: oaRef, refLabel: ra ? 'RA' : 'RM', massFlow: mOa,
+                       load: Psy.process(oa, oaRef, mOa), coil: coilSt };
+            // With energy recovery the coil sees ER; the device took the rest.
+            if (res.erv) ol.after = Psy.process(res.erv.to, oaRef, mOa);
+            var toCoil = ol.after || ol.load;
+            if (coilSt && coilSt.load.total > 0 && toCoil.total > 0) ol.share = toCoil.total / coilSt.load.total;
+            res.oaLoad = ol;
+        }
+
         // Constant-humidity line at a latent limit, with the too-humid band above it.
         function drawDpLimit(lim) {
             var dbLoL = -100, dbHiL = 200, wTopL = 0.06;
@@ -2216,6 +2235,29 @@
                     er.push(['Latent', fmtPower(Math.abs(e.load.latent))]);
                 }
                 blocks.push({ title: 'Energy recovery (OA → ER)', rows: er });
+            }
+
+            if (res.oaLoad) {
+                var ol = res.oaLoad, L0 = ol.load, rl = ol.refLabel, orows = [];
+                // Outdoor air below the reference enthalpy lowers a cooling coil's load.
+                var coolCoil = ol.coil && ol.coil.load.total > 0;
+                var olLabel = L0.total >= 0 ? 'Cooling load' : (coolCoil ? 'Cooling credit' : 'Heating load');
+                orows.push([olLabel + (ol.after ? ', no recovery' : ''), fmtPower(Math.abs(L0.total), L0.total >= 0 || coolCoil) +
+                    (L0.total < 0 && coolCoil ? '  OA enthalpy below ' + rl : '')]);
+                orows.push(['Sensible', fmtPower(L0.sensible) + (L0.sensible < 0 ? ' (OA cooler than ' + rl + ')' : '')]);
+                orows.push(['Latent', fmtPower(L0.latent) + (L0.latent < 0 ? ' (OA drier than ' + rl + ')' : '')]);
+                if (ol.after) {
+                    var A = ol.after, rec = L0.total - A.total;
+                    if (L0.total !== 0 && rec / L0.total > 0) {
+                        orows.push(['Energy recovery captures', fmt(rec / L0.total * 100, 1) + ' %  (' + fmtPower(Math.abs(rec)) + ')']);
+                    }
+                    orows.push(['After recovery (ER → ' + rl + ')', fmtPower(Math.abs(A.total), A.total >= 0 || coolCoil) +
+                        (A.total < 0 ? (coolCoil ? '  credit, ER enthalpy below ' + rl : '  heating') : '')]);
+                }
+                if (ol.share !== undefined) orows.push(['Share of cooling coil', fmt(ol.share * 100, 1) + ' %']);
+                if (sys() === 'IP') orows.push(['Formula', 'Q = m OA × (h OA − h ' + rl + ') = ' + fmt(ol.massFlow, 0) + ' lb/hr × ' +
+                    fmt(ol.oa.h - ol.ref.h, 2) + ' Btu/lb']);
+                blocks.push({ title: 'Outdoor air load (OA → ' + rl + ')', rows: orows });
             }
 
             if (res.econ) {
