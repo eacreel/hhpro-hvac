@@ -28,8 +28,23 @@
     HHpro.Views = HHpro.Views || {};
 
     var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
-    var HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
+    // Email domains each Hoffman level is limited to (the server enforces
+    // the same list, LEVEL_DOMAINS in SERVER/routes/users.js). Hoffman
+    // Hydronics staff may be Hoffman users, never administrators.
     var HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
+    var LEVEL_DOMAINS = {
+        'Super Admin': [HOFFMAN_DOMAIN],
+        'Admin': [HOFFMAN_DOMAIN],
+        'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
+    };
+
+    /** '' when the address may hold the level, else the reason it may not. */
+    function levelDomainProblem(email, level) {
+        var domains = LEVEL_DOMAINS[level];
+        var e = String(email || '').toLowerCase();
+        if (!domains || domains.some(function (d) { return e.slice(-d.length) === d; })) return '';
+        return 'Only ' + domains.join(' or ') + ' addresses can be ' + level + '.';
+    }
 
     // Per-render state
     var users = [];
@@ -585,8 +600,8 @@
                 }
             });
             var lvl = level.input.value;
-            if (!msg && HOFFMAN_LEVELS.indexOf(lvl) !== -1 && e && e.slice(-HOFFMAN_DOMAIN.length) !== HOFFMAN_DOMAIN) {
-                msg = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + lvl + '. Use Engineer, Contractor or Manufacturer for people at other companies.';
+            if (!msg && e && levelDomainProblem(e, lvl)) {
+                msg = levelDomainProblem(e, lvl) + ' Use Engineer, Contractor or Manufacturer for people at other companies.';
             }
             warning.textContent = msg;
         }
@@ -651,8 +666,8 @@
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { error.textContent = 'Enter a valid email address.'; return; }
             if (!p.locations.length) { error.textContent = 'Choose at least one location.'; return; }
             if (!p.userLevel) { error.textContent = 'Choose a user level.'; return; }
-            if (HOFFMAN_LEVELS.indexOf(p.userLevel) !== -1 && p.email.toLowerCase().slice(-HOFFMAN_DOMAIN.length) !== HOFFMAN_DOMAIN) {
-                error.textContent = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + p.userLevel + '.';
+            if (levelDomainProblem(p.email, p.userLevel)) {
+                error.textContent = levelDomainProblem(p.email, p.userLevel);
                 return;
             }
             error.textContent = '';
@@ -1345,7 +1360,7 @@
         { title: 'Companies', items: [
             'Every user is on exactly one company from the Companies tab, so a firm is only ever spelled one way. Pick it from the list when adding someone.',
             'If the firm is new, choose "+ New company" in the form. A name that looks like one already on the list is flagged first so "Refresco" and "Refresco Engineers" do not both end up there.',
-            'Only @hoffman-hoffman.com addresses can be Super Admin, Admin or Hoffman. Everyone else is an Engineer, a Contractor or a Manufacturer.'
+            'Only @hoffman-hoffman.com addresses can be Super Admin or Admin. Hoffman is open to @hoffman-hoffman.com and @hoffmanhydronics.com. Everyone else is an Engineer, a Contractor or a Manufacturer.'
         ] },
         { title: 'Passwords', items: [
             'The site never sees or stores a password in readable form, so nobody can look one up. "Reset password" on a row makes a new link and signs that person out everywhere.',

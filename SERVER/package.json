@@ -1,6 +1,6 @@
 {
   "name": "hhpro-backend",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "description": "HHpro backend: accounts, location permissions, and saved projects. Runs on the Hoffman & Hoffman server behind Cloudflare Tunnel.",
   "main": "server.js",

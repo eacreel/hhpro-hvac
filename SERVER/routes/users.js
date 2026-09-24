@@ -19,8 +19,9 @@
      DELETE /companies/:id  remove an unused company (Super Admin)
 
    Rules:
-     Only @hoffman-hoffman.com addresses may be Super Admin, Admin
-     or Hoffman. A user's company must be on the company list.
+     Only @hoffman-hoffman.com addresses may be Super Admin or
+     Admin; Hoffman also allows @hoffmanhydronics.com. A user's
+     company must be on the company list.
      POST   /               add a user (Invited)
      PUT    /:id            edit a user
      DELETE /:id            delete a user; folder is set aside
@@ -52,11 +53,21 @@ const router = express.Router();
 router.use(auth.requireAdmin);
 
 const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
-const HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
+// Email domains each Hoffman level is limited to. Hoffman Hydronics
+// staff may be Hoffman users, never administrators. Levels not listed
+// take any address. Mirrors LEVEL_DOMAINS in JS/users.js.
 const HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
+const LEVEL_DOMAINS = {
+    'Super Admin': [HOFFMAN_DOMAIN],
+    'Admin': [HOFFMAN_DOMAIN],
+    'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
+};
 
-function isHoffmanEmail(email) {
-    return String(email || '').toLowerCase().endsWith(HOFFMAN_DOMAIN);
+function emailAllowedForLevel(email, level) {
+    const domains = LEVEL_DOMAINS[level];
+    if (!domains) return true;
+    const e = String(email || '').toLowerCase();
+    return domains.some((d) => e.endsWith(d));
 }
 
 // Words that do not distinguish one firm from another when checking
@@ -125,8 +136,8 @@ function readForm(body, actor) {
     if (!assignableLevels(actor).includes(fields.userLevel)) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
-    if (HOFFMAN_LEVELS.includes(fields.userLevel) && !isHoffmanEmail(fields.email)) {
-        return { error: `Only ${HOFFMAN_DOMAIN} addresses can be Super Admin, Admin or Hoffman. Use Engineer, Contractor or Manufacturer for people at other companies.` };
+    if (!emailAllowedForLevel(fields.email, fields.userLevel)) {
+        return { error: `Only ${LEVEL_DOMAINS[fields.userLevel].join(' or ')} addresses can be ${fields.userLevel}. Use Engineer, Contractor or Manufacturer for people at other companies.` };
     }
     const company = db.getCompanyByName(fields.company);
     if (!company) {
