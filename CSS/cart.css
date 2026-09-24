@@ -54,6 +54,12 @@ body.login-active #cart-root {
     display: none;
 }
 
+/* Calculators-only accounts (Manufacturer) have no projects or cart;
+   app.js sets the class. */
+body.calculators-only #cart-root {
+    display: none;
+}
+
 .cart-toggle-label {
     letter-spacing: 0.02em;
     display: inline-flex;

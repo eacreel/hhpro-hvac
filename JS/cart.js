@@ -436,7 +436,8 @@
      * Edits queued before the load finishes win over the server copy.
      */
     function loadProjectsFromServer() {
-        if (!HHpro.State.isLoggedIn()) return Promise.resolve();
+        // Calculators-only accounts (Manufacturer) have no projects.
+        if (!HHpro.State.isLoggedIn() || HHpro.State.isCalculatorsOnly()) return Promise.resolve();
         var user = HHpro.State.getUser();
         return HHpro.Api.get('/api/projects').then(function (res) {
             var map = {};

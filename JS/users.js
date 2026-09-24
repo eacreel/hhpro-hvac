@@ -27,7 +27,7 @@
     window.HHpro = window.HHpro || {};
     HHpro.Views = HHpro.Views || {};
 
-    var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor'];
+    var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
     var HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
     var HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
 
@@ -586,7 +586,7 @@
             });
             var lvl = level.input.value;
             if (!msg && HOFFMAN_LEVELS.indexOf(lvl) !== -1 && e && e.slice(-HOFFMAN_DOMAIN.length) !== HOFFMAN_DOMAIN) {
-                msg = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + lvl + '. Use Engineer or Contractor for people at other companies.';
+                msg = 'Only ' + HOFFMAN_DOMAIN + ' addresses can be ' + lvl + '. Use Engineer, Contractor or Manufacturer for people at other companies.';
             }
             warning.textContent = msg;
         }
@@ -1329,11 +1329,12 @@
     var HELP = [
         { title: 'User levels', items: [
             'Super Admin: sees every product, manages every user, can make other Super Admins.',
-            'Admin: sees products for their locations, can add Admin, Hoffman, Engineer and Contractor users, and can edit or delete only the users they added.',
+            'Admin: sees products for their locations, can add Admin, Hoffman, Engineer, Contractor and Manufacturer users, and can edit or delete only the users they added.',
             'Hoffman: sees products for their locations and can pick any engineer schedule template.',
             'Engineer: sees products for their locations; gets the standard template plus their company\'s, if one exists.',
             'A person can have several locations. They see every product that any one of their locations allows.',
-            'Contractor: same as Engineer but standard template only.'
+            'Contractor: same as Engineer but standard template only.',
+            'Manufacturer: sees only the Calculators. No products, model lookup, Projects or Design Search, and no saving to a project; Export PDF still works. Their locations do not matter.'
         ] },
         { title: 'Adding someone', items: [
             'Add user, fill in the form, and choose "Add and send invitation". Your mail program opens with the registration link in the body. Send it.',
@@ -1344,7 +1345,7 @@
         { title: 'Companies', items: [
             'Every user is on exactly one company from the Companies tab, so a firm is only ever spelled one way. Pick it from the list when adding someone.',
             'If the firm is new, choose "+ New company" in the form. A name that looks like one already on the list is flagged first so "Refresco" and "Refresco Engineers" do not both end up there.',
-            'Only @hoffman-hoffman.com addresses can be Super Admin, Admin or Hoffman. Everyone else is an Engineer or a Contractor.'
+            'Only @hoffman-hoffman.com addresses can be Super Admin, Admin or Hoffman. Everyone else is an Engineer, a Contractor or a Manufacturer.'
         ] },
         { title: 'Passwords', items: [
             'The site never sees or stores a password in readable form, so nobody can look one up. "Reset password" on a row makes a new link and signs that person out everywhere.',

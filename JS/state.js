@@ -35,7 +35,7 @@
     var state = {
         // Profile as returned by /api/auth/me:
         //   { user, allowedEngineers, defaultEngineer, blockedProducts,
-        //     canManageUsers, contactEmail }
+        //     calculatorsOnly, canManageUsers, contactEmail }
         session: loadSession(),
 
         // Placeholders for later steps. Listed here so the shape of the
@@ -85,6 +85,14 @@
             return !!(state.session && state.session.canManageUsers);
         },
 
+        /**
+         * Manufacturer accounts: only the Calculators. No products, model
+         * lookup, Projects, Design Search, cart or saving to a project.
+         */
+        isCalculatorsOnly: function () {
+            return !!(state.session && state.session.calculatorsOnly);
+        },
+
         getContactEmail: function () {
             return (state.session && state.session.contactEmail) || 'eric.creel@hoffman-hoffman.com';
         },
@@ -112,6 +120,7 @@
 
         /** Products hidden for this person's location come from the Permissions tab. */
         isProductAllowed: function (displayName) {
+            if (this.isCalculatorsOnly()) return false;
             var blocked = state.session && state.session.blockedProducts;
             if (!Array.isArray(blocked)) return true;
             return blocked.indexOf(displayName) === -1;

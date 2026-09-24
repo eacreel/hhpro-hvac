@@ -65,6 +65,20 @@
         current = { id: id, view: viewName, sig: s };
     }
 
+    // Calculators-only accounts (Manufacturer) reach the overview, the
+    // Calculators hub, each calculator and the privacy page; any other
+    // view (products, Projects, Design Search, Users) lands on the
+    // overview instead.
+    var CALC_ONLY_VIEWS = { main: true, calculators: true, privacy: true };
+
+    function viewAllowed(viewName) {
+        if (AUTH_VIEWS[viewName] || !HHpro.State || !HHpro.State.isCalculatorsOnly()) return true;
+        if (CALC_ONLY_VIEWS[viewName]) return true;
+        var calcs = HHpro.Calculators ? HHpro.Calculators.list() : [];
+        for (var i = 0; i < calcs.length; i++) if (calcs[i].view === viewName) return true;
+        return false;
+    }
+
     function onPopState(e) {
         var st = e.state;
         var loggedIn = !!(HHpro.State && HHpro.State.isLoggedIn());
@@ -104,6 +118,12 @@
             }
             params = params || {};
             opts = opts || {};
+            if (!viewAllowed(viewName)) {
+                HHpro.App.showView('main', {}, { replace: true });
+                return;
+            }
+            // Hides the cart (cart.css) for calculators-only accounts.
+            document.body.classList.toggle('calculators-only', !!(HHpro.State && HHpro.State.isCalculatorsOnly()));
             view.render(root(), params);
             if (opts.fromHistory) {
                 current = opts.fromHistory;
@@ -124,7 +144,14 @@
         /** Re-check the session with the server; bounce to login if it is gone. */
         refreshSession: function () {
             return HHpro.Api.get('/api/auth/me').then(function (profile) {
+                var wasCalcOnly = HHpro.State.isCalculatorsOnly();
                 HHpro.State.setSession(profile);
+                // The page was painted from the cached profile; if the
+                // account's level has since moved into or out of
+                // calculators-only, repaint the overview to match.
+                if (HHpro.State.isCalculatorsOnly() !== wasCalcOnly) {
+                    HHpro.App.showView('main', {}, { replace: true });
+                }
                 return profile;
             }, function (err) {
                 if (err.status === 401) {

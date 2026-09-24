@@ -7,7 +7,8 @@
      Super Admin, Admin, Hoffman   every template
      Engineer                      standard + their company's, if
                                    the company has one
-     Contractor                    standard only
+     Contractor, Manufacturer      standard only (a Manufacturer
+                                   sees no schedules anyway)
 
    The list below mirrors ENGINEERS in JS/schedule_templates.js.
    When a new firm's template is added to the site, add its key

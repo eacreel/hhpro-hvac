@@ -20,7 +20,7 @@ const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const config = require('./config');
 
-const USER_LEVELS = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor'];
+const USER_LEVELS = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
 const USER_STATUSES = ['invited', 'active'];
 
 // Every migration runs once, in order, tracked in schema_version.

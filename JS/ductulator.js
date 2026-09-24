@@ -542,7 +542,10 @@
 
         var actions = document.createElement('div');
         actions.className = 'psy-actions-bar';
-        actions.appendChild(actionButton('folder', 'Save to project', function () { beginSave(actions); }));
+        // Calculators-only accounts (Manufacturer) have no projects.
+        if (!HHpro.State.isCalculatorsOnly()) {
+            actions.appendChild(actionButton('folder', 'Save to project', function () { beginSave(actions); }));
+        }
         actions.appendChild(actionButton('download', 'Export PDF', function () {
             var active = HHpro.Cart.getActiveState();
             var name = (active && active.name) || '';

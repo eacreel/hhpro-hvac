@@ -4,6 +4,8 @@
    The landing page shown after login. A grid of tiles:
      - Projects (top-left, distinct styling) -> 'projects' view
      - One tile per product type               -> 'product' view
+   Calculators-only accounts (Manufacturer) get the Calculators
+   tile alone.
 
    The cart panel (HHpro.Cart) shows on this view too once
    initialized, so users can see their progress from here.
@@ -61,9 +63,14 @@
         var main = document.createElement('main');
         main.className = 'app-main main-view';
 
+        // Manufacturer accounts see the Calculators tile and nothing else.
+        var calcOnly = HHpro.State.isCalculatorsOnly();
+
         var title = document.createElement('h2');
         title.className = 'main-title hh-dimline';
-        title.textContent = 'Select Projects or a product type to get started';
+        title.textContent = calcOnly
+            ? 'Select Calculators to get started'
+            : 'Select Projects or a product type to get started';
         main.appendChild(title);
 
         // Action tiles row: prominent shortcuts above the product grid.
@@ -71,24 +78,29 @@
         // of viewport width.
         var projectsRow = document.createElement('div');
         projectsRow.className = 'projects-row';
-        projectsRow.appendChild(createProjectsTile());
-        projectsRow.appendChild(createDesignSearchTile());
+        if (!calcOnly) {
+            projectsRow.appendChild(createProjectsTile());
+            projectsRow.appendChild(createDesignSearchTile());
+        }
         projectsRow.appendChild(createCalculatorsTile());
         main.appendChild(projectsRow);
 
         // Product grid: one tile per product type, laid out in the same
         // responsive auto-fill grid as before.
-        var grid = document.createElement('div');
-        grid.className = 'tile-grid';
-        HHpro.Data.getProducts().forEach(function (product) {
-            grid.appendChild(createProductTile(product));
-        });
-        main.appendChild(grid);
+        var grid = null;
+        if (!calcOnly) {
+            grid = document.createElement('div');
+            grid.className = 'tile-grid';
+            HHpro.Data.getProducts().forEach(function (product) {
+                grid.appendChild(createProductTile(product));
+            });
+            main.appendChild(grid);
+        }
 
         // Soft staggered reveal as the overview paints in.
         if (HHpro.FX && HHpro.FX.staggerReveal) {
             HHpro.FX.staggerReveal(projectsRow);
-            HHpro.FX.staggerReveal(grid);
+            if (grid) HHpro.FX.staggerReveal(grid);
         }
 
         if (HHpro.UI.buildPrivacyFooter) {

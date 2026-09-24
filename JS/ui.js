@@ -239,6 +239,9 @@
         createLookupInput: function () {
             var wrap = document.createElement('div');
             wrap.className = 'quick-lookup';
+            // Calculators-only accounts see no products, so no model
+            // lookup; the empty wrapper keeps the header's spacing.
+            if (HHpro.State && HHpro.State.isCalculatorsOnly()) return wrap;
 
             var icon = HHpro.UI.icon('search');
             icon.classList.add('quick-lookup-icon');

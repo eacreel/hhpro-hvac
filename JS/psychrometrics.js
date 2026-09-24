@@ -615,15 +615,18 @@
 
         var actions = document.createElement('div');
         actions.className = 'psy-actions-bar';
-        var saveBtn = document.createElement('button');
-        saveBtn.type = 'button';
-        saveBtn.className = 'projects-btn projects-btn-secondary psy-small-btn';
-        saveBtn.appendChild(HHpro.UI.icon('folder'));
-        var saveLbl = document.createElement('span');
-        saveLbl.textContent = 'Save to project';
-        saveBtn.appendChild(saveLbl);
-        saveBtn.addEventListener('click', function () { beginSave(actions); });
-        actions.appendChild(saveBtn);
+        // Calculators-only accounts (Manufacturer) have no projects.
+        if (!HHpro.State.isCalculatorsOnly()) {
+            var saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'projects-btn projects-btn-secondary psy-small-btn';
+            saveBtn.appendChild(HHpro.UI.icon('folder'));
+            var saveLbl = document.createElement('span');
+            saveLbl.textContent = 'Save to project';
+            saveBtn.appendChild(saveLbl);
+            saveBtn.addEventListener('click', function () { beginSave(actions); });
+            actions.appendChild(saveBtn);
+        }
 
         var pdfBtn = document.createElement('button');
         pdfBtn.type = 'button';

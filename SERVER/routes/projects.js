@@ -15,7 +15,8 @@
      DELETE /:id         move the file to the folder's _trash
 
    Only the owner can reach their folder: the folder comes from
-   the session, never from the request.
+   the session, never from the request. Calculators-only levels
+   (Manufacturer) get no projects at all.
    ============================================================ */
 
 'use strict';
@@ -30,7 +31,7 @@ const folders = require('../lib/folders');
 const log = require('../lib/log');
 
 const router = express.Router();
-router.use(auth.requireUser);
+router.use(auth.requireProjects);
 
 const ID_RE = /^[A-Za-z0-9_-]{4,80}$/;
 const ORDER_FILE = '_order.json';

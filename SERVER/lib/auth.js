@@ -196,6 +196,23 @@ function isAdminLevel(level) {
     return level === 'Super Admin' || level === 'Admin';
 }
 
+// Levels that see only the Calculators: no products, Projects or
+// Design Search (a manufacturer reviewing the calculators).
+const CALCULATORS_ONLY_LEVELS = ['Manufacturer'];
+
+function isCalculatorsOnly(level) {
+    return CALCULATORS_ONLY_LEVELS.includes(level);
+}
+
+/** Projects are closed to calculators-only levels. */
+function requireProjects(req, res, next) {
+    if (!req.user) return res.status(401).json({ error: 'Please sign in.' });
+    if (isCalculatorsOnly(req.user.user_level)) {
+        return res.status(403).json({ error: 'Projects are not available for your account.' });
+    }
+    next();
+}
+
 function requireAdmin(req, res, next) {
     if (!req.user) return res.status(401).json({ error: 'Please sign in.' });
     if (!isAdminLevel(req.user.user_level)) {
@@ -252,7 +269,9 @@ module.exports = {
     attach,
     requireUser,
     requireAdmin,
+    requireProjects,
     isAdminLevel,
+    isCalculatorsOnly,
     loginBlocked,
     recordLoginFailure,
     clearLoginFailures,

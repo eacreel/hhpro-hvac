@@ -29,7 +29,8 @@
 
    Rules:
      Super Admin   everything, except deleting themselves
-     Admin         may add Admin / Hoffman / Engineer / Contractor;
+     Admin         may add Admin / Hoffman / Engineer / Contractor /
+                   Manufacturer;
                    may edit, delete, invite or reset only users
                    they added, and never a Super Admin
    ============================================================ */
@@ -50,7 +51,7 @@ const ExcelJS = require('exceljs');
 const router = express.Router();
 router.use(auth.requireAdmin);
 
-const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor'];
+const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
 const HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
 const HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
 
@@ -125,7 +126,7 @@ function readForm(body, actor) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
     if (HOFFMAN_LEVELS.includes(fields.userLevel) && !isHoffmanEmail(fields.email)) {
-        return { error: `Only ${HOFFMAN_DOMAIN} addresses can be Super Admin, Admin or Hoffman. Use Engineer or Contractor for people at other companies.` };
+        return { error: `Only ${HOFFMAN_DOMAIN} addresses can be Super Admin, Admin or Hoffman. Use Engineer, Contractor or Manufacturer for people at other companies.` };
     }
     const company = db.getCompanyByName(fields.company);
     if (!company) {

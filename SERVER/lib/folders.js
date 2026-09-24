@@ -8,6 +8,8 @@
        Hoffman/<person>/                 Super Admin, Admin, Hoffman
        Engineers/<Company>/<person>/     Engineer
        Contractors/<Company>/<person>/   Contractor
+       Manufacturers/<Company>/<person>/ Manufacturer (calculators
+                                         only, so normally empty)
        _deleted_<person>_<date>/         set aside when an account
                                          is removed (30 days)
 
@@ -45,11 +47,12 @@ function safeCompany(name) {
     return s || 'Unknown company';
 }
 
-/** "Hoffman", "Engineers/<Company>" or "Contractors/<Company>" for a level + company. */
+/** "Hoffman", "Engineers/<Company>", "Contractors/<Company>" or "Manufacturers/<Company>" for a level + company. */
 function groupFor(level, company) {
     if (HOFFMAN_LEVELS.includes(level)) return 'Hoffman';
     if (level === 'Engineer') return path.join('Engineers', safeCompany(company));
     if (level === 'Contractor') return path.join('Contractors', safeCompany(company));
+    if (level === 'Manufacturer') return path.join('Manufacturers', safeCompany(company));
     return 'Other';
 }
 

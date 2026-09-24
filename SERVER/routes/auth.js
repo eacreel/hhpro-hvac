@@ -46,6 +46,8 @@ function profile(user) {
         allowedEngineers: templates.allowedEngineersFor(user),
         defaultEngineer: templates.defaultEngineerFor(user),
         blockedProducts: blocked,
+        // Manufacturer: the site shows only the Calculators.
+        calculatorsOnly: auth.isCalculatorsOnly(user.user_level),
         canManageUsers: auth.isAdminLevel(user.user_level),
         contactEmail: config.superAdminEmail
     };
