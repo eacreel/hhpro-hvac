@@ -13,6 +13,8 @@
      sensible(state, dbOut, P)       sensible heating / reheat
      coilFromAdp(entering, adp, bf)  coil leaving state from ADP + bypass factor
      adpFromLeaving(entering, lv)    ADP + bypass factor implied by a leaving state
+     coilFromLoads(entering, qt, qs, m)  coil leaving state from total + sensible capacity
+     coilFromTotalAndDb(entering, qt, db, m)  ... from total capacity + leaving dry bulb
      evap(state, eff, P)             adiabatic (evaporative) cooling / humidifying
      steam(state, key, value, P)     steam humidification at constant dry bulb
      fanHeat(state, opts, m, P)      fan / motor temperature rise
@@ -309,6 +311,63 @@
         var adp = fromDbWClamped(adpDb, satHumRatio(adpDb, P), P);
         var bf = (leaving.db - adpDb) / (entering.db - adpDb);
         return { adp: adp, bf: bf };
+    }
+
+    // Leaving state from the coil's total and sensible capacity (Btu/h,
+    // + = removed) at a dry-air mass flow: the inverse of process().
+    //   h out  = h in - Qt / m
+    //   DB out = DB in - Qs / (m x cp), cp = 0.240 + 0.444 x W out
+    // cp depends on W out, which depends on DB out, so iterate; it
+    // settles in two or three passes.
+    function coilFromLoads(entering, qtBtuh, qsBtuh, massLbHr, P) {
+        var qt = Number(qtBtuh), qs = Number(qsBtuh), m = Number(massLbHr);
+        if (!isFinite(qt)) throw new Error('Enter the total capacity');
+        if (!isFinite(qs)) throw new Error('Enter the sensible capacity');
+        if (qt <= 0) throw new Error('Total capacity must be above zero');
+        if (qs < 0) throw new Error('Sensible capacity cannot be negative');
+        if (qs > qt) throw new Error('Sensible capacity cannot be more than the total (that would add moisture)');
+        if (!isFinite(m) || m <= 0) throw new Error('Enter the airflow to place the coil leaving air');
+        var h = entering.h - qt / m;
+        var w = entering.w, db = entering.db;
+        for (var i = 0; i < 20; i++) {
+            db = entering.db - qs / (m * cpMoist(w));
+            // PsychroLib clamps W at a tiny positive floor, so test the
+            // enthalpy against dry air at this dry bulb instead.
+            if (h < lib.GetMoistAirEnthalpy(db, 0)) throw new Error('The latent part (total − sensible) is more than the moisture in this airflow; check the capacities or the airflow');
+            var wNew = lib.GetHumRatioFromEnthalpyAndTDryBulb(h, db);
+            var done = Math.abs(wNew - w) < 1e-10;
+            w = wNew;
+            if (done) break;
+        }
+        var wsat = satHumRatio(db, P);
+        if (w > wsat * (1 + 1e-6)) {
+            throw new Error('Those capacities put the leaving air above saturation (' + db.toFixed(1) + ' °F, ' +
+                (w * GRAINS_PER_LB).toFixed(1) + ' gr/lb): the sensible share is too high for this airflow. Lower the sensible capacity or SHR, or check the airflow');
+        }
+        return fromDbW(db, Math.min(w, wsat), P);
+    }
+
+    // Leaving state from the total capacity and the leaving dry bulb (a
+    // schedule's total and LAT with no wet bulb). The total fixes the
+    // leaving enthalpy; W is whatever gives that enthalpy at the dry bulb.
+    function coilFromTotalAndDb(entering, qtBtuh, dbOut, massLbHr, P) {
+        var qt = Number(qtBtuh), db = Number(dbOut), m = Number(massLbHr);
+        if (!isFinite(qt)) throw new Error('Enter the total capacity');
+        if (!isFinite(db)) throw new Error('Enter the leaving dry bulb');
+        if (qt <= 0) throw new Error('Total capacity must be above zero');
+        if (db >= entering.db) throw new Error('Leaving dry bulb must be below the entering air (' + entering.db.toFixed(1) + ' °F)');
+        if (!isFinite(m) || m <= 0) throw new Error('Enter the airflow to place the coil leaving air');
+        var h = entering.h - qt / m;
+        if (h < lib.GetMoistAirEnthalpy(db, 0)) throw new Error('That total capacity is more than this airflow can give up at that leaving dry bulb; check the capacity, the dry bulb or the airflow');
+        var w = lib.GetHumRatioFromEnthalpyAndTDryBulb(h, db);
+        // W out above W in means sensible > total: the coil would be adding moisture.
+        if (w > entering.w * (1 + 1e-9)) throw new Error('At that leaving dry bulb the sensible cooling is more than the total capacity (the air would gain moisture); raise the leaving dry bulb or check the total');
+        var wsat = satHumRatio(db, P);
+        if (w > wsat * (1 + 1e-6)) {
+            throw new Error('Those values put the leaving air above saturation (' + db.toFixed(1) + ' °F, ' +
+                (w * GRAINS_PER_LB).toFixed(1) + ' gr/lb): the total capacity is too small to reach that dry bulb. Raise the leaving dry bulb or check the total');
+        }
+        return fromDbW(db, Math.min(w, wsat), P);
     }
 
     // ----- Adiabatic (evaporative) process along the wet-bulb line -----
@@ -638,6 +697,8 @@
         reheat: reheat,
         coilFromAdp: coilFromAdp,
         adpFromLeaving: adpFromLeaving,
+        coilFromLoads: coilFromLoads,
+        coilFromTotalAndDb: coilFromTotalAndDb,
         evap: evap,
         steam: steam,
         fanHeat: fanHeat,

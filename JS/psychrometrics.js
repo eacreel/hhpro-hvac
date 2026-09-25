@@ -6,7 +6,8 @@
      Air Handler (default) - an ordered chain of stages, each with
        an Include toggle: outdoor air, energy recovery, return air,
        mixing, preheat, fan (blow-through), cooling coil (leaving
-       condition or ADP + bypass factor), fan (draw-through),
+       condition, ADP + bypass factor, or total capacity with
+       sensible capacity, SHR or leaving dry bulb), fan (draw-through),
        reheat, humidifier (steam / evaporative), evaporative
        cooler. Plus the room side (space condition + loads -> SHR
        line and required supply), an economizer check, condensate
@@ -83,7 +84,10 @@
                 oaCfm: 2000, raCfm: 8000, totalCfm: 10000, oaPct: 20,
                 econ: { enabled: false, mode: 'enthalpy', limitDb: 65 },
                 preheat: { enabled: false, db: 55 },
-                coil: { enabled: false, mode: 'leaving', db: 55, key: 'rh', value: 95, adp: 50, bf: 10 },
+                // mode: 'leaving' | 'adp' | 'loads' (total capacity, Btu/h, plus
+                // capKey: 'qs' sensible capacity | 'shr' SHR | 'ldb' leaving dry bulb)
+                coil: { enabled: false, mode: 'leaving', db: 55, key: 'rh', value: 95, adp: 50, bf: 10,
+                        qt: null, capKey: 'qs', qs: null, shr: null, ldb: null },
                 fan: { enabled: false, mode: 'bhp', bhp: 5, motorIn: true, motorEff: 90, dt: 1.5 },
                 reheat: { enabled: false, db: 72 },
                 hum: { enabled: false, type: 'steam', key: 'rh', value: 40, eff: 85 },
@@ -256,7 +260,9 @@
         econ_limit: 'Fixed outdoor dry bulb above which the dampers stay at minimum no matter what the comparison says. Draws the amber vertical line; the shaded region never extends to its right.',
         preheat: 'Sensible heating ahead of the cooling coil, for freeze protection or winter heating. Moves the point horizontally to the right at constant moisture and plots PH.',
         preheat_db: 'Air temperature leaving the preheat coil. Must be at or above the entering air. Sets how far right PH sits.',
-        coil: 'The cooling and dehumidifying coil. The process runs down and to the left from the entering air to SA. Leaving condition: enter the state you want and the implied apparatus dew point and bypass factor are reported. ADP + bypass factor: describe the coil instead and the leaving point is calculated.',
+        coil: 'The cooling and dehumidifying coil. The process runs down and to the left from the entering air to SA. Leaving condition: enter the state you want and the implied apparatus dew point and bypass factor are reported. ADP + bypass factor: describe the coil instead and the leaving point is calculated. Capacity: enter the total capacity with the sensible capacity, the SHR or the leaving dry bulb, as a coil selection, performance table or schedule prints them, and the leaving point is solved from them at the airflow above.',
+        coil_qt: 'Total (sensible + latent) cooling the coil delivers at this entering condition and airflow, as a coil selection or unit performance table prints it. Sets the leaving enthalpy: h out = h in − total ÷ mass flow.',
+        coil_cap: 'What goes with the total capacity; any one of these fixes the leaving point. Sensible capacity: as a coil selection prints it (must not exceed the total). Sensible heat ratio: sensible ÷ total, 0 to 1, as equipment data often prints it. Leaving dry bulb: a schedule’s leaving air temperature; the humidity is whatever gives the total at that dry bulb.',
         coil_db: 'Coil leaving dry bulb. Moves SA left or right; colder means more sensible cooling.',
         coil_second: 'Fixes the moisture leaving the coil. Lower moisture means more latent cooling; a dehumidifying coil usually leaves air near 90 to 95% RH.',
         coil_adp: 'Apparatus dew point: the saturation temperature the coil surface effectively runs at, where the process line meets the saturation curve. Lower ADP gives colder, drier leaving air and a steeper process line.',
@@ -817,6 +823,54 @@
         e.effBasis = basis;
     }
 
+    // Capacity entry: the total plus one of these. `kind` is the unit kind
+    // ('none' for the SHR, a plain 0-1 ratio).
+    var COIL_CAP_KEYS = [
+        { key: 'qs',  label: 'Sensible capacity',   kind: 'power', noun: 'sensible capacity' },
+        { key: 'shr', label: 'Sensible heat ratio', kind: 'none',  noun: 'sensible heat ratio' },
+        { key: 'ldb', label: 'Leaving dry bulb',    kind: 'temp',  noun: 'leaving dry bulb' }
+    ];
+
+    function coilCapDef(c) {
+        for (var i = 0; i < COIL_CAP_KEYS.length; i++) if (COIL_CAP_KEYS[i].key === c.capKey) return COIL_CAP_KEYS[i];
+        return COIL_CAP_KEYS[0];
+    }
+
+    function isBlank(v) { return v === null || v === undefined; }
+
+    // Value of the total ('qt') or one capacity-pair property for the coil
+    // as last computed (Btu/h to the nearest 100, SHR to 0.001, dry bulb
+    // to 0.1 F), or null when there is no cooling result to read.
+    function coilCapFromResult(key) {
+        var st = null;
+        ((refs.lastResult && refs.lastResult.stages) || []).forEach(function (x) { if (x.id === 'sa') st = x; });
+        if (!st || !(st.load.total > 0)) return null;
+        var L = st.load;
+        if (key === 'qt') return Math.round(L.total / 100) * 100;
+        if (key === 'shr') return Number(Math.min(1, Math.max(0, L.sensible / L.total)).toFixed(3));
+        if (key === 'ldb') return Number(st.to.db.toFixed(1));
+        return Math.round(Math.max(0, L.sensible) / 100) * 100;
+    }
+
+    // The first switch to capacity entry starts from what the coil is
+    // doing now, so the leaving point does not jump. Values already typed
+    // are kept.
+    function seedCoilLoads() {
+        var c = state.ahu.coil, k = coilCapDef(c).key;
+        if (isBlank(c.qt)) c.qt = coilCapFromResult('qt');
+        if (isBlank(c[k])) c[k] = coilCapFromResult(k);
+    }
+
+    // Switching what goes with the total re-expresses the same leaving
+    // point in the new property (like the air-state property selector).
+    function switchCoilCapKey(key) {
+        var c = state.ahu.coil;
+        if (coilCapDef(c).key === key) return;
+        var v = coilCapFromResult(key);
+        if (v !== null) c[key] = v;
+        c.capKey = key;
+    }
+
     // Recovery and the economizer compare outdoor to return air, so both
     // streams have to be present for either to stay in the system. A known
     // mixed air replaces both streams, so it and they are exclusive.
@@ -1025,13 +1079,18 @@
             var r = document.createElement('div');
             r.className = 'psy-radio-row';
             r.appendChild(inlineLabel('Define by:'));
-            [['leaving', 'Leaving condition'], ['adp', 'ADP + bypass factor']].forEach(function (m) {
+            [['leaving', 'Leaving condition'], ['adp', 'ADP + bypass factor'], ['loads', 'Capacity']].forEach(function (m) {
                 r.appendChild(radio('psy-coil-mode', m[0], m[1], a.coil.mode === m[0], function () {
+                    if (m[0] === 'loads') seedCoilLoads();
                     a.coil.mode = m[0]; save(); buildForm(); recompute();
                 }));
             });
             body.appendChild(r);
-            if (a.coil.mode === 'adp') {
+            if (a.coil.mode === 'loads') {
+                body.appendChild(buildCoilCapacityFields(a.coil));
+                body.appendChild(errorLine('coil'));
+                body.appendChild(hint('The leaving state is solved from these at the airflow and load basis above. The ADP and bypass factor it implies are reported below.'));
+            } else if (a.coil.mode === 'adp') {
                 var g = fields();
                 g.appendChild(numberField('Apparatus dew point', 'temp', a.coil.adp, { step: 0.5 }, function (v) { a.coil.adp = v; }, 'coil_adp'));
                 g.appendChild(numberField('Bypass factor', 'pct', a.coil.bf, { min: 0, max: 99, step: 1 }, function (v) { a.coil.bf = v; }, 'coil_bf'));
@@ -1471,6 +1530,8 @@
         label.textContent = labelText;
         wrap.appendChild(label);
         if (helpKey) wrap.appendChild(help(helpKey));
+        // Loads run to six or seven digits in Btu/h.
+        if (kind === 'power' && !(opts && opts.cls)) opts = extend({ cls: 'psy-input psy-input-power' }, opts);
         var input = numberInput(inputDisp(kind, ipValue), opts);
         input.addEventListener('input', function () {
             var v = input.value === '' ? null : toNum(input.value, null);
@@ -1572,6 +1633,53 @@
             save(); recompute();
         });
         return second;
+    }
+
+    // Cooling coil by capacity: Total capacity + (selector, value) for
+    // what goes with it - sensible capacity, SHR or leaving dry bulb.
+    function buildCoilCapacityFields(c) {
+        var g = fields();
+        var pStep = sys() === 'SI' ? 0.5 : 1000;
+        g.appendChild(numberField('Total capacity', 'power', c.qt, { min: 0, step: pStep }, function (v) { c.qt = v; }, 'coil_qt'));
+
+        var def = coilCapDef(c), k = def.key;
+        var second = document.createElement('div');
+        second.className = 'psy-field';
+        second.appendChild(help('coil_cap'));
+        var select = document.createElement('select');
+        select.className = 'filter-select psy-select psy-select-cap';
+        select.setAttribute('aria-label', 'With the total');
+        COIL_CAP_KEYS.forEach(function (d) {
+            var opt = document.createElement('option');
+            opt.value = d.key;
+            opt.textContent = d.label;
+            if (d.key === k) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.addEventListener('change', function () {
+            switchCoilCapKey(select.value);
+            save(); buildForm(); recompute();
+        });
+        second.appendChild(select);
+
+        // SHR is a bare ratio: shown to 0.001, no unit conversion.
+        var input = k === 'shr'
+            ? numberInput(isBlank(c.shr) ? '' : String(Number(Number(c.shr).toFixed(3))), { min: 0, max: 1, step: 0.01 })
+            : numberInput(inputDisp(def.kind, c[k]), k === 'qs'
+                ? { min: 0, step: pStep, cls: 'psy-input psy-input-power' } : { step: 0.5 });
+        input.setAttribute('aria-label', def.label);
+        input.addEventListener('input', function () {
+            var v = input.value === '' ? null : toNum(input.value, null);
+            c[k] = (v === null || k === 'shr') ? v : U.fromDisp(def.kind, v, sys());
+            save(); recompute();
+        });
+        second.appendChild(input);
+        var unit = document.createElement('span');
+        unit.className = 'psy-unit';
+        unit.textContent = U.unit(def.kind, sys());
+        second.appendChild(unit);
+        g.appendChild(second);
+        return g;
     }
 
     // Dry bulb + (property selector, value) for one air state.
@@ -1978,6 +2086,19 @@
             if (a.coil.mode === 'adp') {
                 var r = Psy.coilFromAdp(c, a.coil.adp, Number(a.coil.bf) / 100, P);
                 st = r.state; adpInfo = { adp: r.adp, bf: r.bf };
+            } else if (a.coil.mode === 'loads') {
+                var cap = coilCapDef(a.coil), cv = a.coil[cap.key];
+                if (isBlank(a.coil.qt)) throw new Error('Enter the total capacity');
+                if (isBlank(cv)) throw new Error('Enter the ' + cap.noun);
+                if (cap.key === 'ldb') {
+                    st = Psy.coilFromTotalAndDb(c, a.coil.qt, cv, m, P);
+                } else if (cap.key === 'shr') {
+                    if (!(cv >= 0 && cv <= 1)) throw new Error('Sensible heat ratio must be between 0 and 1');
+                    st = Psy.coilFromLoads(c, a.coil.qt, Number(a.coil.qt) * cv, m, P);
+                } else {
+                    st = Psy.coilFromLoads(c, a.coil.qt, cv, m, P);
+                }
+                adpInfo = Psy.adpFromLeaving(c, st, P);
             } else {
                 st = Psy.state(a.coil.db, a.coil.key, a.coil.value, P);
                 adpInfo = Psy.adpFromLeaving(c, st, P);
@@ -2283,6 +2404,9 @@
                     rowsS.push(['Sensible', fmtPower(sg * L.sensible)]);
                     rowsS.push(['Latent', fmtPower(sg * L.latent)]);
                     if (cool && L.shr !== null) rowsS.push(['Sensible heat ratio', fmt(L.shr, 3)]);
+                    if (a.coil.mode === 'loads') {
+                        rowsS.push(['Leaving air (from capacity)', fmtU('temp', st.to.db) + ' DB / ' + fmtU('temp', st.to.wb) + ' WB']);
+                    }
                     if (st.extra.adp) {
                         rowsS.push(['Apparatus dew point', fmtU('temp', st.extra.adp.adp.db)]);
                         rowsS.push(['Bypass factor', fmt(st.extra.adp.bf * 100, 1) + ' %']);

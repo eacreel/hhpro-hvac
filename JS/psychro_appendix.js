@@ -261,6 +261,24 @@
             var its = [];
             if (sg.id === 'sa') {
                 var cool = L.total >= 0;
+                if (a.coil && a.coil.mode === 'loads' && m > 0) {
+                    // Entered capacity: the load relations below, run backwards.
+                    var capKey = a.coil.capKey === 'shr' || a.coil.capKey === 'ldb' ? a.coil.capKey : 'qs';
+                    var hLine = ['h ' + lt + ' = h ' + lf + ' − Q ÷ m', '= ' + H(f.h) + ' − ' + I(L.total) + ' ÷ ' + I(m) + ' = ' + H(t.h) + ' Btu/lb'];
+                    var wLine = ['W ' + lt + ' = (h − 0.240 × DB) ÷ (1,061 + 0.444 × DB)', '= (' + H(t.h) + ' − 0.240 × ' + T(t.db) + ') ÷ (1,061 + 0.444 × ' + T(t.db) + ') = ' + Wr(t.w) + ' lb/lb'];
+                    var dbLine = ['DB ' + lt + ' = DB ' + lf + ' − Qs ÷ (m × cp)', '= ' + T(f.db) + ' − ' + I(L.sensible) + ' ÷ (' + I(m) + ' × ' + n(cp(t.w), 4) + ') = ' + T(t.db) + ' °F'];
+                    var solveNote = ' cp uses W ' + lt + ', so DB and W are solved together (a few passes).';
+                    if (capKey === 'ldb') {
+                        its.push(item('Leaving state from the entered capacity', 'The total capacity and leaving dry bulb were entered. The total fixes the leaving enthalpy; the humidity ratio is the one that has that enthalpy at the entered dry bulb.',
+                            [hLine, ['DB ' + lt, '= ' + T(t.db) + ' °F (entered)'], wLine]));
+                    } else if (capKey === 'shr') {
+                        its.push(item('Leaving state from the entered capacity', 'The total capacity and sensible heat ratio were entered; the leaving state is the one that gives exactly those loads on this mass flow.' + solveNote,
+                            [['Qs = Q × SHR', '= ' + I(L.total) + ' × ' + n(Number(a.coil.shr), 3) + ' = ' + I(L.sensible) + ' Btu/h'], hLine, dbLine, wLine]));
+                    } else {
+                        its.push(item('Leaving state from the entered capacity', 'The total and sensible capacity were entered; the leaving state is the one that gives exactly those loads on this mass flow.' + solveNote,
+                            [hLine, dbLine, wLine]));
+                    }
+                }
                 its.push(item(cool ? 'Total cooling' : 'Total heating', null,
                     [['Q = m × (h ' + lf + ' − h ' + lt + ')', '= ' + I(m) + ' × (' + H(f.h) + ' − ' + H(t.h) + ') = ' + I(L.total) + ' Btu/h (' + n(L.tons, 2) + ' tons)']]));
                 its.push(item('Sensible', null,

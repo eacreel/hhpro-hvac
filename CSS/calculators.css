@@ -335,7 +335,8 @@
     cursor: not-allowed;
 }
 
-.psy-input-alt {
+.psy-input-alt,
+.psy-input-power {
     width: 88px;
 }
 
@@ -351,6 +352,11 @@
     padding: 4px 8px;
     font-size: var(--font-size-sm);
     width: 150px;
+}
+
+/* Cooling coil capacity pair: "Sensible heat ratio" needs the room. */
+.psy-select-cap {
+    width: 170px;
 }
 
 .psy-unit {
