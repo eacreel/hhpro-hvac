@@ -8,9 +8,11 @@
    and the schedule row it maps to. A heat pump result lands on the
    row for its heat kit (the kW dropdown opens on that kit), and
    swaps cooling and electrical plus the design OA heating column
-   ("88480 (20°F OA)") - the 47 / 17 F heating columns stay the
-   AHRI ratings. Gas packs land on the row for their heat size
-   (the Input dropdown opens on it).
+   ("51000 (17°F OA, 3000 CFM, COP 2.25)"). The 47 / 17 F rating
+   columns (capacity and COP) show "-" on a design row, and are
+   hidden outright when every heat pump on a schedule is one.
+   Gas packs land on the row for their heat size (the Input
+   dropdown opens on it).
 
    Every number on the Gas Pack schedule came from a selection run
    by hand in Daikin's software at one condition (80/67 EAT, 95
@@ -28,6 +30,11 @@
    Toggling is per row, survives navigation (sessionStorage), and
    raises a warning the first time it is used on a row, because
    the site's Submittal PDF documents the standard selection only.
+
+   Select on a row showing design values stamps the payload onto
+   the project item (item.gasPackDesign), so the project schedule
+   and every export show the catalog values for THAT item - and an
+   item added from a standard row never picks them up.
    ============================================================ */
 
 (function () {
@@ -79,7 +86,13 @@
     // spellings listed resolves the column.
     var FULL_LABELS = {
         // Heat pump heating at the Design Search heating temperature.
-        hpDesign: ['BTU/h (Design OA, 70°F Indoor DB)', 'BTU/h (70°F Indoor DB)']
+        hpDesign: ['BTU/h (Design OA, 70°F Indoor DB)', 'BTU/h (70°F Indoor DB)'],
+        // The AHRI 47 / 17 F rating columns: "-" on a design row, and
+        // hidden when every heat pump on a schedule is one (hiddenColumnsFor).
+        hp47: ['BTU/h (47°F, 70°F Indoor DB)'],
+        hp17: ['BTU/h (17°F, 70°F Indoor DB)'],
+        cop47: ['COP (47°F)'],
+        cop17: ['COP (17°F)']
     };
 
     var WARNING =
@@ -147,6 +160,43 @@
         return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9]+/g, '');
     }
 
+    // The 47 / 17 F rating columns a design row blanks.
+    function ratingColumns(cols) {
+        return [cols.hp47, cols.hp17, cols.cop47, cols.cop17].filter(Boolean);
+    }
+
+    function isHeatPumpSel(data, sel) {
+        var cols = resolveColumns(data);
+        var sd = sel && sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
+        var parts = sd && HHpro.GasPackCapacity && HHpro.GasPackCapacity.parseModel(sd[cols.model]);
+        return !!(parts && parts.type === 'HEAT PUMP');
+    }
+
+    /**
+     * Schedule columns to hide for a set of rows: the 47 / 17 F rating
+     * columns, when at least one heat pump is in view and EVERY heat pump
+     * is on design values (those rows blank them anyway). [] otherwise.
+     * units = [{ selection, design: bool }], one per row shown.
+     */
+    function hiddenColumnsFor(data, units) {
+        if (!data || !Array.isArray(units)) return [];
+        var hps = units.filter(function (u) { return isHeatPumpSel(data, u.selection); });
+        if (!hps.length || !hps.every(function (u) { return u.design; })) return [];
+        return ratingColumns(resolveColumns(data));
+    }
+
+    /**
+     * The design payload a project item carries, or null. A payload is
+     * bound to the schedule row it was selected on; if the item has since
+     * moved to another row (another kit or heat size) it no longer applies.
+     */
+    function itemPayload(item) {
+        var p = item && item.gasPackDesign;
+        if (!p || typeof p !== 'object') return null;
+        if (p.selectionId != null && p.selectionId !== item.selectionId) return null;
+        return p;
+    }
+
     // -----------------------------------------------------------------
     // Design payload
     // -----------------------------------------------------------------
@@ -162,7 +212,7 @@
             voltage: result.voltage,
             motor: result.motor,
             motorLabel: result.motorLabel,
-            heatSize: result.heat ? result.heat.size : null,
+            heatSize: result.heatSize || (result.heat ? result.heat.size : null),
             kitKw: result.kitKw == null ? null : result.kitKw,
             hgrh: result.hgrh,
             cooling: {
@@ -181,12 +231,12 @@
                 riseHigh: result.heat.riseHigh,
                 thermalEff: result.heat.thermalEff
             } : null,
-            // Heat pumps: what Design Search showed for heating. Not written
-            // to the schedule (its heating columns are AHRI 47/17 F ratings);
-            // kept so the row's tooltip can say what was evaluated.
+            // Heat pumps: what Design Search showed for heating, and the
+            // airflow the table publishes it at (DSH / DHH: nominal only).
+            // Goes to the design OA column.
             hpHeat: hp ? {
                 designDb: hp.designDb, oa: hp.oa, basis: hp.basis,
-                capacity: hp.capacity, cop: hp.cop
+                capacity: hp.capacity, cop: hp.cop, airflow: hp.airflow
             } : null,
             electrical: {
                 mca: result.electrical.mca,
@@ -278,13 +328,20 @@
             out[cols.lwb] = (payload.cooling.lwb == null) ? '-' : round1(payload.cooling.lwb);
         }
 
-        // Heat pumps: the 47 / 17 F columns are AHRI ratings and stay as
-        // scheduled; the design OA column gets the capacity Design Search
-        // read at the chosen heating temperature, e.g. "88480 (20°F OA)".
-        if (payload.type === 'HEAT PUMP' && payload.hpHeat && cols.hpDesign &&
-            payload.hpHeat.capacity != null) {
-            out[cols.hpDesign] = Math.round(payload.hpHeat.capacity) + ' (' +
-                payload.hpHeat.designDb + '°F OA)';
+        // Heat pumps: the design OA column gets the capacity Design Search
+        // read at the chosen heating temperature, with the airflow the table
+        // publishes it at and its COP (DVH publishes none), e.g.
+        // "51000 (17°F OA, 3000 CFM, COP 2.25)". The 47 / 17 F columns are
+        // AHRI ratings, not catalog values at this condition: blanked.
+        if (payload.type === 'HEAT PUMP') {
+            var h = payload.hpHeat;
+            if (h && cols.hpDesign && h.capacity != null) {
+                var bits = [h.designDb + '°F OA'];
+                if (h.airflow != null) bits.push(h.airflow + ' CFM');
+                if (h.cop != null) bits.push('COP ' + h.cop);
+                out[cols.hpDesign] = Math.round(h.capacity) + ' (' + bits.join(', ') + ')';
+            }
+            ratingColumns(cols).forEach(function (L) { out[L] = '-'; });
         }
 
         // Gas heat.
@@ -341,6 +398,9 @@
         (siblingIds || []).forEach(function (id) {
             if (id !== selectionId) delete store[id];
         });
+        // The payload names the row it belongs to, so a project item that
+        // later moves to another row (itemPayload) drops it.
+        payload.selectionId = selectionId;
         // A freshly selected result starts ON: the engineer just asked for
         // these numbers, so showing the standard ones would be surprising.
         store[selectionId] = { payload: payload, on: true, warned: false, at: Date.now() };
@@ -367,8 +427,9 @@
     // -----------------------------------------------------------------
     /**
      * Null unless this is a gas pack row carrying a design payload.
-     * Otherwise: { isOn, overrides, toggle, button } - the button flips the
-     * row and calls back so the renderer can repaint the affected cells.
+     * Otherwise: { isOn, overrides, itemExtra, button } - the button flips
+     * the row and calls back so the renderer can repaint the affected cells;
+     * itemExtra() is what Select adds to the project item.
      */
     function rowController(opts) {
         if (!opts || opts.productKey !== PRODUCT) return null;
@@ -400,9 +461,10 @@
             function hpNote() {
                 var h = entry.payload.hpHeat;
                 if (entry.payload.type !== 'HEAT PUMP') return '';
-                return ' The 47/17 °F heating columns stay the AHRI ratings' +
+                return ' The 47/17 °F AHRI rating columns are blank' +
                     (h ? '; the design OA column shows ' + Math.round(h.capacity).toLocaleString() +
-                         ' BTU/h at ' + h.designDb + ' °F outdoor.' : '.');
+                         ' BTU/h at ' + h.designDb + ' °F outdoor' +
+                         (h.airflow != null ? ', ' + h.airflow + ' CFM.' : '.') : '.');
             }
             function paint() {
                 btn.textContent = on ? 'Design values' : 'Standard values';
@@ -421,6 +483,14 @@
             payload: entry.payload,
             isOn: function () { return on; },
             overrides: overrides,
+            // Select carries the design values onto the project item only
+            // while the row is showing them.
+            itemExtra: function () {
+                if (!on) return null;
+                var p = JSON.parse(JSON.stringify(entry.payload));
+                p.selectionId = sel.id;
+                return { gasPackDesign: p };
+            },
             handles: function (colLetter) {
                 return Object.prototype.hasOwnProperty.call(
                     overridesFor(entry.payload, scheduleData, data), colLetter);
@@ -503,6 +573,8 @@
         WARNING: WARNING,
         resolveColumns: resolveColumns,
         payloadFor: payloadFor,
+        itemPayload: itemPayload,
+        hiddenColumnsFor: hiddenColumnsFor,
         matchSelection: matchSelection,
         overridesFor: overridesFor,
         set: setDesign,
@@ -513,18 +585,16 @@
         buildWarningBanner: buildWarningBanner,
 
         /**
-         * Schedule-cell overrides for an EXPORTED item (Excel / CAD / PDF /
-         * engineer templates), so a row switched to design values downloads
-         * the numbers that are on screen. Without this the export would
-         * quietly emit the standard selection instead - the same mismatch
-         * the on-screen banner warns about, but invisible.
-         * {} for every other product and for rows toggled back to standard.
+         * Schedule-cell overrides for a PROJECT item (the project schedule,
+         * Excel / CAD / PDF / engineer templates): the design values the
+         * item was selected with from Design Search. {} for every other
+         * product and for items added from a standard row - those show the
+         * selection as run by hand.
          */
         exportOverridesFor: function (item, scheduleData, data) {
             if (!item || item.productKey !== PRODUCT) return {};
-            var entry = getDesign(item.selectionId);
-            if (!entry || !entry.payload || entry.on === false) return {};
-            return overridesFor(entry.payload, scheduleData || {}, data);
+            var payload = itemPayload(item);
+            return payload ? overridesFor(payload, scheduleData || {}, data) : {};
         },
         rowController: rowController,
         riseFor: function (outputMbh, cfm) {

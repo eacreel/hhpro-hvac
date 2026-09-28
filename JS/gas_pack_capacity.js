@@ -20,7 +20,15 @@
    bulb with 70 F entering air (the only indoor temperature the
    DSH / DHH tables publish). DVH tables are rated on outdoor WET
    bulb, so DVH is looked up at DB - 2 F (AHRI's 17 F DB / 15 F
-   WB spread).
+   WB spread). Every temperature, 47 and 17 F included, reads
+   the expanded table - Design Search uses Daikin's catalog data
+   only, never the selections on the schedule.
+
+   Every unit is read at EACH published cooling airflow, so the
+   results can offer them in a CFM dropdown. The default is the
+   nominal airflow (nominalAirflow), or the one nearest the CFM
+   the engineer typed. DSH / DHH publish heating at their nominal
+   CFM only, whatever the cooling airflow; DVH heating follows it.
 
    Design Search picks every condition (ambient, EAT DB / WB,
    heating ambient) from the values these tables publish, and the
@@ -283,7 +291,8 @@
      *   { available:true, basis:'DB'|'WB', designDb, lookup, oa, airflow,
      *     eatDb, capacity (BTU/h), rise, kw, cop, offGrid:bool }
      * where `lookup` is the temperature looked up (DB, or DB - 2 for the
-     * wet-bulb DVH tables) and `oa` the rated point actually used.
+     * wet-bulb DVH tables), `oa` the rated point actually used and
+     * `airflow` the CFM the heating table publishes it at.
      */
     function hpHeatAt(cab, designDb, airflow, exact) {
         var t = cab && cab.hpHeat;
@@ -454,15 +463,73 @@
         return Math.abs(value - target) / target;
     }
 
-    /** Rated airflows inside the CFM tolerance window. */
-    function airflowsInWindow(axes, cfm, tolPct) {
-        var all = ((axes || {}).airflow || []).map(Number).filter(isFinite);
-        if (cfm == null || !isFinite(cfm)) return all;
-        return all.filter(function (a) { return within(a, cfm, tolPct); });
-    }
-
     function hasTarget(t) {
         return !!(t && t.value != null && isFinite(t.value) && t.value > 0);
+    }
+
+    function sortedAirflows(cab) {
+        return ((cab.axes || {}).airflow || []).map(Number).filter(isFinite)
+            .sort(function (a, b) { return a - b; });
+    }
+
+    /**
+     * The airflow a unit is read at when nothing steers it: a DSH / DHH
+     * heat pump's heating-table airflow (Daikin's nominal CFM, always one
+     * of its cooling airflows), otherwise the middle published airflow.
+     */
+    function nominalAirflow(cab) {
+        var flows = sortedAirflows(cab);
+        if (!flows.length) return null;
+        var t = cab.hpHeat;
+        var hf = (t && t.basis !== 'WB') ? ((t.axes || {}).airflow || []).map(Number) : [];
+        if (hf.length === 1 && flows.indexOf(hf[0]) >= 0) return hf[0];
+        return flows[Math.floor(flows.length / 2)];
+    }
+
+    /**
+     * The option a result opens on: of the airflows that can be read AND
+     * meet every target, the one nearest the typed CFM (or, with none
+     * typed, the nominal one); a tie goes to the one nearer nominal.
+     */
+    function defaultOption(options, nominal, cfmTarget) {
+        var pool = options.filter(function (o) { return o.ok && o.meets; });
+        if (!pool.length) return null;
+        var aim = (cfmTarget != null && isFinite(cfmTarget)) ? cfmTarget : nominal;
+        pool.sort(function (a, b) {
+            return (Math.abs(a.airflow - aim) - Math.abs(b.airflow - aim)) ||
+                (Math.abs(a.airflow - nominal) - Math.abs(b.airflow - nominal));
+        });
+        return pool[0];
+    }
+
+    /**
+     * A result as read at another of its published airflows (the CFM
+     * dropdown in the results). The airflow-dependent fields - cooling, gas
+     * heat, heat pump heating, off-grid flags, whether the targets are met,
+     * score - come from that airflow's option; the rest (model, electrical,
+     * ...) is the unit's own. An airflow the unit can't be read at returns
+     * the result unchanged.
+     */
+    function atAirflow(result, airflow) {
+        var opt = null;
+        (result.options || []).forEach(function (o) {
+            if (o.airflow === Number(airflow)) opt = o;
+        });
+        if (!opt || !opt.ok) return result;
+        var out = {};
+        Object.keys(result).forEach(function (k) { out[k] = result[k]; });
+        out.airflow = opt.airflow;
+        out.cooling = opt.cooling;
+        out.offGrid = opt.offGrid;
+        out.meets = opt.meets;
+        out.score = opt.score;
+        if (result.type === 'HEAT PUMP') {
+            out.hpHeat = opt.hpHeat;
+            out.hpHeatNote = opt.hpHeatNote;
+        } else {
+            out.heat = opt.heat;
+        }
+        return out;
     }
 
     /**
@@ -485,10 +552,17 @@
      * Returns { results:[...], skipped:[...] } with results sorted
      * best-match first. One result per cabinet + voltage + motor + gas heat
      * size (gas packs) or heat kit (heat pumps), because those are genuinely
-     * different units. A target only one unit type can meet (gas temp rise,
-     * heat pump heating) rules the other type out. skipped entries are
-     * {cabinet, tons, reason, partial?} or, for units with no rating at
-     * an exact condition, one {notRated:true, cabinets:[...]} summary.
+     * different units. Each is read at every published airflow
+     * (result.options, one per airflow: { airflow, ok, meets, cooling,
+     * offGrid, heat | hpHeat, score }) and opens on defaultOption's -
+     * atAirflow() switches it. A unit is listed when at least one airflow
+     * can be read and meets every target. Gas results also carry heatSizes
+     * (every heat size of the cabinet, and whether its temp rise is inside
+     * Daikin's range at each airflow). A target only one unit type can meet
+     * (gas temp rise, heat pump heating) rules the other type out. skipped
+     * entries are {cabinet, tons, reason, partial?} or, for units with no
+     * rating at an exact condition, one {notRated:true, cabinets:[...]}
+     * summary.
      */
     function search(criteria) {
         var c = criteria || {};
@@ -498,6 +572,8 @@
         var notRated = [];
         var wantRise = hasTarget(c.heatRise);
         var wantHp = hasTarget(c.hpHeating);
+        var cfmTarget = hasTarget(c.cfm) ? Number(c.cfm.value) : null;
+        var cfmTol = c.cfm && c.cfm.tol;
 
         Object.keys(cabs).forEach(function (name) {
             var cab = cabs[name];
@@ -529,73 +605,100 @@
             if (c.hgrh === 'YES' && !canHgrh) return;
             var hgrhOptions = c.hgrh ? [c.hgrh] : (canHgrh ? ['NO', 'YES'] : ['NO']);
 
-            var cfmTarget = (c.cfm && c.cfm.value) || null;
-            var cfmTol = (c.cfm && c.cfm.tol);
-            var airflows = airflowsInWindow(cab.axes, cfmTarget, cfmTol);
-            if (!airflows.length) return;
+            // A cabinet none of whose published airflows is inside the CFM
+            // tolerance isn't a candidate.
+            var flows = sortedAirflows(cab);
+            if (!flows.some(function (a) { return within(a, cfmTarget, cfmTol); })) return;
+            var nominal = nominalAirflow(cab);
 
-            var cool = core.coolingAt(
-                cab,
-                { oa: c.ambient, eatDb: c.eatDb, eatWb: c.eatWb },
-                {
-                    total: (c.coolTotal && c.coolTotal.value) || null,
-                    sensible: (c.coolSensible && c.coolSensible.value) || null
-                },
-                { airflows: airflows, exact: !!c.exact }
-            );
-            if (!cool.applicable || cool.outOfRange || cool.noData || cool.notRated || !cool.result) {
+            // Cooling at every published airflow (the condition is the same
+            // for all of them, so is being out of the table's range).
+            var outOfRange = null;
+            var readings = flows.map(function (a) {
+                var cool = core.coolingAt(
+                    cab,
+                    { oa: c.ambient, eatDb: c.eatDb, eatWb: c.eatWb },
+                    {
+                        total: (c.coolTotal && c.coolTotal.value) || null,
+                        sensible: (c.coolSensible && c.coolSensible.value) || null
+                    },
+                    { airflows: [a], exact: !!c.exact }
+                );
+                if (cool.outOfRange) outOfRange = cool;
+                var r = (cool.applicable && !cool.outOfRange && !cool.notRated && !cool.noData)
+                    ? cool.result : null;
+                if (!r) return { airflow: a, cooling: null };
+                // Leaving wet bulb isn't published; it is computed from the
+                // table's own total / sensible / LDB at the rated airflow.
+                var leaving = core.leavingAir(r.eatDb, r.eatWb, r.airflow, r.total, r.sensible, r.lat);
+                return {
+                    airflow: a,
+                    cooling: {
+                        airflow: r.airflow,
+                        eatDb: r.eatDb, eatWb: r.eatWb,
+                        ambient: r.oaCooling,
+                        total: r.total, sensible: r.sensible,
+                        lat: r.lat,
+                        lwb: leaving ? leaving.lwb : null,
+                        lwbSaturated: leaving ? leaving.saturated : false
+                    },
+                    // Which axes were snapped to a harsher rated point (null
+                    // when the design point was rated exactly).
+                    offGrid: Object.keys(cool.offGrid || {}).length ? cool.offGrid : null,
+                    meets: within(a, cfmTarget, cfmTol) &&
+                        within(r.total, c.coolTotal && c.coolTotal.value,
+                               c.coolTotal && c.coolTotal.tol) &&
+                        within(r.sensible, c.coolSensible && c.coolSensible.value,
+                               c.coolSensible && c.coolSensible.tol),
+                    score: deviation(r.total, c.coolTotal && c.coolTotal.value) +
+                        deviation(r.sensible, c.coolSensible && c.coolSensible.value) +
+                        deviation(a, cfmTarget)
+                };
+            });
+            if (!readings.some(function (rd) { return rd.cooling; })) {
                 // Exact search: an unrated condition (including a DB / WB
                 // pair the table prints as "-") just isn't this unit's.
-                if (c.exact && (cool.notRated || cool.noData || cool.outOfRange)) {
+                if (c.exact) {
                     notRated.push(name);
-                    return;
-                }
-                if (cool.outOfRange) {
+                } else if (outOfRange) {
                     skipped.push({ cabinet: name, tons: cab.tons,
                                    reason: 'design condition outside the rated table',
-                                   ranges: cool.ranges });
+                                   ranges: outOfRange.ranges });
                 }
                 return;
             }
-            var r = cool.result;
-            if (!within(r.total, c.coolTotal && c.coolTotal.value,
-                        c.coolTotal && c.coolTotal.tol)) return;
-            if (!within(r.sensible, c.coolSensible && c.coolSensible.value,
-                        c.coolSensible && c.coolSensible.tol)) return;
-
-            // Leaving wet bulb isn't published; it is computed from the
-            // table's own total / sensible / LDB at the rated airflow.
-            var leaving = core.leavingAir(r.eatDb, r.eatWb, r.airflow, r.total, r.sensible, r.lat);
-            var coolingOut = {
-                airflow: r.airflow,
-                eatDb: r.eatDb, eatWb: r.eatWb,
-                ambient: r.oaCooling,
-                total: r.total, sensible: r.sensible,
-                lat: r.lat,
-                lwb: leaving ? leaving.lwb : null,
-                lwbSaturated: leaving ? leaving.saturated : false
-            };
-            // Which axes were snapped to a harsher rated point (null when
-            // the design point was rated exactly).
-            var offGrid = Object.keys(cool.offGrid || {}).length ? cool.offGrid : null;
-            var coolScore =
-                deviation(r.total, c.coolTotal && c.coolTotal.value) +
-                deviation(r.sensible, c.coolSensible && c.coolSensible.value) +
-                deviation(r.airflow, cfmTarget);
 
             if (isHp) {
-                var hp = hpHeatAt(cab, c.heatAmbient, r.airflow, !!c.exact);
-                if (!hp.available && wantHp) {
+                var options = readings.map(function (rd) {
+                    var o = { airflow: rd.airflow, ok: !!rd.cooling, meets: false,
+                              coolMeets: !!rd.meets, cooling: rd.cooling,
+                              offGrid: rd.offGrid || null, hpHeat: null, hpHeatNote: null,
+                              score: rd.score };
+                    if (!rd.cooling) return o;
+                    var hp = hpHeatAt(cab, c.heatAmbient, rd.airflow, !!c.exact);
+                    o.hpHeat = hp.available ? hp : null;
+                    o.hpHeatNote = hp.available ? null : hp.reason;
                     // A heating target can't be judged without heating data.
-                    skipped.push({ cabinet: name, tons: cab.tons, reason: hp.reason });
+                    o.meets = rd.meets && (hp.available
+                        ? within(hp.capacity, c.hpHeating && c.hpHeating.value,
+                                 c.hpHeating && c.hpHeating.tol)
+                        : !wantHp);
+                    if (hp.available) o.score += deviation(hp.capacity, c.hpHeating && c.hpHeating.value);
+                    return o;
+                });
+                var def = defaultOption(options, nominal, cfmTarget);
+                if (!def) {
+                    // Cooling was fine but there is no heating to judge the
+                    // heating target against: say why.
+                    var why = options.filter(function (o) {
+                        return o.ok && o.coolMeets && !o.hpHeat;
+                    })[0];
+                    if (wantHp && why) {
+                        skipped.push({ cabinet: name, tons: cab.tons, reason: why.hpHeatNote });
+                    }
                     return;
                 }
                 var before = results.length;
-                if (hp.available && !within(hp.capacity, c.hpHeating && c.hpHeating.value,
-                                            c.hpHeating && c.hpHeating.tol)) return;
-                var hpScore = coolScore +
-                    (hp.available ? deviation(hp.capacity, c.hpHeating && c.hpHeating.value) : 0);
-
                 // Voltage x motor x heat kit -> one result each.
                 Object.keys(cab.electrical || {}).forEach(function (voltage) {
                     if (c.electrical && voltage !== c.electrical) return;
@@ -609,7 +712,7 @@
                                 if (c.kw != null && Number(c.kw) !== kw) return;
                                 var elec = electricalFor(name, voltage, motor, c, kw);
                                 if (!elec) return;
-                                results.push({
+                                results.push(atAirflow({
                                     type: 'HEAT PUMP',
                                     cabinet: name,
                                     family: cab.family,
@@ -621,75 +724,81 @@
                                     motor: motor,
                                     motorLabel: MOTOR_LABELS[motor],
                                     hgrh: 'NO',
-                                    cooling: coolingOut,
-                                    offGrid: offGrid,
                                     heat: null,
-                                    hpHeat: hp.available ? hp : null,
-                                    hpHeatNote: hp.available ? null : hp.reason,
                                     kitKw: kw,
                                     electrical: elec,
-                                    score: hpScore
-                                });
+                                    nominalAirflow: nominal,
+                                    options: options
+                                }, def.airflow));
                             });
                     });
                 });
                 // Listed without heating: say why, once per cabinet.
-                if (!hp.available && results.length > before) {
-                    skipped.push({ cabinet: name, tons: cab.tons, reason: hp.reason,
+                if (!def.hpHeat && results.length > before) {
+                    skipped.push({ cabinet: name, tons: cab.tons, reason: def.hpHeatNote,
                                    partial: true });
                 }
                 return;
             }
 
-            // Heat sizes Daikin doesn't allow at this airflow (high-stage rise
-            // outside the published range). They produce no result, but ride
-            // along on the others so the UI can say why they're missing.
-            var heatRejected = [];
-            (cab.heat || []).forEach(function (h) {
-                if (heatAt(h, r.airflow)) return;
-                heatRejected.push({ size: h.size, riseHigh: riseFor(h.outputHigh, r.airflow),
-                                    range: h.riseHigh, airflow: r.airflow });
+            // Every heat size at every airflow: Daikin allows a size only
+            // where its high-stage temp rise at that airflow is inside the
+            // published range. heatSizes rides along on each result so the
+            // UI can grey the sizes and airflows that don't go together.
+            var heatSizes = (cab.heat || []).map(function (h) {
+                var by = {};
+                readings.forEach(function (rd) {
+                    by[rd.airflow] = { ok: !!heatAt(h, rd.airflow),
+                                       riseHigh: riseFor(h.outputHigh, rd.airflow),
+                                       range: h.riseHigh };
+                });
+                return { size: h.size, byAirflow: by };
             });
 
             // Voltage x motor x heat size -> one result each.
-            Object.keys(cab.electrical || {}).forEach(function (voltage) {
-                if (c.electrical && voltage !== c.electrical) return;
-                OFFERED_MOTORS.forEach(function (motor) {
-                    if (c.motor && motor !== c.motor) return;
-                    var elec = electricalFor(name, voltage, motor, c);
-                    if (!elec) return;
-
-                    (cab.heat || []).forEach(function (h) {
-                        var heat = heatAt(h, r.airflow);
-                        if (!heat) return;   // rise outside the published range
-                        if (!within(heat.riseHigh, c.heatRise && c.heatRise.value,
-                                    c.heatRise && c.heatRise.tol)) return;
-
-                        var score = coolScore +
-                            deviation(heat.riseHigh, c.heatRise && c.heatRise.value);
-
+            (cab.heat || []).forEach(function (h) {
+                var options = readings.map(function (rd) {
+                    var o = { airflow: rd.airflow, ok: false, meets: false, cooling: rd.cooling,
+                              offGrid: rd.offGrid || null, heat: null, score: rd.score };
+                    if (!rd.cooling) return o;
+                    var heat = heatAt(h, rd.airflow);
+                    if (!heat) return o;   // rise outside the published range
+                    o.ok = true;
+                    o.heat = heat;
+                    o.meets = rd.meets && within(heat.riseHigh, c.heatRise && c.heatRise.value,
+                                                 c.heatRise && c.heatRise.tol);
+                    o.score += deviation(heat.riseHigh, c.heatRise && c.heatRise.value);
+                    return o;
+                });
+                var def = defaultOption(options, nominal, cfmTarget);
+                if (!def) return;
+                Object.keys(cab.electrical || {}).forEach(function (voltage) {
+                    if (c.electrical && voltage !== c.electrical) return;
+                    OFFERED_MOTORS.forEach(function (motor) {
+                        if (c.motor && motor !== c.motor) return;
+                        var elec = electricalFor(name, voltage, motor, c);
+                        if (!elec) return;
                         hgrhOptions.forEach(function (hgrh) {
-                            results.push({
+                            results.push(atAirflow({
                                 type: 'GAS',
                                 cabinet: name,
                                 family: cab.family,
                                 efficiency: cab.efficiency,
                                 tons: cab.tons,
                                 model: buildModel({ cabinet: name, voltage: voltage,
-                                                    motor: motor, heat: heat.size }),
+                                                    motor: motor, heat: h.size }),
                                 voltage: voltage,
                                 motor: motor,
                                 motorLabel: MOTOR_LABELS[motor],
                                 hgrh: hgrh,
-                                cooling: coolingOut,
-                                offGrid: offGrid,
-                                heat: heat,
-                                heatRejected: heatRejected,
+                                heatSize: h.size,
+                                heatSizes: heatSizes,
                                 hpHeat: null,
                                 kitKw: null,
                                 electrical: elec,
-                                score: score
-                            });
+                                nominalAirflow: nominal,
+                                options: options
+                            }, def.airflow));
                         });
                     });
                 });
@@ -730,6 +839,8 @@
         heatAt: heatAt,
         hpHeatAt: hpHeatAt,
         electricalFor: electricalFor,
+        nominalAirflow: nominalAirflow,
+        atAirflow: atAirflow,
         search: search,
         MOTOR_LABELS: MOTOR_LABELS,
         HEAT_LETTERS: HEAT_LETTERS,

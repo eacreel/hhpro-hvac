@@ -111,9 +111,9 @@ PRODUCT_CONFIGS = {
             "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
                 {"label": "Nominal Tons",             "col": "C", "unit": "tons",  "defaultTolerance": 10},
-                {"label": "Total Cooling Capacity",   "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Sensible Cooling Capacity","col": "H", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Heating Output",           "col": "O", "unit": "MBH",   "defaultTolerance": 10},
+                {"label": "Total Cooling Capacity",   "col": "F", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Sensible Cooling Capacity","col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heating Output",           "col": "N", "unit": "MBH",   "defaultTolerance": 10},
                 {"label": "Airflow",                  "col": "D", "unit": "CFM",   "defaultTolerance": 10},
             ],
         },

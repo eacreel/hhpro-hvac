@@ -389,6 +389,22 @@
         if (HHpro.GasPackDesign &&
             product.productKey === HHpro.GasPackDesign.PRODUCT) {
             main.appendChild(HHpro.GasPackDesign.buildWarningBanner());
+            // The 47 / 17 F rating columns hide while every heat pump row in
+            // view shows design values (gpRatingHidden). A toggle repaints
+            // only its own row, so one that changes that redraws the table.
+            // The listener retires with the view, like the banner's.
+            var onGpDesignChange = function () {
+                if (!scheduleWrap.isConnected) {
+                    document.removeEventListener('hhpro:gasPackDesign', onGpDesignChange);
+                    return;
+                }
+                var shown = scheduleWrap.querySelector('.schedule-table');
+                if (shown && shown.__gpRatingHidden !==
+                    gpRatingHidden(data, shown.__renderList || [], product).join(',')) {
+                    refreshSchedule();
+                }
+            };
+            document.addEventListener('hhpro:gasPackDesign', onGpDesignChange);
         }
 
         var scheduleWrap = document.createElement('div');
@@ -592,6 +608,7 @@
                 scheduleWrap.appendChild(notice);
             }
             var table = buildScheduleTable(data, renderList, product);
+            table.__renderList = renderList;
             scheduleWrap.appendChild(table);
             applyStickyHeaderOffsets(table);
             scheduleStickyRecomputes(table);
@@ -884,9 +901,49 @@
         typeHiddenColumns(product, selections).forEach(function (letter) {
             hiddenSet[letter] = true;
         });
+        // LC RTUs: the 47 / 17 F rating columns go when every heat pump row
+        // in view shows design values (those rows blank them anyway).
+        var gpHidden = gpRatingHidden(data, selections, product);
+        gpHidden.forEach(function (letter) { hiddenSet[letter] = true; });
+        table.__gpRatingHidden = gpHidden.join(',');
         table.appendChild(buildScheduleHead(data, hiddenSet));
         table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));
         return table;
+    }
+
+    // Rating columns GasPackDesign hides for the rows in view: one unit per
+    // row shown (per family on kW-variant products), a design one when its
+    // design values are toggled on. [] for every other product.
+    function gpRatingHidden(data, selections, product) {
+        var D = HHpro.GasPackDesign;
+        if (!D || !D.hiddenColumnsFor || !product || product.productKey !== D.PRODUCT) return [];
+        function on(sel) {
+            var e = D.get(sel.id);
+            return !!(e && e.payload && e.on !== false);
+        }
+        var units = product.kwVariants
+            ? groupKwFamilies(selections, product.kwVariants).map(function (fam) {
+                return { selection: fam.variants[0].sel,
+                         design: fam.variants.some(function (v) { return on(v.sel); }) };
+            })
+            : selections.map(function (sel) { return { selection: sel, design: on(sel) }; });
+        return D.hiddenColumnsFor(data, units);
+    }
+
+    // What Select adds to the project item besides the selection: the
+    // capacity conditions picked on the row (split system tables), and the
+    // LC RTU design values the row is showing. getGpCtrl is read at click
+    // time - a kW family row rebuilds its controller when the kit changes.
+    function selectExtra(capCtrl, getGpCtrl) {
+        if (!capCtrl && !getGpCtrl) return null;
+        return function () {
+            var extra = {};
+            if (capCtrl) extra.capacityInputs = capCtrl.getState();
+            var gp = getGpCtrl ? getGpCtrl() : null;
+            var gpExtra = (gp && gp.itemExtra) ? gp.itemExtra() : null;
+            if (gpExtra) Object.keys(gpExtra).forEach(function (k) { extra[k] = gpExtra[k]; });
+            return extra;
+        };
     }
 
     function buildScheduleHead(data, hiddenSet) {
@@ -1014,10 +1071,10 @@
                     var td = document.createElement('td');
                     td.className = 'actions-cell';
                     if (sel.rows.length > 1) td.rowSpan = sel.rows.length;
-                    // The capacity conditions chosen here ride along into
-                    // the cart on Select.
+                    // The capacity conditions chosen here (and LC RTU design
+                    // values) ride along into the cart on Select.
                     var actions = buildActionButtons(function () { return sel; }, product, data,
-                        capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
+                        selectExtra(capCtrl, gpCtrl ? function () { return gpCtrl; } : null));
                     if (gpCtrl) actions.appendChild(gpCtrl.button(repaintGpCells));
                     td.appendChild(actions);
                     tr.appendChild(td);
@@ -1333,11 +1390,14 @@
         tr.classList.toggle('gp-design-row', !!gpCtrl);
 
         // Actions cell -- buttons read the live variant via getSel; the
-        // capacity conditions chosen here ride along into the cart on Select.
+        // capacity conditions chosen here (and LC RTU design values, from
+        // whichever kit's controller is live) ride along into the cart.
         var actionsTd = document.createElement('td');
         actionsTd.className = 'actions-cell';
+        var isGp = !!(HHpro.GasPackDesign && product &&
+                      product.productKey === HHpro.GasPackDesign.PRODUCT);
         var actionsRow = buildActionButtons(getCurrentSel, product, data,
-            capCtrl ? function () { return { capacityInputs: capCtrl.getState() }; } : null);
+            selectExtra(capCtrl, isGp ? function () { return gpCtrl; } : null));
         if (gpCtrl) {
             gpButton = gpCtrl.button(repaintCells);
             actionsRow.appendChild(gpButton);

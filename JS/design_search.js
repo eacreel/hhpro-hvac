@@ -1529,7 +1529,9 @@
         { label: 'Volt/PH', get: function (r) { return r.voltage; } },
         { label: 'Motor', get: function (r) { return r.motorLabel; } },
         { label: 'HGRH', get: function (r) { return r.hgrh; }, only: 'GAS' },
-        { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling' },
+        // A dropdown of the unit's published airflows (see buildAirflowSelect).
+        { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling',
+          airflowPicker: true },
         { label: 'OA DB (°F)', get: function (r) { return r.cooling.ambient; }, group: 'Cooling' },
         { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling' },
         { label: 'EWB (°F)', get: function (r) { return r.cooling.eatWb; }, group: 'Cooling' },
@@ -1550,6 +1552,10 @@
             if (!r.hpHeat) return null;
             return r.hpHeat.oa + (r.hpHeat.basis === 'WB' ? ' WB' : '');
         }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        // The airflow the heating table publishes that point at: always the
+        // nominal CFM for DSH / DHH, the chosen airflow for DVH.
+        { label: 'CFM', get: function (r) { return r.hpHeat ? r.hpHeat.airflow : null; },
+          group: 'Heat Pump Heating', only: 'HEAT PUMP' },
         { label: 'Capacity (BTU/h)', get: function (r) {
             return r.hpHeat ? fmtInt(r.hpHeat.capacity) : null;
         }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
@@ -1664,12 +1670,12 @@
     var GAS_HEAT_ORDER = { Low: 0, Medium: 1, High: 2 };
 
     function variantRank(r) {
-        return r.type === 'HEAT PUMP' ? (r.kitKw || 0) : (GAS_HEAT_ORDER[r.heat && r.heat.size] || 0);
+        return r.type === 'HEAT PUMP' ? (r.kitKw || 0) : (GAS_HEAT_ORDER[r.heatSize] || 0);
     }
 
     function variantLabel(r) {
         if (r.type === 'HEAT PUMP') return r.kitKw ? String(r.kitKw) : 'None';
-        return r.heat ? r.heat.size : '';
+        return r.heatSize || '';
     }
 
     function groupGasPackResults(rows) {
@@ -1832,30 +1838,36 @@
         thead.appendChild(headRow);
         table.appendChild(thead);
 
+        var G = HHpro.GasPackCapacity;
         var tbody = document.createElement('tbody');
         groups.forEach(function (g) {
             var tr = document.createElement('tr');
+            // Two choices per row: the heat size / heat kit (variant) and the
+            // published airflow the unit is read at. Both open on the search's
+            // default; the airflow dropdown repaints every airflow-dependent cell.
             var cur = g.defaultIdx;
+            var air = g.variants[cur].airflow;
 
             var actionsTd = document.createElement('td');
             actionsTd.className = 'actions-cell';
             tr.appendChild(actionsTd);
 
-            // Value cells repaint from the variant picked in the dropdown.
+            // Value cells repaint from the variant and airflow picked.
             var cells = [];
+            var variantTd = null, airTd = null;
             columns.forEach(function (col) {
                 var td = document.createElement('td');
                 if (col.cls) td.className = col.cls;
                 var r0 = g.variants[0];
                 // Gas rows keep the dropdown even with one size left, so the
                 // sizes Daikin rules out at this airflow show (greyed out).
-                var rejected = (r0.heatRejected || []).length;
-                if (col.variant && col.variant === r0.type && (g.variants.length > 1 || rejected)) {
+                var otherSizes = (r0.heatSizes || []).length > 1;
+                if (col.variant && col.variant === r0.type && (g.variants.length > 1 || otherSizes)) {
                     td.classList.add('kw-variant-cell');
-                    td.appendChild(buildVariantSelect(g, cur, function (idx) {
-                        cur = idx;
-                        paint();
-                    }));
+                    variantTd = td;
+                } else if (col.airflowPicker && (r0.options || []).length > 1) {
+                    td.classList.add('kw-variant-cell');
+                    airTd = td;
                 } else {
                     cells.push({ col: col, td: td });
                 }
@@ -1863,7 +1875,24 @@
             });
 
             function paint() {
-                var r = g.variants[cur];
+                var r = G.atAirflow(g.variants[cur], air);
+                if (variantTd) {
+                    variantTd.innerHTML = '';
+                    variantTd.appendChild(buildVariantSelect(g, cur, air, function (idx) {
+                        cur = idx;
+                        // Sizes that can't run at this airflow are disabled,
+                        // so this only matters if the options disagree.
+                        if (!optionAt(g.variants[cur], air).ok) air = g.variants[cur].airflow;
+                        paint();
+                    }));
+                }
+                if (airTd) {
+                    airTd.innerHTML = '';
+                    airTd.appendChild(buildAirflowSelect(g.variants[cur], air, function (a) {
+                        air = a;
+                        paint();
+                    }));
+                }
                 cells.forEach(function (c) {
                     var v = c.col.get(r);
                     c.td.textContent = (v == null || v === '') ? '—' : String(v);
@@ -1889,6 +1918,14 @@
                         r.hpHeat.designDb + ' °F DB − ' +
                         HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F).');
                 }
+                if (r.hpHeat && r.hpHeat.airflow !== r.cooling.airflow) {
+                    notes.push('Heating is published at ' + r.hpHeat.airflow + ' CFM only (Daikin’s ' +
+                        'nominal airflow for this unit); cooling is read at ' + r.cooling.airflow + ' CFM.');
+                }
+                if (r.meets === false) {
+                    notes.push('At ' + r.cooling.airflow + ' CFM this unit is outside one or more ' +
+                        'of your targets.');
+                }
                 if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
                     notes.push('Heating not shown: ' + r.hpHeatNote + '.');
                 }
@@ -1912,45 +1949,18 @@
         return tableWrap;
     }
 
-    // Heat size / heat kit dropdown for a grouped results row, styled like
-    // the schedule's kW dropdown.
-    function buildVariantSelect(g, idx, onChange) {
+    // A result's reading at one of its published airflows ({} if none).
+    function optionAt(r, airflow) {
+        var hit = null;
+        (r.options || []).forEach(function (o) {
+            if (o.airflow === Number(airflow)) hit = o;
+        });
+        return hit || {};
+    }
+
+    function wrapVariantControl(select) {
         var wrap = document.createElement('span');
         wrap.className = 'kw-variant-control';
-        var select = document.createElement('select');
-        select.className = 'kw-variant-select';
-        select.setAttribute('aria-label', g.variants[0].type === 'HEAT PUMP'
-            ? 'Electric heat (kW)' : 'Gas heat size');
-        // Offered sizes, plus (gas only) the sizes whose high-stage temp rise
-        // at this airflow falls outside Daikin's published range - listed in
-        // size order but disabled, with the reason in the tooltip.
-        var entries = g.variants.map(function (v, i) {
-            return { rank: variantRank(v), label: variantLabel(v), value: String(i) };
-        });
-        var rejected = g.variants[0].heatRejected || [];
-        rejected.forEach(function (h) {
-            entries.push({ rank: GAS_HEAT_ORDER[h.size] || 0,
-                           label: h.size + ' (' + fmt(h.riseHigh, 1) + ' °F rise)', value: '', off: true });
-        });
-        entries.sort(function (a, b) { return a.rank - b.rank; });
-        entries.forEach(function (e) {
-            var opt = document.createElement('option');
-            opt.value = e.value;
-            opt.textContent = e.label;
-            if (e.off) opt.disabled = true;
-            else if (e.value === String(idx)) opt.selected = true;
-            select.appendChild(opt);
-        });
-        if (rejected.length) {
-            select.title = 'Not available at ' + rejected[0].airflow + ' CFM - high-stage temp rise ' +
-                'outside Daikin’s published range: ' + rejected.map(function (h) {
-                    return h.size + ' ' + fmt(h.riseHigh, 1) + ' °F (' +
-                        (h.range ? h.range[0] + '–' + h.range[1] + ' °F' : 'no range') + ')';
-                }).join(', ') + '.';
-        }
-        select.addEventListener('change', function () {
-            onChange(parseInt(select.value, 10) || 0);
-        });
         var chevron = document.createElement('span');
         chevron.className = 'kw-variant-chevron';
         chevron.setAttribute('aria-hidden', 'true');
@@ -1958,6 +1968,102 @@
         wrap.appendChild(select);
         wrap.appendChild(chevron);
         return wrap;
+    }
+
+    // Heat size / heat kit dropdown for a grouped results row, styled like
+    // the schedule's kW dropdown. `air` is the airflow the row is read at.
+    function buildVariantSelect(g, idx, air, onChange) {
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', g.variants[0].type === 'HEAT PUMP'
+            ? 'Electric heat (kW)' : 'Gas heat size');
+        // Offered sizes, plus (gas only) every other size of the cabinet
+        // whose high-stage temp rise at this airflow falls outside Daikin's
+        // published range - listed in size order but disabled, with the
+        // reason in the tooltip. An offered size can be out of range at this
+        // airflow too (it is offered at another one): same treatment.
+        var sizes = g.variants[0].heatSizes || [];
+        function byAir(size) {
+            var s = sizes.filter(function (h) { return h.size === size; })[0];
+            return s && s.byAirflow[air];
+        }
+        var offered = {};
+        var rejected = [];
+        var entries = g.variants.map(function (v, i) {
+            var e = { rank: variantRank(v), label: variantLabel(v), value: String(i) };
+            if (v.type !== 'HEAT PUMP') {
+                offered[v.heatSize] = true;
+                var b = byAir(v.heatSize);
+                if (b && !b.ok) {
+                    e.off = true;
+                    e.label += ' (' + fmt(b.riseHigh, 1) + ' °F rise)';
+                    rejected.push({ size: v.heatSize, b: b });
+                }
+            }
+            return e;
+        });
+        sizes.forEach(function (h) {
+            var b = h.byAirflow[air];
+            if (offered[h.size] || !b || b.ok) return;
+            entries.push({ rank: GAS_HEAT_ORDER[h.size] || 0,
+                           label: h.size + ' (' + fmt(b.riseHigh, 1) + ' °F rise)', value: '', off: true });
+            rejected.push({ size: h.size, b: b });
+        });
+        entries.sort(function (a, b) { return a.rank - b.rank; });
+        entries.forEach(function (e) {
+            var opt = document.createElement('option');
+            opt.value = e.value;
+            opt.textContent = e.label;
+            if (e.off) opt.disabled = true;
+            if (e.value === String(idx)) opt.selected = true;
+            select.appendChild(opt);
+        });
+        if (rejected.length) {
+            select.title = 'Not available at ' + air + ' CFM - high-stage temp rise ' +
+                'outside Daikin’s published range: ' + rejected.map(function (x) {
+                    return x.size + ' ' + fmt(x.b.riseHigh, 1) + ' °F (' +
+                        (x.b.range ? x.b.range[0] + '–' + x.b.range[1] + ' °F' : 'no range') + ')';
+                }).join(', ') + '.';
+        }
+        select.addEventListener('change', function () {
+            onChange(parseInt(select.value, 10) || 0);
+        });
+        return wrapVariantControl(select);
+    }
+
+    // CFM dropdown: every airflow Daikin publishes cooling at for this unit.
+    // One the unit can't be read at (no rating at this condition, or - gas -
+    // this heat size's temp rise out of range) is disabled; one that misses
+    // a target stays pickable but says so.
+    function buildAirflowSelect(r, air, onChange) {
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', 'Supply airflow (CFM)');
+        var sizes = r.heatSizes || [];
+        (r.options || []).forEach(function (o) {
+            var opt = document.createElement('option');
+            opt.value = String(o.airflow);
+            var label = String(o.airflow);
+            if (!o.ok) {
+                var s = sizes.filter(function (h) { return h.size === r.heatSize; })[0];
+                var b = s && s.byAirflow[o.airflow];
+                label += (o.cooling && b && !b.ok)
+                    ? ' (' + fmt(b.riseHigh, 1) + ' °F rise)' : ' (not rated)';
+                opt.disabled = true;
+            } else if (!o.meets) {
+                label += ' (off target)';
+            }
+            opt.textContent = label;
+            if (o.airflow === Number(air)) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.title = 'Airflows Daikin publishes for this unit: ' +
+            (r.options || []).map(function (o) { return o.airflow; }).join(' / ') +
+            ' CFM (' + r.nominalAirflow + ' nominal).';
+        select.addEventListener('change', function () {
+            onChange(Number(select.value));
+        });
+        return wrapVariantControl(select);
     }
 
     function buildResults() {

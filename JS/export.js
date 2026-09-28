@@ -300,6 +300,17 @@ WHAT'S IN THE GRID
                     if (hidden.indexOf(l) < 0) hidden.push(l);
                 });
             }
+            // LC RTUs: every heat pump item from Design Search -> the 47 /
+            // 17 F rating columns go, as on screen.
+            if (HHpro.GasPackDesign && productKey === HHpro.GasPackDesign.PRODUCT) {
+                var gpUnits = (items || []).map(function (it) {
+                    return { selection: findSelectionById(data, it.selectionId),
+                             design: !!HHpro.GasPackDesign.itemPayload(it) };
+                }).filter(function (u) { return u.selection; });
+                HHpro.GasPackDesign.hiddenColumnsFor(data, gpUnits).forEach(function (l) {
+                    if (hidden.indexOf(l) < 0) hidden.push(l);
+                });
+            }
         }
         var hiddenSet = {};
         hidden.forEach(function (l) { hiddenSet[l] = true; });
@@ -483,7 +494,8 @@ WHAT'S IN THE GRID
             var capOverrides = (HHpro.Capacity && HHpro.Capacity.overridesFor)
                 ? HHpro.Capacity.overridesFor(item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data)
                 : {};
-            // Gas Pack rows switched to design values export those values too.
+            // LC RTU items selected from Design Search export the catalog
+            // values they were selected with.
             if (HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
                 var gpOv = HHpro.GasPackDesign.exportOverridesFor(
                     item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data);
@@ -747,7 +759,7 @@ WHAT'S IN THE GRID
         var capOverrides = (data && HHpro.Capacity && HHpro.Capacity.overridesFor)
             ? HHpro.Capacity.overridesFor(item, (srows[0] && srows[0].scheduleData) || {}, data)
             : {};
-        // Gas Pack design-values toggle, same treatment (see above).
+        // LC RTU Design Search values, same treatment (see above).
         if (data && HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
             var gpOv2 = HHpro.GasPackDesign.exportOverridesFor(
                 item, (srows[0] && srows[0].scheduleData) || {}, data);

@@ -2249,6 +2249,17 @@
                 if (hidden.indexOf(l) < 0) hidden.push(l);
             });
         }
+        // LC RTUs: when every heat pump item came from Design Search, the
+        // 47 / 17 F rating columns (blank on those rows) are dropped.
+        if (HHpro.GasPackDesign && productKey === HHpro.GasPackDesign.PRODUCT) {
+            var units = (items || []).map(function (it) {
+                return { selection: findSelectionById(data, it.selectionId),
+                         design: !!HHpro.GasPackDesign.itemPayload(it) };
+            }).filter(function (u) { return u.selection; });
+            HHpro.GasPackDesign.hiddenColumnsFor(data, units).forEach(function (l) {
+                if (hidden.indexOf(l) < 0) hidden.push(l);
+            });
+        }
         return hidden;
     }
 
@@ -2981,6 +2992,18 @@
                     }
                 }) : null;
 
+            // LC RTU items selected from Design Search carry Daikin catalog
+            // values for the conditions searched; they replace the hand-run
+            // selection's cells on this item only. The payload is tied to
+            // one kit / heat size, so those rows show it as text rather than
+            // offer the variant dropdown.
+            var gpDesign = (HHpro.GasPackDesign && HHpro.GasPackDesign.itemPayload)
+                ? HHpro.GasPackDesign.itemPayload(item) : null;
+            var gpOv = gpDesign
+                ? HHpro.GasPackDesign.exportOverridesFor(
+                    item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data)
+                : {};
+
             orderedIds.push(item.instanceId);
             rowsById[item.instanceId] = [];
 
@@ -2988,6 +3011,11 @@
                 var tr = document.createElement('tr');
                 if (rowIndex === 0) tr.className = 'selection-boundary';
                 tr.dataset.instanceId = item.instanceId;
+                if (gpDesign) {
+                    tr.title = 'Selected from Design Search: Daikin catalog values at ' +
+                        gpDesign.cooling.eatDb + '/' + gpDesign.cooling.eatWb + ' °F EAT, ' +
+                        gpDesign.cooling.ambient + ' °F ambient, ' + gpDesign.cooling.airflow + ' CFM.';
+                }
                 rowsById[item.instanceId].push(tr);
 
                 // LEFT-SIDE columns: Actions (X + Docs) + Tag (both
@@ -3125,13 +3153,16 @@
 
                     if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
                         capCtrl.fillCell(td, colLetter);
-                    } else if (varCfg && rowIndex === 0 && kwFamilyInfo &&
+                    } else if (varCfg && rowIndex === 0 && kwFamilyInfo && !gpDesign &&
                         colLetter === varCfg.variantColumn &&
                         (kwFamilyInfo.family.variants.length > 1 || !varCfg.singleAsText)) {
                         td.classList.add('kw-variant-cell');
                         td.appendChild(buildProjectKwSelect(
                             kwFamilyInfo, item, productKey, data,
                             depCells, varCfg, capCtrl));
+                    } else if (rowIndex === 0 &&
+                               Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
+                        td.textContent = formatCellValue(gpOv[colLetter], colLetter, productKey);
                     } else {
                         td.textContent = formatCellValue(cell.value, colLetter, productKey);
                         if (depColSet[colLetter]) depCells[colLetter] = td;

@@ -44,8 +44,8 @@
             // them into one row with a kW dropdown that swaps MCA / MOCP
             // (and the submittal).
             kwVariants: {
-                variantColumn: 'X',
-                dependentColumns: ['AC', 'AD'],
+                variantColumn: 'W',
+                dependentColumns: ['AB', 'AC'],
                 defaultValue: '-',
                 singleAsText: true,
                 // Gas packs are listed once per gas heat size (Low / Medium /
@@ -56,8 +56,8 @@
                 alternates: [{
                     filter: 'TYPE',
                     value: 'GAS',
-                    variantColumn: 'N',
-                    dependentColumns: ['B', 'D', 'G', 'H', 'L', 'M', 'O', 'R'],
+                    variantColumn: 'M',
+                    dependentColumns: ['B', 'D', 'F', 'G', 'K', 'L', 'N', 'Q'],
                     labelFilter: 'HIGH/MEDIUM/LOW GAS HEAT',
                     ariaLabel: 'Gas heat input (MBH)',
                     singleAsText: true
@@ -70,9 +70,9 @@
             typeColumns: {
                 filter: 'TYPE',
                 columns: {
-                    'GAS': ['N', 'O', 'P', 'Q', 'R'],                 // gas heating
+                    'GAS': ['M', 'N', 'O', 'P', 'Q'],                 // gas heating
                     // heat pump heating (47 F, 17 F, design OA, COPs) + aux heat
-                    'HEAT PUMP': ['S', 'T', 'U', 'V', 'W', 'X']
+                    'HEAT PUMP': ['R', 'S', 'T', 'U', 'V', 'W']
                 }
             }
         },
