@@ -93,6 +93,24 @@
         return k * TEMP_RISE_K / c;
     }
 
+    // Heat pump heating temperature rise = BTU/h / (1.08 x CFM), shown to
+    // one decimal. Like the capacity cells it follows the airflow and
+    // heating dropdowns. A "10900 (standard), 18500 (boost)" capacity
+    // (DH6VSA) gives "11.2 (standard), 19 (boost)". null when there is no
+    // heating capacity (cooling-only units, "-").
+    var AIR_CONST = 1.08;
+
+    function heatRise(capacity, cfm) {
+        var c = parseFloat(cfm);
+        if (!isFinite(c) || c <= 0 || capacity == null) return null;
+        function rise(btuh) { return Number((btuh / (AIR_CONST * c)).toFixed(1)); }
+        if (typeof capacity === 'number') return capacity > 0 ? rise(capacity) : null;
+        var text = String(capacity).trim();
+        if (/^\d+(\.\d+)?$/.test(text)) return Number(text) > 0 ? rise(Number(text)) : null;
+        if (!/^\d/.test(text)) return null;
+        return text.replace(/\d+(\.\d+)?/g, function (n) { return String(rise(Number(n))); });
+    }
+
     var ARIA = {
         eatDb:     'Entering air dry bulb (°F)',
         eatWb:     'Entering air wet bulb (°F)',
@@ -440,32 +458,30 @@
     }
 
     // Multi Position Split schedule. "TOTAL CAPACITY" is disambiguated by
-    // its parent group (COOLING vs HEAT PUMP HEATING DATA); heat-pump total
-    // may live in one or two columns.
+    // its parent group (COOLING vs HEAT PUMP vs HEAT PUMP HEATING DATA);
+    // heat-pump total may live in one or two columns.
     function resolveMpsColumns(data) {
         var f = finders(data);
         var find = f.find, findAll = f.findAll, letters = f.letters, trail = f.trail;
-        // Every heat-pump column: the indoor "HEAT PUMP TOTAL CAPACITY"
-        // summary plus the whole outdoor "HEAT PUMP HEATING DATA" block
-        // (outdoor ambient, total, efficiency). Dropped when a schedule
-        // has no heat-pump systems (see scheduleHiddenColumns).
+        // Every heat-pump column: the indoor HEAT PUMP block (total
+        // capacity, temp rise) plus the whole outdoor "HEAT PUMP HEATING
+        // DATA" block (outdoor ambient, total, efficiency). Dropped when a
+        // schedule has no heat-pump systems (see scheduleHiddenColumns).
         var heatPumpCols = [];
         letters.forEach(function (L) {
             var t = trail[L] || [];
-            if (t.indexOf('HEAT PUMP HEATING DATA') >= 0 ||
-                (t.length && t[t.length - 1] === 'HEAT PUMP TOTAL CAPACITY')) {
+            if (t.indexOf('HEAT PUMP HEATING DATA') >= 0 || t.indexOf('HEAT PUMP') >= 0) {
                 heatPumpCols.push(L);
             }
         });
-        // Heat-pump total capacity appears twice: a summary in the INDOOR
-        // AIR HANDLING UNIT block ("HEAT PUMP TOTAL CAPACITY") and the same
-        // value inside the outdoor "HEAT PUMP HEATING DATA" block ("TOTAL
-        // CAPACITY"). The dropdowns fill BOTH; the outdoor duplicate is
-        // tracked separately so it can be hidden even when heat-pump
-        // systems are present (see scheduleHiddenColumns).
+        // Heat-pump total capacity appears twice: a summary in the indoor
+        // HEAT PUMP block and the same value inside the outdoor "HEAT PUMP
+        // HEATING DATA" block. The dropdowns fill BOTH; the outdoor
+        // duplicate is tracked separately so it can be hidden even when
+        // heat-pump systems are present (see scheduleHiddenColumns).
         var hpHeatingTotal = findAll('TOTAL CAPACITY', 'HEAT PUMP HEATING DATA');
         var hpTotal = [];
-        var k = find('HEAT PUMP TOTAL CAPACITY');
+        var k = find('TOTAL CAPACITY', 'HEAT PUMP');
         if (k) hpTotal.push(k);
         hpHeatingTotal.forEach(function (c) {
             if (hpTotal.indexOf(c) < 0) hpTotal.push(c);
@@ -480,6 +496,7 @@
             airflow:      find('AIRFLOW (CFM)'),
             auxKw:        find('kW', 'AUX. ELECTRIC HEAT'),
             tempRise:     find('TEMPERATURE RISE (DB)'),
+            hpRise:       find('TEMP RISE', 'HEAT PUMP'),
             oaCooling:    find('OUTDOOR AMBIENT (COOLING)'),
             hpAmbient:    find('OUTDOOR AMBIENT (DB)', 'HEAT PUMP HEATING DATA'),
             hpEatDb:      null,   // no heating-EDB column on this schedule
@@ -508,6 +525,7 @@
             airflow:      find('CFM'),
             auxKw:        null,
             tempRise:     null,
+            hpRise:       find('TEMP RISE', 'HEAT PUMP HEATING CAPACITY'),
             oaCooling:    find('OA AMBIENT (COOLING)'),
             hpAmbient:    find('OA AMBIENT (HEATING)'),
             hpEatDb:      find('EDB', 'HEAT PUMP HEATING CAPACITY'),
@@ -568,6 +586,24 @@
                 if (!r) return;
                 if (needLat) sd[cols.lat] = round1(r.ldb);
                 if (needLwb) sd[cols.lwb] = round1(r.lwb);
+            });
+        });
+    }
+
+    // Heat pump TEMP RISE from each row's own heating capacity and airflow
+    // (the column is left blank in the Excel). Same timing and live
+    // override as fillLeavingAir.
+    function fillHeatRise(productKey, data) {
+        if (!PRODUCTS[productKey] || !data || !data.selections) return;
+        var cols = resolveColumns(data, productKey);
+        var capCol = (cols.hpTotalCols || [])[0];
+        if (!cols.hpRise || !capCol || !cols.airflow) return;
+        data.selections.forEach(function (sel) {
+            (sel.rows || []).forEach(function (row) {
+                var sd = row && row.scheduleData;
+                if (!sd) return;
+                var rise = heatRise(sd[capCol], sd[cols.airflow]);
+                if (rise != null) sd[cols.hpRise] = rise;
             });
         });
     }
@@ -701,6 +737,7 @@
         if (cols.coolTotal) outputCols[cols.coolTotal] = 'coolTotal';
         if (cols.coolSensible) outputCols[cols.coolSensible] = 'coolSensible';
         if (hasHp) (cols.hpTotalCols || []).forEach(function (c) { outputCols[c] = 'hpTotal'; });
+        if (hasHp && cols.hpRise) outputCols[cols.hpRise] = 'hpRise';
         // Claiming the temperature-rise column here also takes it OUT of the
         // kW dropdown's "dependent columns" path in the row renderers (they
         // check capCtrl.handles() first), so there's only one writer.
@@ -742,6 +779,10 @@
                 var cap = hpResult();
                 return (cap == null) ? '-' : cap;
             }
+            if (field === 'hpRise') {
+                var rise = heatRise(hpResult(), st.airflow);
+                return (rise == null) ? '-' : rise;
+            }
             var res = coolResult();
             if (!res) return '-';
             if (field === 'coolTotal') return res[0];
@@ -767,6 +808,7 @@
         function updateHp() {
             if (!hasHp) return;
             setOut('hpTotal', outValue('hpTotal'));
+            setOut('hpRise', outValue('hpRise'));
             var invalid = hpResult() == null;
             ['hpAmbient', 'hpEatDb'].forEach(function (f) {
                 var sel = selects[f];
@@ -789,6 +831,7 @@
             COOL_AXES.forEach(populate);
             updateCooling();
             updateTempRise();   // airflow may have moved
+            if (hasHp) setOut('hpRise', outValue('hpRise'));
             persist();
         }
 
@@ -868,6 +911,8 @@
             });
         },
         fillLeavingAir: fillLeavingAir,
+        fillHeatRise: fillHeatRise,
+        heatRise: heatRise,
 
         // ----- Condition-aware lookups (Design Search) -----
         columnsFor: function (data) { return resolveColumns(data); },
@@ -882,12 +927,12 @@
          * selections currently in view. Multi Position Splits only. Two
          * rules, resolved by header LABEL so they survive column edits:
          *   - The outdoor "HEAT PUMP HEATING DATA -> TOTAL CAPACITY"
-         *     duplicates the indoor "HEAT PUMP TOTAL CAPACITY", so it is
+         *     duplicates the indoor "HEAT PUMP -> TOTAL CAPACITY", so it is
          *     ALWAYS hidden (the HP total shows once, in the AHU section).
          *   - When NONE of the in-view selections is a heat pump, the
-         *     whole heat-pump block (indoor HP total + the outdoor HEAT
-         *     PUMP HEATING DATA columns) is hidden too - they would all be
-         *     "-" anyway.
+         *     whole heat-pump block (the indoor HEAT PUMP total + temp rise
+         *     and the outdoor HEAT PUMP HEATING DATA columns) is hidden
+         *     too - they would all be "-" anyway.
          * All overridable via "Add / Remove Columns". `selections` is the
          * list of selection objects on screen (browse: the filtered rows;
          * project: the selected units). [] for every other product.
@@ -1014,6 +1059,10 @@
                 (cols.hpTotalCols || []).forEach(function (c) {
                     if (c) out[c] = (cap == null) ? '-' : cap;
                 });
+                if (cols.hpRise) {
+                    var hpR = heatRise(cap, ci.airflow);
+                    out[cols.hpRise] = (hpR == null) ? '-' : hpR;
+                }
             }
             // Temperature rise follows the chosen airflow. kW comes from
             // scheduleData because the cart item's selection IS the chosen

@@ -73,7 +73,14 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #                      submittals live in SUBMITTALS\Gas Pack or
 #                      SUBMITTALS\Heat Pump according to the TYPE filter.
 #                      See apply_doc_subfolders below.
-#   searchSchema       Drives the Design Search page on the site. Two parts:
+#   holdBackMissingDocs Optional. List of document folders (e.g.
+#                      ["SUBMITTALS"]). A selection that references a file
+#                      in one of them that isn't on disk yet is left out
+#                      of the JSON (and listed in the console) until the
+#                      file is added. Selection ids are numbered first,
+#                      so the ones that do publish keep their ids.
+#                      See hold_back_missing_docs below.
+#   searchSchema      Drives the Design Search page on the site. Two parts:
 #                        displayName  - shown in the category picker
 #                        description  - one-line blurb shown above the form
 #                        targets      - list of numeric columns the engineer
@@ -150,7 +157,7 @@ PRODUCT_CONFIGS = {
             "targets": [
                 {"label": "Indoor Unit Cooling Capacity",             "col": "F", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Unit Sensible Capacity",            "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "I", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Indoor Unit Heating Capacity (Heat Pump)", "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Unit Airflow",                      "col": "A", "unit": "CFM",   "defaultTolerance": 15},
             ],
         },
@@ -168,8 +175,8 @@ PRODUCT_CONFIGS = {
             "targets": [
                 {"label": "Indoor Cooling Capacity",    "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Sensible Capacity",   "col": "K", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Heat Pump Heating Capacity", "col": "V", "unit": "BTU/h", "defaultTolerance": 10},
-                {"label": "Aux. Electric Heat",         "col": "M", "unit": "kW",    "defaultTolerance": 10},
+                {"label": "Heat Pump Heating Capacity", "col": "W", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Aux. Electric Heat",         "col": "N", "unit": "kW",    "defaultTolerance": 10},
                 {"label": "Indoor Airflow",             "col": "C", "unit": "CFM",   "defaultTolerance": 10},
             ],
         },
@@ -181,6 +188,10 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 6,
         "supportsMultiRow": False,
         "assetsFolder": "GAS SPLITS",
+        # The 14.3 SEER2 systems added in Sept 2026 wait for their
+        # submittal PDFs: a system stays off the site until every one it
+        # references is in ASSETS\GAS SPLITS\SUBMITTALS.
+        "holdBackMissingDocs": ["SUBMITTALS"],
         "searchSchema": {
             "displayName": "Daikin Gas Splits",
             "description": "Three-component split systems with a gas furnace, indoor coil, and outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
@@ -188,8 +199,8 @@ PRODUCT_CONFIGS = {
                 {"label": "Total Cooling Capacity", "col": "H", "unit": "BTU/h",  "defaultTolerance": 10},
                 {"label": "Gas Heating Output",     "col": "J", "unit": "BTU/h",  "defaultTolerance": 10},
                 {"label": "Indoor Airflow",         "col": "C", "unit": "CFM",    "defaultTolerance": 10},
-                {"label": "AFUE",                   "col": "L", "unit": "%",      "defaultTolerance": 5},
-                {"label": "Compressor Stages",      "col": "Z", "unit": "stages", "defaultTolerance": 0},
+                {"label": "AFUE",                   "col": "M", "unit": "%",      "defaultTolerance": 5},
+                {"label": "Compressor Stages",      "col": "AA", "unit": "stages", "defaultTolerance": 0},
             ],
         },
     },
@@ -1222,6 +1233,58 @@ def apply_doc_subfolders(selections, doc_columns, config):
               f"keep their bare filenames.")
 
 
+def hold_back_missing_docs(selections, doc_columns, config):
+    """Drop selections that reference a document not on disk yet
+    (holdBackMissingDocs). Returns the selections to publish.
+
+    Only the doc folders listed in the config are checked, against
+    HHpro\\ASSETS\\<assetsFolder>\\<folder>. Names are compared exactly,
+    as the live site's URLs are case sensitive. Ids were assigned before
+    this runs, so a held-back selection leaves a gap rather than
+    renumbering the rest.
+    """
+    folders = config.get("holdBackMissingDocs")
+    if not folders:
+        return selections
+    root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+    product_dir = os.path.join(root, "ASSETS", config.get("assetsFolder") or "")
+    on_disk = {}   # folder -> set of "name.ext" (with any subfolder, "/" separated)
+    for folder in folders:
+        base = os.path.join(product_dir, folder)
+        names = set()
+        for dirpath, _dirs, files in os.walk(base):
+            rel = os.path.relpath(dirpath, base)
+            for f in files:
+                names.add(f if rel == "." else os.path.join(rel, f).replace(os.sep, "/"))
+        on_disk[folder] = names
+    cols = [dc for dc in doc_columns if dc["folder"] in on_disk]
+
+    kept, held, missing = [], [], set()
+    for sel in selections:
+        gaps = set()
+        for row in sel["rows"]:
+            docs = row["documentationData"]
+            for dc in cols:
+                value = docs.get(dc["name"])
+                if value in (None, "", "-"):
+                    continue
+                name = f"{value}.{dc['fileExtension']}" if dc["fileExtension"] else str(value)
+                if name not in on_disk[dc["folder"]]:
+                    gaps.add(f"{dc['folder']}\\{name}")
+        if gaps:
+            held.append(sel["id"])
+            missing |= gaps
+        else:
+            kept.append(sel)
+    if held:
+        print(f"  HELD BACK: {len(held)} selection(s) ({held[0]} ... {held[-1]}) "
+              f"until these {len(missing)} file(s) are added to "
+              f"ASSETS\\{config.get('assetsFolder')}:")
+        for m in sorted(missing):
+            print(f"     {m}")
+    return kept
+
+
 def extract_refrigerant_columns(ws, refrigerant_cols):
     """Read the REFRIGERANT CALCULATIONS columns' header names from row 2.
 
@@ -1839,6 +1902,7 @@ def convert_file(input_path, config, output_path):
         refrigerant_columns_meta=refrigerant_columns or None,
     )
     apply_doc_subfolders(selections, doc_columns, config)
+    selections = hold_back_missing_docs(selections, doc_columns, config)
 
     schedule_notes = extract_schedule_notes(wb, config.get("notesFormat"))
 

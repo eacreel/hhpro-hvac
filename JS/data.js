@@ -112,8 +112,8 @@
             // and the project-view schedule all act on whichever variant
             // is currently selected.
             kwVariants: {
-                variantColumn: 'M',
-                dependentColumns: ['N', 'P', 'Q'],
+                variantColumn: 'N',
+                dependentColumns: ['O', 'Q', 'R'],
                 filterName: 'KW',
                 defaultValue: '-'
             }
@@ -315,15 +315,23 @@
     // One-time post-processing of a freshly loaded product JSON. Split
     // system schedules leave their leaving-air cells (LDB / LWB, LAT (WB))
     // blank in the Excel; the site fills them from each row's rated point
-    // (see HHpro.Capacity.fillLeavingAir). A product extension can fill
-    // its own calculated columns too (prepareData - the LC RTU temperature
-    // rises).
+    // (see HHpro.Capacity.fillLeavingAir), and their heat pump TEMP RISE
+    // the same way (fillHeatRise). A product extension can fill its own
+    // calculated columns too (prepareData - the LC RTU and gas split
+    // temperature rises).
     function postProcess(productKey, data) {
         if (HHpro.Capacity && typeof HHpro.Capacity.fillLeavingAir === 'function') {
             try {
                 HHpro.Capacity.fillLeavingAir(productKey, data);
             } catch (e) {
                 console.warn('HHpro.Data: leaving-air fill failed for ' + productKey, e);
+            }
+        }
+        if (HHpro.Capacity && typeof HHpro.Capacity.fillHeatRise === 'function') {
+            try {
+                HHpro.Capacity.fillHeatRise(productKey, data);
+            } catch (e) {
+                console.warn('HHpro.Data: heat pump temp rise fill failed for ' + productKey, e);
             }
         }
         var ext = HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];

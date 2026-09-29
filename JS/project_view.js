@@ -815,18 +815,19 @@
     // refrigerant data lands in JSON.
     var MODEL_COLS_BY_PRODUCT = {
         // Letters follow the Sept 2026 column inserts (mini splits: LDB /
-        // LWB at D:E; multi position: LAT (WB) at I).
+        // LWB at D:E, heat pump TEMP RISE at I; multi position: LAT (WB)
+        // at I, heat pump TEMP RISE at M; gas splits: TEMP RISE at K).
         'mini_splits': {
-            indoor:  { make: 'O', model: 'P' },
-            outdoor: { make: 'X', model: 'Y' }
+            indoor:  { make: 'P', model: 'Q' },
+            outdoor: { make: 'Y', model: 'Z' }
         },
         'multi_position_splits': {
             indoor:  { make: 'A', model: 'B' },
-            outdoor: { make: 'S', model: 'T' }
+            outdoor: { make: 'T', model: 'U' }
         },
         'gas_splits': {
             indoor:  { make: 'A', model: 'B' },
-            outdoor: { make: 'Q', model: 'R' }
+            outdoor: { make: 'R', model: 'S' }
         }
     };
 
@@ -1359,11 +1360,12 @@
             var filterData = firstRow.filterData || {};
 
             // Per-product source columns. Multi Position writes voltage
-            // as "208/1" in X and stages in AE (one to the right of the
-            // pre-Sept-2026 letters, after LAT (WB) was inserted at I);
-            // Gas Splits writes "208/60/1" in S and stages in Z.
-            var elecCol = item.productKey === 'gas_splits' ? 'S' : 'X';
-            var stagesCol = item.productKey === 'gas_splits' ? 'Z' : 'AE';
+            // as "208/1" in Y and stages in AF (two to the right of the
+            // pre-Sept-2026 letters, after LAT (WB) went in at I and the
+            // heat pump TEMP RISE at M); Gas Splits writes "208/60/1" in T
+            // and stages in AA (TEMP RISE went in at K).
+            var elecCol = item.productKey === 'gas_splits' ? 'T' : 'Y';
+            var stagesCol = item.productKey === 'gas_splits' ? 'AA' : 'AF';
 
             var outdoorElectrical = String(sched[elecCol] || '').trim();
             var stages = String(sched[stagesCol] || '').trim().toLowerCase();
