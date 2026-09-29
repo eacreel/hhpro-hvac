@@ -41,11 +41,11 @@
             assetsFolder: 'ASSETS/DAIKIN LIGHT COMMERCIAL RTU',
             tileClass: 'tile-gas-packs',
             // Heat pumps are listed once per AUX. ELECTRIC HEAT kW; collapse
-            // them into one row with a kW dropdown that swaps MCA / MOCP
-            // (and the submittal).
+            // them into one row with a kW dropdown that swaps the aux heat
+            // temperature rise, MCA / MOCP (and the submittal).
             kwVariants: {
-                variantColumn: 'W',
-                dependentColumns: ['AB', 'AC'],
+                variantColumn: 'X',
+                dependentColumns: ['Y', 'AD', 'AE'],
                 defaultValue: '-',
                 singleAsText: true,
                 // Gas packs are listed once per gas heat size (Low / Medium /
@@ -71,8 +71,9 @@
                 filter: 'TYPE',
                 columns: {
                     'GAS': ['M', 'N', 'O', 'P', 'Q'],                 // gas heating
-                    // heat pump heating (47 F, 17 F, design OA, COPs) + aux heat
-                    'HEAT PUMP': ['R', 'S', 'T', 'U', 'V', 'W']
+                    // heat pump heating (47 F, 17 F, design OA, temp rise,
+                    // COPs) + aux heat (kW, temp rise)
+                    'HEAT PUMP': ['R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y']
                 }
             }
         },
@@ -314,13 +315,23 @@
     // One-time post-processing of a freshly loaded product JSON. Split
     // system schedules leave their leaving-air cells (LDB / LWB, LAT (WB))
     // blank in the Excel; the site fills them from each row's rated point
-    // (see HHpro.Capacity.fillLeavingAir). No-op for every other product.
+    // (see HHpro.Capacity.fillLeavingAir). A product extension can fill
+    // its own calculated columns too (prepareData - the LC RTU temperature
+    // rises).
     function postProcess(productKey, data) {
         if (HHpro.Capacity && typeof HHpro.Capacity.fillLeavingAir === 'function') {
             try {
                 HHpro.Capacity.fillLeavingAir(productKey, data);
             } catch (e) {
                 console.warn('HHpro.Data: leaving-air fill failed for ' + productKey, e);
+            }
+        }
+        var ext = HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
+        if (ext && typeof ext.prepareData === 'function') {
+            try {
+                ext.prepareData(data);
+            } catch (e) {
+                console.warn('HHpro.Data: prepareData failed for ' + productKey, e);
             }
         }
         return data;

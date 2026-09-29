@@ -14,6 +14,9 @@
    Gas packs land on the row for their heat size (the Input
    dropdown opens on it).
 
+   The heat pump and aux. electric heat Temperature Rise columns
+   are calculated here, never typed in the Excel (fillTempRise).
+
    Every number on the Gas Pack schedule came from a selection run
    by hand in Daikin's software at one condition (80/67 EAT, 95
    ambient, 0.5" ESP). Design Search can now answer for any
@@ -48,7 +51,9 @@
         formatScheduleCellValue: function (colLetter, val) {
             if (val === null || val === undefined || val === '') return '-';
             return undefined;
-        }
+        },
+        // Run once on the freshly loaded JSON (HHpro.Data postProcess).
+        prepareData: function (data) { fillTempRise(data); }
     };
 
     var PRODUCT = 'gas_packs';
@@ -73,7 +78,6 @@
         heatEat: 'EAT',
         heatLat: 'LAT',
         hgrh: 'MODULATING HOT GAS REHEAT',
-        auxKw: 'AUX. ELECTRIC HEAT',
         voltage: 'VOLT/PH',
         hp: 'INDOOR MOTOR HP',
         mca: 'Unit MCA',
@@ -95,6 +99,14 @@
         cop17: ['COP (17°F)']
     };
 
+    // Columns whose own label repeats on the schedule ("kW", "Temperature
+    // Rise (°F)"), matched on that label plus the group heading above it.
+    var GROUPED_LABELS = {
+        auxKw: { group: 'AUX. ELECTRIC HEAT', leaf: 'kW' },
+        auxRise: { group: 'AUX. ELECTRIC HEAT', leaf: 'TEMPERATURE RISE' },
+        hpRise: { group: 'HEAT PUMP HEATING PERFORMANCE', leaf: 'TEMPERATURE RISE' }
+    };
+
     var WARNING =
         'These values come from Daikin’s published capacity tables at your design ' +
         'condition, not from the selection run in Daikin’s software. The Submittal PDF ' +
@@ -103,6 +115,10 @@
 
     // Sensible heat rate for standard air.
     var AIR_CONST = 1.08;
+
+    // Aux. electric heat temperature rise = kW x 3193 / CFM, the split
+    // systems' formula (TEMP_RISE_K in capacity.js).
+    var AUX_RISE_K = 3193;
 
     // -----------------------------------------------------------------
     // Column resolution
@@ -124,13 +140,16 @@
         letters.forEach(function (l, i) { letterToIdx[l] = i; });
 
         var leaf = {};   // letter -> last (deepest) header label
+        var trail = {};  // letter -> every header label above it, normalised
         (header.rows || []).forEach(function (row) {
             row.forEach(function (cell) {
                 var start = letterToIdx[cell.col];
                 if (start === undefined) return;
                 for (var k = 0; k < (cell.colspan || 1); k++) {
                     var L = letters[start + k];
-                    if (L) leaf[L] = cell.value;
+                    if (!L) continue;
+                    leaf[L] = cell.value;
+                    (trail[L] = trail[L] || []).push(normalise(cell.value));
                 }
             });
         });
@@ -150,6 +169,18 @@
                 if (wants.indexOf(normaliseFull(leaf[letters[i]])) >= 0) { cols[key] = letters[i]; return; }
             }
         });
+        Object.keys(GROUPED_LABELS).forEach(function (key) {
+            var want = GROUPED_LABELS[key];
+            var wantLeaf = normalise(want.leaf), wantGroup = normalise(want.group);
+            cols[key] = null;
+            for (var i = 0; i < letters.length; i++) {
+                var L = letters[i];
+                if (normalise(leaf[L]) === wantLeaf && (trail[L] || []).indexOf(wantGroup) >= 0) {
+                    cols[key] = L;
+                    return;
+                }
+            }
+        });
         data.__gasPackCols = cols;
         return cols;
     }
@@ -163,6 +194,61 @@
     // The 47 / 17 F rating columns a design row blanks.
     function ratingColumns(cols) {
         return [cols.hp47, cols.hp17, cols.cop47, cols.cop17].filter(Boolean);
+    }
+
+    // -----------------------------------------------------------------
+    // Temperature rise
+    // -----------------------------------------------------------------
+    // Both Temperature Rise columns are left blank in LC RTU DATA and
+    // worked out here from the row's own numbers when the JSON loads:
+    //   Heat pump heating: BTU/h / (1.08 x CFM), one per rated capacity,
+    //     "31.3°F (47°F Ambient), 18.2°F (17°F Ambient)".
+    //   Aux. electric heat: kW x 3193 / CFM.
+    // A design row replaces both from its payload (overridesFor).
+    function num(v) {
+        var n = (typeof v === 'number') ? v : parseFloat(v);
+        return isFinite(n) ? n : null;
+    }
+
+    function hpRise(btuh, cfm) {
+        var b = num(btuh), c = num(cfm);
+        return (b == null || c == null || b <= 0 || c <= 0) ? null : b / (AIR_CONST * c);
+    }
+
+    function auxRise(kw, cfm) {
+        var k = num(kw), c = num(cfm);
+        return (k == null || c == null || k <= 0 || c <= 0) ? null : k * AUX_RISE_K / c;
+    }
+
+    // readings = [{ rise, ambient }]; null when none has a rise.
+    function hpRiseText(readings) {
+        var parts = readings.filter(function (r) { return r.rise != null; }).map(function (r) {
+            return round1(r.rise) + '°F (' + r.ambient + '°F Ambient)';
+        });
+        return parts.length ? parts.join(', ') : null;
+    }
+
+    function fillTempRise(data) {
+        var cols = resolveColumns(data);
+        if (!cols.cfm) return;
+        (data.selections || []).forEach(function (sel) {
+            (sel.rows || []).forEach(function (row) {
+                var sd = row.scheduleData;
+                if (!sd) return;
+                var cfm = sd[cols.cfm];
+                if (cols.hpRise) {
+                    var text = hpRiseText([
+                        { rise: cols.hp47 ? hpRise(sd[cols.hp47], cfm) : null, ambient: 47 },
+                        { rise: cols.hp17 ? hpRise(sd[cols.hp17], cfm) : null, ambient: 17 }
+                    ]);
+                    if (text) sd[cols.hpRise] = text;
+                }
+                if (cols.auxRise && cols.auxKw) {
+                    var rise = auxRise(sd[cols.auxKw], cfm);
+                    if (rise != null) sd[cols.auxRise] = round1(rise);
+                }
+            });
+        });
     }
 
     function isHeatPumpSel(data, sel) {
@@ -342,6 +428,19 @@
                 out[cols.hpDesign] = Math.round(h.capacity) + ' (' + bits.join(', ') + ')';
             }
             ratingColumns(cols).forEach(function (L) { out[L] = '-'; });
+
+            // Both rises at the airflow the heating is published at (the
+            // CFM in the design OA cell), falling back to the cooling one.
+            var heatCfm = (h && h.airflow != null) ? h.airflow : payload.cooling.airflow;
+            if (cols.hpRise) {
+                out[cols.hpRise] = (h && hpRiseText([
+                    { rise: hpRise(h.capacity, heatCfm), ambient: h.designDb }
+                ])) || '-';
+            }
+            if (cols.auxRise) {
+                var aux = auxRise(payload.kitKw, heatCfm);
+                out[cols.auxRise] = (aux == null) ? '-' : round1(aux);
+            }
         }
 
         // Gas heat.

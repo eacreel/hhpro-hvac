@@ -1684,7 +1684,7 @@
         rows.forEach(function (r) {
             var key = [r.type, r.cabinet, r.voltage, r.motor, r.hgrh].join('|');
             var g = byKey[key];
-            if (!g) { g = byKey[key] = { variants: [] }; groups.push(g); }
+            if (!g) { g = byKey[key] = { key: key, variants: [] }; groups.push(g); }
             g.variants.push(r);
         });
         groups.forEach(function (g) {
@@ -1769,7 +1769,7 @@
             return wrap;
         }
 
-        wrap.appendChild(buildGasPackTable(groups));
+        wrap.appendChild(buildGasPackTable(groups, res));
         return wrap;
     }
 
@@ -1796,7 +1796,7 @@
         return chips;
     }
 
-    function buildGasPackTable(groups) {
+    function buildGasPackTable(groups, res) {
         var rows = [];
         groups.forEach(function (g) { rows = rows.concat(g.variants); });
         var tableWrap = document.createElement('div');
@@ -1845,8 +1845,13 @@
             // Two choices per row: the heat size / heat kit (variant) and the
             // published airflow the unit is read at. Both open on the search's
             // default; the airflow dropdown repaints every airflow-dependent cell.
-            var cur = g.defaultIdx;
-            var air = g.variants[cur].airflow;
+            // What was picked is kept with these results, so coming back from
+            // the schedule shows the airflow and kit that Select sent there.
+            res.picks = res.picks || {};
+            var pick = res.picks[g.key];
+            var cur = pick ? pick.cur : g.defaultIdx;
+            var air = pick ? pick.air : g.variants[cur].airflow;
+            function remember() { res.picks[g.key] = { cur: cur, air: air }; }
 
             var actionsTd = document.createElement('td');
             actionsTd.className = 'actions-cell';
@@ -1883,6 +1888,7 @@
                         // Sizes that can't run at this airflow are disabled,
                         // so this only matters if the options disagree.
                         if (!optionAt(g.variants[cur], air).ok) air = g.variants[cur].airflow;
+                        remember();
                         paint();
                     }));
                 }
@@ -1890,6 +1896,7 @@
                     airTd.innerHTML = '';
                     airTd.appendChild(buildAirflowSelect(g.variants[cur], air, function (a) {
                         air = a;
+                        remember();
                         paint();
                     }));
                 }
