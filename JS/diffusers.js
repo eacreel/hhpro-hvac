@@ -2,7 +2,7 @@
    HHpro - Diffusers product extension
    ------------------------------------------------------------
    Price ceiling diffusers (SPD / SCD / SPD (Return) / SCDA /
-   SMD/AMD / SMD w/ SR / PDDR). Two product-specific behaviors
+   SMD/AMD / SMD w/ SR / PDDR / SDR). Two product-specific behaviors
    live here:
 
    1. Model gallery (buildIntroSection)

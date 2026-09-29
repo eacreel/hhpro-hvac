@@ -181,7 +181,7 @@
             assetsFolder: 'ASSETS/DIFFUSERS',
             tileClass: 'tile-diffusers',
             autoTagPrefix: 'D-',
-            // The diffuser schedule holds 8 model families in one sheet,
+            // The diffuser schedule holds 9 model families in one sheet,
             // so most columns only apply to some models. Hide any data
             // column that is empty for every row currently in view
             // (browse page respects the active filters; the project
@@ -198,7 +198,8 @@
                 { model: 'SCDA',         picture: 'DATA/PICTURES/Price SCDA (Black).jpg' },
                 { model: 'SMD/AMD',      picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
                 { model: 'SMD w/ SR',    picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
-                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR (Black).jpg' }
+                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR (Black).jpg' },
+                { model: 'SDR',          picture: 'DATA/PICTURES/Price SDR (Black).jpg' }
             ],
             // Core-style icon row: shown under the model gallery on the
             // browse page whenever an SMD-family model is selected.

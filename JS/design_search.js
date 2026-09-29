@@ -1058,12 +1058,9 @@
             seen[key] = true;
             out.push(v);
         });
-        // Numeric-friendly sort: numbers ascending, strings alphabetical.
-        out.sort(function (a, b) {
-            var na = parseFloat(a), nb = parseFloat(b);
-            if (!isNaN(na) && !isNaN(nb)) return na - nb;
-            return String(a).localeCompare(String(b));
-        });
+        // Same order as the product page filters: numbers ascending
+        // (fractions like "3/4" by value), strings alphabetical.
+        out.sort(HHpro.Schedule.compareFilterValues);
         return out;
     }
 

@@ -259,7 +259,7 @@ PRODUCT_CONFIGS = {
             "displayName": "Price Diffusers",
             "description": "Price ceiling diffusers (supply + return). Enter a target airflow and/or use the filters to narrow by model, size, and application.",
             "targets": [
-                {"label": "Airflow", "col": "U", "unit": "CFM", "defaultTolerance": 15},
+                {"label": "Airflow", "col": "X", "unit": "CFM", "defaultTolerance": 15},
             ],
         },
     },

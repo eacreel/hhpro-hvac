@@ -78,6 +78,8 @@
         buildTable: function (data, selections, product) { return buildScheduleTable(data, selections, product); },
         applyFilters: function (selections, filterValues) { return applyFilters(selections, filterValues); },
         applyStickyHeaderOffsets: function (table) { return applyStickyHeaderOffsets(table); },
+        // Filter dropdown order (Design Search uses it too).
+        compareFilterValues: function (a, b) { return compareValues(a, b); },
         // Per-product filter visibility logic (mini splits hides per-zone
         // SIZE/TYPE filters until the user picks NUMBER OF INDOOR UNITS,
         // for example). Mirrors the behavior on the main product page.
@@ -841,10 +843,23 @@
     }
 
     function compareValues(a, b) {
-        var na = typeof a === 'number' ? a : (isFinite(parseFloat(a)) ? parseFloat(a) : NaN);
-        var nb = typeof b === 'number' ? b : (isFinite(parseFloat(b)) ? parseFloat(b) : NaN);
+        var na = sortNumber(a);
+        var nb = sortNumber(b);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
         return String(a).localeCompare(String(b));
+    }
+
+    // The number a filter value sorts by. A proper fraction or mixed number
+    // ("1/2", "3/4", "1 1/2" - diffuser slot widths) reads as its value;
+    // anything else by its leading number ("12 x 12" -> 12, "208/1" -> 208).
+    function sortNumber(v) {
+        if (typeof v === 'number') return v;
+        var m = /^\s*(?:(\d+)\s+)?(\d+)\/(\d+)\s*$/.exec(String(v));
+        if (m && Number(m[2]) < Number(m[3])) {
+            return (m[1] ? Number(m[1]) : 0) + Number(m[2]) / Number(m[3]);
+        }
+        var n = parseFloat(v);
+        return isFinite(n) ? n : NaN;
     }
 
     function applyFilters(selections, filterValues) {
