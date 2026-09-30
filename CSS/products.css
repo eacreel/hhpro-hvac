@@ -203,6 +203,20 @@
     border-color: var(--color-primary-light);
 }
 
+/* Clear all filters + Design Search, side by side in one filter group. */
+.filter-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+/* "Design Search" button beside Clear all filters (same outline style,
+   with the search icon the home-page Design Search tile uses). */
+.filter-design-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .filter-status {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);

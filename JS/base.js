@@ -534,10 +534,25 @@
             }
         }
 
+        // "Design Search" button next to Clear all filters: opens Design
+        // Search on this product. Skipped for products Design Search
+        // doesn't offer (excludeFromDesignSearch, e.g. GPS). A function
+        // declaration, because the first renderFilterBar() call runs
+        // before this point in the enclosing function.
+        function designSearchHandler() {
+            if (product.excludeFromDesignSearch || !data.searchSchema || !HHpro.Views.design_search) {
+                return null;
+            }
+            return function () {
+                HHpro.App.showView('design_search', { productKey: product.productKey });
+            };
+        }
+
         function renderFilterBar() {
             var visible = getVisibleFilters(product.productKey, data, filterValues);
             pruneFilterValues(filterValues, visible);
-            var bar = buildFilterBar(data, visible, filterValues, onUserFilterChange, onClearAllFilters);
+            var bar = buildFilterBar(data, visible, filterValues, onUserFilterChange, onClearAllFilters,
+                                     designSearchHandler());
             filterBarContainer.innerHTML = '';
             filterBarContainer.appendChild(bar);
         }
@@ -745,7 +760,7 @@
     // Filter bar
     // ---------------------------------------------------------------
 
-    function buildFilterBar(data, visibleFilters, filterValues, onChange, onClearAll) {
+    function buildFilterBar(data, visibleFilters, filterValues, onChange, onClearAll, onDesignSearch) {
         var bar = document.createElement('div');
         bar.className = 'filter-bar';
 
@@ -815,8 +830,27 @@
         clearBtn.textContent = 'Clear all filters';
         clearBtn.addEventListener('click', onClearAll);
 
+        // Clear + Design Search share one group so they wrap together
+        // and Design Search always sits right of Clear.
+        var actions = document.createElement('div');
+        actions.className = 'filter-actions';
+        actions.appendChild(clearBtn);
+
+        if (onDesignSearch) {
+            var dsBtn = document.createElement('button');
+            dsBtn.type = 'button';
+            dsBtn.className = 'filter-clear filter-design-search';
+            dsBtn.title = 'Open Design Search for this product';
+            dsBtn.appendChild(HHpro.UI.icon('search'));
+            var dsText = document.createElement('span');
+            dsText.textContent = 'Design Search';
+            dsBtn.appendChild(dsText);
+            dsBtn.addEventListener('click', onDesignSearch);
+            actions.appendChild(dsBtn);
+        }
+
         clearGroup.appendChild(spacerLabel);
-        clearGroup.appendChild(clearBtn);
+        clearGroup.appendChild(actions);
         bar.appendChild(clearGroup);
 
         return bar;

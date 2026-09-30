@@ -114,7 +114,24 @@
     }
 
     HHpro.Views.design_search = {
-        render: function (root) {
+        /**
+         * params.productKey (optional) opens the page on that category -
+         * the "Design Search" button on each product page passes it.
+         * Coming back to the category already on screen keeps the
+         * entered targets and results.
+         */
+        render: function (root, params) {
+            var requested = params && params.productKey;
+            var loadKey = null;
+            if (requested && isSearchableProduct(requested)) {
+                if (requested !== state.productKey) {
+                    selectCategory(requested);
+                    loadKey = requested;
+                } else if (!state.productData && !state.loading) {
+                    loadKey = requested;
+                }
+            }
+
             root.innerHTML = '';
             root.appendChild(HHpro.UI.buildHeader('Design Search'));
             var main = document.createElement('main');
@@ -131,8 +148,35 @@
             main.appendChild(workArea);
 
             renderWorkArea(workArea);
+            if (loadKey) loadProductData(loadKey);
         }
     };
+
+    // Products offered in the category picker: allowed for this account
+    // (Data.getProducts) and not flagged excludeFromDesignSearch.
+    function isSearchableProduct(productKey) {
+        return HHpro.Data.getProducts().some(function (p) {
+            return p.productKey === productKey && !p.excludeFromDesignSearch;
+        });
+    }
+
+    // Switch the form to another category. The previously-entered values
+    // are wiped - they reference column letters that don't apply to the
+    // new category's schema. The caller loads the product data.
+    function selectCategory(key) {
+        state.productKey = key;
+        state.productData = null;
+        state.targetValues = {};
+        state.tolerances = {};
+        state.filterValues = {};
+        state.results = null;
+        state.loading = false;
+        state.error = null;
+        state.capacity = freshCapacityState();
+        state.capacityError = null;
+        state.gasPack = freshGasPackState();
+        state.gasPackError = null;
+    }
 
     // -----------------------------------------------------------------
     // Top intro / explanation
@@ -194,21 +238,7 @@
         select.addEventListener('change', function () {
             var key = select.value || null;
             if (key === state.productKey) return;
-            // Switching categories wipes the previously-entered values --
-            // they reference column letters that don't apply to the new
-            // category's schema.
-            state.productKey = key;
-            state.productData = null;
-            state.targetValues = {};
-            state.tolerances = {};
-            state.filterValues = {};
-            state.results = null;
-            state.loading = false;
-            state.error = null;
-            state.capacity = freshCapacityState();
-            state.capacityError = null;
-            state.gasPack = freshGasPackState();
-            state.gasPackError = null;
+            selectCategory(key);
             if (key) loadProductData(key);
             else rerenderWorkArea();
         });
