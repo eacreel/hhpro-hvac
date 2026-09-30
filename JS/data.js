@@ -191,15 +191,16 @@
             // on the browse page. `model` must match the MODEL column
             // value in the Excel data exactly - clicking a card filters
             // the schedule to that model (via the DESCRIPTION filter).
+            // `desc` is the short description shown under the model name.
             modelGallery: [
-                { model: 'SPD',          picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
-                { model: 'SCD',          picture: 'DATA/PICTURES/Price SCD (Black).jpg' },
-                { model: 'SPD (Return)', picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
-                { model: 'SCDA',         picture: 'DATA/PICTURES/Price SCDA (Black).jpg' },
-                { model: 'SMD/AMD',      picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
-                { model: 'SMD w/ SR',    picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
-                { model: 'PDDR',         picture: 'DATA/PICTURES/Price PDDR (Black).jpg' },
-                { model: 'SDR',          picture: 'DATA/PICTURES/Price SDR (Black).jpg' }
+                { model: 'SPD',          desc: 'Square Plaque Diffuser',          picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
+                { model: 'SCD',          desc: 'Square Cone Diffuser',            picture: 'DATA/PICTURES/Price SCD (Black).jpg' },
+                { model: 'SPD (Return)', desc: 'Square Plaque Return',            picture: 'DATA/PICTURES/Price SPD (Black).jpg' },
+                { model: 'SCDA',         desc: 'Adjustable Square Cone Diffuser', picture: 'DATA/PICTURES/Price SCDA (Black).jpg' },
+                { model: 'SMD/AMD',      desc: 'Modular Louvered Face Diffuser',  picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
+                { model: 'SMD w/ SR',    desc: 'Modular Diffuser, Square to Round', picture: 'DATA/PICTURES/Price SMD (Black).jpg' },
+                { model: 'PDDR',         desc: 'Perforated Return Diffuser',      picture: 'DATA/PICTURES/Price PDDR (Black).jpg' },
+                { model: 'SDR',          desc: 'Linear Slot Return',              picture: 'DATA/PICTURES/Price SDR (Black).jpg' }
             ],
             // Core-style icon row: shown under the model gallery on the
             // browse page whenever an SMD-family model is selected.
@@ -250,17 +251,17 @@
             // column value; clicking a card filters via DESCRIPTION, so
             // one representative model per family is enough. `label` is
             // the card caption (family name instead of the long grouped
-            // model string).
+            // model string); `desc` is the short description under it.
             modelGallery: [
-                { model: '510/520/610/620/710/720', label: '500/600/700',     picture: 'DATA/PICTURES/Price 500-600-700 (Black).jpg' },
-                { model: '910/920',                 label: '900 GYM',         picture: 'DATA/PICTURES/Price 900 (Black).jpg' },
-                { model: 'LBP/LBPH',                label: 'LINEAR BAR',      picture: 'DATA/PICTURES/Price LBP (Black).jpg' },
-                { model: 'LBMH',                    label: 'LINEAR BAR HD',   picture: 'DATA/PICTURES/Price LBMH (Black).jpg' },
-                { model: '510Z/610Z/710Z',          label: '500/600/700 RTN', picture: 'DATA/PICTURES/Price 500-600-700 Return (Black).jpg' },
-                { model: '80/81/82',                label: 'EGG CRATE',       picture: 'DATA/PICTURES/Price Egg Crate (Black).jpg' },
-                { model: '10/10FF',                 label: 'PERFORATED',      picture: 'DATA/PICTURES/Price Perforated Return (Black).jpg' },
-                { model: '90/90FH',                 label: '90 GYM RTN',      picture: 'DATA/PICTURES/Price Return Gym (Black).jpg' },
-                { model: 'STG',                     label: 'TRANSFER',        picture: 'DATA/PICTURES/Price Transfer (Black).jpg' }
+                { model: '510/520/610/620/710/720', label: '500/600/700',     desc: 'Louvered Supply Grille',       picture: 'DATA/PICTURES/Price 500-600-700 (Black).jpg' },
+                { model: '910/920',                 label: '900 GYM',         desc: 'Heavy Duty Gym Supply Grille', picture: 'DATA/PICTURES/Price 900 (Black).jpg' },
+                { model: 'LBP/LBPH',                label: 'LINEAR BAR',      desc: 'Linear Bar Grille',            picture: 'DATA/PICTURES/Price LBP (Black).jpg' },
+                { model: 'LBMH',                    label: 'LINEAR BAR HD',   desc: 'Heavy Duty Linear Bar Grille', picture: 'DATA/PICTURES/Price LBMH (Black).jpg' },
+                { model: '510Z/610Z/710Z',          label: '500/600/700 RTN', desc: 'Louvered Return Grille',       picture: 'DATA/PICTURES/Price 500-600-700 Return (Black).jpg' },
+                { model: '80/81/82',                label: 'EGG CRATE',       desc: 'Egg Crate Return Grille',      picture: 'DATA/PICTURES/Price Egg Crate (Black).jpg' },
+                { model: '10/10FF',                 label: 'PERFORATED',      desc: 'Perforated Return Grille',     picture: 'DATA/PICTURES/Price Perforated Return (Black).jpg' },
+                { model: '90/90FH',                 label: '90 GYM RTN',      desc: 'Heavy Duty Gym Return Grille', picture: 'DATA/PICTURES/Price Return Gym (Black).jpg' },
+                { model: 'STG',                     label: 'TRANSFER',        desc: 'Door & Wall Transfer Grille',  picture: 'DATA/PICTURES/Price Transfer (Black).jpg' }
             ]
         },
         {

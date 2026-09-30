@@ -51,10 +51,10 @@
                 label.textContent = cardDef.label || cardDef.model;
                 card.appendChild(label);
 
-                if (descr) {
+                if (cardDef.desc) {
                     var sub = document.createElement('div');
                     sub.className = 'model-card-desc';
-                    sub.textContent = descr;
+                    sub.textContent = cardDef.desc;
                     card.appendChild(sub);
                 }
 

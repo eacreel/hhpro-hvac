@@ -223,7 +223,8 @@
     // readings = [{ rise, ambient }]; null when none has a rise.
     function hpRiseText(readings) {
         var parts = readings.filter(function (r) { return r.rise != null; }).map(function (r) {
-            return round1(r.rise) + '°F (' + r.ambient + '°F Ambient)';
+            // toFixed keeps "18.0°F" alongside "25.6°F" in the same cell.
+            return Number(r.rise).toFixed(1) + '°F (' + r.ambient + '°F Ambient)';
         });
         return parts.length ? parts.join(', ') : null;
     }

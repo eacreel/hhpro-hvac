@@ -119,6 +119,10 @@ PRODUCT_CONFIGS = {
             "folders": ["SUBMITTALS"],
             "map": {"GAS": "Gas Pack", "HEAT PUMP": "Heat Pump"},
         },
+        # 2026-09-30: a stray duplicate of DSH1204 0 kW (old row 250,
+        # linked to the 208/3 45 kW submittal) was deleted; skipping its
+        # id keeps sel_0247 onward on the ids saved projects reference.
+        "retiredSelectionIds": [[246, 246]],
         "searchSchema": {
             "displayName": "Daikin Light Commercial RTUs",
             "description": "Packaged rooftop units. Enter design loads and the page returns models that meet the targets within your tolerance.",
@@ -1331,7 +1335,11 @@ def find_last_data_row(ws, data_start_row, schedule_cols):
     last = data_start_row - 1
     empty_streak = 0
     row = data_start_row
-    while row <= ws.max_row:
+    # Read max_row once: openpyxl recomputes it from every cell on each
+    # call, which made this loop take ~40 minutes on the grille sheet.
+    # The loop only reads rows up to max_row, so the value never changes.
+    max_row = ws.max_row
+    while row <= max_row:
         has_value = False
         for c in range(min_col, max_col + 1):
             if ws.cell(row=row, column=c).value not in (None, ""):
@@ -2022,9 +2030,9 @@ def convert_file(input_path, config, output_path):
 def choose_files(candidates):
     """Ask which of the convertible files to run this time.
 
-    Converting everything takes a long while (the grille/diffuser files
-    alone are ~30 minutes), so the script lists what it found and lets
-    you convert just the file(s) you actually changed.
+    Converting everything takes a while (the large grille file is the
+    slowest), so the script lists what it found and lets you convert
+    just the file(s) you actually changed.
 
     Press Enter (or type "all") to convert everything; otherwise type the
     numbers of the files you want, separated by commas/spaces (e.g. "2"

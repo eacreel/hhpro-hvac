@@ -62,18 +62,9 @@
         font-size: var(--font-size-lg);
     }
 
-    .model-card {
-        flex-basis: 72px;
-        min-width: 56px;
-    }
-
-    .model-gallery-compact .model-card {
-        flex-basis: 64px;
-    }
-
-    .model-card-desc {
-        display: none;
-    }
+    /* Gallery cards shrink in a second max-height block further down,
+       after the base .model-card rules (same specificity, so it has to
+       come later in the file to win). */
 }
 
 @media (max-height: 720px) {
@@ -631,8 +622,13 @@
 .model-card:last-child { margin-right: auto; }
 
 .model-card {
-    flex: 0 1 104px;
+    flex: 0 1 120px;
     min-width: 82px;
+    /* Column flex keeps every image at the top of its card, so the row
+       stays aligned when the captions wrap to different line counts. */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     /* Size container so the caption text can adapt to how far the card
        was squeezed (see @container rules below). */
     container-type: inline-size;
@@ -708,16 +704,16 @@
     padding: 0 var(--space-xs);
 }
 
+/* Short description under the model name ("Square Plaque Diffuser"). */
 .model-card-desc {
-    font-size: 10px;
-    line-height: 1.3;
+    font-size: 11px;
+    line-height: 1.25;
     color: var(--color-text-muted);
     padding: 2px var(--space-xs) 0;
-    text-transform: capitalize;
 }
 
-/* Narrower windows: tighten the strip so even the 15-card grille
-   gallery fits a ~1200px window without resorting to horizontal
+/* Narrower windows: tighten the strip so the diffuser and grille
+   galleries fit a ~1200px window without resorting to horizontal
    scrolling. */
 @media (max-width: 1440px) {
     .model-gallery {
@@ -729,19 +725,26 @@
     }
 }
 
-/* Squeezed cards (single-row gallery on narrow windows): drop the
-   long-form description first, then step the family label down so
-   grouped names like "500/600/700 RTN" still fit. */
-@container (max-width: 112px) {
-    .model-card-desc {
-        display: none;
+/* Shortish windows (see the max-height: 820px block at the top): smaller
+   diffuser/grille cards give the schedule more rows. The mini-split
+   compact gallery keeps its own size. */
+@media (max-height: 820px) {
+    .model-gallery:not(.model-gallery-compact) .model-card {
+        flex-basis: 96px;
     }
 }
 
+/* Squeezed cards (single-row gallery on narrow windows): step the
+   caption text down so grouped names like "500/600/700 RTN" and the
+   descriptions still fit. */
 @container (max-width: 96px) {
     .model-card-label {
         font-size: 10px;
         overflow-wrap: break-word;
+    }
+
+    .model-card-desc {
+        font-size: 10px;
     }
 }
 
