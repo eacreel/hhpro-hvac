@@ -1,7 +1,7 @@
 /* ============================================================
    HHpro - Grilles product extension
    ------------------------------------------------------------
-   Price supply / return / transfer grilles (13 catalogs, 32
+   Price supply / return / transfer grilles (7 catalogs, 21
    model groups). The model-mapped SCHEDULE NOTES behavior is
    generic (HHpro.ModelNotes keys off scheduleNotes.format ===
    'modelmap', see JS/diffusers.js), so the only product-specific

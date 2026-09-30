@@ -80,6 +80,12 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #                      file is added. Selection ids are numbered first,
 #                      so the ones that do publish keep their ids.
 #                      See hold_back_missing_docs below.
+#   retiredSelectionIds Optional. List of [first, last] selection numbers
+#                      that belonged to rows since deleted from the
+#                      workbook. Numbering skips them, so the rows that
+#                      remain keep their old ids and saved project items
+#                      still point at the same selection.
+#                      See selection_numbers below.
 #   searchSchema      Drives the Design Search page on the site. Two parts:
 #                        displayName  - shown in the category picker
 #                        description  - one-line blurb shown above the form
@@ -273,10 +279,18 @@ PRODUCT_CONFIGS = {
         # Same two-column SCHEDULE NOTES mapping as the diffusers (col A
         # is "ALL" or a comma-separated MODEL list, col B is the note).
         "notesFormat": "modelmap",
-        # The full grille JSON is ~27 MB and Cloudflare Pages caps files
+        # The full grille JSON was ~27 MB and Cloudflare Pages caps files
         # at 25 MiB, so split the selections across two files
-        # (grilles.json + grilles-2.json); the site re-joins them.
+        # (grilles.json + grilles-2.json); the site re-joins them. Since
+        # the 2026-09-30 cleanup it is ~18 MiB; the split stays as headroom.
         "splitParts": 2,
+        # 2026-09-30: the 150/150 MIG, 21/22/31/32, 301/302, 540/640,
+        # 60/60FH, 70/70FH and LG50-LG250 rows were deleted from the
+        # workbook. These were their ids; skipping them keeps every
+        # remaining grille on the id saved projects already reference.
+        "retiredSelectionIds": [
+            [1, 4235], [7239, 7623], [12180, 14639], [28025, 31066],
+        ],
         "searchSchema": {
             "displayName": "Price Grilles",
             "description": "Price supply, return, and transfer grilles. Enter a target airflow and/or use the filters to narrow by model, size, and application.",
@@ -1435,18 +1449,35 @@ def row_horizontal_spans(cell_to_merge, row, col_start, col_end):
     return spans
 
 
+def selection_numbers(retired=None):
+    """Yield selection numbers 1, 2, 3, ... skipping every number inside a
+    retiredSelectionIds [first, last] range. Rows deleted from a workbook
+    then leave a gap instead of renumbering the rows after them."""
+    ranges = sorted((int(a), int(b)) for a, b in (retired or []))
+    n = 0
+    while True:
+        n += 1
+        for a, b in ranges:
+            if a <= n <= b:
+                n = b + 1
+        yield n
+
+
 def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
                        filter_columns_meta, doc_columns_meta, cell_to_merge,
-                       refrigerant_columns_meta=None):
+                       refrigerant_columns_meta=None, retired_ids=None):
     """Build the selections list from the grouped row ranges.
 
     `refrigerant_columns_meta` is optional (only present on Mini Splits
     and Multi Position Splits today). When provided, each row gets a
     `refrigerantData` field keyed by the column's display name -- same
     shape as filterData / documentationData.
+
+    `retired_ids` is the config's retiredSelectionIds (see
+    selection_numbers).
     """
     selections = []
-    for i, (lo, hi) in enumerate(groups, start=1):
+    for i, (lo, hi) in zip(selection_numbers(retired_ids), groups):
         sel_id = f"sel_{i:04d}"
         rows_out = []
         for r in range(lo, hi + 1):
@@ -1900,6 +1931,7 @@ def convert_file(input_path, config, output_path):
         ws, groups, schedule_cols, filter_cols, doc_cols,
         filter_columns, doc_columns, cell_to_merge,
         refrigerant_columns_meta=refrigerant_columns or None,
+        retired_ids=config.get("retiredSelectionIds"),
     )
     apply_doc_subfolders(selections, doc_columns, config)
     selections = hold_back_missing_docs(selections, doc_columns, config)
@@ -1943,7 +1975,7 @@ def convert_file(input_path, config, output_path):
     }
 
     # Cloudflare Pages rejects any single file over 25 MiB. Products
-    # whose JSON would exceed that (grilles: 32k+ selections) set
+    # whose JSON would exceed that (grilles: 22k+ selections) set
     # "splitParts" in PRODUCT_CONFIGS: the selections array is split
     # into that many contiguous chunks. The main file keeps everything
     # else (header, filters, docs, notes, searchSchema) plus chunk 1

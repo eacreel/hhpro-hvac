@@ -594,7 +594,7 @@
                 scheduleWrap.appendChild(zero);
                 return;
             }
-            // Products with very large datasets (grilles: 32k+ rows) cap
+            // Products with very large datasets (grilles: 22k+ rows) cap
             // how many rows the browse table renders at once; the status
             // line still reports the true match count and a notice tells
             // the user to narrow the filters to see the rest.

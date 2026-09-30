@@ -16963,6 +16963,336 @@
           }
         }
       ]
+    },
+    {
+      "id": "sel_0300",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH1204",
+            "C": 10,
+            "D": 4120,
+            "E": 1,
+            "F": 128803,
+            "G": 94756,
+            "H": "20.0 IEER/12.1 EER",
+            "I": 80,
+            "J": 67,
+            "K": 59.1,
+            "L": 57.1,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 114000,
+            "S": 80000,
+            "V": 3.74,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "460/3",
+            "AC": 3.5,
+            "AD": 26.5,
+            "AE": 35,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 10,
+            "ELECTRICAL": "460/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - MZVAV - HGRH - 460-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1204",
+            "CAD (SYSTEM)": "DVH1204"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0301",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH1203",
+            "C": 10,
+            "D": 4120,
+            "E": 1,
+            "F": 128803,
+            "G": 94756,
+            "H": "20.0 IEER/12.1 EER",
+            "I": 80,
+            "J": 67,
+            "K": 59.1,
+            "L": 57.1,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 114000,
+            "S": 80000,
+            "V": 3.74,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "208/3",
+            "AC": 3.5,
+            "AD": 54,
+            "AE": 70,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 10,
+            "ELECTRICAL": "208/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/10-Ton - MZVAV - HGRH - 208-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1203",
+            "CAD (SYSTEM)": "DVH1203"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0302",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH1024",
+            "C": 8.5,
+            "D": 3800,
+            "E": 1,
+            "F": 111575,
+            "G": 84874,
+            "H": "20.0 IEER/12.3 EER",
+            "I": 80,
+            "J": 67,
+            "K": 59.7,
+            "L": 57.7,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 102000,
+            "S": 72000,
+            "V": 3.85,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "460/3",
+            "AC": 3.5,
+            "AD": 26,
+            "AE": 30,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 8.5,
+            "ELECTRICAL": "460/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - MZVAV - HGRH - 460-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1024",
+            "CAD (SYSTEM)": "DVH1024"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0303",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH1023",
+            "C": 8.5,
+            "D": 3800,
+            "E": 1,
+            "F": 111575,
+            "G": 84874,
+            "H": "20.0 IEER/12.3 EER",
+            "I": 80,
+            "J": 67,
+            "K": 59.7,
+            "L": 57.7,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 102000,
+            "S": 72000,
+            "V": 3.85,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "208/3",
+            "AC": 3.5,
+            "AD": 52.7,
+            "AE": 60,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 8.5,
+            "ELECTRICAL": "208/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/8.5-Ton - MZVAV - HGRH - 208-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH1023",
+            "CAD (SYSTEM)": "DVH1023"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0304",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH0904",
+            "C": 7.5,
+            "D": 3600,
+            "E": 1,
+            "F": 102928,
+            "G": 79341,
+            "H": "20.0 IEER/12.4 EER",
+            "I": 80,
+            "J": 67,
+            "K": 60,
+            "L": 58,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 90000,
+            "S": 63000,
+            "V": 3.85,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "460/3",
+            "AC": 3.5,
+            "AD": 24.8,
+            "AE": 30,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 7.5,
+            "ELECTRICAL": "460/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - MZVAV - HGRH - 460-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH0904",
+            "CAD (SYSTEM)": "DVH0904"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0305",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DVH0903",
+            "C": 7.5,
+            "D": 3600,
+            "E": 1,
+            "F": 102928,
+            "G": 79341,
+            "H": "20.0 IEER/12.4 EER",
+            "I": 80,
+            "J": 67,
+            "K": 60,
+            "L": 58,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 90000,
+            "S": 63000,
+            "V": 3.85,
+            "W": 2.5,
+            "X": "-",
+            "Y": "-",
+            "Z": "YES",
+            "AA": "Variable",
+            "AB": "208/3",
+            "AC": 3.5,
+            "AD": 49.9,
+            "AE": 60,
+            "AF": 1293
+          },
+          "filterData": {
+            "SIZE": 7.5,
+            "ELECTRICAL": "208/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "MZVAV",
+            "COOLING STAGES": "Variable",
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "YES"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/7.5-Ton - MZVAV - HGRH - 208-3 - 0kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DVH (7.5-10)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DVH (7.5-10)",
+            "REVIT (SYSTEM)": "DVH0903",
+            "CAD (SYSTEM)": "DVH0903"
+          }
+        }
+      ]
     }
   ],
   "scheduleNotes": {
@@ -16979,8 +17309,8 @@
   },
   "_meta": {
     "sourceFile": "LC RTU DATA.xlsx",
-    "generatedAt": "2026-09-29T13:46:49",
-    "dataRowCount": 299,
-    "selectionCount": 299
+    "generatedAt": "2026-09-30T06:48:22",
+    "dataRowCount": 305,
+    "selectionCount": 305
   }
 }
