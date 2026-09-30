@@ -29,7 +29,11 @@
      POST   /:id/reset      new reset link; signs them out
 
    Rules:
-     Super Admin   everything, except deleting themselves
+     Chief Starfleet Engineer
+                   everything, except deleting themselves
+     Super Admin   the same, except giving out Chief Starfleet
+                   Engineer, Admiral, Captain or Redshirt First Class
+                   (they may still edit people who hold one)
      Admin         may add Admin / Hoffman / Engineer / Contractor /
                    Manufacturer;
                    may edit, delete, invite or reset only users
@@ -91,7 +95,11 @@ function similarCompanies(name) {
 }
 
 function assignableLevels(actor) {
-    return db.isSuperAdminLevel(actor.user_level) ? db.USER_LEVELS.slice() : ADMIN_ASSIGNABLE.slice();
+    if (actor.user_level === db.CHIEF_LEVEL) return db.USER_LEVELS.slice();
+    if (db.isSuperAdminLevel(actor.user_level)) {
+        return db.USER_LEVELS.filter((level) => !db.CHIEF_ONLY_LEVELS.includes(level));
+    }
+    return ADMIN_ASSIGNABLE.slice();
 }
 
 function canManage(actor, target) {
@@ -120,8 +128,12 @@ function publicRow(u, actor) {
     };
 }
 
-/** Validate a submitted user form. Returns { error } or { fields }. */
-function readForm(body, actor) {
+/**
+ * Validate a submitted user form. Returns { error } or { fields }.
+ * currentLevel is the edited user's level: someone already at a level
+ * the caller cannot give out (a Super Admin editing an Admiral) keeps it.
+ */
+function readForm(body, actor, currentLevel) {
     const b = body || {};
     const fields = {
         firstName: String(b.firstName || '').trim(),
@@ -133,7 +145,8 @@ function readForm(body, actor) {
     };
     if (!fields.firstName || !fields.lastName) return { error: 'First and last name are required.' };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) return { error: 'Enter a valid email address.' };
-    if (!assignableLevels(actor).includes(fields.userLevel)) {
+    const keepsLevel = !!currentLevel && fields.userLevel === currentLevel;
+    if (!keepsLevel && !assignableLevels(actor).includes(fields.userLevel)) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
     if (!emailAllowedForLevel(fields.email, fields.userLevel)) {
@@ -335,7 +348,7 @@ function loadTarget(req, res) {
 router.put('/:id', (req, res) => {
     const target = loadTarget(req, res);
     if (!target) return;
-    const form = readForm(req.body, req.user);
+    const form = readForm(req.body, req.user, target.user_level);
     if (form.error) return res.status(400).json({ error: form.error });
     if (target.id === req.user.id && form.fields.userLevel !== req.user.user_level) {
         return res.status(400).json({ error: 'You cannot change your own user level.' });

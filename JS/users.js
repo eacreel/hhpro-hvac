@@ -27,9 +27,9 @@
     window.HHpro = window.HHpro || {};
     HHpro.Views = HHpro.Views || {};
 
-    // Admiral, Captain and Redshirt First Class are Super Admin under
-    // another name (SUPER_ADMIN_LEVELS in SERVER/lib/db.js).
-    var SUPER_ADMIN_LEVELS = ['Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
+    // Levels with Super Admin rights (SUPER_ADMIN_LEVELS in SERVER/lib/db.js).
+    // Which of them a caller may give out comes from the backend (options.levels).
+    var SUPER_ADMIN_LEVELS = ['Chief Starfleet Engineer', 'Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
     var LEVEL_ORDER = SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer']);
     // Email domains each Hoffman level is limited to (the server enforces
     // the same list, LEVEL_DOMAINS in SERVER/routes/users.js). Hoffman
@@ -706,9 +706,8 @@
         grid.appendChild(locations.wrap);
         form.appendChild(grid);
 
-        // A level the caller may not assign (an Admin editing... a Super
-        // Admin cannot happen, the backend hides that row's controls) -
-        // still, keep the current value visible if it is outside the list.
+        // A level the caller may not assign (a Super Admin editing an
+        // Admiral): keep the current value visible so saving keeps it.
         if (existing && options.levels.indexOf(existing.userLevel) === -1) {
             var keep = document.createElement('option');
             keep.value = existing.userLevel;
