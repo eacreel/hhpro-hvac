@@ -158,10 +158,10 @@
             scheduleNotesReadOnly: true,
             // Schedule column letters to hide on the selection (browse)
             // page. The project-view schedule creator still shows these.
-            // For VFDs, column M is the "Notes" column (per-item note
+            // For VFDs, column L is the "Notes" column (per-item note
             // numbers) - useful in the final schedule but noisy while
             // browsing.
-            hiddenSelectionColumns: ['M'],
+            hiddenSelectionColumns: ['L'],
             // Don't render the free-text "Accessories" column anywhere
             // (browse page, project schedule creator, Excel/PDF export).
             // VFDs convey per-item annotations via the Notes column.

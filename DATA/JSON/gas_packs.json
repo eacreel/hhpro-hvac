@@ -12469,61 +12469,6 @@
             "A": "DAIKIN",
             "B": "DSH2404",
             "C": 20,
-            "D": 8401,
-            "E": 0.5,
-            "F": 230200,
-            "G": 177254,
-            "H": "14.35 IEER/10.6 EER",
-            "I": 80,
-            "J": 67,
-            "K": 60.8,
-            "L": 58.4,
-            "M": "-",
-            "N": "-",
-            "O": "-",
-            "P": "-",
-            "Q": "-",
-            "R": 220000,
-            "S": 122000,
-            "V": 3.3,
-            "W": 2.05,
-            "X": "-",
-            "Y": "-",
-            "Z": "NO",
-            "AA": 2,
-            "AB": "460/3",
-            "AC": 3.5,
-            "AD": 50.8,
-            "AE": 60,
-            "AF": 2354
-          },
-          "filterData": {
-            "SIZE": 20,
-            "ELECTRICAL": "460/3",
-            "TYPE": "HEAT PUMP",
-            "EFFICIENCY": "STANDARD",
-            "COOLING STAGES": 2,
-            "HIGH/MEDIUM/LOW GAS HEAT": "-",
-            "HGRH": "NO"
-          },
-          "documentationData": {
-            "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 0kW",
-            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
-            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
-            "REVIT (SYSTEM)": "DSH2404",
-            "CAD (SYSTEM)": "DSH2404"
-          }
-        }
-      ]
-    },
-    {
-      "id": "sel_0218",
-      "rows": [
-        {
-          "scheduleData": {
-            "A": "DAIKIN",
-            "B": "DSH2404",
-            "C": 20,
             "D": 8000,
             "E": 0.5,
             "F": 230200,
@@ -12571,7 +12516,7 @@
       ]
     },
     {
-      "id": "sel_0219",
+      "id": "sel_0218",
       "rows": [
         {
           "scheduleData": {
@@ -12596,13 +12541,14 @@
             "S": 122000,
             "V": 3.3,
             "W": 2.05,
-            "X": 75,
+            "X": "-",
+            "Y": "-",
             "Z": "NO",
             "AA": 2,
             "AB": "460/3",
             "AC": 3.5,
-            "AD": 137,
-            "AE": 150,
+            "AD": 50.8,
+            "AE": 60,
             "AF": 2354
           },
           "filterData": {
@@ -12615,7 +12561,7 @@
             "HGRH": "NO"
           },
           "documentationData": {
-            "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 75kW",
+            "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
             "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
             "REVIT (SYSTEM)": "DSH2404",
@@ -12625,7 +12571,7 @@
       ]
     },
     {
-      "id": "sel_0220",
+      "id": "sel_0219",
       "rows": [
         {
           "scheduleData": {
@@ -12679,6 +12625,60 @@
       ]
     },
     {
+      "id": "sel_0220",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "DAIKIN",
+            "B": "DSH2404",
+            "C": 20,
+            "D": 8000,
+            "E": 0.5,
+            "F": 230200,
+            "G": 177254,
+            "H": "14.35 IEER/10.6 EER",
+            "I": 80,
+            "J": 67,
+            "K": 59.9,
+            "L": 57.9,
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "-",
+            "Q": "-",
+            "R": 220000,
+            "S": 122000,
+            "V": 3.3,
+            "W": 2.05,
+            "X": 75,
+            "Z": "NO",
+            "AA": 2,
+            "AB": "460/3",
+            "AC": 3.5,
+            "AD": 137,
+            "AE": 150,
+            "AF": 2354
+          },
+          "filterData": {
+            "SIZE": 20,
+            "ELECTRICAL": "460/3",
+            "TYPE": "HEAT PUMP",
+            "EFFICIENCY": "STANDARD",
+            "COOLING STAGES": 2,
+            "HIGH/MEDIUM/LOW GAS HEAT": "-",
+            "HGRH": "NO"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Heat Pump/20-Ton - SE - 460-3 - 75kW",
+            "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DSH (15-20)",
+            "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DSH (15-25)",
+            "REVIT (SYSTEM)": "DSH2404",
+            "CAD (SYSTEM)": "DSH2404"
+          }
+        }
+      ]
+    },
+    {
       "id": "sel_0221",
       "rows": [
         {
@@ -12686,15 +12686,15 @@
             "A": "DAIKIN",
             "B": "DSH2404",
             "C": 20,
-            "D": 8401,
+            "D": 8000,
             "E": 0.5,
             "F": 230200,
             "G": 177254,
             "H": "14.35 IEER/10.6 EER",
             "I": 80,
             "J": 67,
-            "K": 60.8,
-            "L": 58.4,
+            "K": 59.9,
+            "L": 57.9,
             "M": "-",
             "N": "-",
             "O": "-",
@@ -17254,7 +17254,7 @@
   },
   "_meta": {
     "sourceFile": "LC RTU DATA.xlsx",
-    "generatedAt": "2026-09-30T09:13:10",
+    "generatedAt": "2026-09-30T14:33:28",
     "dataRowCount": 304,
     "selectionCount": 304
   }
