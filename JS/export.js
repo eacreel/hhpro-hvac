@@ -1429,6 +1429,8 @@ WHAT'S IN THE GRID
             'gas_splits':             'GAS SPLIT SCHEDULE',
             'vfds':                   'VFD SCHEDULE',
             'diffusers':              'DIFFUSER SCHEDULE',
+            'grilles':                'GRILLE SCHEDULE',
+            'rac':                    'RETURN AIR CANOPY SCHEDULE',
             'gps':                    'AIR IONIZATION DEVICE SCHEDULES'
         };
         return titles[productKey] || 'SCHEDULE';
@@ -2541,6 +2543,7 @@ WHAT'S IN THE GRID
             'vfds': 'ABB VFDs',
             'diffusers': 'Price Diffusers',
             'grilles': 'Price Grilles',
+            'rac': 'Price RAC (Return Air Canopy)',
             'gps': 'GPS Bipolar Ionization'
         };
         return fallback[productKey] || productKey;

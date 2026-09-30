@@ -58,13 +58,15 @@
     HHpro.Views = HHpro.Views || {};
     HHpro.ProductExtensions = HHpro.ProductExtensions || {};
 
-    // Header values (case-insensitive) that mark a column as a model
-    // number column. Used by the quick-lookup index, by the schedule
-    // rendering, and by the model filter pulled in from the lookup.
+    // Header values (case-insensitive, runs of whitespace/line breaks
+    // read as one space) that mark a column as a model number column.
+    // Used by the quick-lookup index, by the schedule rendering, and by
+    // the model filter pulled in from the lookup.
     var MODEL_HEADER_SET = {
         'MODEL': true,
         'MODEL NUMBER': true,
         'MODEL NUMBER (DAIKIN)': true,
+        'MODEL (PRICE)': true,
         'MODEL#': true,
         'MODEL #': true,
         'GPS MODEL': true
@@ -178,7 +180,7 @@
             (hdrRow || []).forEach(function (cell) {
                 var label = (cell && cell.value !== undefined && cell.value !== null)
                     ? String(cell.value).trim() : '';
-                var up = label.toUpperCase();
+                var up = label.replace(/\s+/g, ' ').toUpperCase();
                 if (!MODEL_HEADER_SET[up]) return;
                 if (seen[cell.col]) return;
                 seen[cell.col] = true;

@@ -1024,10 +1024,10 @@
             for (var ci = 0; ci < row.length; ci++) {
                 var cell = row[ci];
                 var val = (cell && cell.value !== undefined && cell.value !== null)
-                    ? String(cell.value).trim().toUpperCase() : '';
+                    ? String(cell.value).trim().replace(/\s+/g, ' ').toUpperCase() : '';
                 if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' ||
                     val === 'MODEL #' || val === 'GPS MODEL' ||
-                    val === 'MODEL NUMBER (DAIKIN)') {
+                    val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (PRICE)') {
                     found = cell.col;
                 }
             }

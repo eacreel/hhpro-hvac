@@ -303,6 +303,24 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    # Price RAC return air canopies (added 2026-09-30). Same layout as the
+    # VFDs: title row 2, two header rows (3-4), data from row 5, and a
+    # Notes/Accessories column that cites the SCHEDULE NOTES list ("All").
+    "Price RAC (Return Air Canopy) DATA.xlsx": {
+        "productType": "PRICE RAC (RETURN AIR CANOPY)",
+        "outputFileName": "rac.json",
+        "headerRows": 3,
+        "dataStartRow": 5,
+        "supportsMultiRow": False,
+        "assetsFolder": "Price RAC (Return Air Canopy)",
+        "searchSchema": {
+            "displayName": "Price RAC (Return Air Canopy)",
+            "description": "Price return air canopies. Enter a target airflow and/or use the filters to narrow by size, insulation, and velocity.",
+            "targets": [
+                {"label": "Airflow", "col": "C", "unit": "CFM", "defaultTolerance": 15},
+            ],
+        },
+    },
 }
 
 

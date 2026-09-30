@@ -1,0 +1,1615 @@
+{
+  "productType": "PRICE RAC (RETURN AIR CANOPY)",
+  "assetsFolder": "Price RAC (Return Air Canopy)",
+  "scheduleTitle": "RETURN AIR CANOPY SCHEDULE",
+  "supportsMultiRowSelections": false,
+  "searchSchema": {
+    "displayName": "Price RAC (Return Air Canopy)",
+    "description": "Price return air canopies. Enter a target airflow and/or use the filters to narrow by size, insulation, and velocity.",
+    "targets": [
+      {
+        "label": "Airflow",
+        "col": "C",
+        "unit": "CFM",
+        "defaultTolerance": 15
+      }
+    ]
+  },
+  "scheduleHeader": {
+    "columnLetters": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S"
+    ],
+    "rows": [
+      [
+        {
+          "col": "A",
+          "value": "RETURN AIR CANOPY SCHEDULE",
+          "colspan": 19,
+          "rowspan": 1
+        }
+      ],
+      [
+        {
+          "col": "A",
+          "value": "Model\n(Price)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "B",
+          "value": "Description",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "C",
+          "value": "Airflow",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "F",
+          "value": "Noise Reduction (dB)",
+          "colspan": 8,
+          "rowspan": 1
+        },
+        {
+          "col": "N",
+          "value": "Weight & Dimensions",
+          "colspan": 4,
+          "rowspan": 1
+        },
+        {
+          "col": "R",
+          "value": "Insulation",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "S",
+          "value": "Notes/Accessories",
+          "colspan": 1,
+          "rowspan": 2
+        }
+      ],
+      [
+        {
+          "col": "C",
+          "value": "Flow\n(CFM)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "D",
+          "value": "Velocity \n(FPM)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "E",
+          "value": "PD \n(in. w.g.)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "F",
+          "value": "63\nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "G",
+          "value": "125\nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "H",
+          "value": "250 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "I",
+          "value": "500 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "J",
+          "value": "1000 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "K",
+          "value": "2000 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "L",
+          "value": "4000 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "M",
+          "value": "8000 \nHz",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "N",
+          "value": "Width\n(in)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "O",
+          "value": "Height\n(in)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "P",
+          "value": "Length\n(in)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "Q",
+          "value": "Weight\n(lbs)",
+          "colspan": 1,
+          "rowspan": 1
+        }
+      ]
+    ]
+  },
+  "filterColumns": [
+    {
+      "name": "DIMENSIONS",
+      "col": "U"
+    },
+    {
+      "name": "INSULATION",
+      "col": "V"
+    },
+    {
+      "name": "VELOCITY (FPM)",
+      "col": "W"
+    },
+    {
+      "name": "CFM",
+      "col": "X"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "Z",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "AA",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "AB",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "AC",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "AD",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "AE",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AF",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "AG",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "AH",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "AI",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "AJ",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AK",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AL",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AM",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AN",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AO",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AP",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AQ",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "refrigerantColumns": [],
+  "selections": [
+    {
+      "id": "sel_0001",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 245,
+            "D": 250,
+            "E": 0.05,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 250,
+            "CFM": 245
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiberglass - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0002",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 245,
+            "D": 250,
+            "E": 0.05,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 250,
+            "CFM": 245
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiber Free - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0003",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 495,
+            "D": 250,
+            "E": 0.05,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 250,
+            "CFM": 495
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiberglass - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0004",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 495,
+            "D": 250,
+            "E": 0.05,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 250,
+            "CFM": 495
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiber Free - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0005",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 990,
+            "D": 250,
+            "E": 0.05,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 250,
+            "CFM": 990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiberglass - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0006",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 990,
+            "D": 250,
+            "E": 0.05,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 250,
+            "CFM": 990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiber Free - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0007",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1990,
+            "D": 250,
+            "E": 0.05,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 250,
+            "CFM": 1990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiberglass - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0008",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1990,
+            "D": 250,
+            "E": 0.05,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 250,
+            "CFM": 1990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiber Free - 250 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0009",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 147,
+            "D": 150,
+            "E": 0.02,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 150,
+            "CFM": 147
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiberglass - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0010",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 147,
+            "D": 150,
+            "E": 0.02,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 150,
+            "CFM": 147
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiber Free - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0011",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 297,
+            "D": 150,
+            "E": 0.02,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 150,
+            "CFM": 297
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiberglass - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0012",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 297,
+            "D": 150,
+            "E": 0.02,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 150,
+            "CFM": 297
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiber Free - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0013",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 594,
+            "D": 150,
+            "E": 0.02,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 150,
+            "CFM": 594
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiberglass - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0014",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 594,
+            "D": 150,
+            "E": 0.02,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 150,
+            "CFM": 594
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiber Free - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0015",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1194,
+            "D": 150,
+            "E": 0.02,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 150,
+            "CFM": 1194
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiberglass - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0016",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1194,
+            "D": 150,
+            "E": 0.02,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 150,
+            "CFM": 1194
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiber Free - 150 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0017",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 343,
+            "D": 350,
+            "E": 0.11,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 350,
+            "CFM": 343
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiberglass - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0018",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 343,
+            "D": 350,
+            "E": 0.11,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 350,
+            "CFM": 343
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiber Free - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0019",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 693,
+            "D": 350,
+            "E": 0.11,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 350,
+            "CFM": 693
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiberglass - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0020",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 693,
+            "D": 350,
+            "E": 0.11,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 350,
+            "CFM": 693
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiber Free - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0021",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1385,
+            "D": 350,
+            "E": 0.11,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 350,
+            "CFM": 1385
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiberglass - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0022",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1385,
+            "D": 350,
+            "E": 0.11,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 350,
+            "CFM": 1385
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiber Free - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0023",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 2785,
+            "D": 350,
+            "E": 0.11,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 350,
+            "CFM": 2785
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiberglass - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0024",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 2785,
+            "D": 350,
+            "E": 0.11,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 350,
+            "CFM": 2785
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiber Free - 350 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0025",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 490,
+            "D": 500,
+            "E": 0.22,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 500,
+            "CFM": 490
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiberglass - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0026",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 490,
+            "D": 500,
+            "E": 0.22,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 11.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 12",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 500,
+            "CFM": 490
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 12 - Fiber Free - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0027",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 990,
+            "D": 500,
+            "E": 0.22,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 500,
+            "CFM": 990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiberglass - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0028",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 990,
+            "D": 500,
+            "E": 0.22,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 12,
+            "O": 7,
+            "P": 23.75,
+            "Q": 3,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "12 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 500,
+            "CFM": 990
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "12 x 24 - Fiber Free - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0029",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1979,
+            "D": 500,
+            "E": 0.22,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 500,
+            "CFM": 1979
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiberglass - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0030",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 1979,
+            "D": 500,
+            "E": 0.22,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 23.75,
+            "Q": 5,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 24",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 500,
+            "CFM": 1979
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 24 - Fiber Free - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0031",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 3979,
+            "D": 500,
+            "E": 0.22,
+            "F": 8,
+            "G": 10,
+            "H": 11,
+            "I": 12,
+            "J": 20,
+            "K": 20,
+            "L": 22,
+            "M": 25,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiberglass",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiberglass",
+            "VELOCITY (FPM)": 500,
+            "CFM": 3979
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiberglass - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0032",
+      "rows": [
+        {
+          "scheduleData": {
+            "A": "RAC",
+            "B": "Return Air Canopy",
+            "C": 3979,
+            "D": 500,
+            "E": 0.22,
+            "F": 7,
+            "G": 9,
+            "H": 10,
+            "I": 9,
+            "J": 13,
+            "K": 15,
+            "L": 16,
+            "M": 17,
+            "N": 24,
+            "O": 7,
+            "P": 47.75,
+            "Q": 10,
+            "R": "1\" Fiber-Free Foam",
+            "S": "All"
+          },
+          "filterData": {
+            "DIMENSIONS": "24 x 48",
+            "INSULATION": "1\" Fiber-Free Foam",
+            "VELOCITY (FPM)": 500,
+            "CFM": 3979
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "24 x 48 - Fiber Free - 500 FPM",
+            "ENGINEERING MANUAL (SYSTEM)": "Price RAC - Specs",
+            "INSTALLATION MANUAL (SYSTEM)": "Price RAC - IM",
+            "REVIT (SYSTEM)": "Price RAC - Revit"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": [
+      "Performance data is derived from test data in conformance with ASTM-E477-20.",
+      "Price Silencers are tested in our NVLAP-Accredited Sound Lab; NVLAP Lab Code: 200874-0",
+      "Price silencers consist of ASTM A653 / A653M steel casings and perforated liners.",
+      "Price silencer material has flame spread classification < 25 and smoke development rating < 50 when tested in accordance with ASTM E84, UL723 and NFPA255.",
+      "Material Options: Galvanized Steel, Galvanneal, 304 Stainless Steel, Aluminum",
+      "Finish Options: Mill Finish, Black Powder Coat"
+    ]
+  },
+  "_meta": {
+    "sourceFile": "Price RAC (Return Air Canopy) DATA.xlsx",
+    "generatedAt": "2026-09-30T11:17:42",
+    "dataRowCount": 32,
+    "selectionCount": 32
+  }
+}

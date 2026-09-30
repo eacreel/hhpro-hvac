@@ -267,6 +267,25 @@
             ]
         },
         {
+            // Price RAC return air canopies (added 2026-09-30). The
+            // display name is also the product's row name on the Users
+            // Permissions tab.
+            productKey: 'rac',
+            displayName: 'Price RAC (Return Air Canopy)',
+            jsonFile: 'DATA/JSON/rac.json',
+            pictureFile: 'DATA/PICTURES/Price RAC Photo.jpg',
+            assetsFolder: 'ASSETS/Price RAC (Return Air Canopy)',
+            tileClass: 'tile-rac',
+            // Notes work like the VFDs: every row's Notes/Accessories
+            // column (S) cites the fixed SCHEDULE NOTES list ("All"), so
+            // the list can't be edited, the free-text Accessories column
+            // is not added, and S is hidden while browsing.
+            scheduleNotesReadOnly: true,
+            hiddenSelectionColumns: ['S'],
+            hideAccessoriesColumn: true,
+            autoTagPrefix: 'RAC-'
+        },
+        {
             productKey: 'gps',
             displayName: 'GPS Bipolar Ionization',
             // Short label used in export filenames (productTabLabel).
