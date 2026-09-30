@@ -255,8 +255,10 @@
             modelGallery: [
                 { model: '510/520/610/620/710/720', label: '500/600/700',     desc: 'Louvered Supply Grille',       picture: 'DATA/PICTURES/Price 500-600-700 (Black).jpg' },
                 { model: '910/920',                 label: '900 GYM',         desc: 'Heavy Duty Gym Supply Grille', picture: 'DATA/PICTURES/Price 900 (Black).jpg' },
-                { model: 'LBP/LBPH',                label: 'LINEAR BAR',      desc: 'Linear Bar Grille',            picture: 'DATA/PICTURES/Price LBP (Black).jpg' },
-                { model: 'LBMH',                    label: 'LINEAR BAR HD',   desc: 'Heavy Duty Linear Bar Grille', picture: 'DATA/PICTURES/Price LBMH (Black).jpg' },
+                // One card for both linear bar models: LBMH's DESCRIPTION
+                // filter value is "LINEAR BAR GRILLE" too, and the CORE
+                // TYPE filter picks pressed core vs heavy duty.
+                { model: 'LBP/LBPH',                label: 'LINEAR BAR',      desc: 'Pressed Core or Heavy Duty',   picture: 'DATA/PICTURES/Price LBP (Black).jpg' },
                 { model: '510Z/610Z/710Z',          label: '500/600/700 RTN', desc: 'Louvered Return Grille',       picture: 'DATA/PICTURES/Price 500-600-700 Return (Black).jpg' },
                 { model: '80/81/82',                label: 'EGG CRATE',       desc: 'Egg Crate Return Grille',      picture: 'DATA/PICTURES/Price Egg Crate (Black).jpg' },
                 { model: '10/10FF',                 label: 'PERFORATED',      desc: 'Perforated Return Grille',     picture: 'DATA/PICTURES/Price Perforated Return (Black).jpg' },
