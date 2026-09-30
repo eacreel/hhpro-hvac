@@ -121,6 +121,7 @@
     }
 
     function showTab(key) {
+        closeFilterMenu();
         Object.keys(els.tabs).forEach(function (k) {
             els.tabs[k].classList.toggle('users-tab-active', k === key);
             els.tabs[k].setAttribute('aria-selected', k === key ? 'true' : 'false');
@@ -235,8 +236,11 @@
         { key: 'createdAt', label: 'Date added', get: function (u) { return shortDate(u.createdAt); } }
     ];
 
-    // Column filters chosen in the dropdown row under the headers.
+    // Column filters chosen in the dropdown row under the headers:
+    // column key -> the values ticked. No entry means All. A row shows
+    // when it matches any ticked value in every filtered column.
     var filters = {};
+    var openFilter = null;   // { key, menu } while a filter dropdown is open
 
     function shortDate(iso) {
         if (!iso) return '';
@@ -258,7 +262,7 @@
 
     function filterMatches(u, key, wanted) {
         var v = filterValue(u, key);
-        return Array.isArray(v) ? v.indexOf(wanted) !== -1 : v === wanted;
+        return (Array.isArray(v) ? v : [v]).some(function (x) { return wanted.indexOf(x) !== -1; });
     }
 
     /** Distinct choices for a column's dropdown, from every user (not just the visible ones). */
@@ -282,8 +286,167 @@
     }
 
     function activeFilterKeys() {
-        return Object.keys(filters).filter(function (k) { return filters[k]; });
+        return Object.keys(filters).filter(function (k) { return filters[k] && filters[k].length; });
     }
+
+    /** The button in the filter row: All, or the ticked values. Opens the checkbox list. */
+    function filterButton(col) {
+        var picked = filters[col.key] || [];
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'users-filter' + (picked.length ? ' users-filter-active' : '');
+        btn.id = 'users-filter-' + col.key;
+        btn.setAttribute('aria-label', 'Filter by ' + col.label.toLowerCase());
+        btn.setAttribute('aria-haspopup', 'true');
+        btn.setAttribute('aria-expanded', openFilter && openFilter.key === col.key ? 'true' : 'false');
+        var text = picked.length ? picked.join(', ') : 'All';
+        if (picked.length) btn.title = text;
+        // As wide as the longest choice, like the <select> it replaced;
+        // a longer list of ticked values is cut short with "...".
+        var sizer = document.createElement('span');
+        sizer.className = 'users-filter-sizer';
+        sizer.setAttribute('aria-hidden', 'true');
+        sizer.textContent = filterChoices(col.key).reduce(function (a, b) { return b.length > a.length ? b : a; }, 'All');
+        var label = document.createElement('span');
+        label.className = 'users-filter-label';
+        label.textContent = text;
+        btn.appendChild(sizer);
+        btn.appendChild(label);
+        btn.addEventListener('click', function () {
+            if (openFilter && openFilter.key === col.key) closeFilterMenu();
+            else openFilterMenu(col);
+        });
+        return btn;
+    }
+
+    /**
+     * The checkbox list under a filter button. It lives on <body> so the
+     * table's scroll box cannot clip it, and stays open while boxes are
+     * ticked: each change redraws the table behind it.
+     */
+    function openFilterMenu(col) {
+        closeFilterMenu();
+        var key = col.key;
+        var choices = filterChoices(key);
+        var menu = document.createElement('div');
+        menu.className = 'users-filter-menu';
+        menu.setAttribute('role', 'group');
+        menu.setAttribute('aria-label', 'Filter by ' + col.label.toLowerCase());
+
+        var find = null;
+        if (choices.length > 12) {
+            find = document.createElement('input');
+            find.type = 'search';
+            find.className = 'users-filter-find';
+            find.placeholder = 'Find...';
+            find.setAttribute('aria-label', 'Find in the ' + col.label.toLowerCase() + ' list');
+            menu.appendChild(find);
+        }
+        var list = document.createElement('div');
+        list.className = 'users-filter-list';
+        menu.appendChild(list);
+
+        function option(text, extraClass) {
+            var label = document.createElement('label');
+            label.className = 'users-check users-filter-option' + (extraClass ? ' ' + extraClass : '');
+            var box = document.createElement('input');
+            box.type = 'checkbox';
+            box.value = text;
+            label.appendChild(box);
+            var span = document.createElement('span');
+            span.textContent = text;
+            label.appendChild(span);
+            list.appendChild(label);
+            return box;
+        }
+        var allBox = option('All', 'users-filter-all');
+        var boxes = choices.map(function (v) { return option(v); });
+
+        function sync() {
+            var picked = filters[key] || [];
+            allBox.checked = !picked.length;
+            boxes.forEach(function (b) { b.checked = picked.indexOf(b.value) !== -1; });
+        }
+        sync();
+
+        allBox.addEventListener('change', function () {
+            delete filters[key];
+            sync();
+            drawTable();
+        });
+        boxes.forEach(function (b) {
+            b.addEventListener('change', function () {
+                var picked = boxes.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
+                // Ticking every choice is the same as All.
+                if (!picked.length || picked.length === choices.length) delete filters[key];
+                else filters[key] = picked;
+                sync();
+                drawTable();
+            });
+        });
+        if (find) {
+            find.addEventListener('input', function () {
+                var q = find.value.trim().toLowerCase();
+                boxes.forEach(function (b) {
+                    b.parentNode.hidden = !!q && b.value.toLowerCase().indexOf(q) === -1;
+                });
+            });
+        }
+        // Tabbing out of the list closes it.
+        menu.addEventListener('focusout', function (e) {
+            if (e.relatedTarget && !menu.contains(e.relatedTarget)) closeFilterMenu();
+        });
+
+        document.body.appendChild(menu);
+        openFilter = { key: key, menu: menu };
+        var anchor = document.getElementById('users-filter-' + key);
+        if (anchor) anchor.setAttribute('aria-expanded', 'true');
+        placeFilterMenu();
+        (find || allBox).focus();
+    }
+
+    /** Line the open list up under its button (or above it near the bottom of the window). */
+    function placeFilterMenu() {
+        if (!openFilter) return;
+        var anchor = document.getElementById('users-filter-' + openFilter.key);
+        var r = anchor && anchor.getBoundingClientRect();
+        if (!r || r.bottom < 0 || r.top > window.innerHeight) { closeFilterMenu(); return; }
+        var menu = openFilter.menu;
+        menu.style.minWidth = Math.max(r.width, 180) + 'px';
+        var below = window.innerHeight - r.bottom - 12;
+        var above = r.top - 12;
+        var up = below < 220 && above > below;
+        menu.style.maxHeight = Math.max(160, Math.min(380, up ? above : below)) + 'px';
+        menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+        menu.style.top = up ? '' : (r.bottom + 4) + 'px';
+        menu.style.bottom = up ? (window.innerHeight - r.top + 4) + 'px' : '';
+    }
+
+    function closeFilterMenu(returnFocus) {
+        if (!openFilter) return;
+        var key = openFilter.key;
+        openFilter.menu.remove();
+        openFilter = null;
+        var anchor = document.getElementById('users-filter-' + key);
+        if (anchor) {
+            anchor.setAttribute('aria-expanded', 'false');
+            if (returnFocus) anchor.focus();
+        }
+    }
+
+    document.addEventListener('mousedown', function (e) {
+        if (!openFilter || openFilter.menu.contains(e.target)) return;
+        var anchor = document.getElementById('users-filter-' + openFilter.key);
+        if (anchor && anchor.contains(e.target)) return;   // its own click toggles it
+        closeFilterMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (openFilter && e.key === 'Escape') closeFilterMenu(true);
+    });
+    document.addEventListener('scroll', function (e) {
+        if (openFilter && !openFilter.menu.contains(e.target)) placeFilterMenu();
+    }, true);
+    window.addEventListener('resize', function () { closeFilterMenu(); });
 
     function visibleUsers() {
         var q = query.trim().toLowerCase();
@@ -348,33 +511,13 @@
         hr.appendChild(thActions);
         thead.appendChild(hr);
 
-        // Filter row: one dropdown per column. Choices come from the
-        // whole list so a filter can always be widened again.
+        // Filter row: one checkbox dropdown per column. Choices come from
+        // the whole list so a filter can always be widened again.
         var fr = document.createElement('tr');
         fr.className = 'users-filter-row';
         COLUMNS.forEach(function (col) {
             var td = document.createElement('th');
-            var sel = document.createElement('select');
-            sel.className = 'users-filter';
-            sel.id = 'users-filter-' + col.key;
-            sel.setAttribute('aria-label', 'Filter by ' + col.label.toLowerCase());
-            var all = document.createElement('option');
-            all.value = '';
-            all.textContent = 'All';
-            sel.appendChild(all);
-            filterChoices(col.key).forEach(function (v) {
-                var opt = document.createElement('option');
-                opt.value = v;
-                opt.textContent = v;
-                sel.appendChild(opt);
-            });
-            sel.value = filters[col.key] || '';
-            if (sel.value) sel.classList.add('users-filter-active');
-            sel.addEventListener('change', function () {
-                filters[col.key] = sel.value;
-                drawTable();
-            });
-            td.appendChild(sel);
+            td.appendChild(filterButton(col));
             fr.appendChild(td);
         });
         var clearTd = document.createElement('th');
@@ -386,6 +529,7 @@
             clearBtn.textContent = 'Clear filters';
             clearBtn.addEventListener('click', function () {
                 filters = {};
+                closeFilterMenu();
                 drawTable();
             });
             clearTd.appendChild(clearBtn);
