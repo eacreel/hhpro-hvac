@@ -27,16 +27,19 @@
     window.HHpro = window.HHpro || {};
     HHpro.Views = HHpro.Views || {};
 
-    var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
+    // Admiral, Captain and Redshirt First Class are Super Admin under
+    // another name (SUPER_ADMIN_LEVELS in SERVER/lib/db.js).
+    var SUPER_ADMIN_LEVELS = ['Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
+    var LEVEL_ORDER = SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer']);
     // Email domains each Hoffman level is limited to (the server enforces
     // the same list, LEVEL_DOMAINS in SERVER/routes/users.js). Hoffman
     // Hydronics staff may be Hoffman users, never administrators.
     var HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
     var LEVEL_DOMAINS = {
-        'Super Admin': [HOFFMAN_DOMAIN],
         'Admin': [HOFFMAN_DOMAIN],
         'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
     };
+    SUPER_ADMIN_LEVELS.forEach(function (level) { LEVEL_DOMAINS[level] = [HOFFMAN_DOMAIN]; });
 
     /** '' when the address may hold the level, else the reason it may not. */
     function levelDomainProblem(email, level) {
@@ -443,7 +446,7 @@
         } else {
             var lock = document.createElement('span');
             lock.className = 'users-td-muted';
-            lock.textContent = u.userLevel === 'Super Admin' ? '—' : 'Added by someone else';
+            lock.textContent = SUPER_ADMIN_LEVELS.indexOf(u.userLevel) !== -1 ? '—' : 'Added by someone else';
             actions.appendChild(lock);
         }
         tr.appendChild(actions);

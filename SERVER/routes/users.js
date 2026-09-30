@@ -58,10 +58,10 @@ const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufac
 // take any address. Mirrors LEVEL_DOMAINS in JS/users.js.
 const HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
 const LEVEL_DOMAINS = {
-    'Super Admin': [HOFFMAN_DOMAIN],
     'Admin': [HOFFMAN_DOMAIN],
     'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
 };
+db.SUPER_ADMIN_LEVELS.forEach((level) => { LEVEL_DOMAINS[level] = [HOFFMAN_DOMAIN]; });
 
 function emailAllowedForLevel(email, level) {
     const domains = LEVEL_DOMAINS[level];
@@ -91,12 +91,12 @@ function similarCompanies(name) {
 }
 
 function assignableLevels(actor) {
-    return actor.user_level === 'Super Admin' ? db.USER_LEVELS.slice() : ADMIN_ASSIGNABLE.slice();
+    return db.isSuperAdminLevel(actor.user_level) ? db.USER_LEVELS.slice() : ADMIN_ASSIGNABLE.slice();
 }
 
 function canManage(actor, target) {
-    if (actor.user_level === 'Super Admin') return true;
-    if (target.user_level === 'Super Admin') return false;
+    if (db.isSuperAdminLevel(actor.user_level)) return true;
+    if (db.isSuperAdminLevel(target.user_level)) return false;
     return db.normalizeEmail(target.created_by) === actor.email;
 }
 
@@ -240,7 +240,7 @@ router.get('/status', (req, res) => {
 // ---- companies -----------------------------------------------------
 
 router.get('/companies', (req, res) => {
-    res.json({ companies: db.listCompaniesWithCounts(), canEdit: req.user.user_level === 'Super Admin' });
+    res.json({ companies: db.listCompaniesWithCounts(), canEdit: db.isSuperAdminLevel(req.user.user_level) });
 });
 
 router.post('/companies', (req, res) => {
@@ -265,7 +265,7 @@ router.post('/companies', (req, res) => {
 });
 
 function requireSuperAdmin(req, res) {
-    if (req.user.user_level !== 'Super Admin') {
+    if (!db.isSuperAdminLevel(req.user.user_level)) {
         res.status(403).json({ error: 'Only a Super Admin can change the company list.' });
         return false;
     }

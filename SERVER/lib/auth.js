@@ -193,7 +193,7 @@ function requireUser(req, res, next) {
 }
 
 function isAdminLevel(level) {
-    return level === 'Super Admin' || level === 'Admin';
+    return db.isSuperAdminLevel(level) || level === 'Admin';
 }
 
 // Levels that see only the Calculators: no products, Projects or

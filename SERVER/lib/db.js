@@ -20,8 +20,16 @@ const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const config = require('./config');
 
-const USER_LEVELS = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
+// Admiral, Captain and Redshirt First Class are Super Admin under
+// another name (for the CEO, President and VP). Every Super Admin
+// check goes through isSuperAdminLevel so they get the same rights.
+const SUPER_ADMIN_LEVELS = ['Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
+const USER_LEVELS = SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer']);
 const USER_STATUSES = ['invited', 'active'];
+
+function isSuperAdminLevel(level) {
+    return SUPER_ADMIN_LEVELS.includes(level);
+}
 
 // Every migration runs once, in order, tracked in schema_version.
 const MIGRATIONS = [
@@ -321,6 +329,8 @@ module.exports = {
     normalizeLocations,
     locationsOf,
     USER_LEVELS,
+    SUPER_ADMIN_LEVELS,
+    isSuperAdminLevel,
     USER_STATUSES,
     listUsers,
     countUsers,
