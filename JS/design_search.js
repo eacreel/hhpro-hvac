@@ -1554,7 +1554,7 @@
             return HHpro.GasPackCapacity.EFFICIENCY_LABELS[r.efficiency] || r.efficiency;
         } },
         { label: 'Volt/PH', get: function (r) { return r.voltage; } },
-        { label: 'Motor', get: function (r) { return r.motorLabel; } },
+        { label: 'Motor', get: function (r) { return r.motorLabel; }, motorHelp: true },
         { label: 'HGRH', get: function (r) { return r.hgrh; }, only: 'GAS' },
         // A dropdown of the unit's published airflows (see buildAirflowSelect).
         { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling',
@@ -1934,6 +1934,16 @@
                         ? 'Daikin’s published MOP for this unit is misprinted; ' +
                           'confirm with Daikin (see the Notes sheet of the capacity workbook).'
                         : '';
+                    // Static pressure / airflow range of each drive.
+                    if (c.col.motorHelp && HHpro.GasPackAirflow) {
+                        c.td.appendChild(HHpro.GasPackAirflow.helpButton({
+                            cabinet: r.cabinet,
+                            motor: r.motor,
+                            heatSize: r.heat ? r.heat.size : null,
+                            kitKw: r.kitKw || 0,
+                            productPage: false
+                        }));
+                    }
                 });
                 actionsTd.innerHTML = '';
                 actionsTd.appendChild(buildGasPackActions(r));

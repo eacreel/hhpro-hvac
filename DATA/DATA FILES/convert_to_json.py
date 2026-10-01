@@ -768,8 +768,15 @@ def convert_gas_pack_capacity(input_path, output_path):
             "hpHeat": {"basis": "DB",                        # DVH: "WB"
                        "axes": {"eatDb":[70], "oa":[-5,...,65], "airflow":[1220]},
                        "points": {"<eatDb>|<oa>|<airflow>": [BTU/h, rise, kW, COP]}},
-            "electrical": {"208/3": {"D": {..., "kits": {"0": {...}, "5": {...}}}}}
+            "electrical": {"208/3": {"D": {..., "kits": {"0": {...}, "5": {...}}}}},
+            "airflow": {"source": "SS-DSH3-R32",              # Airflow sheets
+                        "ranges": {"D|": {"espMin": 0.1, "espMax": 0.8,
+                                          "cfmMin": 900, "cfmMax": 1500,
+                                          "cfmAtEspMax": 1180, "heatMin": None,
+                                          "heatMax": None}, "W|": {...}},
+                        "eheat": {"D|5": {"min": 1325, "max": 1500}}}  # motor|kit kW
           }, ...
+        Airflow range keys are motor|gas heat size (empty for heat pumps).
         }
       }
     Capacities are BTU/h (the workbook is MBh) to match the schedule columns.
@@ -964,6 +971,57 @@ def convert_gas_pack_capacity(input_path, output_path):
             if hp is None:
                 no_hp.append(model)
 
+    # ----- Airflow -------------------------------------------------------
+    # "Airflow": one row per cabinet + drive (+ gas heat size), condensed
+    # from the engineering manuals' downflow fan tables (see the Notes
+    # sheet for the rules), and "Airflow - Electric Heat": the minimum
+    # airflow per heat pump drive + heater kit. They feed the "?" beside
+    # ESP on the product page and beside Motor in Design Search.
+    airflow_rows = 0
+    if "Airflow" in wb.sheetnames:
+        ws = wb["Airflow"]
+        h = _gp_headers(ws)
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            model = row[h["Model"] - 1]
+            if not model or not _gp_known(model):
+                continue
+            motor = str(row[h["Motor"] - 1] or "").strip()[:1]
+            size = row[h["Gas Heat"] - 1] or ""
+            entry = cab(str(model).strip())
+            af = entry.setdefault("airflow", {"source": None, "ranges": {}, "eheat": {}})
+            af["source"] = af["source"] or row[h["Manual"] - 1]
+
+            def val(label):
+                v = row[h[label] - 1]
+                return _gp_trim(float(v)) if isinstance(v, (int, float)) else None
+
+            af["ranges"][f"{motor}|{size}"] = {
+                "espMin": val("ESP Min (in. w.c.)"),
+                "espMax": val("ESP Max (in. w.c.)"),
+                "cfmMin": val("CFM Min"),
+                "cfmMax": val("CFM Max"),
+                "cfmAtEspMax": val("Max CFM at ESP Max"),
+                "heatMin": val("Gas Heat Min CFM"),
+                "heatMax": val("Gas Heat Max CFM"),
+            }
+            airflow_rows += 1
+    if "Airflow - Electric Heat" in wb.sheetnames:
+        ws = wb["Airflow - Electric Heat"]
+        h = _gp_headers(ws)
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            model = row[h["Model"] - 1]
+            kw = row[h["Electric Heat kW"] - 1]
+            lo, hi = row[h["Min CFM"] - 1], row[h["Max CFM"] - 1]
+            if not model or not _gp_known(model) or not isinstance(kw, (int, float)):
+                continue
+            motor = str(row[h["Motor"] - 1] or "").strip()[:1]
+            entry = cab(str(model).strip())
+            af = entry.setdefault("airflow", {"source": None, "ranges": {}, "eheat": {}})
+            af["eheat"][f"{motor}|{_num_key(_gp_trim(float(kw)))}"] = {
+                "min": _gp_trim(float(lo)) if isinstance(lo, (int, float)) else None,
+                "max": _gp_trim(float(hi)) if isinstance(hi, (int, float)) else None,
+            }
+
     # ----- Finalise ------------------------------------------------------
     no_cooling = []
     for name, entry in cabinets.items():
@@ -1018,6 +1076,9 @@ def convert_gas_pack_capacity(input_path, output_path):
           f"({cool_n} cooling points, {low_n} low-stage, "
           f"{sum(len(e['heat']) for e in cabinets.values())} gas heat sizes, "
           f"{hp_n} heat pump heating points)")
+    if airflow_rows:
+        n_eheat = sum(len(e["airflow"]["eheat"]) for e in cabinets.values() if "airflow" in e)
+        print(f"     ({airflow_rows} airflow ranges, {n_eheat} electric heat kit limits)")
     if skipped_cells:
         print(f"     ({skipped_cells} cooling row(s) skipped - blank/misprinted "
               f"in the source spec sheet)")

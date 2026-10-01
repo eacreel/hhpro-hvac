@@ -909,6 +909,116 @@
     white-space: nowrap;
 }
 
+/* LC RTU airflow "?" (product page ESP cell, Design Search Motor cell)
+   and its popup: static pressure + airflow range per drive. */
+.gp-airflow-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    padding: 0;
+    vertical-align: middle;
+    border-radius: 50%;
+    border: 1px solid var(--color-border-strong);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.gp-airflow-help:hover,
+.gp-airflow-help:focus-visible {
+    color: var(--color-text-inverse);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    outline: none;
+}
+
+.gp-airflow-pop {
+    position: fixed;
+    z-index: 1200;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    font-size: var(--font-size-xs);
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+}
+
+.gp-airflow-pop[hidden] {
+    display: none;
+}
+
+.gp-airflow-title {
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+}
+
+.gp-airflow-motor {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    border-left: 2px solid var(--color-border-strong);
+}
+
+.gp-airflow-motor.is-current {
+    border-left-color: var(--color-primary-light);
+}
+
+.gp-airflow-motor-name {
+    font-weight: 600;
+}
+
+.gp-airflow-tag {
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.gp-airflow-sub {
+    color: var(--color-text-muted);
+}
+
+.gp-airflow-note {
+    margin-top: var(--space-xs);
+}
+
+.gp-airflow-warn {
+    margin-top: var(--space-xs);
+    padding: 4px 8px;
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+}
+
+.gp-airflow-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-primary-light);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.gp-airflow-source {
+    margin-top: var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 10px;
+}
+
 /* ============================================================
    GPS (Bipolar Ionization) - product-type gallery + notes
    ------------------------------------------------------------

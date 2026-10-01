@@ -22,6 +22,13 @@
          formatting. Applied identically on the browse schedule,
          the project view schedule, and the XLSX/PDF export so the
          displayed value is consistent everywhere.
+     decorateScheduleCell(td, colLetter, ctx)
+         Browse page only: called after a value cell is painted (and
+         again on every repaint) to add something beside the value,
+         e.g. the LC RTU airflow "?" in the ESP cell. ctx = { data,
+         selection, overrides }, overrides = the design values laid
+         over the row ({} when none). The project view and the
+         exports never call it.
 
    Filter behavior:
      - Cascading dropdowns: each dropdown's options reflect what's
@@ -1155,6 +1162,7 @@
                         gpCells[colLetter] = td;
                     }
                     td.textContent = formatCellValue(value, colLetter, product && product.productKey);
+                    if (rowIndex === 0) decorateCell(product, td, colLetter, data, sel, gpOv || {});
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
                     tr.appendChild(td);
@@ -1177,11 +1185,21 @@
                     td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
                         product && product.productKey);
                     td.classList.toggle('gp-design-cell', useDesign);
+                    decorateCell(product, td, L, data, sel, ov);
                 });
             }
         });
 
         return tbody;
+    }
+
+    // Browse-page decoration of a painted value cell (decorateScheduleCell,
+    // see the header). Never used by the project view or the exports.
+    function decorateCell(product, td, colLetter, data, sel, overrides) {
+        var key = product && product.productKey;
+        var ext = key && HHpro.ProductExtensions && HHpro.ProductExtensions[key];
+        if (!ext || typeof ext.decorateScheduleCell !== 'function') return;
+        ext.decorateScheduleCell(td, colLetter, { data: data, selection: sel, overrides: overrides || {} });
     }
 
     /**
@@ -1503,6 +1521,7 @@
                 td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
                     product && product.productKey);
                 td.classList.toggle('gp-design-cell', useDesign);
+                decorateCell(product, td, L, data, getCurrentSel(), ov);
             });
         }
 

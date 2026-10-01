@@ -821,6 +821,49 @@
     }
 
     // -----------------------------------------------------------------
+    // Airflow ranges (the "?" on the product page and Design Search)
+    // -----------------------------------------------------------------
+    // cab.airflow comes from the workbook's Airflow sheets:
+    //   { source: 'SS-DSG3-R32',
+    //     ranges: { 'D|Medium': { espMin, espMax, cfmMin, cfmMax,
+    //                             cfmAtEspMax, heatMin, heatMax }, 'W|': {...} },
+    //     eheat: { 'D|10': { min: 1325, max: 1500 }, ... } }
+    // Range keys are motor|gas heat size; heat pumps use an empty size.
+    // heatMin / heatMax are the gas burner's airflow limits (gas only).
+
+    /** { tons, source } for a cabinet with airflow data, else null. */
+    function airflowInfo(cabinet) {
+        var cab = cabinets()[cabinet];
+        if (!cab || !cab.airflow) return null;
+        return { tons: cab.tons, source: cab.airflow.source };
+    }
+
+    function airflowFor(cabinet, motor, heatSize) {
+        var cab = cabinets()[cabinet];
+        var ranges = cab && cab.airflow && cab.airflow.ranges;
+        if (!ranges) return null;
+        return ranges[motor + '|' + (heatSize || '')] || null;
+    }
+
+    /** Airflow the unit's heat needs, { min, max } (either may be null):
+     *  for its gas burner (heatSize) or its electric heat kit (kitKw).
+     *  null when nothing is published or the unit has no heat. */
+    function airflowHeat(cabinet, motor, heatSize, kitKw) {
+        var r;
+        if (heatSize) {
+            r = airflowFor(cabinet, motor, heatSize);
+            if (!r || (r.heatMin == null && r.heatMax == null)) return null;
+            return { min: r.heatMin, max: r.heatMax };
+        }
+        if (!kitKw) return null;
+        var cab = cabinets()[cabinet];
+        var map = cab && cab.airflow && cab.airflow.eheat;
+        r = map ? map[motor + '|' + kitKw] : null;
+        if (!r || (r.min == null && r.max == null)) return null;
+        return { min: r.min, max: r.max };
+    }
+
+    // -----------------------------------------------------------------
     // Public API
     // -----------------------------------------------------------------
     HHpro.GasPackCapacity = {
@@ -842,6 +885,9 @@
         nominalAirflow: nominalAirflow,
         atAirflow: atAirflow,
         search: search,
+        airflowInfo: airflowInfo,
+        airflowFor: airflowFor,
+        airflowHeat: airflowHeat,
         MOTOR_LABELS: MOTOR_LABELS,
         HEAT_LETTERS: HEAT_LETTERS,
         TYPE_LABELS: TYPE_LABELS,

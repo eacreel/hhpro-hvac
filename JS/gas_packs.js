@@ -53,7 +53,27 @@
             return undefined;
         },
         // Run once on the freshly loaded JSON (HHpro.Data postProcess).
-        prepareData: function (data) { fillTempRise(data); }
+        prepareData: function (data) { fillTempRise(data); },
+        // Product page only: the airflow "?" beside each row's ESP.
+        decorateScheduleCell: function (td, colLetter, ctx) {
+            var cols = resolveColumns(ctx.data);
+            if (!cols.esp || colLetter !== cols.esp) return;
+            var sd = (ctx.selection && ctx.selection.rows && ctx.selection.rows[0] &&
+                      ctx.selection.rows[0].scheduleData) || {};
+            // A row on design values may show a high-static model.
+            var model = (cols.model && ctx.overrides[cols.model] != null)
+                ? ctx.overrides[cols.model] : sd[cols.model];
+            var parts = HHpro.GasPackCapacity && HHpro.GasPackCapacity.parseModel(model);
+            if (!parts) return;
+            var kw = cols.auxKw ? parseFloat(sd[cols.auxKw]) : NaN;
+            td.appendChild(HHpro.GasPackAirflow.helpButton({
+                cabinet: parts.cabinet,
+                motor: parts.motor,
+                heatSize: parts.heat,
+                kitKw: isFinite(kw) ? kw : 0,
+                productPage: true
+            }));
+        }
     };
 
     var PRODUCT = 'gas_packs';
@@ -67,6 +87,7 @@
         model: 'MODEL NUMBER',        // "Model Number (Daikin)"; normalise drops the (...)
         tons: 'NOMINAL TONS',
         cfm: 'CFM',
+        esp: 'ESP',                   // "ESP (IWG)"
         total: 'TOTAL CAPACITY (BTU/h)',
         sensible: 'SENSIBLE CAPACITY (BTU/h)',
         edb: 'EDB',
@@ -703,4 +724,183 @@
             return o * 1000 / (AIR_CONST * c);
         }
     };
+
+    // -----------------------------------------------------------------
+    // Airflow "?" (product page ESP cell, Design Search Motor cell)
+    // -----------------------------------------------------------------
+    // The external static and airflow each drive can handle, read from
+    // the Airflow sheet of the capacity workbook (Daikin's downflow fan
+    // tables plus its published airflow limits) via
+    // GasPackCapacity.airflowFor. The product page lists Standard Static
+    // units only, so there the popup also points to Design Search for
+    // High Static. Not shown on the project schedule or any export.
+    var MOTORS = [{ key: 'D', label: 'Standard Static' }, { key: 'W', label: 'High Static' }];
+
+    var pop = null, pinned = null;
+
+    function ensurePop() {
+        if (pop) return pop;
+        pop = document.createElement('div');
+        pop.className = 'gp-airflow-pop';
+        pop.hidden = true;
+        document.body.appendChild(pop);
+        document.addEventListener('click', function (e) {
+            if (!pinned) return;
+            if (e.target === pinned || pop.contains(e.target)) return;
+            closePop();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closePop();
+        });
+        // A fixed popup would float away from its row on scroll.
+        window.addEventListener('scroll', closePop, true);
+        return pop;
+    }
+
+    function closePop() {
+        pinned = null;
+        if (pop) pop.hidden = true;
+    }
+
+    function fmtCfm(v) { return Math.round(v).toLocaleString(); }
+    // 0.1, 0.12, 0.8, 2.0 - at least one decimal, as the manuals print ESP.
+    function fmtEsp(v) { return Number(v).toFixed(2).replace(/(\.\d)0$/, '$1'); }
+
+    function line(parent, cls, text) {
+        var el = document.createElement('div');
+        el.className = cls;
+        el.textContent = text;
+        parent.appendChild(el);
+        return el;
+    }
+
+    function fillPop(el, ctx) {
+        var G = HHpro.GasPackCapacity;
+        el.innerHTML = '';
+        var info = G.airflowInfo ? G.airflowInfo(ctx.cabinet) : null;
+        if (!info) {
+            line(el, 'gp-airflow-note', 'No published airflow data for ' + ctx.cabinet + '.');
+            return;
+        }
+        var head = ctx.cabinet + ' · ' + info.tons + ' ton' +
+            (ctx.heatSize ? ' · ' + ctx.heatSize + ' gas heat' : '');
+        line(el, 'gp-airflow-title', head);
+
+        MOTORS.forEach(function (m) {
+            var r = G.airflowFor(ctx.cabinet, m.key, ctx.heatSize);
+            var box = document.createElement('div');
+            box.className = 'gp-airflow-motor' + (m.key === ctx.motor ? ' is-current' : '');
+            var name = line(box, 'gp-airflow-motor-name', m.label);
+            if (m.key === ctx.motor) {
+                var tag = document.createElement('span');
+                tag.className = 'gp-airflow-tag';
+                tag.textContent = 'this unit';
+                name.appendChild(tag);
+            }
+            if (!r) {
+                line(box, 'gp-airflow-row', 'No published fan table.');
+            } else {
+                line(box, 'gp-airflow-row', 'ESP: ' + fmtEsp(r.espMin) + ' – ' + fmtEsp(r.espMax) + ' in. w.c.');
+                line(box, 'gp-airflow-row', 'Airflow: ' + fmtCfm(r.cfmMin) + ' – ' + fmtCfm(r.cfmMax) + ' CFM');
+                if (r.cfmAtEspMax != null && r.cfmAtEspMax < r.cfmMax) {
+                    line(box, 'gp-airflow-row gp-airflow-sub',
+                        'At ' + fmtEsp(r.espMax) + ' in.: up to ' + fmtCfm(r.cfmAtEspMax) + ' CFM');
+                }
+            }
+            el.appendChild(box);
+        });
+
+        // Heating limits: per gas heat size, or per electric heat kit.
+        var heat = G.airflowHeat ? G.airflowHeat(ctx.cabinet, ctx.motor, ctx.heatSize, ctx.kitKw) : null;
+        if (heat) {
+            var burner = ctx.heatSize && ((G.cabinets()[ctx.cabinet] || {}).heat || [])
+                .filter(function (h) { return h.size === ctx.heatSize; })[0];
+            var what = ctx.heatSize
+                ? ctx.heatSize + ' gas heat' + (burner ? ' (' + burner.inputHigh + ' MBH)' : '')
+                : ctx.kitKw + ' kW electric heat';
+            line(el, 'gp-airflow-note', (heat.min != null && heat.max != null)
+                ? what + ': ' + fmtCfm(heat.min) + ' – ' + fmtCfm(heat.max) + ' CFM.'
+                : (heat.min != null
+                    ? what + ' needs at least ' + fmtCfm(heat.min) + ' CFM.'
+                    : what + ': at most ' + fmtCfm(heat.max) + ' CFM.'));
+        }
+
+        if (ctx.productPage && ctx.motor === 'D') {
+            var warn = document.createElement('div');
+            warn.className = 'gp-airflow-warn';
+            warn.appendChild(document.createTextNode(
+                'The units on this page are Standard Static. If you need High Static, select the unit in '));
+            var link = document.createElement('button');
+            link.type = 'button';
+            link.className = 'gp-airflow-link';
+            link.textContent = 'Design Search';
+            link.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closePop();
+                if (HHpro.App && typeof HHpro.App.showView === 'function') {
+                    HHpro.App.showView('design_search', { productKey: PRODUCT });
+                }
+            });
+            warn.appendChild(link);
+            warn.appendChild(document.createTextNode('.'));
+            el.appendChild(warn);
+        }
+
+        line(el, 'gp-airflow-source', 'Daikin ' + info.source +
+            ' airflow tables (downflow) and published airflow limits.');
+    }
+
+    function placePop(btn) {
+        var r = btn.getBoundingClientRect();
+        var w = Math.min(320, window.innerWidth - 24);
+        pop.style.width = w + 'px';
+        var left = Math.min(r.left, window.innerWidth - w - 12);
+        var top = r.bottom + 6;
+        pop.style.left = Math.max(8, left) + 'px';
+        pop.style.top = top + 'px';
+        var ph = pop.getBoundingClientRect().height;
+        if (top + ph > window.innerHeight - 8) pop.style.top = Math.max(8, r.top - ph - 6) + 'px';
+    }
+
+    function showFor(btn, ctx) {
+        var el = ensurePop();
+        var G = HHpro.GasPackCapacity;
+        el.hidden = false;
+        if (!G) { el.textContent = 'Airflow data unavailable.'; placePop(btn); return; }
+        el.textContent = 'Loading airflow data…';
+        placePop(btn);
+        G.load().then(function () {
+            // Still the popup for this button?
+            if (el.hidden || el.__owner !== btn) return;
+            fillPop(el, ctx);
+            placePop(btn);
+        }, function () {
+            if (el.__owner === btn) el.textContent = 'Airflow data could not be loaded.';
+        });
+    }
+
+    /** "?" button: hover to peek, click to pin, Escape / click away to close.
+     *  ctx = { cabinet, motor, heatSize, kitKw, productPage }. */
+    function helpButton(ctx) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gp-airflow-help';
+        b.textContent = '?';
+        b.setAttribute('aria-label', 'Static pressure and airflow range');
+        function open() { ensurePop().__owner = b; showFor(b, ctx); }
+        b.addEventListener('mouseenter', function () { if (!pinned) open(); });
+        b.addEventListener('mouseleave', function () { if (!pinned && pop) pop.hidden = true; });
+        b.addEventListener('focus', function () { if (!pinned) open(); });
+        b.addEventListener('blur', function () { if (!pinned && pop) pop.hidden = true; });
+        b.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (pinned === b) { closePop(); return; }
+            pinned = b;
+            open();
+        });
+        return b;
+    }
+
+    HHpro.GasPackAirflow = { helpButton: helpButton };
 })();
