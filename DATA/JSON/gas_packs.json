@@ -10948,7 +10948,7 @@
         {
           "scheduleData": {
             "A": "DAIKIN",
-            "B": "DHH0724",
+            "B": "DHH0723",
             "C": 6,
             "D": 2400,
             "E": 0.5,
@@ -10972,15 +10972,15 @@
             "Y": "-",
             "Z": "NO",
             "AA": 2,
-            "AB": "460/3",
+            "AB": "208/3",
             "AC": 1.2,
-            "AD": 12.2,
-            "AE": 15,
+            "AD": 27.2,
+            "AE": 40,
             "AF": 708
           },
           "filterData": {
             "SIZE": 6,
-            "ELECTRICAL": "460/3",
+            "ELECTRICAL": "208/3",
             "TYPE": "HEAT PUMP",
             "EFFICIENCY": "HIGH",
             "COOLING STAGES": 2,
@@ -10988,11 +10988,11 @@
             "HGRH": "NO"
           },
           "documentationData": {
-            "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 460-3 - 0kW",
+            "SUBMITTAL (SYSTEM)": "Heat Pump/6-Ton - HE - 208-3 - 0kW",
             "ENGINEERING MANUAL (SYSTEM)": "ENGINEERING MANUAL - DHH (3-6)",
             "INSTALLATION MANUAL (SYSTEM)": "INSTALLATION MANUAL - DHH (3-6)",
-            "REVIT (SYSTEM)": "DHH0724",
-            "CAD (SYSTEM)": "DHH0724"
+            "REVIT (SYSTEM)": "DHH0723",
+            "CAD (SYSTEM)": "DHH0723"
           }
         }
       ]
@@ -17254,7 +17254,7 @@
   },
   "_meta": {
     "sourceFile": "LC RTU DATA.xlsx",
-    "generatedAt": "2026-09-30T14:33:28",
+    "generatedAt": "2026-10-01T07:07:19",
     "dataRowCount": 304,
     "selectionCount": 304
   }

@@ -10283,7 +10283,7 @@
             "I": "10",
             "P": 300,
             "R": 0.006,
-            "W": 0.002,
+            "W": 0.02,
             "X": 164,
             "AB": "<15"
           },
@@ -10314,7 +10314,7 @@
             "R": 0.01,
             "W": 0.036,
             "X": 218,
-            "AB": 0
+            "AB": "<15"
           },
           "filterData": {
             "DESCRIPTION": "SQUARE PLAQUE RETURN DIFFUSER",
@@ -86108,7 +86108,7 @@
   },
   "_meta": {
     "sourceFile": "PRICE DIFFUSER DATA.xlsx",
-    "generatedAt": "2026-09-30T06:50:04",
+    "generatedAt": "2026-10-01T07:07:57",
     "dataRowCount": 2721,
     "selectionCount": 2721
   }
