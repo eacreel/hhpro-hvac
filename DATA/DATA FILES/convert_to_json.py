@@ -1237,10 +1237,10 @@ def apply_doc_subfolders(selections, doc_columns, config):
     """Prefix document filenames with a per-row subfolder (docSubfolders).
 
     A row's FILTER value picks the subfolder, e.g. TYPE "HEAT PUMP" turns
-    submittal "6-Ton - SE - 460/3 - 5kW" into
-    "Heat Pump/6-Ton - SE - 460-3 - 5kW". A "/" inside the name itself
-    becomes "-" first: Daikin writes voltages as 460/3, which Windows can't
-    put in a file name, so the PDFs on disk read 460-3. The site builds the
+    submittal "6-Ton - SE - 460-3 - 5kW" into
+    "Heat Pump/6-Ton - SE - 460-3 - 5kW". The workbook names match the PDF
+    file names (460-3, since Windows can't put "/" in a file name); any "/"
+    typed into a name still becomes "-" as a safety net. The site builds the
     URL straight from the value, so no JS change is needed for new folders.
     Rows whose filter value isn't in the map keep the bare filename.
     """
