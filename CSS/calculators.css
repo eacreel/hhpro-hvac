@@ -878,6 +878,7 @@
 
 /* Hover crosshair */
 .psy-crosshair {
+    fill: none;   /* the enthalpy guide is a path */
     stroke: var(--color-text-muted);
     stroke-width: 0.8;
     stroke-dasharray: 3 3;

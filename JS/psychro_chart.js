@@ -250,13 +250,17 @@
         var crossV = el('line', null, 'psy-crosshair');
         var crossH = el('line', null, 'psy-crosshair');
         var crossDot = el('circle', { r: 3.5 }, 'psy-crosshair-dot');
-        // With the right-hand scales on: the point's mark on the enthalpy
-        // column (read along its enthalpy line, not straight across).
+        // With the right-hand scales on: the point's enthalpy line, dotted
+        // from the point to the chart's right edge, and its mark on the
+        // enthalpy column where that line arrives (read along the line, not
+        // straight across).
+        var crossEPath = el('path', null, 'psy-crosshair');
         var crossE = el('line', null, 'psy-crosshair');
         var crossEDot = el('circle', { r: 2.5 }, 'psy-crosshair-dot');
         gHover.appendChild(crossV);
         gHover.appendChild(crossH);
         gHover.appendChild(crossDot);
+        gHover.appendChild(crossEPath);
         gHover.appendChild(crossE);
         gHover.appendChild(crossEDot);
         var hoverH = null;   // { hOf, wOfH } while the right-hand scales are drawn
@@ -999,7 +1003,7 @@
         // -------- hover --------
 
         function hideCross() {
-            [crossV, crossH, crossDot, crossE, crossEDot].forEach(function (n) {
+            [crossV, crossH, crossDot, crossEPath, crossE, crossEDot].forEach(function (n) {
                 n.setAttribute('visibility', 'hidden');
             });
         }
@@ -1009,7 +1013,9 @@
         // humidity ratio axis to the right-hand scales that depend on
         // humidity ratio alone (dew point, vapor pressure). The enthalpy
         // column is read along the point's enthalpy line instead: it gets a
-        // mark of its own where that line meets the right-hand edge.
+        // mark of its own where that line meets the right-hand edge, and the
+        // line itself is drawn dotted from the point to that edge so the
+        // eye can follow it there.
         function showCross(x, y, db, w) {
             var x0 = mL + pw + mrBase;                      // where the right-hand scales start
             var rs = !!(current.show.rscale && hoverH);
@@ -1019,16 +1025,23 @@
             crossH.setAttribute('y1', y); crossH.setAttribute('y2', y);
             crossDot.setAttribute('cx', x); crossDot.setAttribute('cy', y);
             [crossV, crossH, crossDot].forEach(function (n) { n.removeAttribute('visibility'); });
-            var yE = rs ? yOf(hoverH.wOfH(hoverH.hOf(db, w), vp.dbMax)) : NaN;
+            var h = rs ? hoverH.hOf(db, w) : NaN;
+            var yE = rs ? yOf(hoverH.wOfH(h, vp.dbMax)) : NaN;
             if (isFinite(yE) && yE >= mT && yE <= mT + ph) {
+                // Constant-enthalpy line, point to right edge (a gentle
+                // curve, so sampled rather than drawn straight).
+                var pts = [];
+                for (var i = 0; i <= 24; i++) {
+                    var d = db + (vp.dbMax - db) * i / 24;
+                    pts.push([xOf(d), yOf(hoverH.wOfH(h, d))]);
+                }
+                crossEPath.setAttribute('d', pathFrom(pts));
                 crossE.setAttribute('x1', x0 + 111); crossE.setAttribute('x2', x0 + 156);
                 crossE.setAttribute('y1', yE); crossE.setAttribute('y2', yE);
                 crossEDot.setAttribute('cx', x0 + 116); crossEDot.setAttribute('cy', yE);
-                crossE.removeAttribute('visibility');
-                crossEDot.removeAttribute('visibility');
+                [crossEPath, crossE, crossEDot].forEach(function (n) { n.removeAttribute('visibility'); });
             } else {
-                crossE.setAttribute('visibility', 'hidden');
-                crossEDot.setAttribute('visibility', 'hidden');
+                [crossEPath, crossE, crossEDot].forEach(function (n) { n.setAttribute('visibility', 'hidden'); });
             }
         }
 
