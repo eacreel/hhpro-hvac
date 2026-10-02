@@ -32,6 +32,12 @@
          True when at least one submittal filename exists in the
          selection's documentation data. Lets the schedule mark
          the Submittal button as unavailable at render time.
+
+   openSubmittal and openDocsModal take an optional 4th argument
+   { generated: [{ name, filename, generate }] }: documents built in
+   the browser (the LC RTU "performance at design conditions" sheet).
+   generate() returns a PDF Blob; it opens in a new tab beside the
+   submittal(s), and is listed first in the popup.
    ============================================================ */
 
 (function () {
@@ -48,17 +54,33 @@
     // Public: open every submittal PDF for a selection
     // =================================================================
 
-    function openSubmittal(product, sel, data) {
+    function openSubmittal(product, sel, data, opts) {
         var docColumns = (data && data.documentationColumns) || [];
         var submittals = collectSelectionSubmittals(sel, docColumns);
-        if (!submittals.length) {
-            alert('No submittal is available for this item.');
-            return;
-        }
+        var generated = (opts && opts.generated) || [];
         submittals.forEach(function (item) {
             var url = buildDocUrl(product, item.docColumn, item.filename);
             openInNewTab(url);
         });
+        generated.forEach(openGenerated);
+        if (!submittals.length) {
+            alert('No submittal is available for this item.' +
+                (generated.length ? ' Its performance sheet opened in a new tab.' : ''));
+        }
+    }
+
+    // A generated document's PDF in a new tab. The object URL outlives the
+    // tab's load, then is released.
+    function openGenerated(doc) {
+        var blob;
+        try { blob = doc.generate(); } catch (e) {
+            alert('Could not build ' + (doc.filename || 'the document') + ': ' + ((e && e.message) || e));
+            return;
+        }
+        if (!blob) return;
+        var url = URL.createObjectURL(blob);
+        openInNewTab(url);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 120000);
     }
 
     /**
@@ -87,9 +109,11 @@
     // Public: open the all-documents popup
     // =================================================================
 
-    function openDocsModal(product, sel, data) {
+    function openDocsModal(product, sel, data, opts) {
         var docColumns = (data && data.documentationColumns) || [];
-        var items = collectSelectionDocs(sel, docColumns);
+        var items = ((opts && opts.generated) || []).map(function (doc) {
+            return { generated: doc };
+        }).concat(collectSelectionDocs(sel, docColumns));
 
         var backdrop = buildModalBackdrop();
         var modal = buildModalBox();
@@ -175,6 +199,7 @@
     }
 
     function buildDocListItem(product, item) {
+        if (item.generated) return buildGeneratedListItem(item.generated);
         var row = document.createElement('div');
         row.className = 'docs-item';
 
@@ -206,6 +231,31 @@
             else openInNewTab(url);
         });
 
+        row.appendChild(info);
+        row.appendChild(actionBtn);
+        return row;
+    }
+
+    // A generated document's row: same look, View builds it.
+    function buildGeneratedListItem(doc) {
+        var row = document.createElement('div');
+        row.className = 'docs-item';
+        var info = document.createElement('div');
+        info.className = 'docs-item-info';
+        var name = document.createElement('div');
+        name.className = 'docs-item-name';
+        name.textContent = doc.name;
+        var filename = document.createElement('div');
+        filename.className = 'docs-item-file';
+        filename.textContent = doc.filename;
+        info.appendChild(name);
+        info.appendChild(filename);
+        var actionBtn = document.createElement('button');
+        actionBtn.type = 'button';
+        actionBtn.className = 'docs-item-action docs-item-action-view';
+        actionBtn.appendChild(HHpro.UI.icon('file-text'));
+        actionBtn.appendChild(document.createTextNode('View'));
+        actionBtn.addEventListener('click', function () { openGenerated(doc); });
         row.appendChild(info);
         row.appendChild(actionBtn);
         return row;

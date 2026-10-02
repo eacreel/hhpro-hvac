@@ -467,6 +467,46 @@
         return !!(t && t.value != null && isFinite(t.value) && t.value > 0);
     }
 
+    /**
+     * Whether a value meets a target { value, tol, min }. A plain target
+     * is a band (value ± tol %). A `min` target ("meet or exceed") is met
+     * at or above the value; its tol, when given, caps the oversize
+     * (no more than tol % above). No target = met.
+     */
+    function meets(value, t) {
+        if (!hasTarget(t)) return true;
+        if (value == null || !isFinite(value)) return false;
+        var target = Number(t.value);
+        if (!t.min) return within(value, target, t.tol);
+        if (value < target) return false;
+        return t.tol == null || !isFinite(t.tol) || value <= target * (1 + t.tol / 100);
+    }
+
+    /** Ranking contribution of a target: distance from a band target,
+     *  oversize past a `min` one (so the smallest unit that covers wins). */
+    function miss(value, t) {
+        if (!hasTarget(t) || value == null || !isFinite(value)) return 0;
+        var target = Number(t.value);
+        return t.min ? Math.max(0, value - target) / target : Math.abs(value - target) / target;
+    }
+
+    // An electric heat kit's nominal kW as BTU/h.
+    var KW_BTUH = 3412;
+
+    /**
+     * Daikin's supply airflow limits for a heat pump's electric heat kit
+     * (Airflow - Electric Heat sheet) checked at an airflow:
+     * { min, max, ok } or null when nothing is published (or no kit).
+     */
+    function kitAirflowCheck(cabinet, motor, kitKw, airflow) {
+        var lim = kitKw ? airflowHeat(cabinet, motor, null, kitKw) : null;
+        if (!lim) return null;
+        var a = Number(airflow);
+        var ok = !isFinite(a) ||
+            ((lim.min == null || a >= lim.min) && (lim.max == null || a <= lim.max));
+        return { min: lim.min, max: lim.max, ok: ok };
+    }
+
     function sortedAirflows(cab) {
         return ((cab.axes || {}).airflow || []).map(Number).filter(isFinite)
             .sort(function (a, b) { return a - b; });
@@ -526,9 +566,37 @@
         if (result.type === 'HEAT PUMP') {
             out.hpHeat = opt.hpHeat;
             out.hpHeatNote = opt.hpHeatNote;
+            out.totalHeat = opt.totalHeat == null ? null : opt.totalHeat;
         } else {
             out.heat = opt.heat;
         }
+        return out;
+    }
+
+    /**
+     * A result built another way: opts = { motor, convOutlet, powerExhaust }
+     * (any left out keep the result's own). Motor and the electrical options
+     * change only the model number and the electrical block - cooling and
+     * heating come from the cabinet's tables either way. null when the
+     * cabinet has no such motor at that voltage (or heat kit).
+     */
+    function withOptions(result, opts) {
+        var o = opts || {};
+        var e = result.electrical || {};
+        var motor = o.motor || result.motor;
+        var conv = o.convOutlet == null ? !!e.convOutlet : !!o.convOutlet;
+        var pe = o.powerExhaust == null ? !!e.powerExhaust : !!o.powerExhaust;
+        var elec = electricalFor(result.cabinet, result.voltage, motor,
+                                 { convOutlet: conv, powerExhaust: pe },
+                                 result.type === 'HEAT PUMP' ? (result.kitKw || 0) : undefined);
+        if (!elec) return null;
+        var out = {};
+        Object.keys(result).forEach(function (k) { out[k] = result[k]; });
+        out.motor = motor;
+        out.motorLabel = MOTOR_LABELS[motor];
+        out.electrical = elec;
+        out.model = buildModel({ type: result.type, cabinet: result.cabinet, voltage: result.voltage,
+                                 motor: motor, heat: result.heatSize });
         return out;
     }
 
@@ -542,12 +610,20 @@
      *   ambient,                                     // degF, required
      *   eatDb, eatWb,                                // degF, required
      *   heatAmbient,                                 // heat pump heating design OA DB (degF)
-     *   cfm:{value,tol}, coolTotal:{value,tol}, coolSensible:{value,tol},
-     *   heatRise:{value,tol},                        // gas packs
-     *   hpHeating:{value,tol},                       // heat pumps, BTU/h at heatAmbient
+     *   cfm:{value,tol}, coolTotal:{value,tol,min}, coolSensible:{value,tol,min},
+     *   heatRise:{value,tol,min},                    // gas packs
+     *   hpHeating:{value,tol,min},                   // heat pumps, BTU/h at heatAmbient
+     *   heatLoad:{value},                            // heat pumps: heat pump + heat kit
+     *                                                //   must cover it at heatAmbient
      *   convOutlet, powerExhaust,                    // booleans
      *   exact                                        // true: published points only
      * }
+     * Capacity targets are a ± tol band, or with `min` "meet or exceed"
+     * (tol then caps the oversize; see meets()) ranked smallest first.
+     * The CFM target is always a band. A heating load is always a
+     * minimum: each heat kit is judged on heat pump capacity + kW x 3412,
+     * so the smallest kit that covers it ranks first (kits that don't are
+     * left out). Every heat pump option carries totalHeat (the same sum).
      *
      * Returns { results:[...], skipped:[...] } with results sorted
      * best-match first. One result per cabinet + voltage + motor + gas heat
@@ -571,7 +647,10 @@
         var skipped = [];
         var notRated = [];
         var wantRise = hasTarget(c.heatRise);
-        var wantHp = hasTarget(c.hpHeating);
+        var wantLoad = hasTarget(c.heatLoad);
+        var loadTarget = wantLoad ? { value: Number(c.heatLoad.value), min: true } : null;
+        // Either heat pump heating target needs heat pump heating data.
+        var wantHp = hasTarget(c.hpHeating) || wantLoad;
         var cfmTarget = hasTarget(c.cfm) ? Number(c.cfm.value) : null;
         var cfmTol = c.cfm && c.cfm.tol;
 
@@ -646,12 +725,8 @@
                     // when the design point was rated exactly).
                     offGrid: Object.keys(cool.offGrid || {}).length ? cool.offGrid : null,
                     meets: within(a, cfmTarget, cfmTol) &&
-                        within(r.total, c.coolTotal && c.coolTotal.value,
-                               c.coolTotal && c.coolTotal.tol) &&
-                        within(r.sensible, c.coolSensible && c.coolSensible.value,
-                               c.coolSensible && c.coolSensible.tol),
-                    score: deviation(r.total, c.coolTotal && c.coolTotal.value) +
-                        deviation(r.sensible, c.coolSensible && c.coolSensible.value) +
+                        meets(r.total, c.coolTotal) && meets(r.sensible, c.coolSensible),
+                    score: miss(r.total, c.coolTotal) + miss(r.sensible, c.coolSensible) +
                         deviation(a, cfmTarget)
                 };
             });
@@ -679,13 +754,25 @@
                     o.hpHeat = hp.available ? hp : null;
                     o.hpHeatNote = hp.available ? null : hp.reason;
                     // A heating target can't be judged without heating data.
-                    o.meets = rd.meets && (hp.available
-                        ? within(hp.capacity, c.hpHeating && c.hpHeating.value,
-                                 c.hpHeating && c.hpHeating.tol)
-                        : !wantHp);
-                    if (hp.available) o.score += deviation(hp.capacity, c.hpHeating && c.hpHeating.value);
+                    o.meets = rd.meets && (hp.available ? meets(hp.capacity, c.hpHeating) : !wantHp);
+                    if (hp.available) o.score += miss(hp.capacity, c.hpHeating);
                     return o;
                 });
+                // The same options for one heat kit: heat pump + kit
+                // (totalHeat) at the heating design temperature, judged
+                // against the heating load when there is one.
+                var forKit = function (kw) {
+                    return options.map(function (o) {
+                        var k = {};
+                        Object.keys(o).forEach(function (key) { k[key] = o[key]; });
+                        k.totalHeat = o.hpHeat ? o.hpHeat.capacity + kw * KW_BTUH : null;
+                        if (wantLoad) {
+                            k.meets = o.meets && meets(k.totalHeat, loadTarget);
+                            k.score = o.score + miss(k.totalHeat, loadTarget);
+                        }
+                        return k;
+                    });
+                };
                 var def = defaultOption(options, nominal, cfmTarget);
                 if (!def) {
                     // Cooling was fine but there is no heating to judge the
@@ -712,6 +799,11 @@
                                 if (c.kw != null && Number(c.kw) !== kw) return;
                                 var elec = electricalFor(name, voltage, motor, c, kw);
                                 if (!elec) return;
+                                var kitOpts = forKit(kw);
+                                // A kit too small for the load at every airflow
+                                // isn't a candidate.
+                                var kitDef = wantLoad ? defaultOption(kitOpts, nominal, cfmTarget) : def;
+                                if (!kitDef) return;
                                 results.push(atAirflow({
                                     type: 'HEAT PUMP',
                                     cabinet: name,
@@ -728,8 +820,8 @@
                                     kitKw: kw,
                                     electrical: elec,
                                     nominalAirflow: nominal,
-                                    options: options
-                                }, def.airflow));
+                                    options: kitOpts
+                                }, kitDef.airflow));
                             });
                     });
                 });
@@ -765,9 +857,8 @@
                     if (!heat) return o;   // rise outside the published range
                     o.ok = true;
                     o.heat = heat;
-                    o.meets = rd.meets && within(heat.riseHigh, c.heatRise && c.heatRise.value,
-                                                 c.heatRise && c.heatRise.tol);
-                    o.score += deviation(heat.riseHigh, c.heatRise && c.heatRise.value);
+                    o.meets = rd.meets && meets(heat.riseHigh, c.heatRise);
+                    o.score += miss(heat.riseHigh, c.heatRise);
                     return o;
                 });
                 var def = defaultOption(options, nominal, cfmTarget);
@@ -884,10 +975,15 @@
         electricalFor: electricalFor,
         nominalAirflow: nominalAirflow,
         atAirflow: atAirflow,
+        withOptions: withOptions,
+        meets: meets,
         search: search,
         airflowInfo: airflowInfo,
         airflowFor: airflowFor,
         airflowHeat: airflowHeat,
+        kitAirflowCheck: kitAirflowCheck,
+        KW_BTUH: KW_BTUH,
+        OFFERED_MOTORS: OFFERED_MOTORS,
         MOTOR_LABELS: MOTOR_LABELS,
         HEAT_LETTERS: HEAT_LETTERS,
         TYPE_LABELS: TYPE_LABELS,

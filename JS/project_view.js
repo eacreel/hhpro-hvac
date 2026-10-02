@@ -2765,6 +2765,78 @@
         return null;
     }
 
+    /**
+     * Swap the unit behind a project item in place (an LC RTU configured
+     * from this schedule and replaced from Design Search). opts =
+     * { instanceId, productKey, data, patch } where patch carries the new
+     * selectionId, label and design payload. The item keeps its id, place,
+     * tag and every other field. "Edit Schedule" hand edits on cells the
+     * new unit changes are dropped - they were typed for the old unit -
+     * in the same undo step; the rest stay. Returns { ok, dropped }.
+     */
+    function replaceItem(opts) {
+        var live = findLiveItem(opts.instanceId);
+        if (!live || live.productKey !== opts.productKey) return { ok: false, dropped: 0 };
+        var st = HHpro.Cart.getActiveState();
+        var items = st.items.filter(function (it) { return it.productKey === opts.productKey; });
+        var after = items.map(function (it) {
+            if (it.instanceId !== opts.instanceId) return it;
+            var copy = {};
+            Object.keys(it).forEach(function (k) { copy[k] = it[k]; });
+            Object.keys(opts.patch).forEach(function (k) { copy[k] = opts.patch[k]; });
+            return copy;
+        });
+
+        var engineer = (HHpro.Cart.getProjectEngineer && HHpro.Cart.getProjectEngineer()) || 'hoffman';
+        var extra = HHpro.Cart.getProjectExtra(opts.productKey) || {};
+        var all = extra.cellOverrides || {};
+        var map = all[engineer];
+        var extraPatch = null;
+        var dropped = 0;
+        if (map && Object.keys(map).length && HHpro.Export && HHpro.Export.buildScheduleGridRaw) {
+            var gA = HHpro.Export.buildScheduleGridRaw(opts.productKey, items, opts.data);
+            var gB = HHpro.Export.buildScheduleGridRaw(opts.productKey, after, opts.data);
+            var same = gA && gB && gA.rows.length === gB.rows.length &&
+                gA.rows.every(function (row, r) { return row.length === gB.rows[r].length; });
+            if (same) {
+                var kept = {};
+                Object.keys(map).forEach(function (key) {
+                    var p = key.split(',');
+                    var a = (gA.rows[+p[0]] || [])[+p[1]];
+                    var b = (gB.rows[+p[0]] || [])[+p[1]];
+                    if (a && b && String(a.value) !== String(b.value)) dropped++;
+                    else kept[key] = map[key];
+                });
+                if (dropped) {
+                    all[engineer] = kept;
+                    extraPatch = { productKey: opts.productKey, patch: { cellOverrides: all } };
+                }
+            }
+        }
+        HHpro.Cart.updateItem(opts.instanceId, opts.patch, extraPatch);
+        filesCache = null;
+        filesSelection = null;
+        return { ok: true, dropped: dropped };
+    }
+
+    HHpro.ProjectView = { replaceItem: replaceItem };
+
+    // Files tab type name of the LC RTU performance sheets.
+    var PERFORMANCE_SHEET_TYPE = 'PERFORMANCE SHEET';
+
+    /** The LC RTU performance sheet for a project item on design values
+     *  (HHpro.Docs generated document), else null. */
+    function performanceSheetDoc(item, sel, data) {
+        var D = HHpro.GasPackDesign;
+        var payload = (D && D.itemPayload && item.productKey === D.PRODUCT) ? D.itemPayload(item) : null;
+        if (!payload) return null;
+        return D.sheetDoc(payload, {
+            project: getActiveName(),
+            tag: item.tag || '',
+            scheduleModel: D.scheduleModelOf(data, sel)
+        });
+    }
+
     function buildProjectScheduleHead(productKey, data, visibleLetters) {
         var thead = document.createElement('thead');
         var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
@@ -3113,10 +3185,42 @@
                             var product = HHpro.Data.getProduct(productKey);
                             var liveItem = findLiveItem(item.instanceId) || item;
                             var liveSel = findSelectionById(data, liveItem.selectionId) || sel;
-                            HHpro.Docs.openDocsModal(product, liveSel, data);
+                            var sheet = performanceSheetDoc(liveItem, liveSel, data);
+                            HHpro.Docs.openDocsModal(product, liveSel, data,
+                                sheet ? { generated: [sheet] } : undefined);
                         }
                     });
                     actionsWrap.appendChild(docsBtn);
+
+                    // LC RTUs: Configure opens Design Search on this unit;
+                    // its Replace swaps the unit here (replaceItem), keeping
+                    // the tag and place in the schedule.
+                    if (HHpro.GasPackDesign && productKey === HHpro.GasPackDesign.PRODUCT &&
+                        HHpro.Views.design_search) {
+                        var cfgBtn = document.createElement('button');
+                        cfgBtn.type = 'button';
+                        cfgBtn.className = 'project-sched-docs-btn project-sched-cfg-btn';
+                        cfgBtn.textContent = 'Configure';
+                        cfgBtn.title = 'Change this unit in Design Search (motor, power exhaust, ' +
+                            'conditions, heat kit...) and replace it here';
+                        cfgBtn.addEventListener('click', function () {
+                            var liveItem = findLiveItem(item.instanceId) || item;
+                            var liveSel = findSelectionById(data, liveItem.selectionId) || sel;
+                            var cfg = HHpro.GasPackDesign.configureFor(data, liveSel,
+                                HHpro.GasPackDesign.itemPayload(liveItem));
+                            if (!cfg) return;
+                            var st = HHpro.Cart.getActiveState();
+                            cfg.replace = {
+                                instanceId: liveItem.instanceId,
+                                projectId: st.projectId || null,
+                                mode: st.mode,
+                                tag: liveItem.tag || ''
+                            };
+                            HHpro.App.showView('design_search', { productKey: productKey, configure: cfg });
+                        });
+                        actionsWrap.appendChild(cfgBtn);
+                        actionsWrap.classList.add('has-configure');
+                    }
 
                     actionsTd.appendChild(actionsWrap);
                     tr.appendChild(actionsTd);
@@ -4189,6 +4293,35 @@
                         });
                     });
 
+                    // LC RTU on design values: its performance sheet, built
+                    // when the ZIP is (from the live item).
+                    var sheet = performanceSheetDoc(item, sel, data);
+                    if (sheet) {
+                        var sheetType = PERFORMANCE_SHEET_TYPE;
+                        // ZIP paths are deduped: untagged units need their own name.
+                        var sheetFile = (item.tag ? '' : item.instanceId + ' - ') + sheet.filename;
+                        files.push({
+                            key: fileKey(item.instanceId, sheetType, sheetFile),
+                            docColumn: { name: sheetType, folder: 'PERFORMANCE SHEETS', fileExtension: 'pdf' },
+                            filename: sheetFile.replace(/\.pdf$/i, ''),
+                            filenameWithExt: sheetFile,
+                            url: null,
+                            generator: (function (instanceId, fallback) {
+                                return function () {
+                                    return Promise.resolve().then(function () {
+                                        var live = findLiveItem(instanceId);
+                                        var doc = (live && performanceSheetDoc(live,
+                                            findSelectionById(data, live.selectionId) || sel, data)) || fallback;
+                                        return doc.generate();
+                                    });
+                                };
+                            })(item.instanceId, sheet),
+                            docTypeName: sheetType,
+                            isZip: false
+                        });
+                        allTypeNames[sheetType] = true;
+                    }
+
                     itemsOut.push({
                         instanceId: item.instanceId,
                         tag: item.tag || '',
@@ -4227,6 +4360,10 @@
                     }
                 });
             });
+            if (allTypeNames[PERFORMANCE_SHEET_TYPE] && !seenOrdered[PERFORMANCE_SHEET_TYPE]) {
+                seenOrdered[PERFORMANCE_SHEET_TYPE] = true;
+                orderedNames.push(PERFORMANCE_SHEET_TYPE);
+            }
             SCHEDULE_DOC_TYPES.forEach(function (name) {
                 if (allTypeNames[name] && !seenOrdered[name]) {
                     seenOrdered[name] = true;

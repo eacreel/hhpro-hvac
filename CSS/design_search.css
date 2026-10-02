@@ -654,6 +654,66 @@
     color: var(--color-text);
 }
 
+.design-gp-configure-stop {
+    display: block;
+    margin-top: var(--space-xs);
+}
+
+/* Target mode: Within ± tolerance / Meet or exceed. */
+.design-gp-mode {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+    margin: var(--space-sm) 0 var(--space-xs);
+}
+
+/* "cap +" (meet or exceed) and "minimum" (heating load) in the slot the
+   ± sign uses; "minimum" also covers the tolerance box's width. */
+.design-target-plusminus {
+    white-space: nowrap;
+}
+
+.design-target-min {
+    width: 84px;
+    font-size: var(--font-size-xs);
+    text-align: left;
+}
+
+/* Results: vs Target margins, one line per target. */
+.design-gp-table td.gp-col-margin {
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    text-align: left;
+    line-height: 1.35;
+}
+
+.gp-margin-line.is-off {
+    color: var(--color-warning);
+    font-weight: 600;
+}
+
+/* Results: the row's Motor dropdown (with the airflow "?") and its
+   electrical option toggles. */
+.design-gp-table td.gp-col-motor {
+    white-space: nowrap;
+}
+
+.design-gp-row-options {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.design-gp-row-options .design-gp-check {
+    font-size: var(--font-size-xs);
+}
+
+/* A heat kit outside Daikin's electric heat airflow limits at the row's CFM. */
+.design-gp-table td.gp-kit-flag {
+    box-shadow: inset 0 0 0 2px var(--color-warning);
+}
+
 .design-gp-check {
     display: inline-flex;
     align-items: center;

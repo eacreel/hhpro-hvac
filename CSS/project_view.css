@@ -461,6 +461,17 @@
     color: var(--color-text-inverse);
 }
 
+/* LC RTU rows add a third line, Configure, under Docs; the grab handle
+   runs down all three. The sticky column stays 100px wide (the Tag
+   column is pinned at left:100px), so the label gets tighter padding. */
+.project-sched-actions.has-configure .project-sched-grab {
+    grid-row: 1 / 4;
+}
+
+.project-sched-cfg-btn {
+    padding: 0 2px;
+}
+
 /* ============================================================
    Auto Tag modal
    ============================================================ */

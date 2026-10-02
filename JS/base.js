@@ -34,6 +34,11 @@
          the LC RTU "Configure"). getSel() returns the selection the
          row is showing now (kW / heat size dropdowns swap it).
          Returns an array of elements, or null for none.
+     generatedDocs(selection, data)
+         Documents built in the browser for a row, read at click
+         time: [{ name, filename, generate }] (see docs.js), or null.
+         Submittal opens them beside the PDFs; Docs lists them (the
+         LC RTU performance sheet for a row on design values).
 
    Filter behavior:
      - Cascading dropdowns: each dropdown's options reflect what's
@@ -1346,6 +1351,14 @@
     function buildActionButtons(getSel, product, data, getExtra) {
         var row = document.createElement('div');
         row.className = 'actions-row';
+        var ext = product && HHpro.ProductExtensions && HHpro.ProductExtensions[product.productKey];
+
+        // Generated documents for the row as it is now (generatedDocs hook).
+        function docOpts() {
+            var gen = (ext && typeof ext.generatedDocs === 'function')
+                ? ext.generatedDocs(getSel(), data) : null;
+            return (gen && gen.length) ? { generated: gen } : undefined;
+        }
 
         // ----- Select (add to cart / project) -----
         var selectBtn = document.createElement('button');
@@ -1371,7 +1384,7 @@
         subBtn.textContent = 'Submittal';
         subBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openSubmittal === 'function') {
-                HHpro.Docs.openSubmittal(product, getSel(), data);
+                HHpro.Docs.openSubmittal(product, getSel(), data, docOpts());
             }
         });
 
@@ -1396,7 +1409,7 @@
         docsBtn.textContent = 'Docs';
         docsBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openDocsModal === 'function') {
-                HHpro.Docs.openDocsModal(product, getSel(), data);
+                HHpro.Docs.openDocsModal(product, getSel(), data, docOpts());
             }
         });
 
@@ -1405,7 +1418,6 @@
         row.appendChild(docsBtn);
 
         // ----- Product-specific extras (rowActionButtons hook) -----
-        var ext = product && HHpro.ProductExtensions && HHpro.ProductExtensions[product.productKey];
         if (ext && typeof ext.rowActionButtons === 'function') {
             var extras = ext.rowActionButtons(getSel, data) || [];
             extras.forEach(function (b) { row.appendChild(b); });

@@ -95,6 +95,13 @@
                 if (cfg) HHpro.App.showView('design_search', { productKey: PRODUCT, configure: cfg });
             });
             return [btn];
+        },
+        // A row showing design values: its performance sheet opens with
+        // the submittal and is listed in Docs (sheetDoc).
+        generatedDocs: function (sel, data) {
+            var entry = sel && getDesign(sel.id);
+            if (!entry || !entry.payload || entry.on === false) return null;
+            return [sheetDoc(entry.payload, { scheduleModel: scheduleModelOf(data, sel) })];
         }
     };
 
@@ -431,8 +438,11 @@
      * configuration instead - its motor, conditions and electrical options.
      * token tells one click from a browser back / forward to the same page.
      * null for a row whose model isn't an LC RTU model number.
+     * `payload`: the design values to start from - a project item's
+     * (itemPayload; null = none). Left out, the product page's row store
+     * is read (only while that row is showing design values).
      */
-    function configureFor(data, sel) {
+    function configureFor(data, sel, payload) {
         var G = HHpro.GasPackCapacity;
         var cols = resolveColumns(data);
         var sd = sel && sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
@@ -451,8 +461,11 @@
             hgrh: cols.hgrh ? String(sd[cols.hgrh] || 'NO').trim().toUpperCase() : 'NO',
             cfm: cols.cfm ? num(sd[cols.cfm]) : null
         };
-        var entry = getDesign(sel.id);
-        var p = entry && entry.on !== false ? entry.payload : null;
+        var p = payload;
+        if (p === undefined) {
+            var entry = getDesign(sel.id);
+            p = entry && entry.on !== false ? entry.payload : null;
+        }
         if (p && p.cabinet === cfg.cabinet) {
             cfg.model = p.model;
             cfg.voltage = p.voltage;
@@ -759,6 +772,154 @@
         return box;
     }
 
+    // -----------------------------------------------------------------
+    // Performance sheet (PDF)
+    // -----------------------------------------------------------------
+    // The submittal PDF documents the standard selection only, so a unit
+    // on design values gets a one-page "performance at design conditions"
+    // sheet beside it (product page Submittal / Docs, project Docs, Files
+    // tab ZIP), built from the design payload with HHpro.PsychroPdf.
+    var SHEET_NAME = 'PERFORMANCE AT DESIGN CONDITIONS';
+    var SHEET_NOTE =
+        'Values are read from Daikin’s published capacity tables at the design conditions ' +
+        'shown; they are not a selection run in Daikin’s software, and the unit submittal ' +
+        'documents the standard selection. The indoor fan is not checked: confirm with ' +
+        'Daikin’s fan data that the motor delivers this airflow at the design external ' +
+        'static pressure.';
+
+    function sheetNum(v, places) {
+        if (v == null || v === '' || !isFinite(v)) return '-';
+        return Number(v).toLocaleString('en-US', { maximumFractionDigits: places || 0 });
+    }
+
+    /** The sheet's content blocks (key / value rows) for a design payload. */
+    function performanceSheetBlocks(p, ctx) {
+        var G = HHpro.GasPackCapacity;
+        var isHp = p.type === 'HEAT PUMP';
+        var c = p.cooling || {};
+        var e = p.electrical || {};
+        var cfm = sheetNum(c.airflow) + ' CFM';
+        var blocks = [];
+
+        var unit = [
+            ['Model', p.model],
+            ['Type', isHp ? 'Heat pump' : 'Gas / electric'],
+            ['Nominal tons', p.tons],
+            ['Efficiency', G.EFFICIENCY_LABELS[p.efficiency] || p.efficiency || '-'],
+            ['Indoor fan motor', p.motorLabel || G.MOTOR_LABELS[p.motor] || p.motor]
+        ];
+        if (isHp) {
+            unit.push(['Electric heat kit', p.kitKw ? p.kitKw + ' kW' : 'None']);
+        } else {
+            unit.push(['Gas heat', p.heatSize || '-']);
+            unit.push(['Hot gas reheat', String(p.hgrh).toUpperCase() === 'YES' ? 'Yes' : 'No']);
+        }
+        if (ctx.scheduleModel && ctx.scheduleModel !== p.model) {
+            unit.push(['Schedule row', ctx.scheduleModel]);
+        }
+        blocks.push({ title: 'Unit', rows: unit });
+
+        var cond = [
+            ['Outdoor ambient (cooling)', c.ambient + ' °F DB'],
+            ['Entering air (cooling)', c.eatDb + ' °F DB / ' + c.eatWb + ' °F WB'],
+            ['Supply airflow', cfm]
+        ];
+        if (isHp && p.hpHeat) {
+            cond.push(['Outdoor ambient (heating)', p.hpHeat.designDb + ' °F DB' +
+                (p.hpHeat.basis === 'WB' ? ' (read at ' + p.hpHeat.oa + ' °F WB)' : '')]);
+            cond.push(['Entering air (heating)', '70 °F DB']);
+        }
+        blocks.push({ title: 'Design conditions', rows: cond });
+
+        var latent = (c.total != null && c.sensible != null) ? c.total - c.sensible : null;
+        blocks.push({ title: 'Cooling', rows: [
+            ['Total capacity', sheetNum(c.total) + ' BTU/h'],
+            ['Sensible capacity', sheetNum(c.sensible) + ' BTU/h'],
+            ['Latent capacity', sheetNum(latent) + ' BTU/h'],
+            ['Sensible heat ratio', c.total ? (c.sensible / c.total).toFixed(2) : '-'],
+            ['Leaving air', sheetNum(c.lat, 1) + ' °F DB / ' + sheetNum(c.lwb, 1) + ' °F WB']
+        ] });
+
+        if (!isHp && p.heat) {
+            blocks.push({ title: 'Gas heating (high fire)', rows: [
+                ['Input', sheetNum(p.heat.inputHigh, 1) + ' MBH'],
+                ['Output', sheetNum(p.heat.outputHigh, 1) + ' MBH'],
+                ['Temperature rise', sheetNum(p.heat.riseHigh, 1) + ' °F at ' + cfm],
+                ['Thermal efficiency', p.heat.thermalEff == null ? '-' : p.heat.thermalEff + ' %']
+            ] });
+        }
+        if (isHp) {
+            var h = p.hpHeat;
+            var kitBtuh = p.kitKw ? p.kitKw * G.KW_BTUH : 0;
+            var hp = [];
+            if (h) {
+                hp.push(['Heat pump capacity', sheetNum(h.capacity) + ' BTU/h']);
+                hp.push(['COP', h.cop == null ? '-' : h.cop]);
+                hp.push(['Published at', sheetNum(h.airflow) + ' CFM']);
+            } else {
+                hp.push(['Heat pump capacity', 'not published at the design condition']);
+            }
+            hp.push(['Electric heat', p.kitKw ? p.kitKw + ' kW = ' + sheetNum(kitBtuh) + ' BTU/h' : 'None']);
+            if (h) hp.push(['Heat pump + electric heat', sheetNum(h.capacity + kitBtuh) + ' BTU/h']);
+            var chk = p.kitKw ? G.kitAirflowCheck(p.cabinet, p.motor, p.kitKw, c.airflow) : null;
+            if (chk) {
+                var lim = [];
+                if (chk.min != null) lim.push('min ' + sheetNum(chk.min));
+                if (chk.max != null) lim.push('max ' + sheetNum(chk.max));
+                hp.push(['Heat kit airflow (Daikin)', lim.join(' / ') + ' CFM' +
+                    (chk.ok ? '' : ' - NOT MET at ' + cfm)]);
+            }
+            blocks.push({ title: 'Heat pump heating', rows: hp });
+        }
+
+        blocks.push({ title: 'Electrical', rows: [
+            ['Voltage', p.voltage],
+            ['MCA', e.mca == null ? '-' : e.mca + ' A'],
+            ['MOP', e.mop == null ? '-' : e.mop + ' A'],
+            ['Indoor motor', e.hp == null ? '-' : e.hp + ' HP'],
+            ['Power exhaust', e.powerExhaust ? 'Yes' : 'No'],
+            ['Powered convenience outlet', e.convOutlet ? 'Yes' : 'No']
+        ] });
+        blocks.push({ title: 'Notes', paragraph: SHEET_NOTE });
+        return blocks;
+    }
+
+    /**
+     * The sheet as a PDF Blob. ctx = { project, tag, scheduleModel } (all
+     * optional): the project and tag head the page; scheduleModel is the
+     * LC RTU schedule row the unit sits on, when it is spelled differently.
+     */
+    function performanceSheet(payload, ctx) {
+        ctx = ctx || {};
+        var d = new Date();
+        var date = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        return HHpro.PsychroPdf.build({
+            title: 'Performance at design conditions - ' + payload.model,
+            subtitle: [ctx.project, ctx.tag, 'Daikin Light Commercial RTU', date]
+                .filter(function (s) { return s; }).join(' · '),
+            blocks: performanceSheetBlocks(payload, ctx),
+            footer: 'Generated by HHpro · Daikin catalog values at design conditions'
+        });
+    }
+
+    /** A generated document (HHpro.Docs) for the sheet. */
+    function sheetDoc(payload, ctx) {
+        ctx = ctx || {};
+        var name = ((ctx.tag ? ctx.tag + ' - ' : '') + payload.model + ' - Performance at design conditions')
+            .replace(/[\\/:*?"<>|]+/g, '-');
+        return {
+            name: SHEET_NAME,
+            filename: name + '.pdf',
+            generate: function () { return performanceSheet(payload, ctx); }
+        };
+    }
+
+    // The schedule row's own model number (standard values).
+    function scheduleModelOf(data, sel) {
+        var sd = sel && sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
+        return sd ? String(sd[resolveColumns(data).model] || '') : '';
+    }
+
     HHpro.GasPackDesign = {
         PRODUCT: PRODUCT,
         WARNING: WARNING,
@@ -775,6 +936,10 @@
         clearAll: clearAll,
         anyOn: anyOn,
         buildWarningBanner: buildWarningBanner,
+        SHEET_NAME: SHEET_NAME,
+        performanceSheet: performanceSheet,
+        sheetDoc: sheetDoc,
+        scheduleModelOf: scheduleModelOf,
 
         /**
          * Schedule-cell overrides for a PROJECT item (the project schedule,

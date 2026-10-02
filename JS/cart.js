@@ -772,9 +772,12 @@
 
     /**
      * Patch a single field (or several) on an item by instance id.
-     * Skips silently if the item no longer exists.
+     * Skips silently if the item no longer exists. extraPatch =
+     * { productKey, patch } also merges into that product's project extra
+     * in the same undo step (an LC RTU replaced from Design Search drops
+     * its stale hand edits that way).
      */
-    function updateItem(instanceId, patch) {
+    function updateItem(instanceId, patch, extraPatch) {
         var idx = indexOfItem(instanceId);
         if (idx < 0 || !patch || typeof patch !== 'object') return;
         pushUndo();
@@ -782,6 +785,13 @@
         Object.keys(patch).forEach(function (k) {
             it[k] = patch[k];
         });
+        if (extraPatch && extraPatch.productKey && extraPatch.patch) {
+            var pk = extraPatch.productKey;
+            if (!state.extra[pk]) state.extra[pk] = {};
+            Object.keys(extraPatch.patch).forEach(function (k) {
+                state.extra[pk][k] = extraPatch.patch[k];
+            });
+        }
         saveStateToSession();
         renderPanel();
         renderToggle();

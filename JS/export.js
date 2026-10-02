@@ -64,6 +64,9 @@ WHAT'S IN THE GRID
         // entries so the same path serves a single per-unit schedule
         // and a multi-section combined schedule.
         buildScheduleGrid:        buildScheduleGrid,
+        // The same grid without the "Edit Schedule" hand edits laid over
+        // (project_view's replaceItem diffs two of them).
+        buildScheduleGridRaw:     buildScheduleGridRaw,
         // Shared grid/merge helper - the on-screen schedule renderer in
         // project_view.js delegates to this so the layout logic has a
         // single source of truth.

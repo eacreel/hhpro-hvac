@@ -65,11 +65,18 @@
             ambient: 95, eatDb: 80, eatWb: 67,     // degF
             heatAmbient: 17,                       // heat pump heating design OA DB, degF
             cfm: null, coolTotal: null, coolSensible: null, heatRise: null, hpHeating: null,
+            heatLoad: null,                        // heat pump + kit must cover it (BTU/h)
             tols: { cfm: 10, coolTotal: 10, coolSensible: 10, heatRise: 10, hpHeating: 10 },
+            // 'band' = each target ± tolerance; 'min' = capacities meet or
+            // exceed, smallest first, with an optional oversize cap (%).
+            mode: 'band',
+            caps: { coolTotal: null, coolSensible: null, heatRise: null, hpHeating: null },
             convOutlet: false, powerExhaust: false,
-            // Set by the LC RTU schedule's "Configure" button:
-            // { model, cabinet, heatSize, kitKw, cfm } (applyGasPackConfigure).
-            configure: null
+            // Set by the LC RTU schedules' "Configure" button
+            // (applyGasPackConfigure): the unit to narrow to, and - from a
+            // project schedule - the project item Replace swaps.
+            configure: null,
+            replace: null
         };
     }
 
@@ -757,13 +764,34 @@
     // Gas Pack RTUs -- condition-aware form
     // -----------------------------------------------------------------
 
+    // `cap`: a capacity, so "Meet or exceed" turns it into a minimum (the
+    // tolerance box becomes the oversize cap). Supply CFM stays ± either
+    // way. `load`: always a minimum, with no tolerance. `short` names the
+    // target in the results' vs Target column; `actual` reads it off a result.
     var GP_NUMERIC = [
-        { key: 'cfm', label: 'Supply CFM', unit: 'CFM' },
-        { key: 'coolTotal', label: 'Cooling Total Capacity', unit: 'BTU/h' },
-        { key: 'coolSensible', label: 'Cooling Sensible Capacity', unit: 'BTU/h' },
-        { key: 'heatRise', label: 'Gas Heating High Stage Temp Rise', unit: '°F' },
-        { key: 'hpHeating', label: 'Heat Pump Heating Capacity', unit: 'BTU/h' }
+        { key: 'cfm', label: 'Supply CFM', unit: 'CFM', short: 'CFM',
+          actual: function (r) { return r.cooling.airflow; } },
+        { key: 'coolTotal', label: 'Cooling Total Capacity', unit: 'BTU/h', cap: true, short: 'Total',
+          actual: function (r) { return r.cooling.total; } },
+        { key: 'coolSensible', label: 'Cooling Sensible Capacity', unit: 'BTU/h', cap: true, short: 'Sens',
+          actual: function (r) { return r.cooling.sensible; } },
+        { key: 'heatRise', label: 'Gas Heating High Stage Temp Rise', unit: '°F', cap: true, short: 'Rise',
+          type: 'GAS', actual: function (r) { return r.heat ? r.heat.riseHigh : null; } },
+        { key: 'hpHeating', label: 'Heat Pump Heating Capacity', unit: 'BTU/h', cap: true, short: 'HP heat',
+          type: 'HEAT PUMP', actual: function (r) { return r.hpHeat ? r.hpHeat.capacity : null; } },
+        { key: 'heatLoad', label: 'Heating Load (heat pump + electric heat)', unit: 'BTU/h', load: true,
+          short: 'Heat load', type: 'HEAT PUMP',
+          actual: function (r) { return r.totalHeat; } }
     ];
+
+    // The criteria target for a form row: a band, or a minimum.
+    function gpTarget(def) {
+        var gp = state.gasPack;
+        var v = gp[def.key];
+        if (def.load) return { value: v, min: true };
+        var min = gp.mode === 'min' && !!def.cap;
+        return { value: v, tol: min ? gp.caps[def.key] : gp.tols[def.key], min: min };
+    }
 
     // Picking a Type re-scopes every other list to that unit type. Any
     // choice the new type can't have (Variable Speed or a heat kit on Gas,
@@ -784,7 +812,7 @@
         keep('kw', opts.kits);
         if (!opts.hgrh) gp.hgrh = null;
         if (!opts.hasGas) gp.heatRise = null;
-        if (!opts.hasHeatPump) gp.hpHeating = null;
+        if (!opts.hasHeatPump) { gp.hpHeating = null; gp.heatLoad = null; }
     }
 
     // "Configure" on an LC RTU schedule row (GasPackDesign.configureFor):
@@ -801,7 +829,8 @@
         gp.tons = cab.tons;
         gp.efficiency = cab.efficiency;
         gp.electrical = (cab.electrical && cab.electrical[cfg.voltage]) ? cfg.voltage : null;
-        gp.motor = cfg.motor || null;
+        // The motor is picked on the result row (configure.motor below).
+        gp.motor = null;
         gp.hgrh = gp.type === 'GAS' ? (cfg.hgrh === 'YES' ? 'YES' : 'NO') : null;
         ['ambient', 'eatDb', 'eatWb', 'heatAmbient'].forEach(function (k) {
             if (cfg[k] != null) gp[k] = cfg[k];
@@ -813,8 +842,18 @@
             label: cfg.model + (gp.type !== 'HEAT PUMP' ? ''
                 : (cfg.kitKw ? ' with ' + cfg.kitKw + ' kW electric heat' : ' (no electric heat)')),
             cabinet: cfg.cabinet,
-            heatSize: cfg.heatSize || null, kitKw: cfg.kitKw, cfm: cfg.cfm
+            heatSize: cfg.heatSize || null, kitKw: cfg.kitKw, cfm: cfg.cfm,
+            motor: cfg.motor || null,
+            convOutlet: !!cfg.convOutlet, powerExhaust: !!cfg.powerExhaust
         };
+        // Configure from a project schedule row: every result's button
+        // replaces that unit ({ instanceId, projectId, mode, tag, model }).
+        // Kept apart from `configure`, so it survives a change of size.
+        gp.replace = null;
+        if (cfg.replace) {
+            gp.replace = { model: cfg.model };
+            Object.keys(cfg.replace).forEach(function (k) { gp.replace[k] = cfg.replace[k]; });
+        }
         // The search runs before the form renders: settle the conditions
         // on published values for this unit first.
         reconcileGasPackConditions();
@@ -830,16 +869,40 @@
                   Number(cab.tons) === Number(gp.tons) && cab.efficiency === gp.efficiency);
     }
 
-    function buildConfigureBanner(cfg) {
+    // "Configuring DSG0363DL ..." (cfg = gp.configure, may be null) and/or
+    // "Replacing RTU-1 ..." (rep = gp.replace, may be null).
+    function buildConfigureBanner(cfg, rep) {
         var box = document.createElement('div');
         box.className = 'design-gp-configure';
+        var unit = rep ? (rep.tag ? rep.tag + ' (' + rep.model + ')' : rep.model) : null;
         var strong = document.createElement('strong');
-        strong.textContent = 'Configuring ' + cfg.label + '. ';
+        var text;
+        if (cfg) {
+            strong.textContent = 'Configuring ' + (rep ? unit + ' from your project' : cfg.label) + '. ';
+            text = 'The search is narrowed to this unit. Change the motor, power exhaust or outlet on ' +
+                'the result row; change hot gas reheat or the design conditions here and click Find ' +
+                'matches. ' + (rep
+                    ? 'Replace swaps the unit on your project schedule, keeping its tag and place. '
+                    : 'Select puts the result on its schedule row. ') +
+                'Reset searches every unit again.';
+        } else {
+            strong.textContent = 'Replacing ' + unit + ' on your project. ';
+            text = 'Replace on any result swaps it in, keeping its tag and place in the schedule.';
+        }
         box.appendChild(strong);
-        box.appendChild(document.createTextNode(
-            'The search is narrowed to this unit. Change the motor, hot gas reheat, electrical ' +
-            'options or design conditions and click Find matches; Select puts the result on its ' +
-            'schedule row. Reset searches every unit again.'));
+        box.appendChild(document.createTextNode(text));
+        if (rep) {
+            var stop = document.createElement('button');
+            stop.type = 'button';
+            stop.className = 'projects-btn projects-btn-secondary design-gp-configure-stop';
+            stop.textContent = 'Don’t replace';
+            stop.title = 'Results go back to Select (to the product page) instead of replacing ' + unit;
+            stop.addEventListener('click', function () {
+                state.gasPack.replace = null;
+                rerenderWorkArea();
+            });
+            box.appendChild(stop);
+        }
         return box;
     }
 
@@ -911,7 +974,7 @@
         box.appendChild(hdr);
 
         if (gp.configure && !configuredCabinetInScope()) gp.configure = null;
-        if (gp.configure) box.appendChild(buildConfigureBanner(gp.configure));
+        if (gp.configure || gp.replace) box.appendChild(buildConfigureBanner(gp.configure, gp.replace));
 
         var hint = document.createElement('p');
         hint.className = 'design-search-hint';
@@ -975,21 +1038,59 @@
         }
 
         // ----- Targets -----
+        // Within ± tolerance, or meet or exceed (smallest unit first).
+        var modeRow = document.createElement('div');
+        modeRow.className = 'design-gp-mode';
+        modeRow.setAttribute('role', 'radiogroup');
+        modeRow.setAttribute('aria-label', 'Target mode');
+        [{ value: 'band', label: 'Within ± tolerance' },
+         { value: 'min', label: 'Meet or exceed (smallest first)' }].forEach(function (m) {
+            var lab = document.createElement('label');
+            lab.className = 'design-gp-check';
+            var input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'design-gp-mode';
+            input.checked = gp.mode === m.value;
+            input.addEventListener('change', function () {
+                if (!input.checked) return;
+                gp.mode = m.value;
+                rerenderWorkArea();
+            });
+            lab.appendChild(input);
+            var span = document.createElement('span');
+            span.textContent = m.label;
+            lab.appendChild(span);
+            modeRow.appendChild(lab);
+        });
+        box.appendChild(modeRow);
+
         var thint = document.createElement('p');
         thint.className = 'design-search-hint';
-        thint.textContent = 'Leave a row blank to skip it. Tolerance is the +/- percent the result ' +
-            'can differ from your target.';
+        thint.textContent = gp.mode === 'min'
+            ? 'Leave a row blank to skip it. Each capacity must be met or exceeded, and the ' +
+              'closest fit is listed first; "cap" limits how far above the target a unit can ' +
+              'be (blank = no limit). Supply CFM is still ± tolerance.'
+            : 'Leave a row blank to skip it. Tolerance is the +/- percent the result ' +
+              'can differ from your target.';
         box.appendChild(thint);
 
         var grid = document.createElement('div');
         grid.className = 'design-target-grid';
         GP_NUMERIC.forEach(function (def) {
             // Each unit type's heating target only while that type is in scope.
-            if (def.key === 'heatRise' && !opts.hasGas) return;
-            if (def.key === 'hpHeating' && !opts.hasHeatPump) return;
+            if (def.type === 'GAS' && !opts.hasGas) return;
+            if (def.type === 'HEAT PUMP' && !opts.hasHeatPump) return;
             grid.appendChild(gpTargetRow(def));
         });
         box.appendChild(grid);
+        if (opts.hasHeatPump) {
+            var loadHint = document.createElement('p');
+            loadHint.className = 'design-search-hint';
+            loadHint.textContent = 'Heating Load: heat pump capacity at the heating outdoor ' +
+                'temperature plus the electric heat kit (kW × ' + G.KW_BTUH.toLocaleString() +
+                ') must cover it. Each unit opens on the smallest kit that does.';
+            box.appendChild(loadHint);
+        }
 
         // ----- Electrical options -----
         var optBox = document.createElement('div');
@@ -1086,19 +1187,34 @@
 
         var pm = document.createElement('span');
         pm.className = 'design-target-plusminus';
-        pm.textContent = '±';
         row.appendChild(pm);
+
+        // A heating load is always a minimum: nothing to set.
+        if (def.load) {
+            pm.textContent = 'minimum';
+            pm.classList.add('design-target-min');
+            return row;
+        }
+
+        // Meet or exceed: the box is the oversize cap (blank = none).
+        var capMode = state.gasPack.mode === 'min' && !!def.cap;
+        var store = capMode ? state.gasPack.caps : state.gasPack.tols;
+        pm.textContent = capMode ? 'cap +' : '±';
+        if (capMode) {
+            pm.title = 'No more than this percent above the target. Leave blank for no limit.';
+        }
 
         var tolInput = document.createElement('input');
         tolInput.type = 'number';
         tolInput.className = 'design-target-tolerance';
         tolInput.step = 'any';
         tolInput.min = '0';
-        tolInput.setAttribute('aria-label', def.label + ' tolerance (%)');
-        tolInput.value = state.gasPack.tols[def.key];
+        if (capMode) tolInput.placeholder = 'none';
+        tolInput.setAttribute('aria-label', def.label + (capMode ? ' oversize cap (%)' : ' tolerance (%)'));
+        if (store[def.key] != null) tolInput.value = store[def.key];
         tolInput.addEventListener('input', function () {
             var raw = tolInput.value.trim();
-            state.gasPack.tols[def.key] = raw === '' ? 0 : parseFloat(raw);
+            store[def.key] = raw === '' ? (capMode ? null : 0) : parseFloat(raw);
         });
         row.appendChild(tolInput);
 
@@ -1575,9 +1691,10 @@
         if (gp.eatDb == null || isNaN(gp.eatDb)) missing.push('Cooling EAT (DB)');
         if (gp.eatWb == null || isNaN(gp.eatWb)) missing.push('Cooling EAT (WB)');
         // Heating is optional (heat pumps then list with heating blank),
-        // unless a heating capacity target has to be judged.
-        if (gp.hpHeating != null && !isNaN(gp.hpHeating) &&
-            (gp.heatAmbient == null || isNaN(gp.heatAmbient))) {
+        // unless a heating capacity target or load has to be judged.
+        var hpTarget = (gp.hpHeating != null && !isNaN(gp.hpHeating)) ||
+                       (gp.heatLoad != null && !isNaN(gp.heatLoad));
+        if (hpTarget && (gp.heatAmbient == null || isNaN(gp.heatAmbient))) {
             missing.push('Heating Outdoor Ambient');
         }
         if (missing.length) {
@@ -1594,25 +1711,20 @@
             return;
         }
 
-        function target(key) {
-            return { value: gp[key], tol: gp.tols[key] };
-        }
         var criteria = {
             type: gp.type,
             tons: gp.tons, electrical: gp.electrical, motor: gp.motor,
             efficiency: gp.efficiency, hgrh: gp.hgrh, kw: gp.kw,
             ambient: gp.ambient, eatDb: gp.eatDb, eatWb: gp.eatWb,
             heatAmbient: (gp.heatAmbient == null || isNaN(gp.heatAmbient)) ? null : gp.heatAmbient,
-            cfm: target('cfm'),
-            coolTotal: target('coolTotal'),
-            coolSensible: target('coolSensible'),
-            heatRise: target('heatRise'),
-            hpHeating: target('hpHeating'),
+            mode: gp.mode,
             convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust,
             // Conditions are picked from published values: read them there,
             // never at a snapped neighbour.
             exact: true
         };
+        // cfm, coolTotal, coolSensible, heatRise, hpHeating, heatLoad.
+        GP_NUMERIC.forEach(function (def) { criteria[def.key] = gpTarget(def); });
         var out = HHpro.GasPackCapacity.search(criteria);
         state.results = {
             mode: 'gasPack',
@@ -1632,8 +1744,12 @@
     // `mixedOnly` columns appear only when both types are listed. The
     // `variant` column of a unit's type becomes its heat size / heat kit
     // dropdown when the unit has more than one.
+    // `marginCol` (vs Target: each entered target's margin) shows only when
+    // a target was entered. `motorPicker` / `optionsPicker` are the row's
+    // own Motor dropdown and electrical option toggles (withOptions).
     var GP_COLUMNS = [
         { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
+        { label: 'vs Target', marginCol: true, cls: 'gp-col-margin' },
         { label: 'Type', get: function (r) { return r.type === 'HEAT PUMP' ? 'Heat Pump' : 'Gas'; },
           mixedOnly: true },
         { label: 'Nom Tons', get: function (r) { return r.tons; } },
@@ -1641,7 +1757,7 @@
             return HHpro.GasPackCapacity.EFFICIENCY_LABELS[r.efficiency] || r.efficiency;
         } },
         { label: 'Volt/PH', get: function (r) { return r.voltage; } },
-        { label: 'Motor', get: function (r) { return r.motorLabel; }, motorHelp: true },
+        { label: 'Motor', get: function (r) { return r.motorLabel; }, motorPicker: true },
         { label: 'HGRH', get: function (r) { return r.hgrh; }, only: 'GAS' },
         // A dropdown of the unit's published airflows (see buildAirflowSelect).
         { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling',
@@ -1679,6 +1795,12 @@
             if (r.type !== 'HEAT PUMP') return null;
             return r.kitKw ? r.kitKw : 'None';
         }, group: 'Heat Pump Heating', only: 'HEAT PUMP', variant: 'HEAT PUMP' },
+        // Heat pump + kit at the heating outdoor temperature (what a
+        // Heating Load is judged on).
+        { label: 'HP + Kit (BTU/h)', get: function (r) {
+            return r.totalHeat == null ? null : fmtInt(r.totalHeat);
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        { label: 'Options', optionsPicker: true, group: 'Electrical' },
         { label: 'MCA', get: function (r) { return r.electrical.mca; }, group: 'Electrical' },
         { label: 'MOP', get: function (r) { return r.electrical.mop; }, group: 'Electrical' },
         { label: 'Motor HP', get: function (r) { return r.electrical.hp == null ? '—' : r.electrical.hp; },
@@ -1694,15 +1816,53 @@
         };
     }
 
-    function gpColumnsFor(rows) {
+    function gpColumnsFor(rows, criteria) {
         var types = {};
         rows.forEach(function (r) { types[r.type || 'GAS'] = true; });
         var mixed = Object.keys(types).length > 1;
+        var anyTarget = activeTargets(criteria).length > 0;
         return GP_COLUMNS.filter(function (col) {
             if (col.only && !types[col.only]) return false;
             if (col.mixedOnly && !mixed) return false;
+            if (col.marginCol && !anyTarget) return false;
             return true;
         });
+    }
+
+    // The targets a search was run with: [{ def, t }].
+    function activeTargets(criteria) {
+        return GP_NUMERIC.map(function (def) {
+            return { def: def, t: criteria && criteria[def.key] };
+        }).filter(function (x) {
+            return x.t && x.t.value != null && !isNaN(x.t.value) && x.t.value > 0;
+        });
+    }
+
+    // vs Target cell: one line per target the result can be judged on,
+    // "Total +4%" / "Sens −2%"; a line outside its target is marked.
+    function fillMarginCell(td, r, criteria) {
+        td.innerHTML = '';
+        var tips = [];
+        activeTargets(criteria).forEach(function (x) {
+            if (x.def.type && x.def.type !== r.type) return;
+            var v = x.def.actual(r);
+            var line = document.createElement('div');
+            line.className = 'gp-margin-line';
+            if (v == null || isNaN(v)) {
+                line.textContent = x.def.short + ' —';
+                line.classList.add('is-off');
+            } else {
+                var pct = (v - x.t.value) / x.t.value * 100;
+                var r1 = Math.round(pct);
+                line.textContent = x.def.short + ' ' + (r1 > 0 ? '+' : r1 < 0 ? '−' : '±') +
+                    Math.abs(r1) + '%';
+                if (!HHpro.GasPackCapacity.meets(v, x.t)) line.classList.add('is-off');
+                tips.push(x.def.label + ': ' + fmtInt(v) + ' vs ' + fmtInt(x.t.value) + ' ' +
+                    x.def.unit + ' (' + (pct >= 0 ? '+' : '−') + Math.abs(pct).toFixed(1) + '%)');
+            }
+            td.appendChild(line);
+        });
+        td.title = tips.join('\n');
     }
 
     function fmt(v, places) {
@@ -1717,19 +1877,27 @@
     // Select hands the result to the Gas Pack schedule: the closest stored
     // row is found, stamped with the design payload, and the user is taken
     // there with that row focused and the toggle already on.
+    // While a project unit is being replaced (Configure on the project
+    // schedule) the button is Replace instead: see replaceProjectUnit.
     function buildGasPackActions(r) {
         var wrap = document.createElement('div');
         wrap.className = 'actions-row design-gp-actions';
 
         var match = HHpro.GasPackDesign.matchSelection(state.productData, r);
+        var rep = state.gasPack.replace;
 
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'action-btn action-btn-select';
-        btn.textContent = 'Select';
+        btn.textContent = rep ? 'Replace' : 'Select';
+        if (rep) btn.title = 'Replace ' + (rep.tag || rep.model) + ' on your project schedule with this unit';
         btn.disabled = !match;
         btn.addEventListener('click', function () {
             if (!match) return;
+            if (state.gasPack.replace) {
+                replaceProjectUnit(state.gasPack.replace, match, r);
+                return;
+            }
             // The row's other kW / heat-size variants lose any older design
             // values, so the schedule opens on the one picked here.
             var fam = (HHpro.Schedule && HHpro.Schedule.findKwFamilyForSelection)
@@ -1759,7 +1927,11 @@
             var isHp = r.type === 'HEAT PUMP';
             var kwText = isHp ? (r.kitKw ? r.kitKw + ' kW' : 'no electric heat') : '';
             note.textContent = '→ ' + schedModel + (isHp ? ' · ' + kwText : '');
-            if (schedModel === r.model) {
+            if (rep) {
+                note.textContent = '→ replaces ' + (rep.tag || rep.model);
+                note.title = 'Becomes schedule row ' + schedModel + (isHp ? ' (' + kwText + ')' : '') +
+                    ' with these design values, keeping the tag and place of ' + (rep.tag || rep.model) + '.';
+            } else if (schedModel === r.model) {
                 note.title = 'Selects this row on the LC RTU schedule.';
             } else if (isHp) {
                 // Heat pump rows carry no motor letter; design values spell
@@ -1773,6 +1945,48 @@
         }
         wrap.appendChild(note);
         return wrap;
+    }
+
+    /**
+     * Replace on a result (Configure from the project schedule): the
+     * project item takes this result's schedule row and design values, and
+     * keeps its tag and place (HHpro.ProjectView.replaceItem). Only while
+     * the project it came from is still the one open.
+     */
+    function replaceProjectUnit(rep, match, r) {
+        var st = HHpro.Cart && HHpro.Cart.getActiveState ? HHpro.Cart.getActiveState() : null;
+        var sameProject = st && st.mode === rep.mode && (st.projectId || null) === rep.projectId;
+        if (!sameProject || !HHpro.ProjectView) {
+            alert('The project ' + (rep.tag || rep.model) + ' came from is no longer open, so it ' +
+                'can’t be replaced. Open that project and use Configure again.');
+            return;
+        }
+        var payload = HHpro.GasPackDesign.payloadFor(r);
+        payload.selectionId = match.selection.id;
+        var product = HHpro.Data.getProduct(state.productKey);
+        var label = HHpro.Cart.computeLabel
+            ? HHpro.Cart.computeLabel(product, match.selection, state.productData)
+            : match.selection.id;
+        var out = HHpro.ProjectView.replaceItem({
+            instanceId: rep.instanceId,
+            productKey: state.productKey,
+            data: state.productData,
+            patch: { selectionId: match.selection.id, label: label, gasPackDesign: payload }
+        });
+        if (!out.ok) {
+            alert((rep.tag || rep.model) + ' is no longer on the project schedule, so it can’t ' +
+                'be replaced.');
+            return;
+        }
+        state.gasPack.replace = null;
+        state.gasPack.configure = null;
+        if (HHpro.UI && HHpro.UI.toast) {
+            HHpro.UI.toast((rep.tag || rep.model) + ' replaced with ' + r.model +
+                (out.dropped ? '. ' + out.dropped + ' hand edit' + (out.dropped === 1 ? '' : 's') +
+                    ' on its row no longer applied and ' + (out.dropped === 1 ? 'was' : 'were') +
+                    ' cleared.' : '.'));
+        }
+        HHpro.App.showView('project_view');
     }
 
     // One results row per orderable unit: the heat sizes of a gas pack (and
@@ -1792,16 +2006,23 @@
         return r.heatSize || '';
     }
 
-    function groupGasPackResults(rows) {
+    // The motor is a dropdown on the row (withOptions), not a row of its
+    // own: each group keeps the results of one motor - the form's Motor,
+    // else Standard Static - and the row can switch to the other.
+    function groupGasPackResults(rows, criteria) {
         var groups = [];
         var byKey = {};
         rows.forEach(function (r) {
-            var key = [r.type, r.cabinet, r.voltage, r.motor, r.hgrh].join('|');
+            var key = [r.type, r.cabinet, r.voltage, r.hgrh].join('|');
             var g = byKey[key];
-            if (!g) { g = byKey[key] = { key: key, variants: [] }; groups.push(g); }
-            g.variants.push(r);
+            if (!g) { g = byKey[key] = { key: key, all: [] }; groups.push(g); }
+            g.all.push(r);
         });
+        var pref = (criteria && criteria.motor) || 'D';
         groups.forEach(function (g) {
+            g.motor = g.all.some(function (r) { return r.motor === pref; }) ? pref : g.all[0].motor;
+            g.variants = g.all.filter(function (r) { return r.motor === g.motor; });
+            delete g.all;
             g.variants.sort(function (a, b) { return variantRank(a) - variantRank(b); });
             g.defaultIdx = 0;
             g.variants.forEach(function (v, i) {
@@ -1814,7 +2035,7 @@
     function buildGasPackResults() {
         var res = state.results;
         var rows = res.results;
-        var groups = groupGasPackResults(rows);
+        var groups = groupGasPackResults(rows, res.criteria);
         var wrap = document.createElement('section');
         wrap.className = 'design-search-results';
 
@@ -1901,22 +2122,31 @@
         }
         GP_NUMERIC.forEach(function (def) {
             var t = c[def.key];
-            if (t && t.value != null && !isNaN(t.value)) {
-                chips.push(def.label + ' ' + t.value + ' ' + def.unit + ' ±' + t.tol + '%');
+            if (!t || t.value == null || isNaN(t.value)) return;
+            var text = def.label + ' ' + Number(t.value).toLocaleString() + ' ' + def.unit;
+            if (t.min) {
+                text = def.label + ' ≥ ' + Number(t.value).toLocaleString() + ' ' + def.unit +
+                    (t.tol != null && !isNaN(t.tol) ? ' (cap +' + t.tol + '%)' : '');
+            } else {
+                text += ' ±' + t.tol + '%';
             }
+            chips.push(text);
         });
         if (c.convOutlet) chips.push('powered convenience outlet');
         if (c.powerExhaust) chips.push('power exhaust');
         return chips;
     }
 
-    // Where the configured unit's results row opens ({ cur, air }), or null
-    // for any other row: on the heat size / heat kit it was configured with,
-    // at the readable airflow nearest its CFM (a tie goes to the one nearer
-    // nominal). A typed CFM target steers the airflow instead.
+    // Where the configured unit's results row opens ({ cur, air, motor,
+    // conv, pe }), or null for any other row: on the heat size / heat kit,
+    // motor and electrical options it was configured with, at the readable
+    // airflow nearest its CFM (a tie goes to the one nearer nominal). A
+    // typed CFM target steers the airflow instead; a heating load picks
+    // the kit (the smallest that covers it).
     function configuredStart(g) {
         var cfg = state.gasPack.configure;
         if (!cfg || g.variants[0].cabinet !== cfg.cabinet) return null;
+        var loadTyped = state.gasPack.heatLoad != null && !isNaN(state.gasPack.heatLoad);
         var cur = -1;
         g.variants.forEach(function (v, i) {
             if (cur >= 0) return;
@@ -1925,7 +2155,7 @@
                 : v.heatSize === cfg.heatSize;
             if (same) cur = i;
         });
-        if (cur < 0) return null;
+        if (cur < 0 || (loadTyped && g.variants[0].type === 'HEAT PUMP')) cur = g.defaultIdx;
         var v = g.variants[cur];
         var air = v.airflow;
         var cfmTyped = state.gasPack.cfm != null && !isNaN(state.gasPack.cfm);
@@ -1942,19 +2172,66 @@
             });
             if (best != null) air = best;
         }
-        return { cur: cur, air: air };
+        return { cur: cur, air: air, motor: cfg.motor || null,
+                 conv: cfg.convOutlet == null ? null : !!cfg.convOutlet,
+                 pe: cfg.powerExhaust == null ? null : !!cfg.powerExhaust };
     }
 
-    // A heat size / kit or airflow picked on the configured unit's row is
-    // kept, so the next Find matches (another motor, power exhaust, ...)
-    // opens on it again.
-    function noteConfigured(g, cur, air) {
+    // What is picked on the configured unit's row (heat size / kit, airflow,
+    // motor, electrical options) is kept, so the next Find matches (other
+    // conditions, hot gas reheat, ...) opens on it again.
+    function noteConfigured(g, pick) {
         var cfg = state.gasPack.configure;
-        var v = g.variants[cur];
+        var v = g.variants[pick.cur];
         if (!cfg || !v || v.cabinet !== cfg.cabinet) return;
         if (v.type === 'HEAT PUMP') cfg.kitKw = v.kitKw || 0;
         else cfg.heatSize = v.heatSize;
-        cfg.cfm = air;
+        cfg.cfm = pick.air;
+        cfg.motor = pick.motor;
+        cfg.convOutlet = pick.conv;
+        cfg.powerExhaust = pick.pe;
+    }
+
+    // Motor dropdown for a results row: every offered motor, the ones the
+    // cabinet isn't built with (at this voltage / kit) disabled.
+    function buildMotorSelect(base, motor, onChange) {
+        var G = HHpro.GasPackCapacity;
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', 'Indoor fan motor');
+        G.OFFERED_MOTORS.forEach(function (m) {
+            var opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = G.MOTOR_LABELS[m];
+            if (!G.withOptions(base, { motor: m })) opt.disabled = true;
+            if (m === motor) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.addEventListener('change', function () { onChange(select.value); });
+        return wrapVariantControl(select);
+    }
+
+    // Electrical option toggles for a results row; they change MCA / MOP.
+    function buildOptionToggles(conv, pe, onChange) {
+        var wrap = document.createElement('div');
+        wrap.className = 'design-gp-row-options';
+        [{ key: 'pe', label: 'Power exhaust', on: pe },
+         { key: 'conv', label: 'Conv. outlet', on: conv, title: 'Powered convenience outlet' }]
+            .forEach(function (o) {
+                var lab = document.createElement('label');
+                lab.className = 'design-gp-check';
+                if (o.title) lab.title = o.title;
+                var input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = !!o.on;
+                input.addEventListener('change', function () { onChange(o.key, input.checked); });
+                lab.appendChild(input);
+                var span = document.createElement('span');
+                span.textContent = o.label;
+                lab.appendChild(span);
+                wrap.appendChild(lab);
+            });
+        return wrap;
     }
 
     function buildGasPackTable(groups, res) {
@@ -1976,7 +2253,7 @@
         groupRow.appendChild(actionsHead);
 
         // Group header: one merged cell per run of columns sharing a group.
-        var columns = gpColumnsFor(rows);
+        var columns = gpColumnsFor(rows, res.criteria);
         var i = 0;
         while (i < columns.length) {
             var g = columns[i].group || null;
@@ -2009,34 +2286,54 @@
             // What was picked is kept with these results, so coming back from
             // the schedule shows the airflow and kit that Select sent there.
             res.picks = res.picks || {};
-            var pick = res.picks[g.key] || configuredStart(g);
-            var cur = pick ? pick.cur : g.defaultIdx;
-            var air = pick ? pick.air : g.variants[cur].airflow;
+            var pick = res.picks[g.key] || configuredStart(g) || {};
+            var cur = pick.cur != null ? pick.cur : g.defaultIdx;
+            var air = pick.air != null ? pick.air : g.variants[cur].airflow;
+            // Motor and electrical options: the row's own, starting from the
+            // form (see groupGasPackResults / the Electrical options boxes).
+            var motor = pick.motor || g.motor;
+            var conv = pick.conv != null ? pick.conv : !!res.criteria.convOutlet;
+            var pe = pick.pe != null ? pick.pe : !!res.criteria.powerExhaust;
             function remember() {
-                res.picks[g.key] = { cur: cur, air: air };
-                noteConfigured(g, cur, air);
+                var p = { cur: cur, air: air, motor: motor, conv: conv, pe: pe };
+                res.picks[g.key] = p;
+                noteConfigured(g, p);
             }
 
             var actionsTd = document.createElement('td');
             actionsTd.className = 'actions-cell';
             tr.appendChild(actionsTd);
 
-            // Value cells repaint from the variant and airflow picked.
+            // Value cells repaint from the variant, airflow, motor and
+            // options picked.
             var cells = [];
-            var variantTd = null, airTd = null;
+            var variantTd = null, airTd = null, motorTd = null, optionsTd = null;
+            var marginTd = null, kitTd = null;
             columns.forEach(function (col) {
                 var td = document.createElement('td');
                 if (col.cls) td.className = col.cls;
                 var r0 = g.variants[0];
                 // Gas rows keep the dropdown even with one size left, so the
                 // sizes Daikin rules out at this airflow show (greyed out).
-                var otherSizes = (r0.heatSizes || []).length > 1;
+                // Heat pump rows keep it with a heating load, so the kits
+                // too small for it show.
+                var otherSizes = (r0.heatSizes || []).length > 1 ||
+                    (r0.type === 'HEAT PUMP' && res.criteria.heatLoad &&
+                     res.criteria.heatLoad.value > 0);
+                if (col.variant && col.variant === r0.type) kitTd = td;
                 if (col.variant && col.variant === r0.type && (g.variants.length > 1 || otherSizes)) {
                     td.classList.add('kw-variant-cell');
                     variantTd = td;
                 } else if (col.airflowPicker && (r0.options || []).length > 1) {
                     td.classList.add('kw-variant-cell');
                     airTd = td;
+                } else if (col.motorPicker) {
+                    td.classList.add('kw-variant-cell', 'gp-col-motor');
+                    motorTd = td;
+                } else if (col.optionsPicker) {
+                    optionsTd = td;
+                } else if (col.marginCol) {
+                    marginTd = td;
                 } else {
                     cells.push({ col: col, td: td });
                 }
@@ -2044,7 +2341,9 @@
             });
 
             function paint() {
-                var r = G.atAirflow(g.variants[cur], air);
+                var base = G.atAirflow(g.variants[cur], air);
+                var r = G.withOptions(base, { motor: motor, convOutlet: conv, powerExhaust: pe });
+                if (!r) { r = base; motor = base.motor; }
                 if (variantTd) {
                     variantTd.innerHTML = '';
                     variantTd.appendChild(buildVariantSelect(g, cur, air, function (idx) {
@@ -2054,8 +2353,39 @@
                         if (!optionAt(g.variants[cur], air).ok) air = g.variants[cur].airflow;
                         remember();
                         paint();
+                    }, { motor: motor, r: r, criteria: res.criteria }));
+                }
+                if (motorTd) {
+                    motorTd.innerHTML = '';
+                    motorTd.appendChild(buildMotorSelect(base, motor, function (m) {
+                        motor = m;
+                        remember();
+                        paint();
+                    }));
+                    // Static pressure / airflow range of each drive.
+                    if (HHpro.GasPackAirflow) {
+                        motorTd.appendChild(HHpro.GasPackAirflow.helpButton({
+                            cabinet: r.cabinet,
+                            motor: r.motor,
+                            heatSize: r.heat ? r.heat.size : null,
+                            kitKw: r.kitKw || 0,
+                            productPage: false
+                        }));
+                    }
+                }
+                if (optionsTd) {
+                    optionsTd.innerHTML = '';
+                    optionsTd.appendChild(buildOptionToggles(conv, pe, function (key, on) {
+                        if (key === 'pe') pe = on; else conv = on;
+                        remember();
+                        paint();
                     }));
                 }
+                if (marginTd) fillMarginCell(marginTd, r, res.criteria);
+                // A heat kit outside Daikin's supply airflow limits at this CFM.
+                var kitChk = (r.type === 'HEAT PUMP' && r.kitKw)
+                    ? G.kitAirflowCheck(r.cabinet, r.motor, r.kitKw, r.cooling.airflow) : null;
+                var kitOff = !!(kitChk && !kitChk.ok);
                 if (airTd) {
                     airTd.innerHTML = '';
                     airTd.appendChild(buildAirflowSelect(g.variants[cur], air, function (a) {
@@ -2071,17 +2401,12 @@
                         ? 'Daikin’s published MOP for this unit is misprinted; ' +
                           'confirm with Daikin (see the Notes sheet of the capacity workbook).'
                         : '';
-                    // Static pressure / airflow range of each drive.
-                    if (c.col.motorHelp && HHpro.GasPackAirflow) {
-                        c.td.appendChild(HHpro.GasPackAirflow.helpButton({
-                            cabinet: r.cabinet,
-                            motor: r.motor,
-                            heatSize: r.heat ? r.heat.size : null,
-                            kitKw: r.kitKw || 0,
-                            productPage: false
-                        }));
-                    }
                 });
+                if (kitTd) {
+                    kitTd.classList.toggle('gp-kit-flag', kitOff);
+                    if (kitOff) kitTd.title = kitAirflowText(r.kitKw, kitChk, r.cooling.airflow);
+                    else if (!variantTd) kitTd.title = '';
+                }
                 actionsTd.innerHTML = '';
                 actionsTd.appendChild(buildGasPackActions(r));
 
@@ -2110,6 +2435,7 @@
                 if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
                     notes.push('Heating not shown: ' + r.hpHeatNote + '.');
                 }
+                if (kitOff) notes.push(kitAirflowText(r.kitKw, kitChk, r.cooling.airflow));
                 if (r.cooling.lwbSaturated) {
                     notes.push('LWB: the leaving air works out at saturation, so LWB = LDB.');
                 }
@@ -2151,13 +2477,25 @@
         return wrap;
     }
 
+    // "15 kW electric heat needs at least 2,400 CFM (Daikin); this unit is
+    // read at 2,250 CFM."
+    function kitAirflowText(kw, chk, airflow) {
+        var lim = [];
+        if (chk.min != null) lim.push('at least ' + Number(chk.min).toLocaleString());
+        if (chk.max != null) lim.push('no more than ' + Number(chk.max).toLocaleString());
+        return kw + ' kW electric heat needs ' + lim.join(' and ') + ' CFM (Daikin’s ' +
+            'electric heat airflow limits); this unit is read at ' +
+            Number(airflow).toLocaleString() + ' CFM.';
+    }
+
     // Heat size / heat kit dropdown for a grouped results row, styled like
-    // the schedule's kW dropdown. `air` is the airflow the row is read at.
-    function buildVariantSelect(g, idx, air, onChange) {
+    // the schedule's kW dropdown. `air` is the airflow the row is read at;
+    // ctx = { motor, r (the row as painted), criteria } for heat pumps.
+    function buildVariantSelect(g, idx, air, onChange, ctx) {
+        if (g.variants[0].type === 'HEAT PUMP') return buildKitSelect(g, idx, air, onChange, ctx || {});
         var select = document.createElement('select');
         select.className = 'kw-variant-select';
-        select.setAttribute('aria-label', g.variants[0].type === 'HEAT PUMP'
-            ? 'Electric heat (kW)' : 'Gas heat size');
+        select.setAttribute('aria-label', 'Gas heat size');
         // Offered sizes, plus (gas only) every other size of the cabinet
         // whose high-stage temp rise at this airflow falls outside Daikin's
         // published range - listed in size order but disabled, with the
@@ -2206,6 +2544,62 @@
                         (x.b.range ? x.b.range[0] + '–' + x.b.range[1] + ' °F' : 'no range') + ')';
                 }).join(', ') + '.';
         }
+        select.addEventListener('change', function () {
+            onChange(parseInt(select.value, 10) || 0);
+        });
+        return wrapVariantControl(select);
+    }
+
+    // Heat kit dropdown for a heat pump results row. With a heating load,
+    // the kits too small for it are listed but disabled ("(short)"); a kit
+    // outside Daikin's electric heat airflow limits at this CFM stays
+    // pickable but says so ("(airflow)").
+    function buildKitSelect(g, idx, air, onChange, ctx) {
+        var G = HHpro.GasPackCapacity;
+        var r0 = g.variants[0];
+        var motor = ctx.motor || r0.motor;
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('aria-label', 'Electric heat (kW)');
+        var load = ctx.criteria && ctx.criteria.heatLoad;
+        var loadVal = (load && load.value > 0) ? Number(load.value) : null;
+        var hpCap = (ctx.r && ctx.r.hpHeat) ? ctx.r.hpHeat.capacity : null;
+        var entries = [];
+        var offered = {};
+        var tips = [];
+        g.variants.forEach(function (v, i) {
+            var kw = v.kitKw || 0;
+            offered[kw] = true;
+            var label = kw ? String(kw) : 'None';
+            var chk = kw ? G.kitAirflowCheck(v.cabinet, motor, kw, air) : null;
+            if (chk && !chk.ok) {
+                label += ' (airflow)';
+                tips.push(kitAirflowText(kw, chk, air));
+            }
+            entries.push({ rank: kw, label: label, value: String(i) });
+        });
+        if (loadVal != null && hpCap != null) {
+            var slot = (((G.cabinets()[r0.cabinet] || {}).electrical || {})[r0.voltage] || {})[motor];
+            Object.keys((slot && slot.kits) || {}).map(Number).forEach(function (kw) {
+                if (offered[kw]) return;
+                var total = hpCap + kw * G.KW_BTUH;
+                if (total >= loadVal) return;      // left out for another reason
+                entries.push({ rank: kw, label: (kw ? String(kw) : 'None') + ' (short)',
+                               value: '', off: true });
+                tips.push((kw ? kw + ' kW' : 'No electric heat') + ': ' + fmtInt(total) +
+                    ' BTU/h, short of the ' + fmtInt(loadVal) + ' BTU/h heating load.');
+            });
+        }
+        entries.sort(function (a, b) { return a.rank - b.rank; });
+        entries.forEach(function (e) {
+            var opt = document.createElement('option');
+            opt.value = e.value;
+            opt.textContent = e.label;
+            if (e.off) opt.disabled = true;
+            if (e.value === String(idx)) opt.selected = true;
+            select.appendChild(opt);
+        });
+        select.title = tips.join('\n');
         select.addEventListener('change', function () {
             onChange(parseInt(select.value, 10) || 0);
         });
