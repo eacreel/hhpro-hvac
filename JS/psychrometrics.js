@@ -57,16 +57,40 @@
     // Persistent state
     // -----------------------------------------------------------------
 
+    // Chart checkboxes (curve families and scales) and the SHR reference
+    // point: everything on and 75 °F / 50% unless the person saved their
+    // own with "Save chart preferences" (kept on their profile).
+    var CHART_SHOW_KEYS = ['rh', 'wb', 'h', 'v', 'prot', 'shr', 'rscale'];
+
+    function chartDefaults() {
+        var show = {};
+        CHART_SHOW_KEYS.forEach(function (k) { show[k] = true; });
+        var shrRef = { db: 75, rh: 50 };
+        var saved = (HHpro.State && HHpro.State.getPref) ? HHpro.State.getPref('psychroChart') : null;
+        if (saved) {
+            if (saved.show) {
+                CHART_SHOW_KEYS.forEach(function (k) {
+                    if (typeof saved.show[k] === 'boolean') show[k] = saved.show[k];
+                });
+            }
+            var r = saved.shrRef;
+            if (r && isFinite(r.db) && isFinite(r.rh) && r.rh > 0 && r.rh <= 100) {
+                shrRef = { db: Number(r.db), rh: Number(r.rh) };
+            }
+        }
+        return { show: show, shrRef: shrRef };
+    }
+
     function defaults() {
+        var chart = chartDefaults();
         return {
             units: 'IP',
             altitude: 0,
             mode: 'ahu',                                     // 'ahu' | 'points'
             dbMin: 20,
             view: null,                                      // zoomed viewport or null = default
-            show: { rh: true, wb: true, h: true, v: false,
-                    prot: false, shr: false, rscale: false },   // optional scales, off by default
-            shrRef: { db: 75, rh: 50 },                      // reference state for the protractor / SHF scale (degF, %)
+            show: chart.show,                                // curve families + scales (chartDefaults)
+            shrRef: chart.shrRef,                            // reference state for the protractor / SHF scale (degF, %)
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -1698,6 +1722,36 @@
     // Chart area
     // -----------------------------------------------------------------
 
+    // "Save chart preferences": the checkboxes and the reference point go
+    // to the person's profile, so the chart opens that way next time, on
+    // any computer (chartDefaults reads them back).
+    function buildSavePrefsButton() {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'psy-zoom-btn psy-save-prefs';
+        btn.textContent = 'Save chart preferences';
+        btn.title = 'Save these checkboxes and the reference point to your profile, so the chart ' +
+            'opens this way next time';
+        btn.addEventListener('click', function () {
+            var show = {};
+            CHART_SHOW_KEYS.forEach(function (k) { show[k] = !!state.show[k]; });
+            var prefs = { show: show, shrRef: { db: Number(state.shrRef.db), rh: Number(state.shrRef.rh) } };
+            if (!HHpro.Api || !HHpro.Api.put) return;
+            btn.disabled = true;
+            HHpro.Api.put('/api/auth/me/prefs', { psychroChart: prefs }).then(function (res) {
+                var saved = (res && res.prefs && res.prefs.psychroChart) || prefs;
+                if (HHpro.State && HHpro.State.setPref) HHpro.State.setPref('psychroChart', saved);
+                if (HHpro.UI && HHpro.UI.toast) HHpro.UI.toast('Chart preferences saved to your profile.');
+            }).catch(function (err) {
+                var msg = 'Could not save chart preferences' +
+                    (err && err.network ? ': the HHpro server can’t be reached.' :
+                     (err && err.message ? ': ' + err.message : '.'));
+                if (HHpro.UI && HHpro.UI.toast) HHpro.UI.toast(msg, true); else alert(msg);
+            }).then(function () { btn.disabled = false; });
+        });
+        return btn;
+    }
+
     function buildChartArea() {
         var area = document.createElement('section');
         area.className = 'psy-chart-area';
@@ -1751,6 +1805,7 @@
             toolbar.appendChild(wrap);
         });
         syncRefInputs();
+        toolbar.appendChild(buildSavePrefsButton());
 
         // Range + zoom controls
         var ctrl = document.createElement('div');

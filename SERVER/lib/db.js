@@ -2,10 +2,11 @@
    HHpro backend - Database
    ------------------------------------------------------------
    One SQLite file, Users/hhpro.db, using the SQLite build that
-   ships inside Node. Two tables:
+   ships inside Node. Main tables:
 
      users     one row per account. The email is the username.
                password_hash is empty until the person registers.
+               prefs holds the person's saved site preferences (JSON).
      sessions  one row per signed-in browser. The browser holds
                only the random session id in a cookie.
 
@@ -85,6 +86,13 @@ const MIGRATIONS = [
     );
     INSERT OR IGNORE INTO companies (name, created_by, created_at)
         SELECT DISTINCT company, 'import', '' FROM users WHERE company <> '';
+    `,
+
+    // v4: each person's saved site preferences, one JSON object
+    // (e.g. { "psychroChart": { "show": {...}, "shrRef": {...} } }).
+    // Kept off the spreadsheet and the admin lists.
+    `
+    ALTER TABLE users ADD COLUMN prefs TEXT NOT NULL DEFAULT '{}';
     `
 ];
 
@@ -288,6 +296,21 @@ function setPasswordHash(id, passwordHash) {
     open().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, id);
 }
 
+/** A user row's saved preferences as an object ({} when none or unreadable). */
+function prefsOf(user) {
+    try {
+        const p = JSON.parse((user && user.prefs) || '{}');
+        return (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+/** Replace a user's saved preferences (an already validated object). */
+function setPrefs(id, prefs) {
+    open().prepare('UPDATE users SET prefs = ? WHERE id = ?').run(JSON.stringify(prefs || {}), id);
+}
+
 function setProjectFolder(id, folder) {
     open().prepare('UPDATE users SET project_folder = ? WHERE id = ?').run(folder, id);
 }
@@ -356,6 +379,8 @@ module.exports = {
     getUserByInviteHash,
     activateUser,
     setPasswordHash,
+    prefsOf,
+    setPrefs,
     setProjectFolder,
     projectFolderTaken,
     createSession,

@@ -11,11 +11,12 @@
          pressure: psia,
          units: 'IP' | 'SI',                       // axis + curve labels
          viewport: { dbMin, dbMax, wMin, wMax },   // degF and lb/lb (IP always)
-         show: { rh: true, wb: true, h: true, v: false,   // curve families; h brings
+         show: { rh: true, wb: true, h: true, v: true,    // curve families; h brings
                                    // its fine lines and the ruler outside saturation
-                 prot: false,      // SHR / dh:dW protractor, top-left
-                 shr: false,       // sensible heat factor scale, right
-                 rscale: false },  // dew point, vapor pressure, enthalpy columns, right
+                 prot: true,       // SHR / dh:dW protractor, top-left
+                 shr: true,        // sensible heat factor scale, right
+                 rscale: true },   // dew point, vapor pressure, enthalpy columns, right
+                                   // (the hover line runs on across them)
          shrRef: { db: 75, rh: 0.5 },   // reference state for prot / shr (degF, fraction)
          points: [{ id: 'oa', label: 'OA', state: st, cls: 'psy-point-oa', title }],
          lines:  [{ from: 'oa', to: 'ra', cls: 'psy-line-mix', arrow: false }],
@@ -177,10 +178,12 @@
         var id = 'psy' + (++instanceCounter);
 
         var W = 980, H = 640;
-        // The right margin grows when the optional right-hand scales are
-        // shown (see layout()); everything else is fixed.
-        var MR_BASE = 84, RSCALE_W = 162, SHR_W = 62;
-        var mL = 36, mR = MR_BASE, mT = 28, mB = 58;
+        // The right margin is the humidity ratio axis (tick labels with the
+        // axis title right beside them - mrBase, sized to the widest label in
+        // layout()) plus the optional right-hand scales; the rest is fixed.
+        var RSCALE_W = 162, SHR_W = 62;
+        var mrBase = 52;
+        var mL = 36, mR = mrBase, mT = 28, mB = 58;
         var pw = W - mL - mR, ph = H - mT - mB;
 
         var vp = defaultViewport(20);
@@ -247,9 +250,16 @@
         var crossV = el('line', null, 'psy-crosshair');
         var crossH = el('line', null, 'psy-crosshair');
         var crossDot = el('circle', { r: 3.5 }, 'psy-crosshair-dot');
+        // With the right-hand scales on: the point's mark on the enthalpy
+        // column (read along its enthalpy line, not straight across).
+        var crossE = el('line', null, 'psy-crosshair');
+        var crossEDot = el('circle', { r: 2.5 }, 'psy-crosshair-dot');
         gHover.appendChild(crossV);
         gHover.appendChild(crossH);
         gHover.appendChild(crossDot);
+        gHover.appendChild(crossE);
+        gHover.appendChild(crossEDot);
+        var hoverH = null;   // { hOf, wOfH } while the right-hand scales are drawn
         hideCross();
 
         var hoverCb = null;
@@ -264,9 +274,32 @@
 
         function clear(g) { while (g.firstChild) g.removeChild(g.firstChild); }
 
-        // Plot width follows the right-hand scales that are switched on.
+        // The humidity ratio axis for the current view and units: tick
+        // values and the widest tick label's width (11 px digits).
+        function yAxisSpec() {
+            var si = units === 'SI';
+            var s = si
+                ? { lo: vp.wMin * 1000, hi: vp.wMax * 1000, toW: function (g) { return g / 1000; },
+                    label: 'Humidity Ratio (g/kg dry air)' }
+                : { lo: vp.wMin * GR, hi: vp.wMax * GR, toW: function (g) { return g / GR; },
+                    label: 'Humidity Ratio (grains / lb dry air)' };
+            s.step = niceStep(s.hi - s.lo, 11, si ? [0.2, 0.5, 1, 2, 5, 10] : [1, 2, 5, 10, 20, 50]);
+            s.start = Math.ceil(s.lo / s.step - 1e-9) * s.step;
+            var chars = 1;
+            for (var v = s.start; v <= s.hi + 1e-9; v += s.step) chars = Math.max(chars, fmtTick(v).length);
+            s.labelW = chars * 7.3;
+            return s;
+        }
+        // Tick labels start 10 px right of the frame; the rotated axis title's
+        // baseline sits 6 px past the widest one (room for its descenders),
+        // and its letters reach ~12 px further.
+        function yTitleX() { return mL + pw + 16 + yAxisSpec().labelW; }
+
+        // Plot width follows the axis labels and the right-hand scales that
+        // are switched on (the first scale box starts ~7 px past the title).
         function layout() {
-            mR = MR_BASE + (current.show.rscale ? RSCALE_W : 0) + (current.show.shr ? SHR_W : 0);
+            mrBase = Math.round(35 + yAxisSpec().labelW);
+            mR = mrBase + (current.show.rscale ? RSCALE_W : 0) + (current.show.shr ? SHR_W : 0);
             pw = W - mL - mR;
             [clipRectBox, frameBg, frame].forEach(function (r) { r.setAttribute('width', pw); });
         }
@@ -462,7 +495,7 @@
         // vapor pressure depend on humidity ratio alone; the enthalpy
         // column marks where each enthalpy line meets the right-hand edge.
         function drawRightScales(P, si, hx) {
-            var x0 = mL + pw + MR_BASE;
+            var x0 = mL + pw + mrBase;
             var n, ticks;
 
             // Dew point: 1-degree ticks where they have room, labels every 5.
@@ -525,7 +558,7 @@
             refTitle.textContent = 'SHF scale reference: ' + refLabel(si);
             g.appendChild(refTitle);
 
-            var barX = mL + pw + MR_BASE + (current.show.rscale ? RSCALE_W : 0) + 8;
+            var barX = mL + pw + mrBase + (current.show.rscale ? RSCALE_W : 0) + 8;
             var yTop = Infinity, yBot = -Infinity, any = false, lastLabelY = -Infinity;
             // From 1.00 downward so 1.00 is always labelled; labels that
             // would land on the previous one are skipped (tick stays).
@@ -608,18 +641,10 @@
                 gGrid.appendChild(ml);
             }
 
-            // --- Axes: humidity ratio ---
-            var yStep, yLo, yHi, yToW, yLabel;
-            if (si) {
-                yLo = vp.wMin * 1000; yHi = vp.wMax * 1000;   // g/kg
-                yStep = niceStep(yHi - yLo, 11, [0.2, 0.5, 1, 2, 5, 10]);
-                yToW = function (g) { return g / 1000; }; yLabel = 'Humidity Ratio (g/kg dry air)';
-            } else {
-                yLo = vp.wMin * GR; yHi = vp.wMax * GR;       // gr/lb
-                yStep = niceStep(yHi - yLo, 11, [1, 2, 5, 10, 20, 50]);
-                yToW = function (g) { return g / GR; }; yLabel = 'Humidity Ratio (grains / lb dry air)';
-            }
-            var yStart = Math.ceil(yLo / yStep - 1e-9) * yStep;
+            // --- Axes: humidity ratio (g/kg or gr/lb) ---
+            var ySpec = yAxisSpec();
+            var yStep = ySpec.step, yLo = ySpec.lo, yHi = ySpec.hi, yToW = ySpec.toW, yLabel = ySpec.label;
+            var yStart = ySpec.start;
             for (var yv = yStart; yv <= yHi + 1e-9; yv += yStep) {
                 var ypx = yOf(yToW(yv));
                 var hl = el('line', { x1: mL, y1: ypx, x2: mL + pw, y2: ypx }, 'psy-grid-line psy-grid-major');
@@ -636,7 +661,8 @@
 
             gAxes.appendChild(text(mL + pw / 2, H - 14, xLabel, 'psy-axis-title', 'middle'));
             var yTitle = text(0, 0, yLabel, 'psy-axis-title', 'middle');
-            yTitle.setAttribute('transform', 'translate(' + (mL + pw + MR_BASE - 14) + ' ' + (mT + ph / 2) + ') rotate(90)');
+            // Right beside the tick labels (see yTitleX / layout()).
+            yTitle.setAttribute('transform', 'translate(' + yTitleX().toFixed(1) + ' ' + (mT + ph / 2) + ') rotate(90)');
             gAxes.appendChild(yTitle);
             var pCaption = si
                 ? 'Barometric pressure ' + (P * 6.894757).toFixed(2) + ' kPa'
@@ -821,6 +847,7 @@
             // --- Optional scales: protractor, right-hand columns, SHF ---
             if (show.prot) drawProtractor(P, si);
             if (show.rscale) drawRightScales(P, si, { hOf: hOf, wOfH: wOfH, ruler: hRuler });
+            hoverH = show.rscale ? { hOf: hOf, wOfH: wOfH } : null;
             if (show.shr) drawShrScale(P, si);
             calloutTop = show.prot ? mT + 40 + PROT.h + 8 : mT + 44;
         }
@@ -972,9 +999,37 @@
         // -------- hover --------
 
         function hideCross() {
-            crossV.setAttribute('visibility', 'hidden');
-            crossH.setAttribute('visibility', 'hidden');
-            crossDot.setAttribute('visibility', 'hidden');
+            [crossV, crossH, crossDot, crossE, crossEDot].forEach(function (n) {
+                n.setAttribute('visibility', 'hidden');
+            });
+        }
+
+        // The hover lines for a point at pixel (x, y), dry bulb db and
+        // humidity ratio w. The horizontal line runs on through the
+        // humidity ratio axis to the right-hand scales that depend on
+        // humidity ratio alone (dew point, vapor pressure). The enthalpy
+        // column is read along the point's enthalpy line instead: it gets a
+        // mark of its own where that line meets the right-hand edge.
+        function showCross(x, y, db, w) {
+            var x0 = mL + pw + mrBase;                      // where the right-hand scales start
+            var rs = !!(current.show.rscale && hoverH);
+            crossV.setAttribute('x1', x); crossV.setAttribute('x2', x);
+            crossV.setAttribute('y1', mT + ph); crossV.setAttribute('y2', y);
+            crossH.setAttribute('x1', x); crossH.setAttribute('x2', rs ? x0 + 105 : mL + pw);
+            crossH.setAttribute('y1', y); crossH.setAttribute('y2', y);
+            crossDot.setAttribute('cx', x); crossDot.setAttribute('cy', y);
+            [crossV, crossH, crossDot].forEach(function (n) { n.removeAttribute('visibility'); });
+            var yE = rs ? yOf(hoverH.wOfH(hoverH.hOf(db, w), vp.dbMax)) : NaN;
+            if (isFinite(yE) && yE >= mT && yE <= mT + ph) {
+                crossE.setAttribute('x1', x0 + 111); crossE.setAttribute('x2', x0 + 156);
+                crossE.setAttribute('y1', yE); crossE.setAttribute('y2', yE);
+                crossEDot.setAttribute('cx', x0 + 116); crossEDot.setAttribute('cy', yE);
+                crossE.removeAttribute('visibility');
+                crossEDot.removeAttribute('visibility');
+            } else {
+                crossE.setAttribute('visibility', 'hidden');
+                crossEDot.setAttribute('visibility', 'hidden');
+            }
         }
 
         function svgPoint(evt) {
@@ -1037,14 +1092,7 @@
                 if (hoverCb) hoverCb(null);
                 return;
             }
-            crossV.setAttribute('x1', p.x); crossV.setAttribute('x2', p.x);
-            crossV.setAttribute('y1', mT + ph);  crossV.setAttribute('y2', p.y);
-            crossH.setAttribute('x1', p.x);      crossH.setAttribute('x2', mL + pw);
-            crossH.setAttribute('y1', p.y);      crossH.setAttribute('y2', p.y);
-            crossDot.setAttribute('cx', p.x);    crossDot.setAttribute('cy', p.y);
-            crossV.removeAttribute('visibility');
-            crossH.removeAttribute('visibility');
-            crossDot.removeAttribute('visibility');
+            showCross(p.x, p.y, db, w);
             if (hoverCb) {
                 var st = null;
                 try { st = Psy.fromDbW(db, w, current.pressure); } catch (e) { st = null; }

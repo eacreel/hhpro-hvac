@@ -35,7 +35,8 @@
     var state = {
         // Profile as returned by /api/auth/me:
         //   { user, allowedEngineers, defaultEngineer, blockedProducts,
-        //     calculatorsOnly, canManageUsers, contactEmail }
+        //     calculatorsOnly, canManageUsers, contactEmail,
+        //     prefs: { psychroChart?: { show, shrRef } } }
         session: loadSession(),
 
         // Placeholders for later steps. Listed here so the shape of the
@@ -116,6 +117,24 @@
         getDefaultEngineer: function () {
             var key = state.session && state.session.defaultEngineer;
             return (key && this.isEngineerAllowed(key)) ? key : DEFAULT_ENGINEER;
+        },
+
+        /**
+         * One of the person's saved preferences (e.g. 'psychroChart'), or
+         * null. Saved to their profile on the server; see setPref.
+         */
+        getPref: function (key) {
+            var prefs = state.session && state.session.prefs;
+            return (prefs && typeof prefs === 'object' && prefs[key]) ? prefs[key] : null;
+        },
+
+        /** Remember a preference the server just saved (keeps the cached profile current). */
+        setPref: function (key, value) {
+            if (!state.session) return;
+            var prefs = (state.session.prefs && typeof state.session.prefs === 'object') ? state.session.prefs : {};
+            prefs[key] = value;
+            state.session.prefs = prefs;
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.session)); } catch (e) { /* non-fatal */ }
         },
 
         /** Products hidden for this person's location come from the Permissions tab. */

@@ -1158,6 +1158,17 @@
     background-color: var(--color-row-hover);
 }
 
+/* "Save chart preferences": a stand-alone button, not inside a group. */
+.psy-zoom-btn.psy-save-prefs {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+}
+
+.psy-zoom-btn.psy-save-prefs:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
 /* ---------- Extra chart styling ---------- */
 
 .psy-path {
