@@ -38,6 +38,11 @@
    the project item (item.gasPackDesign), so the project schedule
    and every export show the catalog values for THAT item - and an
    item added from a standard row never picks them up.
+
+   The row's "Configure" button goes the other way: it opens Design
+   Search narrowed to that unit (configureFor), where the motor,
+   power exhaust, conditions etc. can be changed and the result
+   Selected back onto the row.
    ============================================================ */
 
 (function () {
@@ -73,6 +78,23 @@
                 kitKw: isFinite(kw) ? kw : 0,
                 productPage: true
             }));
+        },
+        // "Configure" beside Select / Submittal / Docs: opens Design Search
+        // narrowed to the unit this row is showing (configureFor).
+        rowActionButtons: function (getSel, data) {
+            if (!HHpro.Views || !HHpro.Views.design_search || !HHpro.App) return null;
+            if (!configureFor(data, getSel())) return null;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'action-btn action-btn-secondary';
+            btn.textContent = 'Configure';
+            btn.title = 'Open this unit in Design Search to change the motor, power exhaust, ' +
+                'entering air or other options.';
+            btn.addEventListener('click', function () {
+                var cfg = configureFor(data, getSel());
+                if (cfg) HHpro.App.showView('design_search', { productKey: PRODUCT, configure: cfg });
+            });
+            return [btn];
         }
     };
 
@@ -401,6 +423,54 @@
         return best;
     }
 
+    /**
+     * What the "Configure" button hands Design Search: the unit a schedule
+     * row is showing, so the search opens narrowed to it (type, tons,
+     * efficiency, voltage, motor, hot gas reheat) on its heat size / heat
+     * kit and nearest its CFM. A row showing design values hands over that
+     * configuration instead - its motor, conditions and electrical options.
+     * token tells one click from a browser back / forward to the same page.
+     * null for a row whose model isn't an LC RTU model number.
+     */
+    function configureFor(data, sel) {
+        var G = HHpro.GasPackCapacity;
+        var cols = resolveColumns(data);
+        var sd = sel && sel.rows && sel.rows[0] && sel.rows[0].scheduleData;
+        var parts = sd && G && G.parseModel(sd[cols.model]);
+        if (!parts) return null;
+        var kw = cols.auxKw ? num(sd[cols.auxKw]) : null;
+        var cfg = {
+            token: sel.id + '@' + Date.now(),
+            model: String(sd[cols.model]).trim(),
+            type: parts.type,
+            cabinet: parts.cabinet,
+            voltage: parts.voltage,
+            motor: parts.motor,
+            heatSize: parts.heat,
+            kitKw: parts.type === 'HEAT PUMP' ? (kw || 0) : null,
+            hgrh: cols.hgrh ? String(sd[cols.hgrh] || 'NO').trim().toUpperCase() : 'NO',
+            cfm: cols.cfm ? num(sd[cols.cfm]) : null
+        };
+        var entry = getDesign(sel.id);
+        var p = entry && entry.on !== false ? entry.payload : null;
+        if (p && p.cabinet === cfg.cabinet) {
+            cfg.model = p.model;
+            cfg.voltage = p.voltage;
+            cfg.motor = p.motor;
+            cfg.heatSize = p.heatSize || cfg.heatSize;
+            if (p.type === 'HEAT PUMP') cfg.kitKw = p.kitKw || 0;
+            cfg.hgrh = p.hgrh || cfg.hgrh;
+            cfg.cfm = p.cooling.airflow;
+            cfg.ambient = p.cooling.ambient;
+            cfg.eatDb = p.cooling.eatDb;
+            cfg.eatWb = p.cooling.eatWb;
+            if (p.hpHeat && p.hpHeat.designDb != null) cfg.heatAmbient = p.hpHeat.designDb;
+            cfg.convOutlet = !!p.electrical.convOutlet;
+            cfg.powerExhaust = !!p.electrical.powerExhaust;
+        }
+        return cfg;
+    }
+
     // -----------------------------------------------------------------
     // Per-row overrides
     // -----------------------------------------------------------------
@@ -697,6 +767,7 @@
         itemPayload: itemPayload,
         hiddenColumnsFor: hiddenColumnsFor,
         matchSelection: matchSelection,
+        configureFor: configureFor,
         overridesFor: overridesFor,
         set: setDesign,
         get: getDesign,

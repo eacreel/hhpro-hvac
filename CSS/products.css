@@ -433,6 +433,21 @@
     flex-wrap: wrap;
 }
 
+/* A row with a product's extra button (LC RTU "Configure") keeps all
+   four on one line - wrapping would double every row's height - by
+   widening the pinned column. The design values toggle, when a row has
+   one, still takes a line of its own underneath. */
+.actions-row.actions-row-extra {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: center;
+}
+
+.actions-row.actions-row-extra > .action-btn-design {
+    grid-column: 1 / -1;
+    justify-self: center;
+}
+
 .action-btn {
     padding: 4px 8px;
     font-size: var(--font-size-xs);

@@ -29,6 +29,11 @@
          selection, overrides }, overrides = the design values laid
          over the row ({} when none). The project view and the
          exports never call it.
+     rowActionButtons(getSel, data)
+         Extra buttons for a row's Actions cell, after Docs (e.g.
+         the LC RTU "Configure"). getSel() returns the selection the
+         row is showing now (kW / heat size dropdowns swap it).
+         Returns an array of elements, or null for none.
 
    Filter behavior:
      - Cascading dropdowns: each dropdown's options reflect what's
@@ -1398,6 +1403,15 @@
         row.appendChild(selectBtn);
         row.appendChild(subBtn);
         row.appendChild(docsBtn);
+
+        // ----- Product-specific extras (rowActionButtons hook) -----
+        var ext = product && HHpro.ProductExtensions && HHpro.ProductExtensions[product.productKey];
+        if (ext && typeof ext.rowActionButtons === 'function') {
+            var extras = ext.rowActionButtons(getSel, data) || [];
+            extras.forEach(function (b) { row.appendChild(b); });
+            // Keeps every button on one line (products.css).
+            if (extras.length) row.classList.add('actions-row-extra');
+        }
         return row;
     }
 

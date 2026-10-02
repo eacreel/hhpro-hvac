@@ -641,6 +641,19 @@
     margin-top: var(--space-md);
 }
 
+/* "Configuring DSG0363DL ..." - the unit the schedule's Configure
+   button sent here. */
+.design-gp-configure {
+    margin: 0 0 var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-primary-light) 12%, transparent);
+    font-size: var(--font-size-sm);
+    line-height: 1.45;
+    color: var(--color-text);
+}
+
 .design-gp-check {
     display: inline-flex;
     align-items: center;

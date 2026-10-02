@@ -42,7 +42,11 @@
         capacity: freshCapacityState(), // condition-aware inputs (products with capacity tables)
         capacityError: null,            // validation message for the capacity section
         gasPack: freshGasPackState(),   // Gas Pack RTU inputs (replaces the form entirely)
-        gasPackError: null
+        gasPackError: null,
+        // LC RTU "Configure": the unit waiting to be applied once the data
+        // loads, and the token of the last click applied (see render).
+        pendingConfigure: null,
+        configureToken: null
     };
 
     // Gas Pack RTUs get a purpose-built form rather than the schema-driven
@@ -62,7 +66,10 @@
             heatAmbient: 17,                       // heat pump heating design OA DB, degF
             cfm: null, coolTotal: null, coolSensible: null, heatRise: null, hpHeating: null,
             tols: { cfm: 10, coolTotal: 10, coolSensible: 10, heatRise: 10, hpHeating: 10 },
-            convOutlet: false, powerExhaust: false
+            convOutlet: false, powerExhaust: false,
+            // Set by the LC RTU schedule's "Configure" button:
+            // { model, cabinet, heatSize, kitKw, cfm } (applyGasPackConfigure).
+            configure: null
         };
     }
 
@@ -119,12 +126,23 @@
          * the "Design Search" button on each product page passes it.
          * Coming back to the category already on screen keeps the
          * entered targets and results.
+         *
+         * params.configure (LC RTU "Configure" button, see
+         * GasPackDesign.configureFor) starts a fresh search narrowed to
+         * that unit and runs it. Applied once per click: coming back to
+         * the page through browser history keeps what was changed since.
          */
         render: function (root, params) {
             var requested = params && params.productKey;
+            var configure = params && params.configure;
             var loadKey = null;
             if (requested && isSearchableProduct(requested)) {
-                if (requested !== state.productKey) {
+                if (configure && configure.token !== state.configureToken) {
+                    selectCategory(requested);
+                    state.configureToken = configure.token;
+                    state.pendingConfigure = configure;
+                    loadKey = requested;
+                } else if (requested !== state.productKey) {
                     selectCategory(requested);
                     loadKey = requested;
                 } else if (!state.productData && !state.loading) {
@@ -176,6 +194,7 @@
         state.capacityError = null;
         state.gasPack = freshGasPackState();
         state.gasPackError = null;
+        state.pendingConfigure = null;
     }
 
     // -----------------------------------------------------------------
@@ -277,6 +296,15 @@
                         state.tolerances[t.col] = (t.defaultTolerance != null ? t.defaultTolerance : 10);
                     }
                 });
+
+                // "Configure" from the LC RTU schedule: narrow the form to
+                // that unit and show it straight away.
+                var cfg = state.pendingConfigure;
+                state.pendingConfigure = null;
+                if (cfg && gasPackUiActive() && applyGasPackConfigure(cfg)) {
+                    runGasPackSearch();
+                    return;
+                }
 
                 rerenderWorkArea();
             })
@@ -759,6 +787,62 @@
         if (!opts.hasHeatPump) gp.hpHeating = null;
     }
 
+    // "Configure" on an LC RTU schedule row (GasPackDesign.configureFor):
+    // pin the form to that unit - type, tons and efficiency single out the
+    // cabinet - with its voltage, motor and hot gas reheat, plus whatever
+    // conditions and electrical options a design-values row carried. The
+    // heat size / kit and CFM are not form inputs: gp.configure steers the
+    // results row to them (configuredStart). false = no tables for it.
+    function applyGasPackConfigure(cfg) {
+        var cab = HHpro.GasPackCapacity.cabinets()[cfg.cabinet];
+        if (!cab) return false;
+        var gp = state.gasPack;
+        gp.type = cab.type || 'GAS';
+        gp.tons = cab.tons;
+        gp.efficiency = cab.efficiency;
+        gp.electrical = (cab.electrical && cab.electrical[cfg.voltage]) ? cfg.voltage : null;
+        gp.motor = cfg.motor || null;
+        gp.hgrh = gp.type === 'GAS' ? (cfg.hgrh === 'YES' ? 'YES' : 'NO') : null;
+        ['ambient', 'eatDb', 'eatWb', 'heatAmbient'].forEach(function (k) {
+            if (cfg[k] != null) gp[k] = cfg[k];
+        });
+        gp.convOutlet = !!cfg.convOutlet;
+        gp.powerExhaust = !!cfg.powerExhaust;
+        gp.configure = {
+            // What the banner calls the unit (the row it came from).
+            label: cfg.model + (gp.type !== 'HEAT PUMP' ? ''
+                : (cfg.kitKw ? ' with ' + cfg.kitKw + ' kW electric heat' : ' (no electric heat)')),
+            cabinet: cfg.cabinet,
+            heatSize: cfg.heatSize || null, kitKw: cfg.kitKw, cfm: cfg.cfm
+        };
+        // The search runs before the form renders: settle the conditions
+        // on published values for this unit first.
+        reconcileGasPackConditions();
+        return true;
+    }
+
+    // The configured unit stops applying once the form is pointed at
+    // another cabinet (Type, Tons or Efficiency changed).
+    function configuredCabinetInScope() {
+        var gp = state.gasPack;
+        var cab = gp.configure && HHpro.GasPackCapacity.cabinets()[gp.configure.cabinet];
+        return !!(cab && (cab.type || 'GAS') === gp.type &&
+                  Number(cab.tons) === Number(gp.tons) && cab.efficiency === gp.efficiency);
+    }
+
+    function buildConfigureBanner(cfg) {
+        var box = document.createElement('div');
+        box.className = 'design-gp-configure';
+        var strong = document.createElement('strong');
+        strong.textContent = 'Configuring ' + cfg.label + '. ';
+        box.appendChild(strong);
+        box.appendChild(document.createTextNode(
+            'The search is narrowed to this unit. Change the motor, hot gas reheat, electrical ' +
+            'options or design conditions and click Find matches; Select puts the result on its ' +
+            'schedule row. Reset searches every unit again.'));
+        return box;
+    }
+
     // The conditions the manual selections were run at (and the AHRI 17 F
     // heat pump point) - the defaults whenever the tables publish them.
     var GP_DEFAULT_CONDITIONS = { ambient: 95, eatDb: 80, eatWb: 67, heatAmbient: 17 };
@@ -825,6 +909,9 @@
         hdr.className = 'design-search-section-title';
         hdr.textContent = 'Performance at design conditions';
         box.appendChild(hdr);
+
+        if (gp.configure && !configuredCabinetInScope()) gp.configure = null;
+        if (gp.configure) box.appendChild(buildConfigureBanner(gp.configure));
 
         var hint = document.createElement('p');
         hint.className = 'design-search-hint';
@@ -1823,6 +1910,53 @@
         return chips;
     }
 
+    // Where the configured unit's results row opens ({ cur, air }), or null
+    // for any other row: on the heat size / heat kit it was configured with,
+    // at the readable airflow nearest its CFM (a tie goes to the one nearer
+    // nominal). A typed CFM target steers the airflow instead.
+    function configuredStart(g) {
+        var cfg = state.gasPack.configure;
+        if (!cfg || g.variants[0].cabinet !== cfg.cabinet) return null;
+        var cur = -1;
+        g.variants.forEach(function (v, i) {
+            if (cur >= 0) return;
+            var same = v.type === 'HEAT PUMP'
+                ? Number(v.kitKw || 0) === Number(cfg.kitKw || 0)
+                : v.heatSize === cfg.heatSize;
+            if (same) cur = i;
+        });
+        if (cur < 0) return null;
+        var v = g.variants[cur];
+        var air = v.airflow;
+        var cfmTyped = state.gasPack.cfm != null && !isNaN(state.gasPack.cfm);
+        if (cfg.cfm != null && !cfmTyped) {
+            var best = null;
+            (v.options || []).forEach(function (o) {
+                if (!o.ok) return;
+                var d = Math.abs(o.airflow - cfg.cfm);
+                var bd = best == null ? Infinity : Math.abs(best - cfg.cfm);
+                if (d < bd || (d === bd &&
+                    Math.abs(o.airflow - v.nominalAirflow) < Math.abs(best - v.nominalAirflow))) {
+                    best = o.airflow;
+                }
+            });
+            if (best != null) air = best;
+        }
+        return { cur: cur, air: air };
+    }
+
+    // A heat size / kit or airflow picked on the configured unit's row is
+    // kept, so the next Find matches (another motor, power exhaust, ...)
+    // opens on it again.
+    function noteConfigured(g, cur, air) {
+        var cfg = state.gasPack.configure;
+        var v = g.variants[cur];
+        if (!cfg || !v || v.cabinet !== cfg.cabinet) return;
+        if (v.type === 'HEAT PUMP') cfg.kitKw = v.kitKw || 0;
+        else cfg.heatSize = v.heatSize;
+        cfg.cfm = air;
+    }
+
     function buildGasPackTable(groups, res) {
         var rows = [];
         groups.forEach(function (g) { rows = rows.concat(g.variants); });
@@ -1875,10 +2009,13 @@
             // What was picked is kept with these results, so coming back from
             // the schedule shows the airflow and kit that Select sent there.
             res.picks = res.picks || {};
-            var pick = res.picks[g.key];
+            var pick = res.picks[g.key] || configuredStart(g);
             var cur = pick ? pick.cur : g.defaultIdx;
             var air = pick ? pick.air : g.variants[cur].airflow;
-            function remember() { res.picks[g.key] = { cur: cur, air: air }; }
+            function remember() {
+                res.picks[g.key] = { cur: cur, air: air };
+                noteConfigured(g, cur, air);
+            }
 
             var actionsTd = document.createElement('td');
             actionsTd.className = 'actions-cell';
