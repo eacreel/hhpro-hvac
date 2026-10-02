@@ -59,6 +59,19 @@
         },
         // Run once on the freshly loaded JSON (HHpro.Data postProcess).
         prepareData: function (data) { fillTempRise(data); },
+        // A filter whose every remaining value (given the other filters)
+        // only says "doesn't apply" is hidden: gas heat size once only heat
+        // pumps are in view, HGRH where no unit in view offers reheat.
+        getVisibleFilters: function (allFilters, currentFilters, data) {
+            if (!data || !HHpro.Schedule || !HHpro.Schedule.uniqueFilterValues) return allFilters;
+            return allFilters.filter(function (fc) {
+                var na = NOT_APPLICABLE_FILTERS[fc.name];
+                if (!na) return true;
+                return HHpro.Schedule.uniqueFilterValues(data, fc.name, currentFilters).some(function (v) {
+                    return na.indexOf(String(v).trim().toUpperCase()) < 0;
+                });
+            });
+        },
         // Product page only: the airflow "?" beside each row's ESP.
         decorateScheduleCell: function (td, colLetter, ctx) {
             var cols = resolveColumns(ctx.data);
@@ -107,6 +120,13 @@
 
     var PRODUCT = 'gas_packs';
     var STORE_KEY = 'hhpro.gasPackDesign.v1';
+
+    // Filter -> the values meaning "doesn't apply to this unit" (see
+    // getVisibleFilters above).
+    var NOT_APPLICABLE_FILTERS = {
+        'HIGH/MEDIUM/LOW GAS HEAT': ['-', ''],
+        'HGRH': ['NO', '-', '']
+    };
 
     // Schedule columns the toggle writes, resolved by header LABEL so the
     // feature survives column edits (the same approach capacity.js uses).
@@ -478,7 +498,6 @@
             cfg.eatDb = p.cooling.eatDb;
             cfg.eatWb = p.cooling.eatWb;
             if (p.hpHeat && p.hpHeat.designDb != null) cfg.heatAmbient = p.hpHeat.designDb;
-            cfg.convOutlet = !!p.electrical.convOutlet;
             cfg.powerExhaust = !!p.electrical.powerExhaust;
         }
         return cfg;
@@ -877,8 +896,7 @@
             ['MCA', e.mca == null ? '-' : e.mca + ' A'],
             ['MOP', e.mop == null ? '-' : e.mop + ' A'],
             ['Indoor motor', e.hp == null ? '-' : e.hp + ' HP'],
-            ['Power exhaust', e.powerExhaust ? 'Yes' : 'No'],
-            ['Powered convenience outlet', e.convOutlet ? 'Yes' : 'No']
+            ['Power exhaust', e.powerExhaust ? 'Yes' : 'No']
         ] });
         blocks.push({ title: 'Notes', paragraph: SHEET_NOTE });
         return blocks;

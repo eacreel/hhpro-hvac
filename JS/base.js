@@ -9,12 +9,13 @@
        HHpro.App.showView('product', { productKey: 'gas_packs' });
 
    Supported per-product extension hooks (in ProductExtensions[key]):
-     getVisibleFilters(allFilters, currentFilters)
+     getVisibleFilters(allFilters, currentFilters, data)
          Returns the subset of filter columns that should be shown
          right now. Called after every filter change, so filters
          can be added/removed dynamically (used by mini_splits to
          reveal per-indoor-unit filters once the user picks a value
-         for NUMBER OF INDOOR UNITS).
+         for NUMBER OF INDOOR UNITS, and by the LC RTUs to hide gas
+         heat / HGRH when they don't apply to the units in view).
      formatScheduleCellValue(colLetter, value)
          Per-column override for how a schedule data cell is
          rendered. Return a string to use that string verbatim, or
@@ -107,6 +108,11 @@
         },
         pruneFilterValues: function (filterValues, visibleFilters) {
             return pruneFilterValues(filterValues, visibleFilters);
+        },
+        // The values a filter can still take given every OTHER filter's
+        // current value (what its dropdown offers).
+        uniqueFilterValues: function (data, filterName, filterValues) {
+            return getUniqueFilterValues(data, filterName, filterValues || {});
         },
         findModelColumns: function (data) { return findModelColumns(data); },
         applyModelFilter: function (selections, query, data) {
@@ -756,7 +762,7 @@
 
         var ext = HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
         if (ext && typeof ext.getVisibleFilters === 'function') {
-            var result = ext.getVisibleFilters(allFilters, currentFilters);
+            var result = ext.getVisibleFilters(allFilters, currentFilters, data);
             return Array.isArray(result) ? result : allFilters;
         }
         return allFilters;

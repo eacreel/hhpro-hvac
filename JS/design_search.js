@@ -71,7 +71,9 @@
             // exceed, smallest first, with an optional oversize cap (%).
             mode: 'band',
             caps: { coolTotal: null, coolSensible: null, heatRise: null, hpHeating: null },
-            convOutlet: false, powerExhaust: false,
+            // The one electrical option: it changes MCA / MOP. (Convenience
+            // outlets are specified non unit powered, so they never do.)
+            powerExhaust: false,
             // Set by the LC RTU schedules' "Configure" button
             // (applyGasPackConfigure): the unit to narrow to, and - from a
             // project schedule - the project item Replace swaps.
@@ -835,7 +837,6 @@
         ['ambient', 'eatDb', 'eatWb', 'heatAmbient'].forEach(function (k) {
             if (cfg[k] != null) gp[k] = cfg[k];
         });
-        gp.convOutlet = !!cfg.convOutlet;
         gp.powerExhaust = !!cfg.powerExhaust;
         gp.configure = {
             // What the banner calls the unit (the row it came from).
@@ -843,8 +844,7 @@
                 : (cfg.kitKw ? ' with ' + cfg.kitKw + ' kW electric heat' : ' (no electric heat)')),
             cabinet: cfg.cabinet,
             heatSize: cfg.heatSize || null, kitKw: cfg.kitKw, cfm: cfg.cfm,
-            motor: cfg.motor || null,
-            convOutlet: !!cfg.convOutlet, powerExhaust: !!cfg.powerExhaust
+            motor: cfg.motor || null
         };
         // Configure from a project schedule row: every result's button
         // replaces that unit ({ instanceId, projectId, mode, tag, model }).
@@ -879,8 +879,8 @@
         var text;
         if (cfg) {
             strong.textContent = 'Configuring ' + (rep ? unit + ' from your project' : cfg.label) + '. ';
-            text = 'The search is narrowed to this unit. Change the motor, power exhaust or outlet on ' +
-                'the result row; change hot gas reheat or the design conditions here and click Find ' +
+            text = 'The search is narrowed to this unit. Change the motor on the result row; change ' +
+                'power exhaust, hot gas reheat or the design conditions here and click Find ' +
                 'matches. ' + (rep
                     ? 'Replace swaps the unit on your project schedule, keeping its tag and place. '
                     : 'Select puts the result on its schedule row. ') +
@@ -1093,6 +1093,9 @@
         }
 
         // ----- Electrical options -----
+        // Set here for every result (no per-row toggle). There is no
+        // powered convenience outlet: outlets are specified non unit
+        // powered, so they never change MCA / MOP.
         var optBox = document.createElement('div');
         optBox.className = 'design-cond-group design-gp-options';
         var optTitle = document.createElement('div');
@@ -1101,7 +1104,6 @@
         optBox.appendChild(optTitle);
         var optRow = document.createElement('div');
         optRow.className = 'design-cond-fields';
-        optRow.appendChild(gpCheckbox('Powered Convenience Outlet', 'convOutlet'));
         optRow.appendChild(gpCheckbox('Power Exhaust', 'powerExhaust'));
         optBox.appendChild(optRow);
         box.appendChild(optBox);
@@ -1718,7 +1720,7 @@
             ambient: gp.ambient, eatDb: gp.eatDb, eatWb: gp.eatWb,
             heatAmbient: (gp.heatAmbient == null || isNaN(gp.heatAmbient)) ? null : gp.heatAmbient,
             mode: gp.mode,
-            convOutlet: gp.convOutlet, powerExhaust: gp.powerExhaust,
+            powerExhaust: gp.powerExhaust,
             // Conditions are picked from published values: read them there,
             // never at a snapped neighbour.
             exact: true
@@ -1745,8 +1747,8 @@
     // `variant` column of a unit's type becomes its heat size / heat kit
     // dropdown when the unit has more than one.
     // `marginCol` (vs Target: each entered target's margin) shows only when
-    // a target was entered. `motorPicker` / `optionsPicker` are the row's
-    // own Motor dropdown and electrical option toggles (withOptions).
+    // a target was entered. `motorPicker` is the row's own Motor dropdown
+    // (withOptions); power exhaust is set on the form for every row.
     var GP_COLUMNS = [
         { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
         { label: 'vs Target', marginCol: true, cls: 'gp-col-margin' },
@@ -1800,7 +1802,6 @@
         { label: 'HP + Kit (BTU/h)', get: function (r) {
             return r.totalHeat == null ? null : fmtInt(r.totalHeat);
         }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
-        { label: 'Options', optionsPicker: true, group: 'Electrical' },
         { label: 'MCA', get: function (r) { return r.electrical.mca; }, group: 'Electrical' },
         { label: 'MOP', get: function (r) { return r.electrical.mop; }, group: 'Electrical' },
         { label: 'Motor HP', get: function (r) { return r.electrical.hp == null ? '—' : r.electrical.hp; },
@@ -2132,17 +2133,16 @@
             }
             chips.push(text);
         });
-        if (c.convOutlet) chips.push('powered convenience outlet');
         if (c.powerExhaust) chips.push('power exhaust');
         return chips;
     }
 
-    // Where the configured unit's results row opens ({ cur, air, motor,
-    // conv, pe }), or null for any other row: on the heat size / heat kit,
-    // motor and electrical options it was configured with, at the readable
-    // airflow nearest its CFM (a tie goes to the one nearer nominal). A
-    // typed CFM target steers the airflow instead; a heating load picks
-    // the kit (the smallest that covers it).
+    // Where the configured unit's results row opens ({ cur, air, motor }),
+    // or null for any other row: on the heat size / heat kit and motor it
+    // was configured with, at the readable airflow nearest its CFM (a tie
+    // goes to the one nearer nominal). A typed CFM target steers the
+    // airflow instead; a heating load picks the kit (the smallest that
+    // covers it). Power exhaust comes from the form.
     function configuredStart(g) {
         var cfg = state.gasPack.configure;
         if (!cfg || g.variants[0].cabinet !== cfg.cabinet) return null;
@@ -2172,14 +2172,12 @@
             });
             if (best != null) air = best;
         }
-        return { cur: cur, air: air, motor: cfg.motor || null,
-                 conv: cfg.convOutlet == null ? null : !!cfg.convOutlet,
-                 pe: cfg.powerExhaust == null ? null : !!cfg.powerExhaust };
+        return { cur: cur, air: air, motor: cfg.motor || null };
     }
 
     // What is picked on the configured unit's row (heat size / kit, airflow,
-    // motor, electrical options) is kept, so the next Find matches (other
-    // conditions, hot gas reheat, ...) opens on it again.
+    // motor) is kept, so the next Find matches (other conditions, power
+    // exhaust, hot gas reheat, ...) opens on it again.
     function noteConfigured(g, pick) {
         var cfg = state.gasPack.configure;
         var v = g.variants[pick.cur];
@@ -2188,8 +2186,6 @@
         else cfg.heatSize = v.heatSize;
         cfg.cfm = pick.air;
         cfg.motor = pick.motor;
-        cfg.convOutlet = pick.conv;
-        cfg.powerExhaust = pick.pe;
     }
 
     // Motor dropdown for a results row: every offered motor, the ones the
@@ -2209,29 +2205,6 @@
         });
         select.addEventListener('change', function () { onChange(select.value); });
         return wrapVariantControl(select);
-    }
-
-    // Electrical option toggles for a results row; they change MCA / MOP.
-    function buildOptionToggles(conv, pe, onChange) {
-        var wrap = document.createElement('div');
-        wrap.className = 'design-gp-row-options';
-        [{ key: 'pe', label: 'Power exhaust', on: pe },
-         { key: 'conv', label: 'Conv. outlet', on: conv, title: 'Powered convenience outlet' }]
-            .forEach(function (o) {
-                var lab = document.createElement('label');
-                lab.className = 'design-gp-check';
-                if (o.title) lab.title = o.title;
-                var input = document.createElement('input');
-                input.type = 'checkbox';
-                input.checked = !!o.on;
-                input.addEventListener('change', function () { onChange(o.key, input.checked); });
-                lab.appendChild(input);
-                var span = document.createElement('span');
-                span.textContent = o.label;
-                lab.appendChild(span);
-                wrap.appendChild(lab);
-            });
-        return wrap;
     }
 
     function buildGasPackTable(groups, res) {
@@ -2289,13 +2262,12 @@
             var pick = res.picks[g.key] || configuredStart(g) || {};
             var cur = pick.cur != null ? pick.cur : g.defaultIdx;
             var air = pick.air != null ? pick.air : g.variants[cur].airflow;
-            // Motor and electrical options: the row's own, starting from the
-            // form (see groupGasPackResults / the Electrical options boxes).
+            // Motor: the row's own, starting from the form's (see
+            // groupGasPackResults). Power exhaust is the form's, for every row.
             var motor = pick.motor || g.motor;
-            var conv = pick.conv != null ? pick.conv : !!res.criteria.convOutlet;
-            var pe = pick.pe != null ? pick.pe : !!res.criteria.powerExhaust;
+            var pe = !!res.criteria.powerExhaust;
             function remember() {
-                var p = { cur: cur, air: air, motor: motor, conv: conv, pe: pe };
+                var p = { cur: cur, air: air, motor: motor };
                 res.picks[g.key] = p;
                 noteConfigured(g, p);
             }
@@ -2304,10 +2276,9 @@
             actionsTd.className = 'actions-cell';
             tr.appendChild(actionsTd);
 
-            // Value cells repaint from the variant, airflow, motor and
-            // options picked.
+            // Value cells repaint from the variant, airflow and motor picked.
             var cells = [];
-            var variantTd = null, airTd = null, motorTd = null, optionsTd = null;
+            var variantTd = null, airTd = null, motorTd = null;
             var marginTd = null, kitTd = null;
             columns.forEach(function (col) {
                 var td = document.createElement('td');
@@ -2330,8 +2301,6 @@
                 } else if (col.motorPicker) {
                     td.classList.add('kw-variant-cell', 'gp-col-motor');
                     motorTd = td;
-                } else if (col.optionsPicker) {
-                    optionsTd = td;
                 } else if (col.marginCol) {
                     marginTd = td;
                 } else {
@@ -2342,7 +2311,7 @@
 
             function paint() {
                 var base = G.atAirflow(g.variants[cur], air);
-                var r = G.withOptions(base, { motor: motor, convOutlet: conv, powerExhaust: pe });
+                var r = G.withOptions(base, { motor: motor, convOutlet: false, powerExhaust: pe });
                 if (!r) { r = base; motor = base.motor; }
                 if (variantTd) {
                     variantTd.innerHTML = '';
@@ -2372,14 +2341,6 @@
                             productPage: false
                         }));
                     }
-                }
-                if (optionsTd) {
-                    optionsTd.innerHTML = '';
-                    optionsTd.appendChild(buildOptionToggles(conv, pe, function (key, on) {
-                        if (key === 'pe') pe = on; else conv = on;
-                        remember();
-                        paint();
-                    }));
                 }
                 if (marginTd) fillMarginCell(marginTd, r, res.criteria);
                 // A heat kit outside Daikin's supply airflow limits at this CFM.

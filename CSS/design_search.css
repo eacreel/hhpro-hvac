@@ -692,21 +692,9 @@
     font-weight: 600;
 }
 
-/* Results: the row's Motor dropdown (with the airflow "?") and its
-   electrical option toggles. */
+/* Results: the row's Motor dropdown (with the airflow "?"). */
 .design-gp-table td.gp-col-motor {
     white-space: nowrap;
-}
-
-.design-gp-row-options {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-}
-
-.design-gp-row-options .design-gp-check {
-    font-size: var(--font-size-xs);
 }
 
 /* A heat kit outside Daikin's electric heat airflow limits at the row's CFM. */
