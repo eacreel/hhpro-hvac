@@ -697,6 +697,13 @@
     white-space: nowrap;
 }
 
+/* A design condition picked on the row, not the one the search ran at. */
+.design-gp-table .gp-cond-changed .kw-variant-select {
+    border-color: var(--color-primary-light);
+    box-shadow: inset 0 0 0 1px var(--color-primary-light);
+    font-weight: 700;
+}
+
 /* A heat kit outside Daikin's electric heat airflow limits at the row's CFM. */
 .design-gp-table td.gp-kit-flag {
     box-shadow: inset 0 0 0 2px var(--color-warning);

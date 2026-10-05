@@ -879,8 +879,8 @@
         var text;
         if (cfg) {
             strong.textContent = 'Configuring ' + (rep ? unit + ' from your project' : cfg.label) + '. ';
-            text = 'The search is narrowed to this unit. Change the motor on the result row; change ' +
-                'power exhaust, hot gas reheat or the design conditions here and click Find ' +
+            text = 'The search is narrowed to this unit. Change the motor, CFM or design conditions ' +
+                'on the result row; change power exhaust or hot gas reheat here and click Find ' +
                 'matches. ' + (rep
                     ? 'Replace swaps the unit on your project schedule, keeping its tag and place. '
                     : 'Select puts the result on its schedule row. ') +
@@ -981,7 +981,8 @@
         hint.textContent = 'Results come from Daikin’s published capacity tables, not from the ' +
             'schedule’s stored selection. Conditions are picked from the values those tables ' +
             'publish, so every number shown is a rated point; a unit with no rating at the ' +
-            'chosen condition is left out.';
+            'chosen condition is left out. Each result row can then be read at other ' +
+            'published conditions from its own OA DB, EDB, EWB and heating OA dropdowns.';
         box.appendChild(hint);
 
         // ----- Unit constraints -----
@@ -1749,6 +1750,9 @@
     // `marginCol` (vs Target: each entered target's margin) shows only when
     // a target was entered. `motorPicker` is the row's own Motor dropdown
     // (withOptions); power exhaust is set on the form for every row.
+    // `condPicker` columns are the row's own design-condition dropdowns
+    // (buildConditionSelect): the search's value to start, then any value
+    // Daikin publishes for that unit.
     var GP_COLUMNS = [
         { label: 'Model', get: function (r) { return r.model; }, cls: 'gp-col-model' },
         { label: 'vs Target', marginCol: true, cls: 'gp-col-margin' },
@@ -1764,9 +1768,12 @@
         // A dropdown of the unit's published airflows (see buildAirflowSelect).
         { label: 'CFM', get: function (r) { return r.cooling.airflow; }, group: 'Cooling',
           airflowPicker: true },
-        { label: 'OA DB (°F)', get: function (r) { return r.cooling.ambient; }, group: 'Cooling' },
-        { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling' },
-        { label: 'EWB (°F)', get: function (r) { return r.cooling.eatWb; }, group: 'Cooling' },
+        { label: 'OA DB (°F)', get: function (r) { return r.cooling.ambient; }, group: 'Cooling',
+          condPicker: 'ambient' },
+        { label: 'EDB (°F)', get: function (r) { return r.cooling.eatDb; }, group: 'Cooling',
+          condPicker: 'eatDb' },
+        { label: 'EWB (°F)', get: function (r) { return r.cooling.eatWb; }, group: 'Cooling',
+          condPicker: 'eatWb' },
         { label: 'LDB (°F)', get: function (r) { return fmt(r.cooling.lat, 1); }, group: 'Cooling' },
         { label: 'LWB (°F)', get: function (r) { return fmt(r.cooling.lwb, 1); }, group: 'Cooling' },
         { label: 'Total (BTU/h)', get: function (r) { return fmtInt(r.cooling.total); }, group: 'Cooling' },
@@ -1779,11 +1786,12 @@
         { label: 'Low Out (MBH)', get: gasCell('outputLow'), group: 'Gas Heating', only: 'GAS' },
         { label: 'Low Rise (°F)', get: gasCell('riseLow', 1), group: 'Gas Heating', only: 'GAS' },
         { label: 'T.E. (%)', get: gasCell('thermalEff'), group: 'Gas Heating', only: 'GAS' },
-        // The rated outdoor point actually read: DB for DSH / DHH, WB for DVH.
+        // The rated outdoor point actually read: DB for DSH / DHH, WB for DVH
+        // (its dropdown shows the DB with the WB read, "17 (15 WB)").
         { label: 'OA (°F)', get: function (r) {
             if (!r.hpHeat) return null;
             return r.hpHeat.oa + (r.hpHeat.basis === 'WB' ? ' WB' : '');
-        }, group: 'Heat Pump Heating', only: 'HEAT PUMP' },
+        }, group: 'Heat Pump Heating', only: 'HEAT PUMP', condPicker: 'heatAmbient' },
         // The airflow the heating table publishes that point at: always the
         // nominal CFM for DSH / DHH, the chosen airflow for DVH.
         { label: 'CFM', get: function (r) { return r.hpHeat ? r.hpHeat.airflow : null; },
@@ -2249,163 +2257,9 @@
         thead.appendChild(headRow);
         table.appendChild(thead);
 
-        var G = HHpro.GasPackCapacity;
         var tbody = document.createElement('tbody');
         groups.forEach(function (g) {
-            var tr = document.createElement('tr');
-            // Two choices per row: the heat size / heat kit (variant) and the
-            // published airflow the unit is read at. Both open on the search's
-            // default; the airflow dropdown repaints every airflow-dependent cell.
-            // What was picked is kept with these results, so coming back from
-            // the schedule shows the airflow and kit that Select sent there.
-            res.picks = res.picks || {};
-            var pick = res.picks[g.key] || configuredStart(g) || {};
-            var cur = pick.cur != null ? pick.cur : g.defaultIdx;
-            var air = pick.air != null ? pick.air : g.variants[cur].airflow;
-            // Motor: the row's own, starting from the form's (see
-            // groupGasPackResults). Power exhaust is the form's, for every row.
-            var motor = pick.motor || g.motor;
-            var pe = !!res.criteria.powerExhaust;
-            function remember() {
-                var p = { cur: cur, air: air, motor: motor };
-                res.picks[g.key] = p;
-                noteConfigured(g, p);
-            }
-
-            var actionsTd = document.createElement('td');
-            actionsTd.className = 'actions-cell';
-            tr.appendChild(actionsTd);
-
-            // Value cells repaint from the variant, airflow and motor picked.
-            var cells = [];
-            var variantTd = null, airTd = null, motorTd = null;
-            var marginTd = null, kitTd = null;
-            columns.forEach(function (col) {
-                var td = document.createElement('td');
-                if (col.cls) td.className = col.cls;
-                var r0 = g.variants[0];
-                // Gas rows keep the dropdown even with one size left, so the
-                // sizes Daikin rules out at this airflow show (greyed out).
-                // Heat pump rows keep it with a heating load, so the kits
-                // too small for it show.
-                var otherSizes = (r0.heatSizes || []).length > 1 ||
-                    (r0.type === 'HEAT PUMP' && res.criteria.heatLoad &&
-                     res.criteria.heatLoad.value > 0);
-                if (col.variant && col.variant === r0.type) kitTd = td;
-                if (col.variant && col.variant === r0.type && (g.variants.length > 1 || otherSizes)) {
-                    td.classList.add('kw-variant-cell');
-                    variantTd = td;
-                } else if (col.airflowPicker && (r0.options || []).length > 1) {
-                    td.classList.add('kw-variant-cell');
-                    airTd = td;
-                } else if (col.motorPicker) {
-                    td.classList.add('kw-variant-cell', 'gp-col-motor');
-                    motorTd = td;
-                } else if (col.marginCol) {
-                    marginTd = td;
-                } else {
-                    cells.push({ col: col, td: td });
-                }
-                tr.appendChild(td);
-            });
-
-            function paint() {
-                var base = G.atAirflow(g.variants[cur], air);
-                var r = G.withOptions(base, { motor: motor, convOutlet: false, powerExhaust: pe });
-                if (!r) { r = base; motor = base.motor; }
-                if (variantTd) {
-                    variantTd.innerHTML = '';
-                    variantTd.appendChild(buildVariantSelect(g, cur, air, function (idx) {
-                        cur = idx;
-                        // Sizes that can't run at this airflow are disabled,
-                        // so this only matters if the options disagree.
-                        if (!optionAt(g.variants[cur], air).ok) air = g.variants[cur].airflow;
-                        remember();
-                        paint();
-                    }, { motor: motor, r: r, criteria: res.criteria }));
-                }
-                if (motorTd) {
-                    motorTd.innerHTML = '';
-                    motorTd.appendChild(buildMotorSelect(base, motor, function (m) {
-                        motor = m;
-                        remember();
-                        paint();
-                    }));
-                    // Static pressure / airflow range of each drive.
-                    if (HHpro.GasPackAirflow) {
-                        motorTd.appendChild(HHpro.GasPackAirflow.helpButton({
-                            cabinet: r.cabinet,
-                            motor: r.motor,
-                            heatSize: r.heat ? r.heat.size : null,
-                            kitKw: r.kitKw || 0,
-                            productPage: false
-                        }));
-                    }
-                }
-                if (marginTd) fillMarginCell(marginTd, r, res.criteria);
-                // A heat kit outside Daikin's supply airflow limits at this CFM.
-                var kitChk = (r.type === 'HEAT PUMP' && r.kitKw)
-                    ? G.kitAirflowCheck(r.cabinet, r.motor, r.kitKw, r.cooling.airflow) : null;
-                var kitOff = !!(kitChk && !kitChk.ok);
-                if (airTd) {
-                    airTd.innerHTML = '';
-                    airTd.appendChild(buildAirflowSelect(g.variants[cur], air, function (a) {
-                        air = a;
-                        remember();
-                        paint();
-                    }));
-                }
-                cells.forEach(function (c) {
-                    var v = c.col.get(r);
-                    c.td.textContent = (v == null || v === '') ? '—' : String(v);
-                    c.td.title = (c.col.label === 'MOP' && v == null)
-                        ? 'Daikin’s published MOP for this unit is misprinted; ' +
-                          'confirm with Daikin (see the Notes sheet of the capacity workbook).'
-                        : '';
-                });
-                if (kitTd) {
-                    kitTd.classList.toggle('gp-kit-flag', kitOff);
-                    if (kitOff) kitTd.title = kitAirflowText(r.kitKw, kitChk, r.cooling.airflow);
-                    else if (!variantTd) kitTd.title = '';
-                }
-                actionsTd.innerHTML = '';
-                actionsTd.appendChild(buildGasPackActions(r));
-
-                // Anything worth knowing about how a row was read says so on
-                // the row itself, not just in a summary line that scrolls away.
-                var notes = [];
-                if (r.offGrid) {
-                    notes.push('Cooling evaluated at the harsher bracketing rated point: ' +
-                        Object.keys(r.offGrid).map(function (k) {
-                            return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
-                        }).join(', '));
-                }
-                if (r.hpHeat && r.hpHeat.basis === 'WB') {
-                    notes.push('Heating read at ' + r.hpHeat.oa + ' °F outdoor WB (' +
-                        r.hpHeat.designDb + ' °F DB − ' +
-                        HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F).');
-                }
-                if (r.hpHeat && r.hpHeat.airflow !== r.cooling.airflow) {
-                    notes.push('Heating is published at ' + r.hpHeat.airflow + ' CFM only (Daikin’s ' +
-                        'nominal airflow for this unit); cooling is read at ' + r.cooling.airflow + ' CFM.');
-                }
-                if (r.meets === false) {
-                    notes.push('At ' + r.cooling.airflow + ' CFM this unit is outside one or more ' +
-                        'of your targets.');
-                }
-                if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
-                    notes.push('Heating not shown: ' + r.hpHeatNote + '.');
-                }
-                if (kitOff) notes.push(kitAirflowText(r.kitKw, kitChk, r.cooling.airflow));
-                if (r.cooling.lwbSaturated) {
-                    notes.push('LWB: the leaving air works out at saturation, so LWB = LDB.');
-                }
-                tr.title = notes.join('\n');
-                // Only a snapped (harsher-point) reading earns the warning mark.
-                tr.classList.toggle('design-gp-offgrid', !!r.offGrid);
-            }
-            paint();
-            tbody.appendChild(tr);
+            tbody.appendChild(buildGasPackRow(g, res, columns));
         });
         table.appendChild(tbody);
         tableWrap.appendChild(table);
@@ -2415,6 +2269,351 @@
             if (table.isConnected) HHpro.Schedule.applyStickyHeaderOffsets(table);
         });
         return tableWrap;
+    }
+
+    // The design conditions a results row can be read at, each its own
+    // dropdown on the row (condPicker columns).
+    var GP_COND_KEYS = ['ambient', 'eatDb', 'eatWb', 'heatAmbient'];
+    var GP_COND_LABELS = {
+        ambient: 'Cooling outdoor ambient DB',
+        eatDb: 'Cooling entering air DB',
+        eatWb: 'Cooling entering air WB',
+        heatAmbient: 'Heating outdoor ambient DB'
+    };
+
+    function condNum(v) {
+        return (v == null || v === '' || isNaN(v)) ? null : Number(v);
+    }
+
+    // The conditions the search was run at (the form's).
+    function searchConditions(criteria) {
+        var out = {};
+        GP_COND_KEYS.forEach(function (k) { out[k] = condNum(criteria[k]); });
+        return out;
+    }
+
+    function sameConditions(a, b) {
+        return GP_COND_KEYS.every(function (k) { return condNum(a[k]) === condNum(b[k]); });
+    }
+
+    /**
+     * A results row re-read at conditions picked on the row: the same unit
+     * (cabinet, voltage, motor, hot gas reheat, the form's heat kit filter)
+     * with every heat size / kit it can be built with, judged against the
+     * search's targets but none left out for missing them (keepUnmet), so
+     * the row never vanishes from under its dropdown. Returns a copy of the
+     * group, or null when the tables have nothing there.
+     */
+    function rereadGroup(g, cond, criteria) {
+        var r0 = g.variants[0];
+        var c = {};
+        Object.keys(criteria).forEach(function (k) { c[k] = criteria[k]; });
+        GP_COND_KEYS.forEach(function (k) { c[k] = condNum(cond[k]); });
+        c.type = r0.type || 'GAS';
+        c.cabinet = r0.cabinet;
+        c.electrical = r0.voltage;
+        c.motor = g.motor;
+        c.hgrh = r0.type === 'HEAT PUMP' ? null : r0.hgrh;
+        c.keepUnmet = true;
+        var variants = HHpro.GasPackCapacity.search(c).results.filter(function (r) {
+            return r.voltage === r0.voltage && r.motor === g.motor && r.hgrh === r0.hgrh;
+        });
+        if (!variants.length) return null;
+        variants.sort(function (a, b) { return variantRank(a) - variantRank(b); });
+        var out = {};
+        Object.keys(g).forEach(function (k) { out[k] = g[k]; });
+        out.variants = variants;
+        out.defaultIdx = 0;
+        variants.forEach(function (v, i) {
+            if (v.score < variants[out.defaultIdx].score) out.defaultIdx = i;
+        });
+        return out;
+    }
+
+    // After one condition is picked on a row, the other cooling ones move
+    // onto values the unit rates with it (the wet bulbs follow the dry
+    // bulb): each keeps its value if it can, else takes the nearest rated
+    // one (a tie goes to the higher, harsher value). Changes cond in place.
+    function settleConditions(cabinet, cond, changed, airflow) {
+        var G = HHpro.GasPackCapacity;
+        ['eatWb', 'ambient', 'eatDb'].forEach(function (k) {
+            if (k === changed) return;
+            var list = G.conditionChoices(cabinet, cond, airflow)[k]
+                .filter(function (c) { return c.ok; })
+                .map(function (c) { return c.value; });
+            var cur = condNum(cond[k]);
+            if (!list.length || list.indexOf(cur) >= 0) return;
+            cond[k] = list.reduce(function (best, v) {
+                var d = Math.abs(v - cur), bd = Math.abs(best - cur);
+                return (d < bd || (d === bd && v > best)) ? v : best;
+            }, list[0]);
+        });
+    }
+
+    // A design-condition dropdown on a results row (OA DB, EDB, EWB,
+    // heating OA): the values this unit publishes, the ones it doesn't
+    // rate with the row's other conditions disabled. A DVH heating point
+    // shows its wet bulb, "17 (15 WB)". A value the search wasn't run at
+    // is marked (gp-cond-changed).
+    function buildConditionSelect(key, r, cond, base, onChange) {
+        var G = HHpro.GasPackCapacity;
+        var list = G.conditionChoices(r.cabinet, cond, r.cooling.airflow)[key];
+        var curVal = condNum(cond[key]);
+        var select = document.createElement('select');
+        select.className = 'kw-variant-select';
+        select.setAttribute('data-cond', key);
+        select.setAttribute('aria-label', GP_COND_LABELS[key] + ' (°F)');
+        var listed = list.some(function (c) { return c.value === curVal; });
+        if (!listed) {
+            // No heating condition picked (heating was left off the search),
+            // or one this unit doesn't publish.
+            var none = document.createElement('option');
+            none.value = '';
+            none.textContent = curVal == null ? '—' : String(curVal);
+            none.disabled = true;
+            none.selected = true;
+            select.appendChild(none);
+        }
+        list.forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = String(c.value);
+            opt.textContent = c.wb != null ? c.value + ' (' + c.wb + ' WB)' : String(c.value);
+            if (!c.ok) {
+                opt.disabled = true;
+                opt.textContent += ' (not rated)';
+            }
+            if (c.value === curVal) opt.selected = true;
+            select.appendChild(opt);
+        });
+        var changed = condNum(base[key]) !== curVal;
+        select.title = GP_COND_LABELS[key] + ' this row is read at' +
+            (changed ? ' (the search used ' + (base[key] == null ? 'none' : base[key] + ' °F') +
+                '; pick it again to go back)' : '') + '. Only values Daikin publishes for this unit.';
+        select.addEventListener('change', function () {
+            if (select.value !== '') onChange(Number(select.value));
+        });
+        var wrap = wrapVariantControl(select);
+        if (changed) wrap.classList.add('gp-cond-changed');
+        return wrap;
+    }
+
+    /**
+     * One results row. Its choices: the heat size / heat kit (variant), the
+     * published airflow it is read at, the motor, and the design conditions
+     * (OA DB, EDB, EWB and heat pump heating OA). They open on the search's;
+     * the airflow, variant and motor dropdowns repaint the row, a condition
+     * re-reads the unit there (rereadGroup) and rebuilds it. What was picked
+     * is kept with these results (res.picks), so coming back from the
+     * schedule shows what Select sent there.
+     */
+    function buildGasPackRow(g, res, columns) {
+        var G = HHpro.GasPackCapacity;
+        var tr = document.createElement('tr');
+        res.picks = res.picks || {};
+        var base0 = searchConditions(res.criteria);
+        var saved = res.picks[g.key];
+        // The row's own conditions, null = the search's.
+        var cond = (saved && saved.cond) || null;
+        var rg = g;
+        if (cond) {
+            rg = rereadGroup(g, cond, res.criteria);
+            if (!rg) { rg = g; cond = null; }
+        }
+        var pick = saved || configuredStart(g) || {};
+        var cur = pick.cur != null ? pick.cur : rg.defaultIdx;
+        // After a condition change the variant is carried over by size / kit.
+        if (pick.rank != null) {
+            cur = rg.defaultIdx;
+            rg.variants.forEach(function (v, i) {
+                if (variantRank(v) === pick.rank) cur = i;
+            });
+        }
+        if (!rg.variants[cur]) cur = rg.defaultIdx;
+        var air = pick.air != null ? pick.air : rg.variants[cur].airflow;
+        if (!optionAt(rg.variants[cur], air).ok) air = rg.variants[cur].airflow;
+        // Motor: the row's own, starting from the form's (see
+        // groupGasPackResults). Power exhaust is the form's, for every row.
+        var motor = pick.motor || g.motor;
+        var pe = !!res.criteria.powerExhaust;
+        function remember() {
+            var p = { cur: cur, air: air, motor: motor, cond: cond };
+            res.picks[g.key] = p;
+            noteConfigured(rg, p);
+        }
+        if (pick.rank != null) remember();
+
+        // A condition picked on the row: settle the others on rated values,
+        // keep the size / kit, airflow and motor, and rebuild the row there.
+        function setCondition(key, value, r) {
+            var next = {};
+            var now = cond || base0;
+            GP_COND_KEYS.forEach(function (k) { next[k] = now[k]; });
+            next[key] = value;
+            settleConditions(r.cabinet, next, key, r.cooling.airflow);
+            res.picks[g.key] = {
+                rank: variantRank(rg.variants[cur]), air: air, motor: motor,
+                cond: sameConditions(next, base0) ? null : next
+            };
+            var fresh = buildGasPackRow(g, res, columns);
+            if (tr.parentNode) tr.parentNode.replaceChild(fresh, tr);
+            var again = fresh.querySelector('select[data-cond="' + key + '"]');
+            if (again) again.focus();
+        }
+
+        var actionsTd = document.createElement('td');
+        actionsTd.className = 'actions-cell';
+        tr.appendChild(actionsTd);
+
+        // Value cells repaint from the variant, airflow and motor picked.
+        var cells = [];
+        var condTds = [];
+        var variantTd = null, airTd = null, motorTd = null;
+        var marginTd = null, kitTd = null;
+        var r0 = rg.variants[0];
+        // Gas rows keep the dropdown even with one size left, so the
+        // sizes Daikin rules out at this airflow show (greyed out).
+        // Heat pump rows keep it with a heating load, so the kits
+        // too small for it show.
+        var otherSizes = (r0.heatSizes || []).length > 1 ||
+            (r0.type === 'HEAT PUMP' && res.criteria.heatLoad &&
+             res.criteria.heatLoad.value > 0);
+        columns.forEach(function (col) {
+            var td = document.createElement('td');
+            if (col.cls) td.className = col.cls;
+            if (col.variant && col.variant === r0.type) kitTd = td;
+            if (col.variant && col.variant === r0.type && (rg.variants.length > 1 || otherSizes)) {
+                td.classList.add('kw-variant-cell');
+                variantTd = td;
+            } else if (col.airflowPicker && (r0.options || []).length > 1) {
+                td.classList.add('kw-variant-cell');
+                airTd = td;
+            } else if (col.motorPicker) {
+                td.classList.add('kw-variant-cell', 'gp-col-motor');
+                motorTd = td;
+            } else if (col.condPicker && (col.condPicker !== 'heatAmbient' || r0.type === 'HEAT PUMP')) {
+                td.classList.add('kw-variant-cell');
+                condTds.push({ key: col.condPicker, td: td });
+            } else if (col.marginCol) {
+                marginTd = td;
+            } else {
+                cells.push({ col: col, td: td });
+            }
+            tr.appendChild(td);
+        });
+
+        function paint() {
+            var base = G.atAirflow(rg.variants[cur], air);
+            var r = G.withOptions(base, { motor: motor, convOutlet: false, powerExhaust: pe });
+            if (!r) { r = base; motor = base.motor; }
+            if (variantTd) {
+                variantTd.innerHTML = '';
+                variantTd.appendChild(buildVariantSelect(rg, cur, air, function (idx) {
+                    cur = idx;
+                    // Sizes that can't run at this airflow are disabled,
+                    // so this only matters if the options disagree.
+                    if (!optionAt(rg.variants[cur], air).ok) air = rg.variants[cur].airflow;
+                    remember();
+                    paint();
+                }, { motor: motor, r: r, criteria: res.criteria }));
+            }
+            var shown = cond || base0;
+            condTds.forEach(function (c) {
+                c.td.innerHTML = '';
+                c.td.appendChild(buildConditionSelect(c.key, r, shown, base0, function (v) {
+                    setCondition(c.key, v, r);
+                }));
+            });
+            if (motorTd) {
+                motorTd.innerHTML = '';
+                motorTd.appendChild(buildMotorSelect(base, motor, function (m) {
+                    motor = m;
+                    remember();
+                    paint();
+                }));
+                // Static pressure / airflow range of each drive.
+                if (HHpro.GasPackAirflow) {
+                    motorTd.appendChild(HHpro.GasPackAirflow.helpButton({
+                        cabinet: r.cabinet,
+                        motor: r.motor,
+                        heatSize: r.heat ? r.heat.size : null,
+                        kitKw: r.kitKw || 0,
+                        productPage: false
+                    }));
+                }
+            }
+            if (marginTd) fillMarginCell(marginTd, r, res.criteria);
+            // A heat kit outside Daikin's supply airflow limits at this CFM.
+            var kitChk = (r.type === 'HEAT PUMP' && r.kitKw)
+                ? G.kitAirflowCheck(r.cabinet, r.motor, r.kitKw, r.cooling.airflow) : null;
+            var kitOff = !!(kitChk && !kitChk.ok);
+            if (airTd) {
+                airTd.innerHTML = '';
+                airTd.appendChild(buildAirflowSelect(rg.variants[cur], air, function (a) {
+                    air = a;
+                    remember();
+                    paint();
+                }));
+            }
+            cells.forEach(function (c) {
+                var v = c.col.get(r);
+                c.td.textContent = (v == null || v === '') ? '—' : String(v);
+                c.td.title = (c.col.label === 'MOP' && v == null)
+                    ? 'Daikin’s published MOP for this unit is misprinted; ' +
+                      'confirm with Daikin (see the Notes sheet of the capacity workbook).'
+                    : '';
+            });
+            if (kitTd) {
+                kitTd.classList.toggle('gp-kit-flag', kitOff);
+                if (kitOff) kitTd.title = kitAirflowText(r.kitKw, kitChk, r.cooling.airflow);
+                else if (!variantTd) kitTd.title = '';
+            }
+            actionsTd.innerHTML = '';
+            actionsTd.appendChild(buildGasPackActions(r));
+
+            // Anything worth knowing about how a row was read says so on
+            // the row itself, not just in a summary line that scrolls away.
+            var notes = [];
+            if (cond) {
+                var moved = GP_COND_KEYS.filter(function (k) {
+                    return condNum(cond[k]) !== condNum(base0[k]);
+                }).map(function (k) {
+                    return GP_COND_LABELS[k] + ' ' + cond[k] + ' °F (search: ' +
+                        (base0[k] == null ? 'none' : base0[k] + ' °F') + ')';
+                });
+                notes.push('Read at its own conditions: ' + moved.join(', ') + '.');
+            }
+            if (r.offGrid) {
+                notes.push('Cooling evaluated at the harsher bracketing rated point: ' +
+                    Object.keys(r.offGrid).map(function (k) {
+                        return k + ' ' + r.offGrid[k].lo + '–' + r.offGrid[k].hi;
+                    }).join(', '));
+            }
+            if (r.hpHeat && r.hpHeat.basis === 'WB') {
+                notes.push('Heating read at ' + r.hpHeat.oa + ' °F outdoor WB (' +
+                    r.hpHeat.designDb + ' °F DB − ' +
+                    HHpro.GasPackCapacity.HP_WB_DEPRESSION + ' °F).');
+            }
+            if (r.hpHeat && r.hpHeat.airflow !== r.cooling.airflow) {
+                notes.push('Heating is published at ' + r.hpHeat.airflow + ' CFM only (Daikin’s ' +
+                    'nominal airflow for this unit); cooling is read at ' + r.cooling.airflow + ' CFM.');
+            }
+            if (r.meets === false) {
+                notes.push('At ' + r.cooling.airflow + ' CFM this unit is outside one or more ' +
+                    'of your targets.');
+            }
+            if (r.type === 'HEAT PUMP' && !r.hpHeat && r.hpHeatNote) {
+                notes.push('Heating not shown: ' + r.hpHeatNote + '.');
+            }
+            if (kitOff) notes.push(kitAirflowText(r.kitKw, kitChk, r.cooling.airflow));
+            if (r.cooling.lwbSaturated) {
+                notes.push('LWB: the leaving air works out at saturation, so LWB = LDB.');
+            }
+            tr.title = notes.join('\n');
+            // Only a snapped (harsher-point) reading earns the warning mark.
+            tr.classList.toggle('design-gp-offgrid', !!r.offGrid);
+        }
+        paint();
+        return tr;
     }
 
     // A result's reading at one of its published airflows ({} if none).
@@ -2536,6 +2735,14 @@
             if (chk && !chk.ok) {
                 label += ' (airflow)';
                 tips.push(kitAirflowText(kw, chk, air));
+            }
+            // A row read at its own conditions lists every kit, the ones
+            // too small for the load included (pickable, but marked).
+            var total = optionAt(v, air).totalHeat;
+            if (loadVal != null && total != null && total < loadVal) {
+                label += ' (short)';
+                tips.push((kw ? kw + ' kW' : 'No electric heat') + ': ' + fmtInt(total) +
+                    ' BTU/h, short of the ' + fmtInt(loadVal) + ' BTU/h heating load.');
             }
             entries.push({ rank: kw, label: label, value: String(i) });
         });

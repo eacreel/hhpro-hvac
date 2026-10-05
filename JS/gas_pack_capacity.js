@@ -34,9 +34,11 @@
    heating ambient) from the values these tables publish, and the
    search runs with `exact`: a unit is read only at a published
    point, never snapped to a harsher neighbour, and a unit with no
-   rating at the chosen condition is left out (and named). The
-   snapping policy in capacity_core.js still exists for callers
-   that don't ask for exact.
+   rating at the chosen condition is left out (and named). Each
+   results row can then be re-read at other published conditions
+   of its own (conditionChoices + search's cabinet / keepUnmet).
+   The snapping policy in capacity_core.js still exists for
+   callers that don't ask for exact.
    Airflow is handled here rather than there: a cabinet qualifies
    only if one of its three rated airflows falls inside the CFM
    tolerance the engineer entered, and capacity is then read at a
@@ -272,6 +274,64 @@
             efficiencies: ['LOW', 'HIGH', 'VARIABLE'].filter(function (e) { return effs[e]; })
                 .map(function (e) { return { value: e, label: EFFICIENCY_LABELS[e] }; })
         };
+    }
+
+    /**
+     * The design conditions one cabinet publishes, for the dropdowns on
+     * its Design Search results row. cond = { ambient, eatDb, eatWb,
+     * heatAmbient } as the row is read now; airflow = the CFM it is read
+     * at (DVH heating follows it).
+     *
+     * Cooling: every value on the table's axes, ok when the table rates it
+     * together with the row's other two values (at any airflow); eatWb
+     * lists only the wet bulbs rated at cond.eatDb. Heating: outdoor DRY
+     * bulbs at 70 F EAT (a wet-bulb DVH point shows as WB + 2, its wet
+     * bulb in `wb`), ok when hpHeatAt reads it exactly at that airflow.
+     * Returns { ambient, eatDb, eatWb, heatAmbient: [{ value, ok, wb? }] },
+     * each ascending; heatAmbient is [] for a gas pack.
+     */
+    function conditionChoices(cabinet, cond, airflow) {
+        var cab = cabinets()[cabinet];
+        var out = { ambient: [], eatDb: [], eatWb: [], heatAmbient: [] };
+        if (!cab) return out;
+        cond = cond || {};
+        var keys = Object.keys(cab.cooling || {}).map(function (k) {
+            return k.split('|').map(Number);
+        });
+        // Some airflow rated at this db / wb / oa (null = any value)?
+        function rated(db, wb, oa) {
+            return keys.some(function (p) {
+                return (db == null || p[0] === Number(db)) && (wb == null || p[1] === Number(wb)) &&
+                       (oa == null || p[2] === Number(oa));
+            });
+        }
+        function nums(list) {
+            return (list || []).map(Number).filter(isFinite).sort(function (a, b) { return a - b; });
+        }
+        var axes = cab.axes || {};
+        out.ambient = nums(axes.oaCooling).map(function (v) {
+            return { value: v, ok: rated(cond.eatDb, cond.eatWb, v) };
+        });
+        out.eatDb = nums(axes.eatDb).map(function (v) {
+            return { value: v, ok: rated(v, null, cond.ambient) };
+        });
+        out.eatWb = nums(axes.eatWb).filter(function (v) { return rated(cond.eatDb, v, null); })
+            .map(function (v) { return { value: v, ok: rated(cond.eatDb, v, cond.ambient) }; });
+        var t = cab.hpHeat;
+        if (t && t.points) {
+            var shift = t.basis === 'WB' ? HP_WB_DEPRESSION : 0;
+            var oas = {};
+            Object.keys(t.points).forEach(function (k) {
+                var p = k.split('|');
+                if (Number(p[0]) === HP_EAT) oas[Number(p[1])] = true;
+            });
+            out.heatAmbient = nums(Object.keys(oas)).map(function (o) {
+                var choice = { value: o + shift, ok: hpHeatAt(cab, o + shift, airflow, true).available };
+                if (shift) choice.wb = o;
+                return choice;
+            });
+        }
+        return out;
     }
 
     // -----------------------------------------------------------------
@@ -530,9 +590,12 @@
      * The option a result opens on: of the airflows that can be read AND
      * meet every target, the one nearest the typed CFM (or, with none
      * typed, the nominal one); a tie goes to the one nearer nominal.
+     * anyOk: when no airflow meets the targets, fall back to the readable
+     * ones instead of returning null (see search's keepUnmet).
      */
-    function defaultOption(options, nominal, cfmTarget) {
+    function defaultOption(options, nominal, cfmTarget, anyOk) {
         var pool = options.filter(function (o) { return o.ok && o.meets; });
+        if (!pool.length && anyOk) pool = options.filter(function (o) { return o.ok; });
         if (!pool.length) return null;
         var aim = (cfmTarget != null && isFinite(cfmTarget)) ? cfmTarget : nominal;
         pool.sort(function (a, b) {
@@ -616,8 +679,15 @@
      *   heatLoad:{value},                            // heat pumps: heat pump + heat kit
      *                                                //   must cover it at heatAmbient
      *   convOutlet, powerExhaust,                    // booleans
-     *   exact                                        // true: published points only
+     *   exact,                                       // true: published points only
+     *   cabinet,                                     // read only this cabinet
+     *   keepUnmet                                    // true: list a unit even when no
+     *                                                //   airflow meets the targets
      * }
+     * cabinet + keepUnmet re-read one results row at the conditions picked
+     * on it (conditionChoices): every buildable heat size / kit comes back,
+     * each still judged against the targets (meets, score) but none left
+     * out for missing them.
      * Capacity targets are a ± tol band, or with `min` "meet or exceed"
      * (tol then caps the oversize; see meets()) ranked smallest first.
      * The CFM target is always a band. A heating load is always a
@@ -653,11 +723,13 @@
         var wantHp = hasTarget(c.hpHeating) || wantLoad;
         var cfmTarget = hasTarget(c.cfm) ? Number(c.cfm.value) : null;
         var cfmTol = c.cfm && c.cfm.tol;
+        var keep = !!c.keepUnmet;
 
         Object.keys(cabs).forEach(function (name) {
             var cab = cabs[name];
             var isHp = cab.type === 'HEAT PUMP';
 
+            if (c.cabinet && name !== c.cabinet) return;
             if (c.type && (cab.type || 'GAS') !== c.type) return;
             if (isHp && wantRise) return;
             if (!isHp && wantHp) return;
@@ -687,7 +759,7 @@
             // A cabinet none of whose published airflows is inside the CFM
             // tolerance isn't a candidate.
             var flows = sortedAirflows(cab);
-            if (!flows.some(function (a) { return within(a, cfmTarget, cfmTol); })) return;
+            if (!keep && !flows.some(function (a) { return within(a, cfmTarget, cfmTol); })) return;
             var nominal = nominalAirflow(cab);
 
             // Cooling at every published airflow (the condition is the same
@@ -773,7 +845,7 @@
                         return k;
                     });
                 };
-                var def = defaultOption(options, nominal, cfmTarget);
+                var def = defaultOption(options, nominal, cfmTarget, keep);
                 if (!def) {
                     // Cooling was fine but there is no heating to judge the
                     // heating target against: say why.
@@ -802,7 +874,7 @@
                                 var kitOpts = forKit(kw);
                                 // A kit too small for the load at every airflow
                                 // isn't a candidate.
-                                var kitDef = wantLoad ? defaultOption(kitOpts, nominal, cfmTarget) : def;
+                                var kitDef = wantLoad ? defaultOption(kitOpts, nominal, cfmTarget, keep) : def;
                                 if (!kitDef) return;
                                 results.push(atAirflow({
                                     type: 'HEAT PUMP',
@@ -861,7 +933,7 @@
                     o.score += miss(heat.riseHigh, c.heatRise);
                     return o;
                 });
-                var def = defaultOption(options, nominal, cfmTarget);
+                var def = defaultOption(options, nominal, cfmTarget, keep);
                 if (!def) return;
                 Object.keys(cab.electrical || {}).forEach(function (voltage) {
                     if (c.electrical && voltage !== c.electrical) return;
@@ -967,6 +1039,7 @@
         },
         cabinets: cabinets,
         formOptions: formOptions,
+        conditionChoices: conditionChoices,
         parseModel: parseModel,
         buildModel: buildModel,
         riseFor: riseFor,
