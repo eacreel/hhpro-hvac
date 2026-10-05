@@ -21,20 +21,8 @@ const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const config = require('./config');
 
-// Chief Starfleet Engineer (Eric's), Admiral, Captain and Redshirt
-// First Class (the CEO, President and VP) have Super Admin rights.
-// Every Super Admin check goes through isSuperAdminLevel so they all
-// get the same rights. The one difference: only a Chief Starfleet
-// Engineer may give out the CHIEF_ONLY_LEVELS (routes/users.js).
-const CHIEF_LEVEL = 'Chief Starfleet Engineer';
-const SUPER_ADMIN_LEVELS = [CHIEF_LEVEL, 'Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
-const CHIEF_ONLY_LEVELS = [CHIEF_LEVEL, 'Admiral', 'Captain', 'Redshirt First Class'];
-const USER_LEVELS = SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer']);
+const USER_LEVELS = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
 const USER_STATUSES = ['invited', 'active'];
-
-function isSuperAdminLevel(level) {
-    return SUPER_ADMIN_LEVELS.includes(level);
-}
 
 // Every migration runs once, in order, tracked in schema_version.
 const MIGRATIONS = [
@@ -356,10 +344,6 @@ module.exports = {
     normalizeLocations,
     locationsOf,
     USER_LEVELS,
-    CHIEF_LEVEL,
-    SUPER_ADMIN_LEVELS,
-    CHIEF_ONLY_LEVELS,
-    isSuperAdminLevel,
     USER_STATUSES,
     listUsers,
     countUsers,

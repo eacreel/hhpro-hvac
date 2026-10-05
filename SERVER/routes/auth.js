@@ -34,7 +34,7 @@ const router = express.Router();
 /** Everything the site needs to know about the signed-in person. */
 function profile(user) {
     const locations = db.locationsOf(user);
-    const blocked = db.isSuperAdminLevel(user.user_level) ? [] : permissions.blockedProductsFor(locations);
+    const blocked = user.user_level === 'Super Admin' ? [] : permissions.blockedProductsFor(locations);
     return {
         user: {
             id: user.id,

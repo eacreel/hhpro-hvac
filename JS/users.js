@@ -27,19 +27,16 @@
     window.HHpro = window.HHpro || {};
     HHpro.Views = HHpro.Views || {};
 
-    // Levels with Super Admin rights (SUPER_ADMIN_LEVELS in SERVER/lib/db.js).
-    // Which of them a caller may give out comes from the backend (options.levels).
-    var SUPER_ADMIN_LEVELS = ['Chief Starfleet Engineer', 'Super Admin', 'Admiral', 'Captain', 'Redshirt First Class'];
-    var LEVEL_ORDER = SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer']);
+    var LEVEL_ORDER = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
     // Email domains each Hoffman level is limited to (the server enforces
     // the same list, LEVEL_DOMAINS in SERVER/routes/users.js). Hoffman
     // Hydronics staff may be Hoffman users, never administrators.
     var HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
     var LEVEL_DOMAINS = {
+        'Super Admin': [HOFFMAN_DOMAIN],
         'Admin': [HOFFMAN_DOMAIN],
         'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
     };
-    SUPER_ADMIN_LEVELS.forEach(function (level) { LEVEL_DOMAINS[level] = [HOFFMAN_DOMAIN]; });
 
     /** '' when the address may hold the level, else the reason it may not. */
     function levelDomainProblem(email, level) {
@@ -590,7 +587,7 @@
         } else {
             var lock = document.createElement('span');
             lock.className = 'users-td-muted';
-            lock.textContent = SUPER_ADMIN_LEVELS.indexOf(u.userLevel) !== -1 ? '—' : 'Added by someone else';
+            lock.textContent = u.userLevel === 'Super Admin' ? '—' : 'Added by someone else';
             actions.appendChild(lock);
         }
         tr.appendChild(actions);
@@ -706,8 +703,9 @@
         grid.appendChild(locations.wrap);
         form.appendChild(grid);
 
-        // A level the caller may not assign (a Super Admin editing an
-        // Admiral): keep the current value visible so saving keeps it.
+        // A level the caller may not assign (an Admin editing... a Super
+        // Admin cannot happen, the backend hides that row's controls) -
+        // still, keep the current value visible if it is outside the list.
         if (existing && options.levels.indexOf(existing.userLevel) === -1) {
             var keep = document.createElement('option');
             keep.value = existing.userLevel;

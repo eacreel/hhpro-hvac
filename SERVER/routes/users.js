@@ -29,12 +29,8 @@
      POST   /:id/reset      new reset link; signs them out
 
    Rules:
-     Chief Starfleet Engineer
-                   everything, except deleting themselves
-     Super Admin   the same, except giving out Chief Starfleet
-                   Engineer, Admiral, Captain or Redshirt First Class
-                   (they may still edit people who hold one)
-     Admin         may add Admin / Hoffman / Engineer / Contractor /
+     Super Admin   everything, except deleting themselves
+     Admin        may add Admin / Hoffman / Engineer / Contractor /
                    Manufacturer;
                    may edit, delete, invite or reset only users
                    they added, and never a Super Admin
@@ -62,10 +58,10 @@ const ADMIN_ASSIGNABLE = ['Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufac
 // take any address. Mirrors LEVEL_DOMAINS in JS/users.js.
 const HOFFMAN_DOMAIN = '@hoffman-hoffman.com';
 const LEVEL_DOMAINS = {
+    'Super Admin': [HOFFMAN_DOMAIN],
     'Admin': [HOFFMAN_DOMAIN],
     'Hoffman': [HOFFMAN_DOMAIN, '@hoffmanhydronics.com']
 };
-db.SUPER_ADMIN_LEVELS.forEach((level) => { LEVEL_DOMAINS[level] = [HOFFMAN_DOMAIN]; });
 
 function emailAllowedForLevel(email, level) {
     const domains = LEVEL_DOMAINS[level];
@@ -95,16 +91,12 @@ function similarCompanies(name) {
 }
 
 function assignableLevels(actor) {
-    if (actor.user_level === db.CHIEF_LEVEL) return db.USER_LEVELS.slice();
-    if (db.isSuperAdminLevel(actor.user_level)) {
-        return db.USER_LEVELS.filter((level) => !db.CHIEF_ONLY_LEVELS.includes(level));
-    }
-    return ADMIN_ASSIGNABLE.slice();
+    return actor.user_level === 'Super Admin' ? db.USER_LEVELS.slice() : ADMIN_ASSIGNABLE.slice();
 }
 
 function canManage(actor, target) {
-    if (db.isSuperAdminLevel(actor.user_level)) return true;
-    if (db.isSuperAdminLevel(target.user_level)) return false;
+    if (actor.user_level === 'Super Admin') return true;
+    if (target.user_level === 'Super Admin') return false;
     return db.normalizeEmail(target.created_by) === actor.email;
 }
 
@@ -128,12 +120,8 @@ function publicRow(u, actor) {
     };
 }
 
-/**
- * Validate a submitted user form. Returns { error } or { fields }.
- * currentLevel is the edited user's level: someone already at a level
- * the caller cannot give out (a Super Admin editing an Admiral) keeps it.
- */
-function readForm(body, actor, currentLevel) {
+/** Validate a submitted user form. Returns { error } or { fields }. */
+function readForm(body, actor) {
     const b = body || {};
     const fields = {
         firstName: String(b.firstName || '').trim(),
@@ -145,8 +133,7 @@ function readForm(body, actor, currentLevel) {
     };
     if (!fields.firstName || !fields.lastName) return { error: 'First and last name are required.' };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) return { error: 'Enter a valid email address.' };
-    const keepsLevel = !!currentLevel && fields.userLevel === currentLevel;
-    if (!keepsLevel && !assignableLevels(actor).includes(fields.userLevel)) {
+    if (!assignableLevels(actor).includes(fields.userLevel)) {
         return { error: `You cannot assign the level "${fields.userLevel || '(none)'}".` };
     }
     if (!emailAllowedForLevel(fields.email, fields.userLevel)) {
@@ -253,7 +240,7 @@ router.get('/status', (req, res) => {
 // ---- companies -----------------------------------------------------
 
 router.get('/companies', (req, res) => {
-    res.json({ companies: db.listCompaniesWithCounts(), canEdit: db.isSuperAdminLevel(req.user.user_level) });
+    res.json({ companies: db.listCompaniesWithCounts(), canEdit: req.user.user_level === 'Super Admin' });
 });
 
 router.post('/companies', (req, res) => {
@@ -278,7 +265,7 @@ router.post('/companies', (req, res) => {
 });
 
 function requireSuperAdmin(req, res) {
-    if (!db.isSuperAdminLevel(req.user.user_level)) {
+    if (req.user.user_level !== 'Super Admin') {
         res.status(403).json({ error: 'Only a Super Admin can change the company list.' });
         return false;
     }
@@ -348,7 +335,7 @@ function loadTarget(req, res) {
 router.put('/:id', (req, res) => {
     const target = loadTarget(req, res);
     if (!target) return;
-    const form = readForm(req.body, req.user, target.user_level);
+    const form = readForm(req.body, req.user);
     if (form.error) return res.status(400).json({ error: form.error });
     if (target.id === req.user.id && form.fields.userLevel !== req.user.user_level) {
         return res.status(400).json({ error: 'You cannot change your own user level.' });

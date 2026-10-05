@@ -19,8 +19,6 @@
 
 'use strict';
 
-const db = require('./db');
-
 const STANDARD = 'hoffman';
 
 const ENGINEERS = [
@@ -49,8 +47,8 @@ function templateForCompany(company) {
 }
 
 function allowedEngineersFor(user) {
-    if (db.isSuperAdminLevel(user.user_level)) return ENGINEERS.map((e) => e.key);
     switch (user.user_level) {
+        case 'Super Admin':
         case 'Admin':
         case 'Hoffman':
             return ENGINEERS.map((e) => e.key);

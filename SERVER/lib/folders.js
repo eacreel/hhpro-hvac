@@ -35,7 +35,7 @@ const config = require('./config');
 const db = require('./db');
 const log = require('./log');
 
-const HOFFMAN_LEVELS = db.SUPER_ADMIN_LEVELS.concat(['Admin', 'Hoffman']);
+const HOFFMAN_LEVELS = ['Super Admin', 'Admin', 'Hoffman'];
 
 function safeLeaf(part) {
     return String(part || '').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^[.-]+|[.-]+$/g, '');
