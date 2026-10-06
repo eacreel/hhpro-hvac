@@ -25,6 +25,12 @@
    active project's extra data (cart.js) which the View Project
    page lists and exports as PDF (psychro_pdf.js).
 
+   "Look Up Climate Conditions" opens the station map
+   (climate_lookup.js). Importing a station sets the altitude to
+   its elevation and adds the ASHRAE Conditions section, which
+   fills Outdoor air with the cooling or heating design condition
+   to suit the system (see syncAshrae).
+
    Public surface for other modules:
      HHpro.Psychrometrics.pdfBlob(snapshot, meta) -> Blob
      HHpro.Psychrometrics.summarize(snapshot)     -> string
@@ -91,6 +97,10 @@
             view: null,                                      // zoomed viewport or null = default
             show: chart.show,                                // curve families + scales (chartDefaults)
             shrRef: chart.shrRef,                            // reference state for the protractor / SHF scale (degF, %)
+            // Imported weather station: { station: {state, city, station, lat,
+            // lon, elev, heatDb, coolDb, coolWb, dehumDb, dehumDp},
+            // cooling: 'cool' | 'dehum', season: 'cool' | 'heat' }, or null.
+            ashrae: null,
             points: [
                 { label: 'Point 1', db: 75, key: 'rh', value: 50 }
             ],
@@ -204,6 +214,13 @@
             var oldErv = parsed.ahu && parsed.ahu.erv;
             if (oldErv && oldErv.effBasis === undefined) d.ahu.erv.effBasis = 'latent';
             if (d.ahu.erv.effBasis !== 'latent') d.ahu.erv.effBasis = 'total';
+            var ash = d.ashrae;
+            if (!ash || typeof ash !== 'object' || !ash.station || !isFinite(ash.station.coolDb)) {
+                d.ashrae = null;
+            } else {
+                if (ash.cooling !== 'dehum') ash.cooling = 'cool';
+                if (ash.season !== 'heat') ash.season = 'cool';
+            }
             delete d.ahu.room.latentOnly; delete d.dewpoint;
             d.points = pts.slice(0, MAX_POINTS);
             d.view = (view && isFinite(view.dbMin)) ? view : null;
@@ -247,6 +264,9 @@
 
     var HELP = {
         system: 'The kind of unit being modelled. Choosing one switches on the air streams and stages that belong to it and fills in typical design conditions for them; other numbers you have entered are kept. Add or remove components with the chips below, or take a stage out with the × in its header.',
+        ashrae: 'Design weather for the weather station picked with Look Up Climate Conditions (ASHRAE climatic design conditions, IP). Importing it sets the altitude to the station elevation. It also fills Outdoor air: the cooling condition when the system has a cooling coil, the heating condition when it only heats (preheat / heating coil or humidifier). Changing the system type or its components refills Outdoor air; numbers you type into Outdoor air stay until then.',
+        ashrae_cool: '0.4% Cooling: the dry bulb exceeded 0.4% of the year (about 35 hours) with its mean coincident wet bulb, the peak sensible design. 0.4% Cooling Dehum.: the dew point exceeded 0.4% of the year with its mean coincident dry bulb, the peak moisture design that usually governs DOAS and dehumidification.',
+        ashrae_season: 'Which design condition goes into Outdoor air. Picked from the system (cooling coil: cooling; heating only: heating) and picked again whenever the system type or its components change. The 99.6% heating condition is a dry bulb only, so Outdoor air gets 25% RH with it; edit the RH there if you have better data.',
         room_sens: 'Sensible check. Draws the purple room line (every supply state that matches the space sensible / latent split), places REQ where your airflow or supply temperature lands on it, and compares the sensible cooling the final supply air delivers with the space sensible load. Switch it off for a dedicated outdoor air unit, where the zone equipment handles the sensible load.',
         room_lat: 'Latent check. Finds the wettest supply air that still carries the space latent load on the chosen airflow, draws it as the cyan maximum-dew-point line, and checks the final supply dew point against it: Q latent = 0.69 × CFM × Δgr/lb (actual-air basis uses the real mass flow).',
         room_latby: 'Whole supply airflow: a conventional mixed-air unit - the same airflow the sensible check uses. Ventilation air only: Law #1 for dedicated outdoor air - the zone equipment (VRF, chilled beams, fan coils, sensible RTUs) runs dry and the ventilation air is the only thing removing moisture, so it must be dried to a dew point low enough that the ventilation airflow alone carries the space latent load.',
@@ -462,6 +482,22 @@
         intro.appendChild(title);
         intro.appendChild(sub);
         bar.appendChild(intro);
+
+        // Station map with the ASHRAE climate conditions spreadsheet
+        // (climate_lookup.js); served from our own host like the rest.
+        var mid = document.createElement('div');
+        mid.className = 'psy-topbar-mid';
+        var look = document.createElement('button');
+        look.type = 'button';
+        look.className = 'projects-btn projects-btn-primary psy-lookup-btn';
+        look.title = 'Pick a weather station on the map and import its design conditions';
+        look.appendChild(HHpro.UI.icon('map-pin'));
+        var lookLbl = document.createElement('span');
+        lookLbl.textContent = 'Look Up Climate Conditions';
+        look.appendChild(lookLbl);
+        look.addEventListener('click', openClimateLookup);
+        mid.appendChild(look);
+        bar.appendChild(mid);
 
         // Design-condition lookup (ASHRAE climatic data by station). A plain
         // link: nothing is requested until it is clicked, so privacy.js
@@ -830,6 +866,8 @@
         if (p.values) extend(a, deepClone(p.values));
         a.erv.mode = p.erv || 'mix';
         enforceStreamRules();
+        // An imported station's conditions replace the preset's outdoor air.
+        syncAshrae();
     }
 
     // Switching how recovery effectiveness is entered keeps the ER point:
@@ -974,6 +1012,7 @@
                 if (key === 'ma' && a.ma.enabled) { a.oa.enabled = false; a.ra.enabled = false; }
                 if ((key === 'oa' || key === 'ra') && a[key].enabled) a.ma.enabled = false;
                 enforceStreamRules();
+                if (ASHRAE_STAGE_KEYS.indexOf(key) >= 0) syncAshrae();
                 save(); buildForm(); recompute();
             });
             row.appendChild(b);
@@ -982,11 +1021,142 @@
         return sec;
     }
 
+    // ---------- ASHRAE Conditions (imported weather station) ----------
+
+    // The 99.6% heating condition is a dry bulb only; Outdoor air gets
+    // this RH with it (Eric's choice, 2026-10-06: dry air is the
+    // conservative case for a humidifier). Editable in Outdoor air.
+    var ASHRAE_HEAT_RH = 25;
+    // Components whose on/off state decides which condition Outdoor air takes.
+    var ASHRAE_STAGE_KEYS = ['oa', 'ma', 'coil', 'preheat', 'hum'];
+
+    function ashraeStation() { return (state.ashrae && state.ashrae.station) || null; }
+
+    // Cooling whenever there is a cooling coil, heating for a system that
+    // only heats (preheat / heating coil or humidifier), cooling otherwise.
+    function ashraeSeasonFor(a) {
+        if (a.coil.enabled) return 'cool';
+        if (a.preheat.enabled || a.hum.enabled) return 'heat';
+        return 'cool';
+    }
+
+    function applyAshraeToOa() {
+        var st = ashraeStation();
+        if (!st) return;
+        var oa = state.ahu.oa, c = state.ashrae;
+        if (c.season === 'heat') { oa.db = st.heatDb; oa.key = 'rh'; oa.value = ASHRAE_HEAT_RH; }
+        else if (c.cooling === 'dehum') { oa.db = st.dehumDb; oa.key = 'dp'; oa.value = st.dehumDp; }
+        else { oa.db = st.coolDb; oa.key = 'wb'; oa.value = st.coolWb; }
+    }
+
+    // The system type or its components changed: pick the season again and
+    // refill Outdoor air. Numbers typed into Outdoor air stand until then.
+    function syncAshrae() {
+        if (!ashraeStation()) return;
+        state.ashrae.season = ashraeSeasonFor(state.ahu);
+        applyAshraeToOa();
+    }
+
+    // From the climate lookup pop-up (cooling: 'cool' | 'dehum').
+    function importStation(st, cooling) {
+        state.ashrae = { station: st, cooling: cooling === 'dehum' ? 'dehum' : 'cool', season: ashraeSeasonFor(state.ahu) };
+        if (isFinite(st.elev)) state.altitude = Number(st.elev);
+        applyAshraeToOa();
+        state.mode = 'ahu';
+        save();
+        // Full re-render: the altitude field and pressure sit outside the form.
+        HHpro.App.showView('psychrometrics');
+    }
+
+    function openClimateLookup() {
+        if (!HHpro.ClimateLookup) return;
+        HHpro.ClimateLookup.open({ units: sys(), station: ashraeStation(), onImport: importStation });
+    }
+
+    function ashraeCoolText(st, cooling) {
+        return cooling === 'dehum'
+            ? fmtU('temp', st.dehumDb) + ' DB / ' + fmtU('temp', st.dehumDp) + ' DP'
+            : fmtU('temp', st.coolDb) + ' DB / ' + fmtU('temp', st.coolWb) + ' WB';
+    }
+
+    function buildAshraeCard() {
+        var c = state.ashrae, st = c.station, a = state.ahu;
+        var sec = document.createElement('div');
+        sec.className = 'psy-section psy-ashrae';
+        var head = document.createElement('div');
+        head.className = 'psy-section-head';
+        head.appendChild(sectionTitle('ASHRAE Conditions'));
+        head.appendChild(help('ashrae'));
+        var change = document.createElement('button');
+        change.type = 'button';
+        change.className = 'projects-btn projects-btn-secondary psy-small-btn';
+        change.textContent = 'Change station';
+        change.addEventListener('click', openClimateLookup);
+        head.appendChild(change);
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'psy-icon-btn';
+        remove.title = 'Clear the station (outdoor air and altitude keep their values)';
+        remove.setAttribute('aria-label', 'Clear the ASHRAE station');
+        remove.appendChild(HHpro.UI.icon('x'));
+        remove.addEventListener('click', function () {
+            state.ashrae = null;
+            save(); buildForm(); recompute();
+        });
+        head.appendChild(remove);
+        sec.appendChild(head);
+
+        var name = document.createElement('p');
+        name.className = 'psy-ashrae-station';
+        var strong = document.createElement('strong');
+        strong.textContent = st.station;
+        name.appendChild(strong);
+        name.appendChild(document.createTextNode(' · ' + st.city + ', ' + st.state));
+        sec.appendChild(name);
+
+        sec.appendChild(buildKvList([
+            ['Elevation', fmtU('altitude', st.elev) + (Math.abs(state.altitude - st.elev) < 0.5 ? ' (used as the altitude)' : '')],
+            ['99.6% Heating', fmtU('temp', st.heatDb) + ' DB']
+        ]));
+
+        var r = document.createElement('div');
+        r.className = 'psy-radio-row';
+        r.appendChild(inlineLabel('Cooling:'));
+        r.appendChild(help('ashrae_cool'));
+        [['cool', '0.4% Cooling'], ['dehum', '0.4% Cooling Dehum.']].forEach(function (m) {
+            r.appendChild(radio('psy-ashrae-cool', m[0], m[1] + ': ' + ashraeCoolText(st, m[0]), c.cooling === m[0], function () {
+                c.cooling = m[0];
+                if (c.season === 'cool') applyAshraeToOa();
+                save(); buildForm(); recompute();
+            }));
+        });
+        sec.appendChild(r);
+
+        if (a.oa.enabled) {
+            var s = document.createElement('div');
+            s.className = 'psy-radio-row';
+            s.appendChild(inlineLabel('Outdoor air uses:'));
+            s.appendChild(help('ashrae_season'));
+            [['cool', 'Cooling'], ['heat', 'Heating (' + ASHRAE_HEAT_RH + '% RH)']].forEach(function (m) {
+                s.appendChild(radio('psy-ashrae-season', m[0], m[1], c.season === m[0], function () {
+                    c.season = m[0];
+                    applyAshraeToOa();
+                    save(); buildForm(); recompute();
+                }));
+            });
+            sec.appendChild(s);
+        } else {
+            sec.appendChild(hint('Add Outdoor air to the system to bring these conditions into the chart.'));
+        }
+        return sec;
+    }
+
     // ---------- Air Handler form ----------
 
     function buildAhuForm(form) {
         var a = state.ahu;
         form.appendChild(buildSystemCard());
+        if (ashraeStation()) form.appendChild(buildAshraeCard());
         if (!a.preset) return;
         var both = a.oa.enabled && a.ra.enabled;
 
@@ -1311,6 +1481,8 @@
         remove.addEventListener('click', function () {
             obj.enabled = false;
             enforceStreamRules();
+            var a = state.ahu;
+            if (ASHRAE_STAGE_KEYS.some(function (k) { return a[k] === obj; })) syncAshrae();
             save(); buildForm(); recompute();
         });
         head.appendChild(remove);
@@ -2728,6 +2900,7 @@
         var a = s.ahu, bits = [];
         var p = presetByKey(a.preset);
         if (p && p.short) bits.push(p.short);
+        if (s.ashrae && s.ashrae.station) bits.push(s.ashrae.station.station + ', ' + s.ashrae.station.state);
         if (a.oa.enabled) bits.push('OA ' + fmt(a.oa.db, 0) + '°F');
         if (a.ra.enabled) bits.push('RA ' + fmt(a.ra.db, 0) + '°F');
         if (a.ma && a.ma.enabled) bits.push('MA ' + fmt(a.ma.db, 0) + '°F');
@@ -2817,6 +2990,23 @@
     // PDF (works from any snapshot, no page needed)
     // -----------------------------------------------------------------
 
+    // The imported station, first block of the report (PDF only; the
+    // panel shows it in the ASHRAE Conditions section).
+    function ashraeReportBlock(s) {
+        var c = s.ashrae, st = c && c.station;
+        if (!st) return null;
+        var rows = [
+            ['Station', st.station + ' - ' + st.city + ', ' + st.state],
+            ['Elevation', fmtU('altitude', st.elev)],
+            ['99.6% Heating', fmtU('temp', st.heatDb) + ' DB'],
+            [c.cooling === 'dehum' ? '0.4% Cooling Dehum.' : '0.4% Cooling', ashraeCoolText(st, c.cooling)]
+        ];
+        if (s.ahu.oa.enabled) {
+            rows.push(['Outdoor air from', c.season === 'heat' ? 'Heating condition, ' + ASHRAE_HEAT_RH + '% RH' : 'Cooling condition']);
+        }
+        return { title: 'ASHRAE climatic design conditions', rows: rows };
+    }
+
     function pdfBlob(snapshot, meta) {
         init();
         meta = meta || {};
@@ -2832,6 +3022,8 @@
                 show: s.show, shrRef: chartShrRef(s), points: res.points, lines: res.lines, paths: res.paths, callouts: chartCallouts(res)
             });
             var blocks = buildReport(res, s);
+            var ash = s.mode === 'ahu' ? ashraeReportBlock(s) : null;
+            if (ash) blocks.unshift(ash);
             var sub = [];
             if (meta.projectName) sub.push(meta.projectName);
             sub.push('HHpro Psychrometrics');

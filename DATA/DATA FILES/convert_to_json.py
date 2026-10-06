@@ -1094,6 +1094,151 @@ def convert_gas_pack_capacity(input_path, output_path):
 
 
 # -----------------------------------------------------------------------------
+# ASHRAE CLIMATE DESIGN CONDITIONS (Psychrometric Calculator station lookup)
+# -----------------------------------------------------------------------------
+# One sheet, one row per weather station. Row 3 holds the column groups
+# (STATE ... ELEVATION, 99.6% HEATING, 0.4% COOLING, 0.4% COOLING DEHUM.),
+# row 4 the DB / WB / DP labels under the merged groups, data from row 5.
+# Columns are found by those labels, so they can be reordered.
+# Latitude / longitude are text like "35.223N" / "80.954W"; the JSON holds
+# signed decimal degrees (south and west negative).
+# -----------------------------------------------------------------------------
+
+CLIMATE_FILE = "HHpro - ASHRAE CLIMATE CONDITIONS.xlsx"
+CLIMATE_OUTPUT = "ashrae_climate.json"
+
+# JSON field -> (row 3 group, row 4 label or None), in output order.
+CLIMATE_COLUMNS = [
+    ("state",   ("STATE", None)),
+    ("city",    ("CITY", None)),
+    ("station", ("STATION", None)),
+    ("lat",     ("LATITUDE", None)),
+    ("lon",     ("LONGITUDE", None)),
+    ("elev",    ("ELEVATION", None)),
+    ("heatDb",  ("99.6% HEATING", "DB")),
+    ("coolDb",  ("0.4% COOLING", "DB")),
+    ("coolWb",  ("0.4% COOLING", "WB")),
+    ("dehumDb", ("0.4% COOLING DEHUM.", "DB")),
+    ("dehumDp", ("0.4% COOLING DEHUM.", "DP")),
+]
+
+_COORD_RE = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([NSEW])\s*$", re.IGNORECASE)
+
+
+def _climate_coord(v):
+    """'35.223N' -> 35.223, '80.954W' -> -80.954; plain numbers pass through."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    m = _COORD_RE.match(str(v or ""))
+    if not m:
+        return None
+    x = float(m.group(1))
+    return -x if m.group(2).upper() in ("S", "W") else x
+
+
+def _climate_num(v):
+    if isinstance(v, (int, float)) and not isinstance(v, bool):
+        return _gp_trim(float(v))
+    try:
+        return _gp_trim(float(str(v).strip()))
+    except (TypeError, ValueError):
+        return None
+
+
+def convert_ashrae_climate(input_path, output_path):
+    """Convert the ASHRAE climate workbook to a compact station list.
+
+    Output shape:
+      {
+        "title":  "2025 ASHRAE CLIMATE DESIGN CONDITIONS - IP",
+        "source": "https://ashrae-meteo.info/...",
+        "fields": ["state", "city", "station", "lat", "lon", "elev",
+                   "heatDb", "coolDb", "coolWb", "dehumDb", "dehumDp"],
+        "stations": [["NC", "Charlotte", "Charlotte Douglas", 35.223, -80.954,
+                      730, 21.5, 94.2, 74.6, 81.2, 74.4], ...]
+      }
+    Elevation in ft, temperatures in deg F.
+    """
+    print(f"\nProcessing: {os.path.basename(input_path)}")
+    wb = openpyxl.load_workbook(input_path, read_only=True, data_only=True)
+    ws = wb.worksheets[0]
+    rows = list(ws.iter_rows(values_only=True))
+    wb.close()
+
+    def text(v):
+        return str(v).strip().upper() if v is not None else ""
+
+    head_i = next((i for i, r in enumerate(rows) if r and text(r[0]) == "STATE"), None)
+    if head_i is None or head_i + 1 >= len(rows):
+        raise ValueError("no header row starting with STATE")
+    title = next((str(r[0]).strip() for r in rows[:head_i]
+                  if r and r[0] and "ASHRAE" in text(r[0])
+                  and not text(r[0]).startswith("HTTP")), "")
+    source = next((str(r[0]).strip() for r in rows[:head_i]
+                   if r and r[0] and text(r[0]).startswith("HTTP")), "")
+
+    # (group, sub label) -> column index; a merged group's label sits in its
+    # first column only, so carry it across the blanks to its right.
+    groups, subs = rows[head_i], rows[head_i + 1]
+    lookup, group = {}, ""
+    for c in range(len(groups)):
+        if groups[c] is not None:
+            group = text(groups[c])
+        sub = text(subs[c]) if c < len(subs) else ""
+        lookup[(group, sub or None)] = c
+        if sub:
+            lookup.setdefault((group, None), c)
+    cols = []
+    for field, key in CLIMATE_COLUMNS:
+        if key not in lookup:
+            raise ValueError(f"column not found: {key[0]}" + (f" / {key[1]}" if key[1] else ""))
+        cols.append((field, lookup[key]))
+
+    stations, problems = [], []
+    for r_i in range(head_i + 2, len(rows)):
+        r = rows[r_i]
+        if not r or all(v is None for v in r):
+            continue
+        rec = {}
+        for field, c in cols:
+            v = r[c] if c < len(r) else None
+            if field in ("state", "city", "station"):
+                rec[field] = str(v).strip() if v is not None else ""
+            elif field in ("lat", "lon"):
+                x = _climate_coord(v)
+                rec[field] = round(x, 4) if x is not None else None
+            else:
+                rec[field] = _climate_num(v)
+        bad = [f for f, _ in cols if rec[f] is None or rec[f] == ""]
+        if not bad:
+            if rec["coolWb"] > rec["coolDb"]:
+                bad.append("coolWb > coolDb")
+            if rec["dehumDp"] > rec["dehumDb"]:
+                bad.append("dehumDp > dehumDb")
+            if not (-90 <= rec["lat"] <= 90 and -180 <= rec["lon"] <= 180):
+                bad.append("lat/lon")
+        if bad:
+            problems.append(f"row {r_i + 1} ({rec.get('station') or '?'}): {', '.join(bad)}")
+            continue
+        stations.append([rec[f] for f, _ in CLIMATE_COLUMNS])
+
+    payload = {
+        "title": title,
+        "source": source,
+        "fields": [f for f, _ in CLIMATE_COLUMNS],
+        "stations": stations,
+    }
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, separators=(",", ":"), ensure_ascii=False)
+
+    print(f"  -> {len(stations)} stations written to {os.path.basename(output_path)}")
+    if problems:
+        print(f"     ({len(problems)} row(s) skipped:)")
+        for p in problems:
+            print(f"       {p}")
+
+
+# -----------------------------------------------------------------------------
 # DOCUMENTATION COLUMN -> FOLDER / EXTENSION MAP
 # -----------------------------------------------------------------------------
 # Maps the column-name prefix (e.g. "SUBMITTAL (SYSTEM)" -> "SUBMITTAL") to
@@ -2157,7 +2302,8 @@ def main():
     all_xlsx = [f for f in sorted(os.listdir(script_dir))
                 if f.lower().endswith(".xlsx") and not f.startswith("~$")]
     candidates = [f for f in all_xlsx
-                  if f in (CAPACITY_FILE, MS_CAPACITY_FILE, GAS_PACK_CAPACITY_FILE)
+                  if f in (CAPACITY_FILE, MS_CAPACITY_FILE, GAS_PACK_CAPACITY_FILE,
+                           CLIMATE_FILE)
                   or f in PRODUCT_CONFIGS]
     skipped = [f for f in all_xlsx if f not in candidates]
 
@@ -2193,6 +2339,16 @@ def main():
                 convert_gas_pack_capacity(
                     input_path,
                     os.path.join(output_dir, GAS_PACK_CAPACITY_OUTPUT),
+                )
+                converted += 1
+            except Exception as e:
+                print(f"  ERROR processing {fname}: {e}")
+            continue
+        if fname == CLIMATE_FILE:
+            try:
+                convert_ashrae_climate(
+                    input_path,
+                    os.path.join(output_dir, CLIMATE_OUTPUT),
                 )
                 converted += 1
             except Exception as e:
