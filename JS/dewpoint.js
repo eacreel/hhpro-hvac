@@ -762,6 +762,7 @@
     }
 
     function summarize(snap) {
+        init();   // the project view can call this before the calculator has opened
         var saved = state;
         state = fromSnapshot(snap);
         try {
