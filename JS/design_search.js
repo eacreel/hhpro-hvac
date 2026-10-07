@@ -476,8 +476,12 @@
         // shows only the relevant N rows). Prune any stored values that
         // refer to currently-hidden filters so a stale "SIZE (INDOOR
         // UNIT #5)" doesn't silently affect search after the user drops
-        // the unit count down to 1.
-        var visibleFilters = HHpro.Schedule.getVisibleFilters(state.productKey, data, state.filterValues);
+        // the unit count down to 1. Gallery-only filters (split system
+        // PHOTO FILTER) have no control here, so they're left out.
+        var visibleFilters = HHpro.Schedule.getVisibleFilters(state.productKey, data, state.filterValues)
+            .filter(function (fc) {
+                return !HHpro.Schedule.isGalleryOnlyFilter(state.productKey, fc.name);
+            });
         HHpro.Schedule.pruneFilterValues(state.filterValues, visibleFilters);
         if (visibleFilters.length) {
             var filtersBox = document.createElement('section');

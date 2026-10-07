@@ -1428,7 +1428,7 @@ WHAT'S IN THE GRID
             'gas_packs':              'PACKAGED ROOFTOP UNIT SCHEDULE',
             'marvair':                'VERTICAL WALL MOUNTED PACKAGED SCHEDULE',
             'mini_splits':            'MINI SPLIT SCHEDULE',
-            'multi_position_splits':  'MULTI POSITION SPLIT SCHEDULE',
+            'multi_position_splits':  'SPLIT SYSTEM SCHEDULE',
             'gas_splits':             'GAS SPLIT SCHEDULE',
             'vfds':                   'VFD SCHEDULE',
             'diffusers':              'DIFFUSER SCHEDULE',
@@ -2541,7 +2541,9 @@ WHAT'S IN THE GRID
             'gas_packs': 'Daikin Light Commercial RTUs',
             'marvair': 'Marvair Vertical Wall Mount',
             'mini_splits': 'Daikin Mini Splits',
-            'multi_position_splits': 'Daikin Multi Position Splits',
+            // Excel caps sheet names at 31 characters, so not the full
+            // "Daikin Unitary & Light Commercial Split Systems".
+            'multi_position_splits': 'Daikin Unitary & LC Splits',
             'gas_splits': 'Daikin Gas Splits',
             'vfds': 'ABB VFDs',
             'diffusers': 'Price Diffusers',

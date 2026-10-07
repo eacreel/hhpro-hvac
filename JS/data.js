@@ -99,12 +99,28 @@
             ]
         },
         {
+            // Key, JSON and folder names predate the rename (Oct 2026);
+            // they stay so saved projects and permissions keep resolving.
             productKey: 'multi_position_splits',
-            displayName: 'Daikin Multi Position Splits',
+            displayName: 'Daikin Unitary & Light Commercial Split Systems',
             jsonFile: 'DATA/JSON/multi_position_splits.json',
             pictureFile: 'DATA/PICTURES/MULTI POSITION SPLITS.jpg',
             assetsFolder: 'ASSETS/MULTI POSITION SPLITS',
             tileClass: 'tile-multi-position-splits',
+            // Air handler style picker gallery above the filters (see
+            // JS/multi_position_splits.js). `style` must match a PHOTO
+            // FILTER value exactly - clicking a card filters the schedule
+            // to that style. The caption shows the full style text, with
+            // the tonnage range on its own line.
+            styleGallery: [
+                { style: 'Multi Position (1.5 to 10.0 Tons)',  picture: 'DATA/PICTURES/Multi Position (1.5 to 10.0 Tons).png' },
+                { style: 'Ceiling Mounted (1.5 to 2.5 Tons)',  picture: 'DATA/PICTURES/Ceiling Mounted (1.5 to 2.5 Tons).png' },
+                { style: 'Apartment Style (1.0 to 3.0 Tons)',  picture: 'DATA/PICTURES/Apartment Style (1.0 to 3.0 Tons).png' }
+            ],
+            // Filters driven only by a picture gallery: they still filter
+            // the schedule, but get no dropdown on the browse page or in
+            // Design Search.
+            galleryOnlyFilters: ['PHOTO FILTER'],
             // Collapse selections that differ only in AUX. ELECTRIC HEAT
             // kW into a single row with a kW dropdown. The dropdown
             // swaps the dependent columns (TEMPERATURE RISE, MCA, MOP)

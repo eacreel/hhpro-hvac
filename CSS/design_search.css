@@ -50,7 +50,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    max-width: 360px;
+    /* Room for the longest category name ("Daikin Unitary & Light
+       Commercial Split Systems") without clipping. */
+    max-width: 420px;
     flex-shrink: 0;
 }
 

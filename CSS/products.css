@@ -725,6 +725,13 @@
     justify-content: center;
 }
 
+/* Wide variant (split system air handler styles): only three cards, so
+   each gets room for a one-line style name ("Ceiling Mounted") above
+   its tonnage range. Short windows still shrink it (rule below). */
+.model-gallery-wide .model-card {
+    flex-basis: 130px;
+}
+
 .model-card-label {
     font-size: var(--font-size-sm);
     font-weight: 700;

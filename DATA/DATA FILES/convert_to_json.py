@@ -180,8 +180,8 @@ PRODUCT_CONFIGS = {
         "supportsMultiRow": False,
         "assetsFolder": "MULTI POSITION SPLITS",
         "searchSchema": {
-            "displayName": "Daikin Multi Position Splits",
-            "description": "Conventional split systems with a multi-position air handler + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "displayName": "Daikin Unitary & Light Commercial Split Systems",
+            "description": "Conventional split systems with an air handler (multi position, ceiling mounted or apartment style) + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
             "targets": [
                 {"label": "Indoor Cooling Capacity",    "col": "J", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Sensible Capacity",   "col": "K", "unit": "BTU/h", "defaultTolerance": 10},

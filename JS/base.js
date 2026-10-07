@@ -109,6 +109,9 @@
         pruneFilterValues: function (filterValues, visibleFilters) {
             return pruneFilterValues(filterValues, visibleFilters);
         },
+        isGalleryOnlyFilter: function (productKey, filterName) {
+            return isGalleryOnlyFilter(productKey, filterName);
+        },
         // The values a filter can still take given every OTHER filter's
         // current value (what its dropdown offers).
         uniqueFilterValues: function (data, filterName, filterValues) {
@@ -574,7 +577,13 @@
         function renderFilterBar() {
             var visible = getVisibleFilters(product.productKey, data, filterValues);
             pruneFilterValues(filterValues, visible);
-            var bar = buildFilterBar(data, visible, filterValues, onUserFilterChange, onClearAllFilters,
+            // Gallery-only filters (split system PHOTO FILTER) stay in
+            // filterValues, so they still narrow the schedule and the
+            // other dropdowns, but the picture cards are their control.
+            var dropdowns = visible.filter(function (fc) {
+                return !isGalleryOnlyFilter(product.productKey, fc.name);
+            });
+            var bar = buildFilterBar(data, dropdowns, filterValues, onUserFilterChange, onClearAllFilters,
                                      designSearchHandler());
             filterBarContainer.innerHTML = '';
             filterBarContainer.appendChild(bar);
@@ -766,6 +775,16 @@
             return Array.isArray(result) ? result : allFilters;
         }
         return allFilters;
+    }
+
+    // Filters a product drives from a picture gallery only (data.js
+    // galleryOnlyFilters): no dropdown on the browse page or in Design
+    // Search.
+    function isGalleryOnlyFilter(productKey, filterName) {
+        var product = (productKey && HHpro.Data && HHpro.Data.getProduct)
+            ? HHpro.Data.getProduct(productKey) : null;
+        var names = (product && product.galleryOnlyFilters) || [];
+        return names.indexOf(filterName) !== -1;
     }
 
     function pruneFilterValues(filterValues, visibleFilters) {
