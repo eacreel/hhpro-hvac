@@ -3337,7 +3337,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -3406,7 +3406,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -3475,7 +3475,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -3544,7 +3544,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -3613,7 +3613,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -3682,7 +3682,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -3751,7 +3751,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -3820,7 +3820,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -3889,7 +3889,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -3958,7 +3958,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -4027,7 +4027,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -4096,7 +4096,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -4165,7 +4165,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -4234,7 +4234,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -4303,7 +4303,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -4372,7 +4372,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -4441,7 +4441,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -4510,7 +4510,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -4579,7 +4579,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -4648,7 +4648,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -4717,7 +4717,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -4786,7 +4786,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -4855,7 +4855,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -4924,7 +4924,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -4993,7 +4993,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -5062,7 +5062,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -5131,7 +5131,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -5200,7 +5200,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -5269,7 +5269,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -5338,7 +5338,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -5407,7 +5407,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -5476,7 +5476,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -5545,7 +5545,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -5614,7 +5614,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -5683,7 +5683,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -5752,7 +5752,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -5821,7 +5821,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -5890,7 +5890,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -5959,7 +5959,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -6028,7 +6028,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -6097,7 +6097,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -6166,7 +6166,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -6235,7 +6235,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -6304,7 +6304,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -6373,7 +6373,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -6442,7 +6442,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -6511,7 +6511,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -6580,7 +6580,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -6649,7 +6649,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -6718,7 +6718,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -6787,7 +6787,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -6856,7 +6856,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -6925,7 +6925,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 1,
@@ -6994,7 +6994,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 1,
@@ -7063,7 +7063,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -7132,7 +7132,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -7201,7 +7201,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -7270,7 +7270,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -7339,7 +7339,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -7408,7 +7408,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -7477,7 +7477,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -7546,7 +7546,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -7615,7 +7615,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -7684,7 +7684,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -7753,7 +7753,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -7822,7 +7822,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -7891,7 +7891,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -7960,7 +7960,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -8029,7 +8029,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -8098,7 +8098,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -8167,7 +8167,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -8236,7 +8236,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -8305,7 +8305,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -8374,7 +8374,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -8443,7 +8443,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -8512,7 +8512,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -8581,7 +8581,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -8650,7 +8650,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -8719,7 +8719,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -8788,7 +8788,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -8857,7 +8857,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -8926,7 +8926,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -8995,7 +8995,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -9064,7 +9064,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -9133,7 +9133,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -9202,7 +9202,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -9271,7 +9271,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -9340,7 +9340,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -9409,7 +9409,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -9478,7 +9478,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -9547,7 +9547,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -9616,7 +9616,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -9685,7 +9685,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -9754,7 +9754,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -9823,7 +9823,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -9892,7 +9892,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -9961,7 +9961,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -10030,7 +10030,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -10099,7 +10099,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -10168,7 +10168,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -10237,7 +10237,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -10306,7 +10306,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -10375,7 +10375,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -10444,7 +10444,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -10513,7 +10513,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -10582,7 +10582,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -10651,7 +10651,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 1,
@@ -10720,7 +10720,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 SEER2",
+            "NOMINAL EFFICIENCY": "16.0 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 1,
@@ -10789,7 +10789,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -10860,7 +10860,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": "Inverter",
@@ -10931,7 +10931,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -11002,7 +11002,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -11073,7 +11073,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -11144,7 +11144,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -11215,7 +11215,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -11286,7 +11286,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": "Inverter",
@@ -11357,7 +11357,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -11428,7 +11428,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -11499,7 +11499,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -11570,7 +11570,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -11641,7 +11641,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -11712,7 +11712,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -11783,7 +11783,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -11854,7 +11854,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -11925,7 +11925,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -11996,7 +11996,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -12067,7 +12067,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -12138,7 +12138,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -12209,7 +12209,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -12280,7 +12280,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -12351,7 +12351,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -12422,7 +12422,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -12493,7 +12493,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -12564,7 +12564,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -12635,7 +12635,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -12706,7 +12706,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -12777,7 +12777,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -12848,7 +12848,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -12919,7 +12919,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -12990,7 +12990,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -13061,7 +13061,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -13132,7 +13132,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -13203,7 +13203,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -13274,7 +13274,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -13345,7 +13345,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -13416,7 +13416,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -13487,7 +13487,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -13558,7 +13558,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -13629,7 +13629,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -13700,7 +13700,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -13771,7 +13771,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -13842,7 +13842,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -13913,7 +13913,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -13984,7 +13984,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -14055,7 +14055,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -14126,7 +14126,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -14197,7 +14197,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -14266,7 +14266,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 2,
@@ -14335,7 +14335,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -14404,7 +14404,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -14473,7 +14473,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -14542,7 +14542,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -14611,7 +14611,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -14680,7 +14680,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -14749,7 +14749,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -14818,7 +14818,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -14887,7 +14887,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -14956,7 +14956,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -15025,7 +15025,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -15094,7 +15094,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 2,
@@ -15163,7 +15163,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -15232,7 +15232,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -15301,7 +15301,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -15370,7 +15370,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -15439,7 +15439,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -15508,7 +15508,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -15577,7 +15577,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 2,
@@ -15646,7 +15646,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 2,
@@ -15715,7 +15715,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -15784,7 +15784,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -15853,7 +15853,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -15922,7 +15922,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -15991,7 +15991,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -16060,7 +16060,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -16129,7 +16129,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 2,
@@ -16198,7 +16198,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 2,
@@ -16267,7 +16267,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -16338,7 +16338,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -16409,7 +16409,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -16480,7 +16480,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -16551,7 +16551,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -16622,7 +16622,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -16693,7 +16693,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -16764,7 +16764,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -16835,7 +16835,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -16906,7 +16906,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -16977,7 +16977,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -17048,7 +17048,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -17119,7 +17119,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -17190,7 +17190,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -17261,7 +17261,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -17332,7 +17332,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -17403,7 +17403,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -17474,7 +17474,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -17545,7 +17545,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -17616,7 +17616,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -17687,7 +17687,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -17758,7 +17758,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -17829,7 +17829,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -17900,7 +17900,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -17971,7 +17971,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -18042,7 +18042,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -18113,7 +18113,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -18184,7 +18184,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -18255,7 +18255,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -18326,7 +18326,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -18397,7 +18397,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -18468,7 +18468,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -18539,7 +18539,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -18610,7 +18610,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -18681,7 +18681,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -18752,7 +18752,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -18823,7 +18823,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -18894,7 +18894,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "17.5 SEER2",
+            "NOMINAL EFFICIENCY": "17.5 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -18965,7 +18965,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "19.2 SEER2",
+            "NOMINAL EFFICIENCY": "19.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -19034,7 +19034,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "19.2 SEER2",
+            "NOMINAL EFFICIENCY": "19.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -19103,7 +19103,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 1,
@@ -19174,7 +19174,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 3,
             "STAGES": 1,
@@ -19245,7 +19245,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 5,
             "STAGES": 1,
@@ -19316,7 +19316,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 6,
             "STAGES": 1,
@@ -19387,7 +19387,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 8,
             "STAGES": 1,
@@ -19458,7 +19458,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 10,
             "STAGES": 1,
@@ -19529,7 +19529,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 1,
@@ -19600,7 +19600,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 19,
             "STAGES": 1,
@@ -19671,7 +19671,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 1,
@@ -19742,7 +19742,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 3,
             "STAGES": 1,
@@ -19813,7 +19813,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 5,
             "STAGES": 1,
@@ -19884,7 +19884,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 6,
             "STAGES": 1,
@@ -19955,7 +19955,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 8,
             "STAGES": 1,
@@ -20026,7 +20026,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 10,
             "STAGES": 1,
@@ -20097,7 +20097,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 1,
@@ -20168,7 +20168,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 19,
             "STAGES": 1,
@@ -20239,7 +20239,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 1,
@@ -20310,7 +20310,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 3,
             "STAGES": 1,
@@ -20381,7 +20381,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 5,
             "STAGES": 1,
@@ -20452,7 +20452,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 6,
             "STAGES": 1,
@@ -20523,7 +20523,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 8,
             "STAGES": 1,
@@ -20594,7 +20594,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 10,
             "STAGES": 1,
@@ -20665,7 +20665,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 1,
@@ -20736,7 +20736,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 20,
             "STAGES": 1,
@@ -20807,7 +20807,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/3",
             "KW": 25,
             "STAGES": 1,
@@ -20878,7 +20878,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 1,
@@ -20949,7 +20949,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 3,
             "STAGES": 1,
@@ -21020,7 +21020,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 5,
             "STAGES": 1,
@@ -21091,7 +21091,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 6,
             "STAGES": 1,
@@ -21162,7 +21162,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 8,
             "STAGES": 1,
@@ -21233,7 +21233,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 10,
             "STAGES": 1,
@@ -21304,7 +21304,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 1,
@@ -21375,7 +21375,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 19,
             "STAGES": 1,
@@ -21446,7 +21446,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 1,
@@ -21517,7 +21517,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 3,
             "STAGES": 1,
@@ -21588,7 +21588,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 5,
             "STAGES": 1,
@@ -21659,7 +21659,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 6,
             "STAGES": 1,
@@ -21730,7 +21730,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 8,
             "STAGES": 1,
@@ -21801,7 +21801,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 10,
             "STAGES": 1,
@@ -21872,7 +21872,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 1,
@@ -21943,7 +21943,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 19,
             "STAGES": 1,
@@ -22014,7 +22014,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 1,
@@ -22085,7 +22085,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 3,
             "STAGES": 1,
@@ -22156,7 +22156,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 5,
             "STAGES": 1,
@@ -22227,7 +22227,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 6,
             "STAGES": 1,
@@ -22298,7 +22298,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 8,
             "STAGES": 1,
@@ -22369,7 +22369,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 10,
             "STAGES": 1,
@@ -22440,7 +22440,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 1,
@@ -22511,7 +22511,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 20,
             "STAGES": 1,
@@ -22582,7 +22582,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "460/3",
             "KW": 25,
             "STAGES": 1,
@@ -22653,7 +22653,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 2,
@@ -22724,7 +22724,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 2,
@@ -22795,7 +22795,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 20,
             "STAGES": 2,
@@ -22866,7 +22866,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 30,
             "STAGES": 2,
@@ -22937,7 +22937,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 2,
@@ -23008,7 +23008,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 2,
@@ -23079,7 +23079,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 20,
             "STAGES": 2,
@@ -23150,7 +23150,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 30,
             "STAGES": 2,
@@ -23221,7 +23221,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 2,
@@ -23292,7 +23292,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 2,
@@ -23363,7 +23363,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 20,
             "STAGES": 2,
@@ -23434,7 +23434,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 30,
             "STAGES": 2,
@@ -23505,7 +23505,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 2,
@@ -23576,7 +23576,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 2,
@@ -23647,7 +23647,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 20,
             "STAGES": 2,
@@ -23718,7 +23718,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.0 IEER",
+            "NOMINAL EFFICIENCY": "16.0 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 30,
             "STAGES": 2,
@@ -23789,7 +23789,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -23858,7 +23858,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -23927,7 +23927,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -23996,7 +23996,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -24065,7 +24065,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -24134,7 +24134,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -24203,7 +24203,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -24272,7 +24272,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -24341,7 +24341,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -24410,7 +24410,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -24479,7 +24479,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -24548,7 +24548,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -24617,7 +24617,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -24686,7 +24686,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -24755,7 +24755,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -24824,7 +24824,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -24893,7 +24893,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -24962,7 +24962,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -25031,7 +25031,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -25100,7 +25100,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -25169,7 +25169,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -25238,7 +25238,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -25307,7 +25307,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -25376,7 +25376,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -25445,7 +25445,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -25514,7 +25514,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -25583,7 +25583,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -25652,7 +25652,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -25721,7 +25721,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -25790,7 +25790,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -25859,7 +25859,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -25928,7 +25928,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -25997,7 +25997,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -26066,7 +26066,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -26135,7 +26135,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -26204,7 +26204,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -26273,7 +26273,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -26342,7 +26342,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -26411,7 +26411,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -26480,7 +26480,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -26549,7 +26549,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -26618,7 +26618,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -26687,7 +26687,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -26756,7 +26756,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -26825,7 +26825,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -26894,7 +26894,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -26963,7 +26963,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -27032,7 +27032,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -27101,7 +27101,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -27170,7 +27170,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -27239,7 +27239,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -27308,7 +27308,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -27377,7 +27377,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 1,
@@ -27446,7 +27446,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "14.3 SEER2",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 1,
@@ -27515,7 +27515,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -27584,7 +27584,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -27653,7 +27653,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -27722,7 +27722,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -27791,7 +27791,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -27860,7 +27860,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -27929,7 +27929,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -27998,7 +27998,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -28067,7 +28067,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -28136,7 +28136,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -28205,7 +28205,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -28274,7 +28274,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -28343,7 +28343,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -28412,7 +28412,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -28481,7 +28481,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -28550,7 +28550,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -28619,7 +28619,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -28688,7 +28688,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -28757,7 +28757,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -28826,7 +28826,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -28895,7 +28895,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -28964,7 +28964,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -29033,7 +29033,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -29102,7 +29102,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -29171,7 +29171,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -29240,7 +29240,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -29309,7 +29309,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -29378,7 +29378,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -29447,7 +29447,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -29516,7 +29516,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -29585,7 +29585,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -29654,7 +29654,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -29723,7 +29723,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -29792,7 +29792,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -29861,7 +29861,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -29930,7 +29930,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -29999,7 +29999,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -30068,7 +30068,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -30137,7 +30137,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -30206,7 +30206,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -30275,7 +30275,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -30344,7 +30344,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -30413,7 +30413,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -30482,7 +30482,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -30551,7 +30551,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 1,
@@ -30620,7 +30620,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -30689,7 +30689,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 1,
@@ -30758,7 +30758,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -30827,7 +30827,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -30896,7 +30896,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -30965,7 +30965,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -31034,7 +31034,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 1,
@@ -31103,7 +31103,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 1,
@@ -31172,7 +31172,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "15.2 SEER2",
+            "NOMINAL EFFICIENCY": "15.2 SEER2 (Single Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 1,
@@ -31241,7 +31241,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -31312,7 +31312,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": "Inverter",
@@ -31383,7 +31383,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -31454,7 +31454,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -31525,7 +31525,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -31596,7 +31596,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -31667,7 +31667,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -31738,7 +31738,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": "Inverter",
@@ -31809,7 +31809,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -31880,7 +31880,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -31951,7 +31951,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -32022,7 +32022,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -32093,7 +32093,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -32164,7 +32164,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -32235,7 +32235,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -32306,7 +32306,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -32377,7 +32377,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -32448,7 +32448,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -32519,7 +32519,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -32590,7 +32590,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -32661,7 +32661,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -32732,7 +32732,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -32803,7 +32803,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -32874,7 +32874,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -32945,7 +32945,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -33016,7 +33016,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -33087,7 +33087,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -33158,7 +33158,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -33229,7 +33229,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -33300,7 +33300,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -33371,7 +33371,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -33442,7 +33442,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -33513,7 +33513,7 @@
           "filterData": {
             "SIZE": 3.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -33584,7 +33584,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -33655,7 +33655,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -33726,7 +33726,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -33797,7 +33797,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -33868,7 +33868,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -33939,7 +33939,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -34010,7 +34010,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -34081,7 +34081,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -34152,7 +34152,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -34223,7 +34223,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -34294,7 +34294,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -34365,7 +34365,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -34436,7 +34436,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -34507,7 +34507,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -34578,7 +34578,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.2 SEER2",
+            "NOMINAL EFFICIENCY": "16.2 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -34649,7 +34649,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -34718,7 +34718,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 3,
             "STAGES": 2,
@@ -34787,7 +34787,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -34856,7 +34856,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -34925,7 +34925,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -34994,7 +34994,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -35063,7 +35063,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -35132,7 +35132,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -35201,7 +35201,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -35270,7 +35270,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -35339,7 +35339,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -35408,7 +35408,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -35477,7 +35477,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -35546,7 +35546,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": 2,
@@ -35615,7 +35615,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -35684,7 +35684,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -35753,7 +35753,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -35822,7 +35822,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -35891,7 +35891,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -35960,7 +35960,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -36029,7 +36029,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 2,
@@ -36098,7 +36098,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 2,
@@ -36167,7 +36167,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 2,
@@ -36236,7 +36236,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 2,
@@ -36305,7 +36305,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 2,
@@ -36374,7 +36374,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 2,
@@ -36443,7 +36443,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 2,
@@ -36512,7 +36512,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": 2,
@@ -36581,7 +36581,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": 2,
@@ -36650,7 +36650,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "17.2 SEER2",
+            "NOMINAL EFFICIENCY": "17.2 SEER2 (Two Stage)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": 2,
@@ -36719,7 +36719,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -36790,7 +36790,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -36861,7 +36861,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -36932,7 +36932,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -37003,7 +37003,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -37074,7 +37074,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -37145,7 +37145,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 19,
             "STAGES": "Inverter",
@@ -37216,7 +37216,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -37287,7 +37287,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -37358,7 +37358,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -37429,7 +37429,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -37500,7 +37500,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -37571,7 +37571,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -37642,7 +37642,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -37713,7 +37713,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -37784,7 +37784,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -37855,7 +37855,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -37926,7 +37926,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -37997,7 +37997,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -38068,7 +38068,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -38139,7 +38139,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -38210,7 +38210,7 @@
           "filterData": {
             "SIZE": 4,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -38281,7 +38281,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -38352,7 +38352,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": "Inverter",
@@ -38423,7 +38423,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": "Inverter",
@@ -38494,7 +38494,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": "Inverter",
@@ -38565,7 +38565,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": "Inverter",
@@ -38636,7 +38636,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 15,
             "STAGES": "Inverter",
@@ -38707,7 +38707,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 20,
             "STAGES": "Inverter",
@@ -38778,7 +38778,7 @@
           "filterData": {
             "SIZE": 5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "19.0 SEER2",
+            "NOMINAL EFFICIENCY": "19.0 SEER2 (Inverter)",
             "ELECTRICAL": "208/1",
             "KW": 25,
             "STAGES": "Inverter",
@@ -38849,7 +38849,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 2,
@@ -38918,7 +38918,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 2,
@@ -38987,7 +38987,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 20,
             "STAGES": 2,
@@ -39056,7 +39056,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 30,
             "STAGES": 2,
@@ -39125,7 +39125,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": "-",
             "STAGES": 2,
@@ -39194,7 +39194,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 15,
             "STAGES": 2,
@@ -39263,7 +39263,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 20,
             "STAGES": 2,
@@ -39332,7 +39332,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "208/3",
             "KW": 30,
             "STAGES": 2,
@@ -39401,7 +39401,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 2,
@@ -39470,7 +39470,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 2,
@@ -39539,7 +39539,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 20,
             "STAGES": 2,
@@ -39608,7 +39608,7 @@
           "filterData": {
             "SIZE": 7.5,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 30,
             "STAGES": 2,
@@ -39677,7 +39677,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": "-",
             "STAGES": 2,
@@ -39746,7 +39746,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 15,
             "STAGES": 2,
@@ -39815,7 +39815,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 20,
             "STAGES": 2,
@@ -39884,7 +39884,7 @@
           "filterData": {
             "SIZE": 10,
             "COOLING ONLY OR HEAT PUMP": "COOLING ONLY",
-            "NOMINAL EFFICIENCY": "16.4 IEER",
+            "NOMINAL EFFICIENCY": "16.4 IEER (Two Stage)",
             "ELECTRICAL": "460/3",
             "KW": 30,
             "STAGES": 2,
@@ -39953,7 +39953,7 @@
           "filterData": {
             "SIZE": 1,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Inverter, Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -40022,7 +40022,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Inverter, Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -40091,7 +40091,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Inverter, Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -40160,7 +40160,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Inverter, Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -40229,7 +40229,7 @@
           "filterData": {
             "SIZE": 3,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "16.5 SEER2 (Apt Style)",
+            "NOMINAL EFFICIENCY": "16.5 SEER2 (Inverter, Apt Style)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": "Inverter",
@@ -40298,7 +40298,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -40367,7 +40367,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -40436,7 +40436,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": "-",
             "STAGES": 1,
@@ -40505,7 +40505,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -40574,7 +40574,7 @@
           "filterData": {
             "SIZE": 1.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -40643,7 +40643,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -40712,7 +40712,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -40781,7 +40781,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -40850,7 +40850,7 @@
           "filterData": {
             "SIZE": 2,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -40919,7 +40919,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 5,
             "STAGES": 1,
@@ -40988,7 +40988,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 6,
             "STAGES": 1,
@@ -41057,7 +41057,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 8,
             "STAGES": 1,
@@ -41126,7 +41126,7 @@
           "filterData": {
             "SIZE": 2.5,
             "COOLING ONLY OR HEAT PUMP": "HEAT PUMP",
-            "NOMINAL EFFICIENCY": "14.3 SEER2 (Ceiling Mounted)",
+            "NOMINAL EFFICIENCY": "14.3 SEER2 (Single Stage, Ceiling Mounted)",
             "ELECTRICAL": "208/1",
             "KW": 10,
             "STAGES": 1,
@@ -41169,7 +41169,7 @@
   },
   "_meta": {
     "sourceFile": "MULTI POSITION SPLIT DATA.xlsx",
-    "generatedAt": "2026-10-07T08:49:59",
+    "generatedAt": "2026-10-08T08:13:47",
     "dataRowCount": 580,
     "selectionCount": 580
   }
