@@ -198,10 +198,6 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 6,
         "supportsMultiRow": False,
         "assetsFolder": "GAS SPLITS",
-        # The 14.3 SEER2 systems added in Sept 2026 wait for their
-        # submittal PDFs: a system stays off the site until every one it
-        # references is in ASSETS\GAS SPLITS\SUBMITTALS.
-        "holdBackMissingDocs": ["SUBMITTALS"],
         "searchSchema": {
             "displayName": "Daikin Gas Splits",
             "description": "Three-component split systems with a gas furnace, indoor coil, and outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
