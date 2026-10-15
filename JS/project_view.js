@@ -1919,7 +1919,7 @@
             var oModel = readCell(rows[0], cols.outdoor.model) || '';
             return '<td class="rep-id">' +
                    '<div class="rep-id-tag">' + reportEscape(oTag || '—') + '</div>' +
-                   '<div class="rep-id-model">' + reportEscape(oModel || '—') + '</div>' +
+                   '<div class="rep-id-model">' + reportModelHtml(oModel || '—') + '</div>' +
                    '</td>';
         }
 
@@ -1937,10 +1937,17 @@
                    return '<div class="rep-id-block' +
                           (idx > 0 ? ' rep-id-block-divider' : '') + '">' +
                           '<div class="rep-id-tag">' + reportEscape(p.tag || '—') + '</div>' +
-                          '<div class="rep-id-model">' + reportEscape(p.model || '—') + '</div>' +
+                          '<div class="rep-id-model">' + reportModelHtml(p.model || '—') + '</div>' +
                           '</div>';
                }).join('') +
                '</td>';
+    }
+
+    // Gas split indoor models are "COIL / FURNACE". Put each part on its
+    // own line so the narrow ID column wraps at the slash instead of
+    // break-all splitting a model number partway through.
+    function reportModelHtml(model) {
+        return String(model).split(/\s+\/\s+/).map(reportEscape).join(' /<br>');
     }
 
     function reportFactoryValue(raw, unit) {
