@@ -1267,8 +1267,8 @@
 
         // 2. Line Sizes -- combined liquid + suction, stacked.
         tr.appendChild(makeStackedFactoryCell([
-            { label: 'Liquid:',  value: refData['LIQUID LINE CONNECTION (IN)'],  unit: '"' },
-            { label: 'Suction:', value: refData['SUCTION LINE CONNECTION (IN)'], unit: '"' }
+            { label: 'Liquid:',  value: formatLineSize(refData['LIQUID LINE CONNECTION (IN)']),  unit: '"' },
+            { label: 'Suction:', value: formatLineSize(refData['SUCTION LINE CONNECTION (IN)']), unit: '"' }
         ]));
 
         // 3. Max Vert ODU→IDU
@@ -1583,6 +1583,22 @@
         if (v === null || v === undefined || v === '') return null;
         var n = parseFloat(v);
         return isNaN(n) ? null : n;
+    }
+
+    // Line sizes are stored as decimal inches (0.375); show them the way
+    // they read on a line set (3/8, 1-1/8). Anything that isn't a whole
+    // number of sixteenths ("-", blanks, odd values) passes through as-is.
+    function formatLineSize(v) {
+        var n = parseFloatOrNull(v);
+        if (n === null || n <= 0) return v;
+        var sixteenths = Math.round(n * 16);
+        if (Math.abs(n * 16 - sixteenths) > 1e-6) return v;
+        var whole = Math.floor(sixteenths / 16);
+        var num = sixteenths % 16;
+        if (!num) return String(whole);
+        var den = 16;
+        while (num % 2 === 0) { num /= 2; den /= 2; }
+        return (whole ? whole + '-' : '') + num + '/' + den;
     }
 
     function readCell(row, col) {
@@ -1936,8 +1952,8 @@
         var liquid  = refData['LIQUID LINE CONNECTION (IN)'];
         var suction = refData['SUCTION LINE CONNECTION (IN)'];
         var lines = [];
-        if (liquid && liquid !== '-') lines.push('Liquid: ' + liquid + '"');
-        if (suction && suction !== '-') lines.push('Suction: ' + suction + '"');
+        if (liquid && liquid !== '-') lines.push('Liquid: ' + formatLineSize(liquid) + '"');
+        if (suction && suction !== '-') lines.push('Suction: ' + formatLineSize(suction) + '"');
         if (!lines.length) return '—';
         return lines.map(reportEscape).join('<br>');
     }
