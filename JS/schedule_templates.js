@@ -284,7 +284,7 @@
 
     // =================================================================
     // Barrett Woodyard & Associates templates
-    // Circled note refs (① = (1) ... ) render as circles on screen /
+    // Circled note refs (multi split; ① = (1) ... ) render as circles on screen /
     // Excel / print-PDF; the DXF + full-PDF emitters transliterate them
     // to "(1)" etc. (see export.js). Fields HHpro has no live source for
     // are constant defaults here - engineers tweak per-unit via the
@@ -363,67 +363,102 @@
         };
     }
 
+    // LC RTU "PACKAGED ROOFTOP UNIT SCHEDULE" (RTU tab, 2026-10-23
+    // revision). Gas packs and heat pumps share one layout: the HEATING
+    // group carries both gas and heat pump columns, and each row fills the
+    // ones for its TYPE ("-" in the others). Note refs are the firm's own
+    // plain "(1)" text on this sheet, not circled digits.
     function barrettWoodyardRtu() {
+        // Efficiency "13.7 SEER2/11.8 EER2" or "17.20 IEER/12.0 EER": part 0
+        // is SEER2/IEER, part 1 is EER. Trailing zeros dropped ("17.2").
+        function eff(g, idx) {
+            var n = effNum(g.cell('H'), idx);
+            return n === '-' ? n : String(Number(n));
+        }
+        // COP 47/17 -> "3.3/2.05"; gas packs (both "-") read "-".
+        function copPair(g) {
+            var a = g.cell('V'), b = g.cell('W');
+            return (a === '-' && b === '-') ? '-' : slash(a, b);
+        }
+        // Design Search rows carry the ambient they were selected at.
+        function ambient(g) {
+            var p = (HHpro.GasPackDesign && HHpro.GasPackDesign.itemPayload)
+                ? HHpro.GasPackDesign.itemPayload(g.item) : null;
+            return (p && p.cooling && p.cooling.ambient != null) ? String(p.cooling.ambient) : '95';
+        }
         return {
             orientation: 'rows',
-            title: 'PACKAGED ROOF TOP UNITS',
+            title: 'PACKAGED ROOFTOP UNIT SCHEDULE',
+            // Applies to heat pumps too (see UNIT_TYPE_LIMITS).
+            allUnitTypes: true,
             header: [
                 { r: 0, c: 0, rowspan: 2, label: 'I.D. TAG' },
-                { r: 0, c: 1, rowspan: 2, label: 'MINIMUM TOTAL CAP. (MBH)' },
-                { r: 0, c: 2, rowspan: 2, label: 'MINIMUM SENSIBLE CAP. (MBH)' },
-                { r: 0, c: 3, rowspan: 2, label: 'AMBIENT TEMP (°F)' },
-                { r: 0, c: 4, colspan: 2, label: 'COIL EAT' },
-                { r: 1, c: 4, label: '°F db' },
-                { r: 1, c: 5, label: '°F wb' },
-                { r: 0, c: 6, rowspan: 2, label: 'AIRFLOW (CFM)' },
-                { r: 0, c: 7, rowspan: 2, label: 'EXT. S.P. (IN. W.C.)' },
-                { r: 0, c: 8, rowspan: 2, label: 'MAX H.P.' },
-                { r: 0, c: 9, rowspan: 2, label: 'OUTSIDE AIR (CFM)' },
-                { r: 0, c: 10, colspan: 3, label: 'HEATING' },
-                { r: 1, c: 10, label: 'TYPE' },
-                { r: 1, c: 11, label: 'INPUT' },
-                { r: 1, c: 12, label: 'OUTPUT' },
-                { r: 0, c: 13, rowspan: 2, label: 'VOLTS/ PHASE' },
-                { r: 0, c: 14, rowspan: 2, label: 'MCA' },
-                { r: 0, c: 15, rowspan: 2, label: 'MOCP' },
-                { r: 0, c: 16, rowspan: 2, label: 'BASIS OF DESIGN' },
-                { r: 0, c: 17, rowspan: 2, label: 'EFFICIENCY (AT AHRI)' },
-                { r: 0, c: 18, rowspan: 2, label: 'APPROX. UNIT WEIGHT (LBS)' },
-                { r: 0, c: 19, rowspan: 2, label: 'REMARKS' }
+                { r: 0, c: 1, rowspan: 2, label: 'SUPPLY AIRFLOW (CFM)' },
+                { r: 0, c: 2, rowspan: 2, label: 'EXT. SP (IN. WC) (1)' },
+                { r: 0, c: 3, rowspan: 2, label: 'MOTOR HP' },
+                { r: 0, c: 4, rowspan: 2, label: 'BOD TOTAL CAPACITY (MBH)' },
+                { r: 0, c: 5, rowspan: 2, label: 'BOD SENSIBLE CAPACITY (MBH)' },
+                { r: 0, c: 6, rowspan: 2, label: 'AMBIENT TEMP (°F)' },
+                { r: 0, c: 7, colspan: 2, label: 'COIL EAT' },
+                { r: 1, c: 7, label: '°F db' },
+                { r: 1, c: 8, label: '°F wb' },
+                { r: 0, c: 9, colspan: 5, label: 'HEATING' },
+                { r: 1, c: 9, label: 'TYPE' },
+                { r: 1, c: 10, label: 'GAS INPUT' },
+                { r: 1, c: 11, label: 'GAS OUTPUT' },
+                { r: 1, c: 12, label: 'HEAT PUMP BTU/h (47°F, 70°F Indoor DB)' },
+                { r: 1, c: 13, label: 'HEAT PUMP BTU/h (17°F, 70°F Indoor DB)' },
+                { r: 0, c: 14, rowspan: 2, label: 'EER' },
+                { r: 0, c: 15, rowspan: 2, label: 'SEER2/ IEER' },
+                { r: 0, c: 16, rowspan: 2, label: 'COP (47°F)/(17°F)' },
+                { r: 0, c: 17, rowspan: 2, label: 'VOLTS/ PHASE' },
+                { r: 0, c: 18, rowspan: 2, label: 'MCA' },
+                { r: 0, c: 19, rowspan: 2, label: 'MOCP' },
+                { r: 0, c: 20, rowspan: 2, label: 'BASIS OF DESIGN' },
+                { r: 0, c: 21, rowspan: 2, label: 'APPROX. WEIGHT (LBS)' },
+                { r: 0, c: 22, rowspan: 2, label: 'REMARKS' }
             ],
             columns: [
                 { scope: 'item', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return div1000(g.cell('F')); } },
-                { scope: 'item', derive: function (g) { return div1000(g.cell('G')); } },
-                { scope: 'item', derive: function () { return '95'; } },
-                { scope: 'item', derive: function (g) { return g.cell('I'); } },
-                { scope: 'item', derive: function (g) { return g.cell('J'); } },
                 { scope: 'item', derive: function (g) { return g.cell('D'); } },
                 { scope: 'item', derive: function (g) { return g.cell('E'); } },
                 { scope: 'item', derive: function (g) { return g.cell('AC'); } },
-                { scope: 'item', editable: true, fieldKey: 'bw_rtu_oa_cfm' },
-                { scope: 'item', derive: function () { return 'GAS'; } },
+                { scope: 'item', derive: function (g) { return div1000(g.cell('F')); } },
+                { scope: 'item', derive: function (g) { return div1000(g.cell('G')); } },
+                { scope: 'item', derive: ambient },
+                { scope: 'item', derive: function (g) { return g.cell('I'); } },
+                { scope: 'item', derive: function (g) { return g.cell('J'); } },
+                { scope: 'item', derive: function (g) { return g.filter('TYPE') || '-'; } },
                 { scope: 'item', derive: function (g) { return g.cell('M'); } },
                 { scope: 'item', derive: function (g) { return g.cell('N'); } },
+                { scope: 'item', derive: function (g) { return g.cell('R'); } },
+                { scope: 'item', derive: function (g) { return g.cell('S'); } },
+                { scope: 'item', derive: function (g) { return eff(g, 1); } },
+                { scope: 'item', derive: function (g) { return eff(g, 0); } },
+                { scope: 'item', derive: copPair },
                 { scope: 'item', derive: function (g) { return g.cell('AB'); } },
                 { scope: 'item', derive: function (g) { return g.cell('AD'); } },
                 { scope: 'item', derive: function (g) { return g.cell('AE'); } },
                 { scope: 'item', derive: function (g) { return combine(g.cell('A'), g.cell('B')); } },
-                { scope: 'item', derive: function (g) { return g.cell('H'); } },
                 { scope: 'item', derive: function (g) { return g.cell('AF'); } },
-                { scope: 'item', derive: function () { return '① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨'; } }
+                // Every note applies until edited per unit (Edit Schedule).
+                { scope: 'item', derive: function () { return '(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13)'; } }
             ],
             notesTitle: '',
             notes: [
-                '① THIS IS THE STATIC PRESSURE EXTERNAL TO THE UNIT. IT DOES NOT INCLUDE COIL, CASING, FILTER, OR HEATER LOSSES',
-                '② PROVIDE UNIT COMPLETE FACTORY DISCONNECT W/ LOCKOUT PROTECTION CAPABILITY.',
-                '③ CAPACITY IN MBH.',
-                '④ SUPPLY FAN SHALL BE CAPABLE OF SUPPLYING AIRFLOW AT CFM & E.S.P. (IN. W.C.) AS INDICATED ON SCHEDULED ABOVE',
-                '⑤ PROVIDE SMOKE DETECTOR IN UNIT SUPPLY AND RETURN. INSTALLATION SHALL BE IN ACCORDANCE WITH NFPA 72E. COORD. W/ DIVISION 16.',
-                '⑥ POWERED WEATHERPROOF GFI DEDICATED CONVENIENCE OUTLET TO BE PROVIDED, COORDINATE WITH ELECTRICAL.',
-                '⑦ PROVIDE UNIT WITH COMPARATIVE ENTHALPY ECONOMIZER',
-                '⑧ PROVIDE WITH HAIL GUARD',
-                '⑨ PROVIDE WITH 2 MULTI-STAGE COMPRESSORS.'
+                '(1)  THIS IS THE SP EXTERNAL TO THE ENTIRE UNIT ASSEMBLY (WET COIL, CASING, CLEAN FILTERS, AND FURNACE LOSSES ARE NOT INCLUDED IN THIS EXTERNAL SP).',
+                '(2)  HEAT PUMP CAPACITY RATED AT 17°F.',
+                '(3)  PROVIDE WITH POWERED GFI OUTLET. COORD. WITH DIV. 26.',
+                '(4)  PROVIDE WITH INTEGRAL DISCONNECT. COORD. WITH DIV. 26.',
+                '(5)  PROVIDE SMOKE DETECTORS RETURN DUCTWORK FOR AUTOMATIC SHUTDOWN IN COMPLIANCE WITH NFPA 72.  DETECTORS SHALL BE SUPPLIED BY DIV. 26 AND INSTALLED BY DIV. 23.',
+                '(6)  PROVIDE WITH 7-DAY PROGRAMMABLE TSTAT OR INTERLOCK TO BAS.',
+                '(7)  PROVIDE UNIT WITH DIFFERENTIAL-ENTHALPY ECONOMIZER AND BAROMETRIC RELIEF.',
+                '(8)  PROVIDE UNIT WITH DIFFERENTIAL-ENTHALPY ECONOMIZER AND POWERED EXHAUST',
+                '(9)  PROVIDE WITH HOT GAS REHEAT AND SPACE-MOUNTED TEMPERATURE/HUMIDITY SENSOR.',
+                '(10) PROVIDE UNIT WITH PLENUM RETURN CURB.',
+                '(11) PROVIDE WITH ECM SUPPLY FAN',
+                '(12) PROVIDE WITH MODULATING OUTSIDE AIR DAMPER, INTERLOCKED TO SPACE-MOUNTED CO2 SENSOR FOR DEMAND CONTROL VENTILATION SEQUENCE.',
+                '(13) FOR ALL HEALTHCARE APPLICATIONS OUTSIDE AIR INTAKE SHALL BE A MINIMUM OF 36" ABOVE THE ADJACENT ROOF. PROVIDE WITH EXTENDED HEIGHT CURB AS REQUIRED.'
             ],
             manufacturers: null
         };
@@ -1281,10 +1316,11 @@
 
     // Firm layouts that only fit some of a product's units. The Light
     // Commercial RTU schedule (gas_packs) mixes gas packs and heat pumps,
-    // but every firm's RTU layout above is a gas-heat layout and no firm has
-    // a heat pump one yet. So a firm layout applies only while EVERY unit on
-    // that schedule is a gas pack; a single heat pump drops the schedule to
-    // the standard (Hoffman) layout. `fromLabel` classifies a cart item
+    // but most firms' RTU layouts above are gas-heat only. Such a layout
+    // applies only while EVERY unit on that schedule is a gas pack; a single
+    // heat pump drops the schedule to the standard (Hoffman) layout. A
+    // template flagged `allUnitTypes` (Barrett Woodyard, which has heat pump
+    // columns) skips this check. `fromLabel` classifies a cart item
     // before the product JSON has loaded - its label always carries the
     // model number, and Daikin's third letter is G for gas, H for heat pump.
     var UNIT_TYPE_LIMITS = {
@@ -1364,8 +1400,10 @@
             var byProduct = REGISTRY[engineerKey || 'hoffman'];
             if (!byProduct) return null;
             var factory = byProduct[productKey];
-            if (!factory || !unitsFitTemplates(productKey)) return null;
-            return factory();
+            if (!factory) return null;
+            var tpl = factory();
+            if (!tpl.allUnitTypes && !unitsFitTemplates(productKey)) return null;
+            return tpl;
         }
     };
 })();
