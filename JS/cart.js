@@ -1008,10 +1008,16 @@
         var modelValue = (modelCol && scheduleData[modelCol] !== undefined)
             ? scheduleData[modelCol] : null;
 
+        // A product can word the size itself with cartSizeLabel, e.g.
+        // 'SIZE {}' for VAV inlet sizes; otherwise numbers read as tons.
+        var sizeTemplate = product && product.cartSizeLabel;
+
         var parts = [];
         if (sizeValue !== null) {
             var numeric = parseFloat(sizeValue);
-            if (!isNaN(numeric) && isFinite(numeric) && String(numeric) === String(sizeValue).trim()) {
+            if (sizeTemplate) {
+                parts.push(sizeTemplate.replace('{}', String(sizeValue)));
+            } else if (!isNaN(numeric) && isFinite(numeric) && String(numeric) === String(sizeValue).trim()) {
                 parts.push(String(sizeValue) + ' TON');
             } else {
                 parts.push(String(sizeValue));

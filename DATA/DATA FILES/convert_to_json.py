@@ -299,6 +299,24 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    # Price VAV terminals (added 2026-10-27), for now just the SDV single
+    # duct box. Same layout as the diffusers: title row 2, one header row
+    # (3), data from row 4. The site product key is "vav".
+    "PRICE SDV DATA.xlsx": {
+        "productType": "PRICE VAV",
+        "outputFileName": "vav.json",
+        "headerRows": 2,
+        "dataStartRow": 4,
+        "supportsMultiRow": False,
+        "assetsFolder": "PRICE SDV",
+        "searchSchema": {
+            "displayName": "Price VAV",
+            "description": "Price single duct VAV terminals. Enter a target max primary airflow and/or use the filters to narrow by inlet size and insulation.",
+            "targets": [
+                {"label": "Max Primary Airflow", "col": "D", "unit": "CFM", "defaultTolerance": 5},
+            ],
+        },
+    },
     # Price RAC return air canopies (added 2026-09-30). Same layout as the
     # VFDs: title row 2, two header rows (3-4), data from row 5, and a
     # Notes/Accessories column that cites the SCHEDULE NOTES list ("All").

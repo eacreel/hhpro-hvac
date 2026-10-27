@@ -187,7 +187,9 @@
             // creator (and in Excel/PDF export).
             hasServesColumn: true,
             // Auto Tag prefix default for this product.
-            autoTagPrefix: 'VFD-'
+            autoTagPrefix: 'VFD-',
+            // The first filter is HP, not tons, in cart labels.
+            cartSizeLabel: '{} HP'
         },
         {
             productKey: 'diffusers',
@@ -281,6 +283,20 @@
                 { model: '90/90FH',                 label: '90 GYM RTN',      desc: 'Heavy Duty Gym Return Grille', picture: 'DATA/PICTURES/Price Return Gym (Black).jpg' },
                 { model: 'STG',                     label: 'TRANSFER',        desc: 'Door & Wall Transfer Grille',  picture: 'DATA/PICTURES/Price Transfer (Black).jpg' }
             ]
+        },
+        {
+            // Price VAV terminals (added 2026-10-27), for now just the SDV
+            // single duct box (PRICE SDV DATA.xlsx). The display name is
+            // also the product's row name on the Users Permissions tab.
+            productKey: 'vav',
+            displayName: 'Price VAV',
+            jsonFile: 'DATA/JSON/vav.json',
+            pictureFile: 'DATA/PICTURES/Price SDV (Black).jpg',
+            assetsFolder: 'ASSETS/PRICE SDV',
+            tileClass: 'tile-vav',
+            autoTagPrefix: 'VAV-',
+            // SIZE is the inlet size (4-16, 24x16), not tons, in cart labels.
+            cartSizeLabel: 'SIZE {}'
         },
         {
             // Price RAC return air canopies (added 2026-09-30). The

@@ -1433,6 +1433,7 @@ WHAT'S IN THE GRID
             'vfds':                   'VFD SCHEDULE',
             'diffusers':              'DIFFUSER SCHEDULE',
             'grilles':                'GRILLE SCHEDULE',
+            'vav':                    'VAV SCHEDULE',
             'rac':                    'RETURN AIR CANOPY SCHEDULE',
             'gps':                    'AIR IONIZATION DEVICE SCHEDULES'
         };
@@ -2548,6 +2549,7 @@ WHAT'S IN THE GRID
             'vfds': 'ABB VFDs',
             'diffusers': 'Price Diffusers',
             'grilles': 'Price Grilles',
+            'vav': 'Price VAV',
             'rac': 'Price RAC (Return Air Canopy)',
             'gps': 'GPS Bipolar Ionization'
         };
