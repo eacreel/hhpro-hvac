@@ -14,7 +14,9 @@
    When a new firm's template is added to the site, add its key
    and label here too. Company names are matched loosely: case,
    punctuation, "&" and "and" are ignored, so "Barrett Woodyard
-   and Associates" still finds barrett_woodyard.
+   and Associates" still finds barrett_woodyard. A firm kept on
+   the Companies tab under a short name (e.g. "BWA") lists it in
+   `aliases`, matched the same loose way.
    ============================================================ */
 
 'use strict';
@@ -24,7 +26,7 @@ const STANDARD = 'hoffman';
 const ENGINEERS = [
     { key: 'hoffman', label: 'Hoffman & Hoffman' },
     { key: 'refresco', label: 'Refresco' },
-    { key: 'barrett_woodyard', label: 'Barrett Woodyard & Associates' },
+    { key: 'barrett_woodyard', label: 'Barrett Woodyard & Associates', aliases: ['BWA'] },
     { key: 'allied', label: 'Allied' },
     { key: 'saber', label: 'Saber' },
     { key: 'mswg', label: 'MSWG' }
@@ -42,7 +44,8 @@ function normalize(name) {
 function templateForCompany(company) {
     const target = normalize(company);
     if (!target) return null;
-    const hit = ENGINEERS.find((e) => normalize(e.label) === target || e.key === target);
+    const hit = ENGINEERS.find((e) => normalize(e.label) === target || e.key === target ||
+        (e.aliases || []).some((a) => normalize(a) === target));
     return hit ? hit.key : null;
 }
 
