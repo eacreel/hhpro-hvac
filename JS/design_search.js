@@ -1327,6 +1327,11 @@
         //    rarely matters. (Capacity-replaced schema targets never render
         //    when the capacity section is active, so no overlap here.)
         var activeTargets = [];
+        // Split systems: the aux heat kW column is empty in the schedule -
+        // that target is matched against each air handler's heater kits
+        // instead (see bestRowDeviation).
+        var elecKwCol = (HHpro.AhuElectrical && HHpro.AhuElectrical.kwColumn)
+            ? HHpro.AhuElectrical.kwColumn(data) : null;
         ((data.searchSchema && data.searchSchema.targets) || []).forEach(function (t) {
             var val = state.targetValues[t.col];
             if (val == null || isNaN(val)) return;
@@ -1337,7 +1342,8 @@
                 target: val,
                 tolerance: tol,
                 label: t.label,
-                unit: t.unit
+                unit: t.unit,
+                elecKw: !!elecKwCol && t.col === elecKwCol
             });
         });
 
@@ -1353,7 +1359,10 @@
 
         // Stale seeds from a previous capacity search must not leak into
         // the next results table.
-        (data.selections || []).forEach(function (sel) { delete sel.__capacitySeed; });
+        (data.selections || []).forEach(function (sel) {
+            delete sel.__capacitySeed;
+            delete sel.__elecSeed;
+        });
 
         if (!capQ || (!capQ.useCool && !capQ.useHp)) {
             // Capacity targets entered without design conditions compare
@@ -1661,6 +1670,15 @@
      */
     function bestRowDeviation(sel, target) {
         if (!sel.rows || !sel.rows.length) return null;
+        if (target.elecKw) {
+            // Closest heater kit at any voltage the air handler has; the
+            // results row opens with that voltage and kit picked.
+            var kit = HHpro.AhuElectrical.bestKwMatch(sel, state.productData,
+                target.target, target.tolerance);
+            if (!kit) return null;
+            sel.__elecSeed = { voltage: kit.voltage, kitKw: kit.kitKw };
+            return kit.dev;
+        }
         var bestPct = null;
         for (var i = 0; i < sel.rows.length; i++) {
             var row = sel.rows[i];

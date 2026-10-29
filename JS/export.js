@@ -497,6 +497,13 @@ WHAT'S IN THE GRID
             var capOverrides = (HHpro.Capacity && HHpro.Capacity.overridesFor)
                 ? HHpro.Capacity.overridesFor(item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data)
                 : {};
+            // Split systems: the air handler voltage / heater kit picked on
+            // the item (kW, temperature rise, MCA, MOP; blank until picked).
+            if (HHpro.AhuElectrical && HHpro.AhuElectrical.overridesFor) {
+                var elecOv = HHpro.AhuElectrical.overridesFor(
+                    item, (sel.rows[0] && sel.rows[0].scheduleData) || {}, data);
+                Object.keys(elecOv).forEach(function (L) { capOverrides[L] = elecOv[L]; });
+            }
             // LC RTU items selected from Design Search export the catalog
             // values they were selected with.
             if (HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
@@ -762,6 +769,12 @@ WHAT'S IN THE GRID
         var capOverrides = (data && HHpro.Capacity && HHpro.Capacity.overridesFor)
             ? HHpro.Capacity.overridesFor(item, (srows[0] && srows[0].scheduleData) || {}, data)
             : {};
+        // Split system voltage / heater kit, same treatment (see above).
+        if (data && HHpro.AhuElectrical && HHpro.AhuElectrical.overridesFor) {
+            var elecOv2 = HHpro.AhuElectrical.overridesFor(
+                item, (srows[0] && srows[0].scheduleData) || {}, data);
+            Object.keys(elecOv2).forEach(function (L) { capOverrides[L] = elecOv2[L]; });
+        }
         // LC RTU Design Search values, same treatment (see above).
         if (data && HHpro.GasPackDesign && HHpro.GasPackDesign.exportOverridesFor) {
             var gpOv2 = HHpro.GasPackDesign.exportOverridesFor(
@@ -841,6 +854,13 @@ WHAT'S IN THE GRID
         // the derived value.
         if (field.kwSelect) {
             d.kwSelect = true;
+            d.instanceId = item.instanceId;
+        }
+        // Split system air handler voltage / heater kit ('voltage' | 'kw'):
+        // the on-screen renderer binds that dropdown; exports keep the
+        // derived value.
+        if (field.elecField) {
+            d.elecField = field.elecField;
             d.instanceId = item.instanceId;
         }
         return d;
@@ -1477,6 +1497,8 @@ WHAT'S IN THE GRID
             capacityField: cellData.capacityField || '',
             // kW-variant field (on-screen renderer binds the kW dropdown).
             kwSelect: !!cellData.kwSelect,
+            // Split system voltage / heater kit field (same, for those).
+            elecField: cellData.elecField || '',
             // Legend box cell (diffusers): the HTML/PDF renderer puts
             // the legend image inside this cell; XLSX anchors the
             // drawing over it.

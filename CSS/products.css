@@ -562,6 +562,23 @@
     color: var(--color-warning);
 }
 
+/* ---------- Split system air handler voltage / heater kit ----------
+   (JS/ahu_electrical.js) A VOLTAGE / PHASE or kW dropdown still on
+   "Select" gets a dashed warning border, so an unfinished row stands
+   out before export. */
+.ahu-elec-pending .kw-variant-select {
+    border-style: dashed;
+    border-color: var(--color-warning);
+}
+
+/* Unfinished-items list in the "Selections not finished" export prompt. */
+.ahu-elec-missing {
+    margin: 0 0 16px;
+    padding-left: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
 /* ---------- Loading / error / empty states ---------- */
 .product-message {
     flex: 1;

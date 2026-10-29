@@ -120,19 +120,10 @@
             // Filters driven only by a picture gallery: they still filter
             // the schedule, but get no dropdown on the browse page or in
             // Design Search.
-            galleryOnlyFilters: ['PHOTO FILTER'],
-            // Collapse selections that differ only in AUX. ELECTRIC HEAT
-            // kW into a single row with a kW dropdown. The dropdown
-            // swaps the dependent columns (TEMPERATURE RISE, MCA, MOP)
-            // to the chosen variant's values; Select / Submittal / Docs
-            // and the project-view schedule all act on whichever variant
-            // is currently selected.
-            kwVariants: {
-                variantColumn: 'N',
-                dependentColumns: ['O', 'Q', 'R'],
-                filterName: 'KW',
-                defaultValue: '-'
-            }
+            galleryOnlyFilters: ['PHOTO FILTER']
+            // One row per system since Oct 2026: the air handler's voltage,
+            // electric heat kW, MCA / MOP come from the AHU ELECTRICAL tab
+            // as row dropdowns (JS/ahu_electrical.js), not kW-variant rows.
         },
         {
             productKey: 'gas_splits',
@@ -152,7 +143,8 @@
             // Collapse selections that differ only in ELECTRIC HEAT (KW)
             // into a single row with a kW dropdown. The dropdown swaps
             // the dependent columns (MCA, MOCP) to the chosen variant's
-            // values. See multi_position_splits above for details.
+            // values; Select / Submittal / Docs and the project-view
+            // schedule all act on whichever variant is currently selected.
             kwVariants: {
                 variantColumn: 'K',
                 dependentColumns: ['M', 'N'],
@@ -394,6 +386,22 @@
         return data;
     }
 
+    // Runs every time loadProduct hands a product's JSON out (cached or
+    // not), before the caller sees it. A product extension's afterLoad
+    // can fix up the open cart / project against it (the split systems
+    // move pre-Oct-2026 items onto their new rows).
+    function afterLoad(productKey, data) {
+        var ext = HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
+        if (ext && typeof ext.afterLoad === 'function') {
+            try {
+                ext.afterLoad(data);
+            } catch (e) {
+                console.warn('HHpro.Data: afterLoad failed for ' + productKey, e);
+            }
+        }
+        return data;
+    }
+
     HHpro.Data = {
         /**
          * Products this person may see. The Permissions tab of the Users
@@ -436,7 +444,7 @@
                 return Promise.reject(new Error('Unknown product key: ' + productKey));
             }
             if (productDataCache[productKey]) {
-                return Promise.resolve(productDataCache[productKey]);
+                return Promise.resolve(afterLoad(productKey, productDataCache[productKey]));
             }
             return fetch(product.jsonFile)
                 .then(function (resp) {
@@ -455,7 +463,7 @@
                     var cont = data.continuationFiles;
                     if (!cont || !cont.length) {
                         productDataCache[productKey] = postProcess(productKey, data);
-                        return data;
+                        return afterLoad(productKey, data);
                     }
                     var dir = product.jsonFile.slice(0, product.jsonFile.lastIndexOf('/') + 1);
                     return Promise.all(cont.map(function (name) {
@@ -471,7 +479,7 @@
                             data.selections = data.selections.concat(part.selections || []);
                         });
                         productDataCache[productKey] = postProcess(productKey, data);
-                        return data;
+                        return afterLoad(productKey, data);
                     });
                 });
         }

@@ -1024,14 +1024,16 @@
     }
 
     // What Select adds to the project item besides the selection: the
-    // capacity conditions picked on the row (split system tables), and the
-    // LC RTU design values the row is showing. getGpCtrl is read at click
-    // time - a kW family row rebuilds its controller when the kit changes.
-    function selectExtra(capCtrl, getGpCtrl) {
-        if (!capCtrl && !getGpCtrl) return null;
+    // capacity conditions picked on the row (split system tables), the
+    // air handler voltage / heater kit (split systems), and the LC RTU
+    // design values the row is showing. getGpCtrl is read at click time -
+    // a kW family row rebuilds its controller when the kit changes.
+    function selectExtra(capCtrl, getGpCtrl, elecCtrl) {
+        if (!capCtrl && !getGpCtrl && !elecCtrl) return null;
         return function () {
             var extra = {};
             if (capCtrl) extra.capacityInputs = capCtrl.getState();
+            if (elecCtrl) extra.ahuElectrical = elecCtrl.getState();
             var gp = getGpCtrl ? getGpCtrl() : null;
             var gpExtra = (gp && gp.itemExtra) ? gp.itemExtra() : null;
             if (gpExtra) Object.keys(gpExtra).forEach(function (k) { extra[k] = gpExtra[k]; });
@@ -1148,6 +1150,25 @@
                     onChange: null
                 }) : null;
 
+            // Split system air handler voltage -> heater kit dropdowns
+            // (AHU ELECTRICAL data); null for every other product. A
+            // Design Search kW target stamps __elecSeed with the kit it
+            // matched. The temperature rise follows the capacity airflow.
+            var elecCtrl = (HHpro.AhuElectrical && HHpro.AhuElectrical.rowController)
+                ? HHpro.AhuElectrical.rowController({
+                    productKey: product && product.productKey,
+                    data: data,
+                    scheduleData: (sel.rows[0] && sel.rows[0].scheduleData) || {},
+                    initial: sel.__elecSeed || null,
+                    onChange: null
+                }) : null;
+            if (elecCtrl && capCtrl) {
+                elecCtrl.setAirflow(capCtrl.getState().airflow);
+                capCtrl.subscribe(function (s) { elecCtrl.setAirflow(s.airflow); });
+            }
+            // Submittal / Docs follow the picked heater kit (Sky Air).
+            function getDocSel() { return elecCtrl ? elecCtrl.docSelection(sel) : sel; }
+
             sel.rows.forEach(function (row, rowIndex) {
                 var tr = document.createElement('tr');
                 if (gpCtrl) tr.classList.add('gp-design-row');
@@ -1166,8 +1187,9 @@
                     if (sel.rows.length > 1) td.rowSpan = sel.rows.length;
                     // The capacity conditions chosen here (and LC RTU design
                     // values) ride along into the cart on Select.
-                    var actions = buildActionButtons(function () { return sel; }, product, data,
-                        selectExtra(capCtrl, gpCtrl ? function () { return gpCtrl; } : null));
+                    var actions = buildActionButtons(getDocSel, product, data,
+                        selectExtra(capCtrl, gpCtrl ? function () { return gpCtrl; } : null, elecCtrl));
+                    if (elecCtrl) elecCtrl.onChange(actions.refreshDocState);
                     if (gpCtrl) actions.appendChild(gpCtrl.button(repaintGpCells));
                     td.appendChild(actions);
                     tr.appendChild(td);
@@ -1180,6 +1202,13 @@
                     if (cell === null) return; // covered by rowSpan/colSpan from earlier
                     var td = document.createElement('td');
                     var value = cell.value;
+                    if (elecCtrl && rowIndex === 0 && elecCtrl.handles(colLetter)) {
+                        elecCtrl.fillCell(td, colLetter);
+                        if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
+                        if (cell.colSpan > 1) td.colSpan = cell.colSpan;
+                        tr.appendChild(td);
+                        return;
+                    }
                     if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
                         capCtrl.fillCell(td, colLetter);
                         if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
@@ -1207,6 +1236,7 @@
             });
 
             if (capCtrl) capCtrl.finalize();
+            if (elecCtrl) elecCtrl.finalize();
 
             // Repaint just the swapped cells when the toggle flips, so the
             // table (and the user's scroll position) stays put.

@@ -494,8 +494,11 @@
             coolTotal:    find('TOTAL CAPACITY', 'COOLING'),
             coolSensible: find('SENSIBLE CAPACITY'),
             airflow:      find('AIRFLOW (CFM)'),
-            auxKw:        find('kW', 'AUX. ELECTRIC HEAT'),
-            tempRise:     find('TEMPERATURE RISE (DB)'),
+            // With AHU ELECTRICAL data (Oct 2026 on) the aux heat kW and its
+            // temperature rise belong to HHpro.AhuElectrical, which follows
+            // this controller's airflow (subscribe) instead.
+            auxKw:        data.ahuElectrical ? null : find('kW', 'AUX. ELECTRIC HEAT'),
+            tempRise:     data.ahuElectrical ? null : find('TEMPERATURE RISE (DB)'),
             hpRise:       find('TEMP RISE', 'HEAT PUMP'),
             oaCooling:    find('OUTDOOR AMBIENT (COOLING)'),
             hpAmbient:    find('OUTDOOR AMBIENT (DB)', 'HEAT PUMP HEATING DATA'),
@@ -822,8 +825,12 @@
             setOut('tempRise', riseText());
         }
 
+        var subscribers = [];   // see subscribe()
+
         function persist() {
-            if (typeof onChange === 'function') onChange(getState());
+            var s = getState();
+            if (typeof onChange === 'function') onChange(s);
+            subscribers.forEach(function (fn) { fn(s); });
         }
 
         function onCoolChange() {
@@ -890,6 +897,9 @@
             // Called by the row renderers when the kW variant dropdown
             // changes - the other half of the temperature-rise inputs.
             setAuxKw: function (kw) { auxKw = kw; updateTempRise(); },
+            // fn(state) after every dropdown change - the AHU electrical
+            // controller uses it to keep its temperature rise on the airflow.
+            subscribe: function (fn) { subscribers.push(fn); },
             getState: getState
         };
     }
@@ -916,6 +926,11 @@
 
         // ----- Condition-aware lookups (Design Search) -----
         columnsFor: function (data) { return resolveColumns(data); },
+        // Letter of the schedule column whose bottom header is `leaf`,
+        // under the `group` header when given (null when none).
+        findColumn: function (data, leaf, group) {
+            return (data && data.scheduleHeader) ? finders(data).find(leaf, group) : null;
+        },
         matchupForRow: function (scheduleData, data) {
             return matchupFor(productKeyOf(data), scheduleData || {}, resolveColumns(data));
         },

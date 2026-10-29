@@ -86,6 +86,15 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #                      remain keep their old ids and saved project items
 #                      still point at the same selection.
 #                      See selection_numbers below.
+#   aliasRetiredSelectionIds Optional. True when the retired rows were
+#                      merged into the row just above them rather than
+#                      deleted: the JSON then carries "selectionAliases"
+#                      (retired id -> the kept id before it) and the site
+#                      moves saved items onto that row.
+#                      See selection_aliases below.
+#   ahuElectricalSheet Optional. Name of a tab holding each air handler's
+#                      heater kits, voltages and MCA / MOP. Written to the
+#                      JSON as "ahuElectrical". See extract_ahu_electrical.
 #   searchSchema      Drives the Design Search page on the site. Two parts:
 #                        displayName  - shown in the category picker
 #                        description  - one-line blurb shown above the form
@@ -179,6 +188,31 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 6,
         "supportsMultiRow": False,
         "assetsFolder": "MULTI POSITION SPLITS",
+        # 2026-10-29: the SCHEDULE tab went from one row per AUX. ELECTRIC
+        # HEAT kW (580 rows) to one row per system (99, same order). The
+        # heater kits, voltages and MCA / MOP now come from the AHU
+        # ELECTRICAL tab. These ranges are the old per-kW rows after each
+        # system's first one, so every system keeps its old id; the
+        # aliases point saved items on a retired row at that system.
+        "retiredSelectionIds": [
+            [2, 6], [8, 12], [14, 18], [20, 24], [26, 31], [33, 38], [40, 45],
+            [47, 52], [54, 59], [61, 67], [69, 75], [77, 83], [85, 92], [94, 99],
+            [101, 106], [108, 113], [115, 121], [123, 129], [131, 137],
+            [139, 146], [148, 152], [154, 158], [160, 165], [167, 172],
+            [174, 179], [181, 186], [188, 194], [196, 201], [203, 208],
+            [210, 216], [218, 224], [226, 231], [233, 238], [240, 246],
+            [248, 254], [256, 262], [266, 272], [274, 280], [282, 289],
+            [291, 297], [299, 305], [307, 314], [316, 318], [320, 322],
+            [324, 326], [328, 330], [332, 337], [339, 344], [346, 351],
+            [353, 359], [361, 367], [369, 375], [377, 384], [386, 391],
+            [393, 398], [400, 405], [407, 413], [415, 421], [423, 429],
+            [431, 438], [440, 444], [446, 450], [452, 457], [459, 464],
+            [466, 471], [473, 478], [480, 486], [488, 493], [495, 500],
+            [502, 508], [510, 516], [518, 523], [525, 530], [532, 538],
+            [540, 546], [548, 550], [552, 554], [556, 558], [560, 562],
+        ],
+        "aliasRetiredSelectionIds": True,
+        "ahuElectricalSheet": "AHU ELECTRICAL",
         "searchSchema": {
             "displayName": "Daikin Unitary & Light Commercial Split Systems",
             "description": "Conventional split systems with an air handler (multi position, ceiling mounted or apartment style) + outdoor condensing unit. Enter design loads and the page returns models that meet the targets within your tolerance.",
@@ -1709,6 +1743,27 @@ def selection_numbers(retired=None):
         yield n
 
 
+def selection_aliases(selections, retired):
+    """For aliasRetiredSelectionIds: map every retired selection id to the
+    kept id just before it ({"sel_0002": "sel_0001", ...}). Used when the
+    retired rows were folded into the row above them (the multi position
+    splits' per-kW rows), so a saved item on one lands on its system."""
+    kept = sorted(int(s["id"][4:]) for s in selections)
+    aliases = {}
+    for a, b in sorted((int(a), int(b)) for a, b in (retired or [])):
+        base = None
+        for k in kept:
+            if k < a:
+                base = k
+            else:
+                break
+        if base is None:
+            continue
+        for n in range(a, b + 1):
+            aliases[f"sel_{n:04d}"] = f"sel_{base:04d}"
+    return aliases
+
+
 def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
                        filter_columns_meta, doc_columns_meta, cell_to_merge,
                        refrigerant_columns_meta=None, retired_ids=None):
@@ -1742,6 +1797,108 @@ def extract_selections(ws, groups, schedule_cols, filter_cols, doc_cols,
             rows_out.append(row_entry)
         selections.append({"id": sel_id, "rows": rows_out})
     return selections
+
+
+# -----------------------------------------------------------------------------
+# AHU ELECTRICAL (multi position splits)
+# -----------------------------------------------------------------------------
+
+def _elec_num(v):
+    """A numeric cell value, or None for "-", blanks and text."""
+    v = clean_value(v)
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return v
+    try:
+        f = float(str(v).replace(",", ""))
+    except (TypeError, ValueError):
+        return None
+    return int(f) if f.is_integer() else f
+
+
+def extract_ahu_electrical(wb, sheet_name, schedule_models):
+    """Read the AHU ELECTRICAL tab into
+        {"voltages": ["208/1", ...],
+         "models": {"AMST24BU1300": {"208/1": [{"kitKw": 3, "kw": 2.25,
+                                                 "mca": 19, "mop": 20}, ...]}}}
+
+    Layout: row 1 names a voltage over each block of columns (B:U 208/1,
+    V:AK 230/1 ...). Inside a block every heater kit takes two columns,
+    with its nominal kW in row 2 (the model-number kW, kept only to name
+    per-kit submittals) and the ADJUSTED KW actually scheduled at that
+    voltage in row 5. Rows 6 down hold one air handler each (model in
+    column A) with the kit's MCA in the first column and MOP in the
+    second. A kit/voltage the unit can't have is "-" and is left out.
+    """
+    if sheet_name not in wb.sheetnames:
+        print(f"  WARNING: no '{sheet_name}' tab - AHU electrical data skipped.")
+        return None
+    ws = wb[sheet_name]
+    max_col = ws.max_column
+    max_row = ws.max_row
+
+    labels = [(c, str(clean_value(ws.cell(1, c).value)))
+              for c in range(2, max_col + 1) if clean_value(ws.cell(1, c).value)]
+    blocks = []
+    for i, (c, label) in enumerate(labels):
+        end = labels[i + 1][0] - 1 if i + 1 < len(labels) else max_col
+        blocks.append((label, c, end))
+
+    kits = {}   # voltage -> [(column, kitKw, kw)]
+    for label, start, end in blocks:
+        out = []
+        for c in range(start, end + 1):
+            kit_kw = _elec_num(ws.cell(2, c).value)
+            if kit_kw is None:
+                continue
+            kw = _elec_num(ws.cell(5, c).value)
+            if kw is None:
+                # Row 5 is a formula; a workbook last saved by something
+                # other than Excel has no cached result. Rebuild it the
+                # same way: kW @ 240V x correction factor (3 phase: the
+                # nominal kW).
+                at240 = _elec_num(ws.cell(3, c).value)
+                factor = _elec_num(ws.cell(4, c).value)
+                kw = at240 * factor if (at240 is not None and factor is not None) else kit_kw
+                print(f"  NOTE: {sheet_name} {get_column_letter(c)}5 has no saved value; "
+                      f"using {kw}.")
+            out.append((c, kit_kw, round(float(kw), 4)))
+        kits[label] = out
+
+    models = {}
+    for r in range(6, max_row + 1):
+        model = clean_value(ws.cell(r, 1).value)
+        if not model:
+            continue
+        model = str(model)
+        per_voltage = {}
+        for label, _, _ in blocks:
+            options = []
+            for c, kit_kw, kw in kits[label]:
+                mca = _elec_num(ws.cell(r, c).value)
+                mop = _elec_num(ws.cell(r, c + 1).value)
+                if mca is None and mop is None:
+                    continue
+                if mca is None or mop is None:
+                    print(f"  WARNING: {sheet_name} {model} {label} {kit_kw} kW has only "
+                          f"one of MCA / MOP ({get_column_letter(c)}{r}) - left out.")
+                    continue
+                kw_out = int(kw) if float(kw).is_integer() else kw
+                options.append({"kitKw": kit_kw, "kw": kw_out, "mca": mca, "mop": mop})
+            if options:
+                per_voltage[label] = options
+        if not per_voltage:
+            print(f"  WARNING: {sheet_name} {model} has no voltage with MCA / MOP.")
+        models[model] = per_voltage
+
+    missing = sorted(set(schedule_models) - set(models))
+    if missing:
+        print(f"  WARNING: on the SCHEDULE tab but not on {sheet_name} "
+              f"(no voltage / kW choices): {', '.join(missing)}")
+    print(f"  -> {sheet_name}: {len(models)} air handlers, "
+          f"voltages {', '.join(b[0] for b in blocks)}")
+    return {"voltages": [b[0] for b in blocks], "models": models}
 
 
 # -----------------------------------------------------------------------------
@@ -2179,8 +2336,18 @@ def convert_file(input_path, config, output_path):
         refrigerant_columns_meta=refrigerant_columns or None,
         retired_ids=config.get("retiredSelectionIds"),
     )
+    aliases = (selection_aliases(selections, config.get("retiredSelectionIds"))
+               if config.get("aliasRetiredSelectionIds") else None)
     apply_doc_subfolders(selections, doc_columns, config)
     selections = hold_back_missing_docs(selections, doc_columns, config)
+
+    ahu_electrical = None
+    if config.get("ahuElectricalSheet"):
+        # Air handler model = schedule column B (INDOOR AIR HANDLING UNIT
+        # -> MODEL), the key the site looks the tab up by.
+        ahu_models = {str(r["scheduleData"]["B"]) for s in selections for r in s["rows"]
+                      if r["scheduleData"].get("B")}
+        ahu_electrical = extract_ahu_electrical(wb, config["ahuElectricalSheet"], ahu_models)
 
     schedule_notes = extract_schedule_notes(wb, config.get("notesFormat"))
 
@@ -2212,13 +2379,19 @@ def convert_file(input_path, config, output_path):
         "refrigerantColumns":   refrigerant_columns,
         "selections":           selections,
         "scheduleNotes":        schedule_notes,
+    }
+    if aliases:
+        payload["selectionAliases"] = aliases
+    if ahu_electrical:
+        payload["ahuElectrical"] = ahu_electrical
+    payload.update({
         "_meta": {
             "sourceFile":    os.path.basename(input_path),
             "generatedAt":   datetime.now().isoformat(timespec="seconds"),
             "dataRowCount":  data_end_row - config["dataStartRow"] + 1,
             "selectionCount": len(selections),
         },
-    }
+    })
 
     # Cloudflare Pages rejects any single file over 25 MiB. Products
     # whose JSON would exceed that (grilles: 22k+ selections) set

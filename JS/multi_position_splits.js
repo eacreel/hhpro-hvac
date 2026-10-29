@@ -4,6 +4,8 @@
    ------------------------------------------------------------
    Uses default single-row schedule rendering from base.js.
    Adds the air handler style picture gallery above the filters.
+   The air handler voltage / electric heat dropdowns live in
+   JS/ahu_electrical.js.
    ============================================================ */
 
 (function () {
@@ -77,11 +79,17 @@
             return wrap;
         },
 
-        // Column O (aux heat "TEMPERATURE RISE (DB)") values come out of
-        // the converter with up to 6 decimals of float precision -- show
-        // them rounded to 2 decimals for readability. (Was column M
-        // before LAT (WB) was inserted at column I, then N before the
-        // heat pump TEMP RISE went in at M, both Sept 2026.)
+        // Every time the JSON is handed out: move pre-Oct-2026 cart /
+        // project items onto their system's row (HHpro.AhuElectrical).
+        afterLoad: function (data) {
+            if (HHpro.AhuElectrical) HHpro.AhuElectrical.migrateCart(data);
+        },
+
+        // Column O (aux heat "TEMPERATURE RISE (DB)") is kW x 3193 / CFM,
+        // calculated by HHpro.AhuElectrical at full precision -- show it
+        // rounded to 2 decimals for readability. (Was column M before
+        // LAT (WB) was inserted at column I, then N before the heat pump
+        // TEMP RISE went in at M, both Sept 2026.)
         formatScheduleCellValue: function (colLetter, value) {
             if (colLetter === 'O' && typeof value === 'number') {
                 return Number(value.toFixed(2)).toString();

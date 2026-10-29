@@ -1371,15 +1371,16 @@
             var stages = String(sched[stagesCol] || '').trim().toLowerCase();
             var size = parseFloat(filterData['SIZE']);
 
-            // Voltage = first "/" segment; phase = last "/" segment. This
-            // handles both "208/1" (Multi Position) and "208/60/1" (Gas
-            // Splits) without product-specific string equality checks.
+            // Voltage = leading number of the first "/" segment; phase = last
+            // "/" segment. This handles "208/1", "208-230/1" (Multi Position,
+            // Oct 2026 on) and "208/60/1" (Gas Splits) without
+            // product-specific string equality checks.
             var parts = outdoorElectrical.split('/');
-            var voltage = parts[0] || '';
+            var voltage = parseInt(parts[0], 10);
             var phase = parts.length > 1 ? parts[parts.length - 1] : '';
 
-            var isThreePhase = phase === '3' && (voltage === '208' || voltage === '460');
-            var isUnitarySinglePhase = phase === '1' && voltage === '208' &&
+            var isThreePhase = phase === '3' && (voltage === 208 || voltage === 460);
+            var isUnitarySinglePhase = phase === '1' && voltage === 208 &&
                                         !isNaN(size) && size >= 1.5 && size <= 5 &&
                                         stages !== 'inverter';
 
@@ -2155,8 +2156,10 @@
             btn.textContent = label;
             btn.addEventListener('click', function () {
                 if (HHpro.Export && typeof HHpro.Export.toSplitSystems === 'function') {
-                    HHpro.Export.toSplitSystems(fmt, groups, projectName);
-                    if (HHpro.FX) HHpro.FX.flashSuccess(btn);
+                    confirmElecExport(groups[0].items, groups[0].data, function () {
+                        HHpro.Export.toSplitSystems(fmt, groups, projectName);
+                        if (HHpro.FX) HHpro.FX.flashSuccess(btn);
+                    });
                 }
             });
             return btn;
@@ -2288,6 +2291,14 @@
         return hidden;
     }
 
+    // Split systems: before an export, warn when an air handler voltage /
+    // heater kit is still unpicked (export anyway or go back). Runs
+    // proceed() straight away for every other product.
+    function confirmElecExport(items, data, proceed) {
+        if (HHpro.AhuElectrical && data) HHpro.AhuElectrical.confirmExport(items, data, proceed);
+        else proceed();
+    }
+
     function buildProductToolbar(productKey, items, data, tplActive, editing) {
         var bar = document.createElement('div');
         bar.className = 'project-toolbar';
@@ -2334,8 +2345,10 @@
         excelBtn.textContent = 'Excel';
         excelBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toExcel === 'function') {
-                HHpro.Export.toExcel(productKey, items, data, projectName);
-                if (HHpro.FX) HHpro.FX.flashSuccess(excelBtn);
+                confirmElecExport(items, data, function () {
+                    HHpro.Export.toExcel(productKey, items, data, projectName);
+                    if (HHpro.FX) HHpro.FX.flashSuccess(excelBtn);
+                });
             }
         });
         bar.appendChild(excelBtn);
@@ -2346,8 +2359,10 @@
         cadBtn.textContent = 'CAD';
         cadBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toCAD === 'function') {
-                HHpro.Export.toCAD(productKey, items, data, projectName);
-                if (HHpro.FX) HHpro.FX.flashSuccess(cadBtn);
+                confirmElecExport(items, data, function () {
+                    HHpro.Export.toCAD(productKey, items, data, projectName);
+                    if (HHpro.FX) HHpro.FX.flashSuccess(cadBtn);
+                });
             }
         });
         bar.appendChild(cadBtn);
@@ -2358,8 +2373,10 @@
         pdfBtn.textContent = 'PDF';
         pdfBtn.addEventListener('click', function () {
             if (HHpro.Export && typeof HHpro.Export.toPDF === 'function') {
-                HHpro.Export.toPDF(productKey, items, data, projectName);
-                if (HHpro.FX) HHpro.FX.flashSuccess(pdfBtn);
+                confirmElecExport(items, data, function () {
+                    HHpro.Export.toPDF(productKey, items, data, projectName);
+                    if (HHpro.FX) HHpro.FX.flashSuccess(pdfBtn);
+                });
             }
         });
         bar.appendChild(pdfBtn);
@@ -2522,7 +2539,15 @@
                 if (cell.align === 'left') cls.push('tpl-left');
                 if (cls.length) el.className = cls.join(' ');
 
-                if (!staticRender && cell.kwSelect) {
+                if (!staticRender && cell.elecField) {
+                    var elecCtl = buildTemplateElecControl(cell, productKey, data);
+                    if (elecCtl) {
+                        el.classList.add('kw-variant-cell');
+                        el.appendChild(elecCtl);
+                    } else {
+                        el.textContent = (cell.value == null) ? '' : String(cell.value);
+                    }
+                } else if (!staticRender && cell.kwSelect) {
                     var kwCtl = buildTemplateKwControl(cell, productKey, data);
                     if (kwCtl) {
                         el.classList.add('kw-variant-cell');
@@ -2579,6 +2604,30 @@
             onChange: function (capacityInputs) {
                 if (HHpro.Cart && HHpro.Cart.updateItem) {
                     HHpro.Cart.updateItem(item.instanceId, { capacityInputs: capacityInputs });
+                }
+                HHpro.App.showView('project_view');
+            }
+        });
+    }
+
+    // Split system air handler voltage / heater kit dropdown for a template
+    // cell flagged elecField ('voltage' or 'kw'). A pick saves on the item
+    // (shared with the Hoffman schedule) and re-renders, so the firm's
+    // derived cells (MCA, MOCP, TYPE -> ELEC ...) follow it. Null when
+    // there is nothing to choose; the cell then shows its derived text.
+    function buildTemplateElecControl(cell, productKey, data) {
+        if (!(HHpro.AhuElectrical && HHpro.AhuElectrical.fieldControl)) return null;
+        var item = findLiveItem(cell.instanceId);
+        if (!item) return null;
+        var sel = findSelectionById(data, item.selectionId);
+        return HHpro.AhuElectrical.fieldControl({
+            field: cell.elecField,
+            item: item,
+            scheduleData: (sel && sel.rows[0] && sel.rows[0].scheduleData) || {},
+            data: data,
+            onChange: function (state) {
+                if (HHpro.Cart && HHpro.Cart.updateItem) {
+                    HHpro.Cart.updateItem(item.instanceId, { ahuElectrical: state });
                 }
                 HHpro.App.showView('project_view');
             }
@@ -3089,6 +3138,26 @@
                     }
                 }) : null;
 
+            // Split system air handler voltage -> heater kit dropdowns. The
+            // pick persists on the item (ahuElectrical); the temperature rise
+            // follows the capacity airflow.
+            var elecCtrl = (HHpro.AhuElectrical && HHpro.AhuElectrical.rowController)
+                ? HHpro.AhuElectrical.rowController({
+                    productKey: productKey,
+                    data: data,
+                    scheduleData: (sel.rows[0] && sel.rows[0].scheduleData) || {},
+                    initial: item.ahuElectrical || null,
+                    onChange: function (state) {
+                        if (HHpro.Cart && HHpro.Cart.updateItem) {
+                            HHpro.Cart.updateItem(item.instanceId, { ahuElectrical: state });
+                        }
+                    }
+                }) : null;
+            if (elecCtrl && capCtrl) {
+                elecCtrl.setAirflow(capCtrl.getState().airflow);
+                capCtrl.subscribe(function (s) { elecCtrl.setAirflow(s.airflow); });
+            }
+
             // LC RTU items selected from Design Search carry Daikin catalog
             // values for the conditions searched; they replace the hand-run
             // selection's cells on this item only. The payload is tied to
@@ -3208,6 +3277,10 @@
                             var product = HHpro.Data.getProduct(productKey);
                             var liveItem = findLiveItem(item.instanceId) || item;
                             var liveSel = findSelectionById(data, liveItem.selectionId) || sel;
+                            // Split systems: documents follow the heater kit.
+                            if (HHpro.AhuElectrical) {
+                                liveSel = HHpro.AhuElectrical.selectionForItem(liveSel, liveItem, data);
+                            }
                             var sheet = performanceSheetDoc(liveItem, liveSel, data);
                             HHpro.Docs.openDocsModal(product, liveSel, data,
                                 sheet ? { generated: [sheet] } : undefined);
@@ -3280,7 +3353,9 @@
                     if (cell === null) return;
                     var td = document.createElement('td');
 
-                    if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
+                    if (elecCtrl && rowIndex === 0 && elecCtrl.handles(colLetter)) {
+                        elecCtrl.fillCell(td, colLetter);
+                    } else if (capCtrl && rowIndex === 0 && capCtrl.handles(colLetter)) {
                         capCtrl.fillCell(td, colLetter);
                     } else if (varCfg && rowIndex === 0 && kwFamilyInfo && !gpDesign &&
                         colLetter === varCfg.variantColumn &&
@@ -3322,6 +3397,7 @@
             });
 
             if (capCtrl) capCtrl.finalize();
+            if (elecCtrl) elecCtrl.finalize();
         });
 
         return tbody;
@@ -4290,6 +4366,10 @@
                 byProduct[productKey].forEach(function (item) {
                     var sel = byId[item.selectionId];
                     if (!sel) return;
+                    // Split systems: documents follow the heater kit.
+                    if (HHpro.AhuElectrical) {
+                        sel = HHpro.AhuElectrical.selectionForItem(sel, item, data);
+                    }
 
                     var seen = {};
                     var files = [];
@@ -4409,11 +4489,13 @@
 
             // Signature: changes when items or their file set changes, so
             // we know to reset the selection to "all checked" vs preserving
-            // the previous stale selection.
+            // the previous stale selection. File keys, not just counts: a
+            // split system's submittal is swapped when its heater kit changes.
             var sigBits = [];
             products.forEach(function (p) {
                 p.items.forEach(function (it) {
-                    sigBits.push(it.instanceId + ':' + it.files.length);
+                    sigBits.push(it.instanceId + ':' +
+                        it.files.map(function (f) { return f.key; }).join('|'));
                 });
             });
             sigBits.push('proj:' + projectFiles.length);
@@ -4964,7 +5046,7 @@
 
     // -------------------- ZIP download ---------------------------
 
-    function handleDownloadZip(filesData, activeState, downloadBtn) {
+    function handleDownloadZip(filesData, activeState, downloadBtn, elecConfirmed) {
         if (typeof JSZip === 'undefined') {
             alert('JSZip library is missing. Make sure JS/jszip.min.js is included in the site.');
             return;
@@ -4989,6 +5071,22 @@
         });
         if (!selectedFiles.length) {
             alert('Select at least one file to download.');
+            return;
+        }
+
+        // Schedules generated into the ZIP: warn first when a split system
+        // air handler voltage / heater kit is still unpicked.
+        var mpsFiles = null;
+        filesData.products.forEach(function (p) {
+            if (p.productKey === 'multi_position_splits') mpsFiles = p;
+        });
+        var generatesSchedule = selectedFiles.some(function (e) {
+            return typeof e.file.generator === 'function';
+        });
+        if (!elecConfirmed && mpsFiles && generatesSchedule) {
+            confirmElecExport(mpsFiles._rawItems, mpsFiles._data, function () {
+                handleDownloadZip(filesData, activeState, downloadBtn, true);
+            });
             return;
         }
 

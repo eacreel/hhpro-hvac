@@ -42,6 +42,7 @@
      HHpro.Cart.moveItemBefore(instanceId, beforeInstanceId)
      HHpro.Cart.removeItem(instanceId)
      HHpro.Cart.updateItem(instanceId, patch)
+     HHpro.Cart.migrateItems(fn)         -> fix up items saved under an older JSON
      HHpro.Cart.computeLabel(product, selection, data)
      HHpro.Cart.openPanel() / closePanel() / togglePanel()
 
@@ -130,6 +131,7 @@
         moveItemBefore: moveItemBefore,
         removeItem: removeItem,
         updateItem: updateItem,
+        migrateItems: migrateItems,
         computeLabel: computeLabel,
         openPanel: openPanel,
         closePanel: closePanel,
@@ -795,6 +797,20 @@
         saveStateToSession();
         renderPanel();
         renderToggle();
+    }
+
+    /**
+     * Data migration for items saved under an older product JSON. fn(item)
+     * edits the item in place and returns true when it changed anything.
+     * Not an undo step - there is nothing for the user to undo.
+     */
+    function migrateItems(fn) {
+        var changed = false;
+        state.items.forEach(function (it) {
+            if (fn(it)) changed = true;
+        });
+        if (changed) saveStateToSession();
+        return changed;
     }
 
     function getProjectExtra(productKey) {
