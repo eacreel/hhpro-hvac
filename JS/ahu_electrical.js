@@ -453,9 +453,10 @@
         var title = el('h2', 'modal-title');
         title.textContent = 'Selections not finished';
         var desc = el('p', 'modal-desc');
-        desc.textContent = missing.length + ' split system' + (missing.length === 1 ? '' : 's') +
-            ' still need the air handler VOLTAGE / PHASE or electric heat kW picked. ' +
-            'Their kW, temperature rise, MCA and MOP will export blank.';
+        var one = missing.length === 1;
+        desc.textContent = missing.length + (one ? ' split system still needs' : ' split systems still need') +
+            ' the air handler VOLTAGE / PHASE or electric heat kW picked. ' +
+            (one ? 'Its' : 'Their') + ' kW, temperature rise, MCA and MOP will export blank.';
         var list = el('ul', 'modal-desc ahu-elec-missing');
         missing.slice(0, 12).forEach(function (it) {
             var li = el('li');
