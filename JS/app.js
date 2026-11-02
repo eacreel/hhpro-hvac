@@ -125,6 +125,9 @@
             // Hides the cart (cart.css) for calculators-only accounts.
             document.body.classList.toggle('calculators-only', !!(HHpro.State && HHpro.State.isCalculatorsOnly()));
             view.render(root(), params);
+            // First signed-in page of a visit: pop up What's New if
+            // Updates.txt has lines this person hasn't seen.
+            if (!AUTH_VIEWS[viewName] && HHpro.WhatsNew) HHpro.WhatsNew.checkForUpdates();
             if (opts.fromHistory) {
                 current = opts.fromHistory;
                 return;

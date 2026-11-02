@@ -1,0 +1,12 @@
+9.15.2026: Projects are saved to your account.
+9.17.2026: Added Ductulator to Calculator section.
+9.17.2026: Added capacity tables to mini split systems
+9.22.2026: Added Daikin Heat Pump RTUs.
+9.25.2026: Psychometrics calculator - cooling coil can be entered by capacity.
+9.29.2026: Added some previously missing gas split options (80% AFUE, single stage furnaces).
+9.30.2026: Added Price Return Air Canopy.
+10.1.2026: Light Commercial RTUs - "?" Added next to RTU ESP to show ESP/CFM range and heating airflow limits.
+10.6.2026: Added continental US weather data map to Psychometrics Chart.
+10.23.2026: Added Caribbean climate stations to Psychometrics Chart.
+10.27.2026: Added Price VAVs (Single Duct VAV, no heating).
+10.29.2026: Unitary & Light Commercial Splits - updated electric heat and AHU electrical options.

@@ -44,11 +44,14 @@
 
         header.appendChild(HHpro.UI.createLookupInput());
 
-        // Header actions on the right: User Guide, Users (admins only),
-        // Log out. Shared with HHpro.UI.buildHeader so both stay in sync.
+        // Header actions on the right: What's New, User Guide, Users
+        // (admins only), Log out. Shared with HHpro.UI.buildHeader so
+        // both stay in sync.
         var actions = document.createElement('div');
         actions.className = 'header-actions';
 
+        var whatsNewBtn = HHpro.UI.createWhatsNewButton();
+        if (whatsNewBtn) actions.appendChild(whatsNewBtn);
         actions.appendChild(HHpro.UI.createUserGuideButton());
         var usersBtn = HHpro.UI.createUsersButton();
         if (usersBtn) actions.appendChild(usersBtn);

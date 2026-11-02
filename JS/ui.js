@@ -137,6 +137,11 @@
             ['polyline', { points: '3 6 5 6 21 6' }],
             ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }]
         ],
+        // What's New header button
+        'bell': [
+            ['path', { d: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9' }],
+            ['path', { d: 'M10.3 21a1.94 1.94 0 0 0 3.4 0' }]
+        ],
         // Slide-rule wheel (Ductulator calculator card)
         'dial': [
             ['circle', { cx: 12, cy: 12, r: 10 }],
@@ -266,6 +271,28 @@
                 HHpro.QuickLookup.attach(input);
             }
             return wrap;
+        },
+
+        /**
+         * "What's New" header button - opens the update list
+         * (HHpro.WhatsNew). Calculators-only accounts get null, since
+         * the updates are mostly about products they can't see.
+         *
+         * @returns {HTMLElement|null}
+         */
+        createWhatsNewButton: function () {
+            if (HHpro.State && HHpro.State.isCalculatorsOnly()) return null;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'header-action';
+            btn.appendChild(HHpro.UI.icon('bell'));
+            var label = document.createElement('span');
+            label.textContent = "What's New";
+            btn.appendChild(label);
+            btn.addEventListener('click', function () {
+                if (HHpro.WhatsNew) HHpro.WhatsNew.open();
+            });
+            return btn;
         },
 
         /**
@@ -431,6 +458,8 @@
             var actions = document.createElement('div');
             actions.className = 'header-actions';
 
+            var whatsNewBtn = HHpro.UI.createWhatsNewButton();
+            if (whatsNewBtn) actions.appendChild(whatsNewBtn);
             actions.appendChild(HHpro.UI.createUserGuideButton());
             var usersBtn = HHpro.UI.createUsersButton();
             if (usersBtn) actions.appendChild(usersBtn);
