@@ -235,6 +235,48 @@
     color: var(--color-text-muted);
 }
 
+/* Shared with this person: "New" until they've seen it, plus who sent it */
+.project-card-badge-new {
+    color: #1a1204;
+    background-color: var(--color-warning);
+}
+
+.project-card-shared {
+    color: var(--color-primary-light);
+}
+
+/* ---------- Share Project dialog ---------- */
+.share-modal-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+}
+
+.share-modal-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-sm);
+    background-color: rgba(245, 158, 11, 0.12);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    line-height: 1.45;
+}
+
+.share-modal-warning .icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--color-warning);
+}
+
+.share-modal-warning[hidden] {
+    display: none;
+}
+
 /* Action buttons at the bottom of the card */
 .project-card-actions {
     display: flex;

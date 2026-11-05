@@ -10,3 +10,4 @@
 10.23.2026: Added Caribbean climate stations to Psychometrics Chart.
 10.27.2026: Added Price VAVs (Single Duct VAV, no heating).
 10.29.2026: Unitary & Light Commercial Splits - updated electric heat and AHU electrical options.
+11.5.2026: Projects can now be shared directly along with sharing CSV files. 

@@ -215,13 +215,25 @@
 
         // Right-side header buttons. Undo/redo always appear so the
         // user can recover from a mistake regardless of cart vs project
-        // mode. Project-only buttons (Exit Project, All Projects) sit
-        // beside them.
+        // mode. Project-only buttons (Share Project, Exit Project, All
+        // Projects) sit beside them.
         var actionsRight = document.createElement('div');
         actionsRight.className = 'project-header-actions';
 
         actionsRight.appendChild(buildUndoButton());
         actionsRight.appendChild(buildRedoButton());
+
+        if (activeState.mode === 'project' && HHpro.Projects) {
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'projects-btn projects-btn-secondary';
+            shareBtn.textContent = 'Share Project';
+            shareBtn.title = 'Send a copy of this project to another HHpro user';
+            shareBtn.addEventListener('click', function () {
+                HHpro.Projects.openShareDialog(activeState.projectId);
+            });
+            actionsRight.appendChild(shareBtn);
+        }
 
         if (activeState.mode === 'project') {
             var exitBtn = document.createElement('button');

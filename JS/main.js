@@ -138,12 +138,54 @@
         body.appendChild(sublabel);
         tile.appendChild(body);
 
+        // Badge for projects others have shared that this person hasn't
+        // looked at yet; filled in now and again once projects load.
+        var shared = document.createElement('span');
+        shared.className = 'tile-shared-badge';
+        shared.hidden = true;
+        tile.appendChild(shared);
+        updateSharedBadge(tile);
+
         tile.addEventListener('click', function () {
             HHpro.App.showView('projects');
         });
 
         return tile;
     }
+
+    /**
+     * Show or hide the shared-projects badge on the Projects tile. The
+     * badge clears itself: opening Projects (or the shared project)
+     * marks them seen in HHpro.Cart.
+     */
+    function updateSharedBadge(tile) {
+        var badge = tile.querySelector('.tile-shared-badge');
+        var sublabel = tile.querySelector('.tile-sublabel');
+        if (!badge) return;
+        var n = HHpro.Cart && HHpro.Cart.countNewShared ? HHpro.Cart.countNewShared() : 0;
+        badge.hidden = !n;
+        tile.classList.toggle('tile-has-shared', !!n);
+        if (n) {
+            var text = n + (n === 1 ? ' project' : ' projects') + ' shared with you';
+            badge.textContent = '';
+            badge.appendChild(HHpro.UI.icon('users'));
+            var count = document.createElement('span');
+            count.textContent = n;
+            badge.appendChild(count);
+            badge.title = text;
+            tile.setAttribute('aria-label', 'Projects: ' + text);
+            if (sublabel) sublabel.textContent = text;
+        } else {
+            tile.removeAttribute('aria-label');
+            if (sublabel) sublabel.textContent = 'Open or create a project';
+        }
+    }
+
+    // Projects arrive from the server after the overview has painted.
+    document.addEventListener('hhpro:projects-loaded', function () {
+        var tile = document.querySelector('.tile-projects');
+        if (tile) updateSharedBadge(tile);
+    });
 
     function createDesignSearchTile() {
         var tile = document.createElement('button');

@@ -10,8 +10,15 @@
      - Open a project (makes it the active cart, then navigates
        to the View Project page so the user can see it)
      - Delete a project (with a confirm modal)
+     - Share a project: send a copy to another HHpro account by
+       email (HHpro.Projects.openShareDialog, also used by the
+       open project's header)
      - Export projects to CSV (backup for if user clears cache)
      - Import projects from CSV (restore from backup)
+
+   Projects shared with this person show who sent them; ones they
+   haven't seen yet are tagged New on this visit, which also clears
+   the badge on the overview's Projects tile.
 
    CSV format:
      One row per item. Project metadata repeats per row so
@@ -70,6 +77,9 @@
             }
 
             root.appendChild(buildBody());
+            // The cards above already carry their New tags; opening
+            // Projects counts as seeing every shared project.
+            HHpro.Cart.markSharedSeen();
         }
     };
 
@@ -224,12 +234,13 @@
         text.className = 'projects-notice-text';
         text.appendChild(document.createTextNode(
             'They are stored on the Hoffman & Hoffman server and follow you to any computer ' +
-            'you sign in on. Only you can see them.'));
+            'you sign in on. Only you can see them unless you share a copy.'));
         body.appendChild(text);
 
         var action = document.createElement('p');
         action.className = 'projects-notice-text';
         action.appendChild(document.createTextNode(
+            '“Share Project” sends a copy to another HHpro user. ' +
             '“Export All to CSV” still makes a copy you can keep or hand to a colleague; ' +
             '“Import from CSV” brings one in.'));
         body.appendChild(action);
@@ -389,6 +400,12 @@
             badge.textContent = 'Active';
             nameWrap.appendChild(badge);
         }
+        if (proj.sharedNew) {
+            var newBadge = document.createElement('span');
+            newBadge.className = 'project-card-badge project-card-badge-new';
+            newBadge.textContent = 'New';
+            nameWrap.appendChild(newBadge);
+        }
         header.appendChild(nameWrap);
 
         var meta = document.createElement('div');
@@ -397,6 +414,15 @@
         var updated = proj.updatedAt ? relativeTime(proj.updatedAt) : 'never';
         meta.textContent = count + ' item' + (count === 1 ? '' : 's') + ' \u00b7 Updated ' + updated;
         header.appendChild(meta);
+
+        if (proj.sharedBy) {
+            var shared = document.createElement('div');
+            shared.className = 'project-card-meta project-card-shared';
+            shared.textContent = 'Shared by ' + (proj.sharedBy.name || proj.sharedBy.email) +
+                (proj.sharedBy.at ? ' \u00b7 ' + relativeTime(proj.sharedBy.at) : '');
+            if (proj.sharedBy.email) shared.title = proj.sharedBy.email;
+            header.appendChild(shared);
+        }
 
         card.appendChild(header);
 
@@ -409,6 +435,14 @@
         openBtn.textContent = isActive ? 'Continue' : 'Open';
         openBtn.addEventListener('click', function () { handleOpenProject(proj); });
         actions.appendChild(openBtn);
+
+        var shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.className = 'project-card-btn project-card-btn-secondary';
+        shareBtn.textContent = 'Share Project';
+        shareBtn.title = 'Send a copy of this project to another HHpro user';
+        shareBtn.addEventListener('click', function () { openShareDialog(proj.id); });
+        actions.appendChild(shareBtn);
 
         var exportBtn = document.createElement('button');
         exportBtn.type = 'button';
@@ -581,6 +615,156 @@
             }
         });
     }
+
+    // =================================================================
+    // Share Project
+    // -----------------------------------------------------------------
+    // Asks for the other person's email and has the server copy the
+    // project into their account. The copy is theirs: nothing either
+    // of you changes later reaches the other. An email with no active
+    // account is refused, and the warning stays in the dialog so the
+    // address can be fixed.
+    // =================================================================
+
+    function openShareDialog(projectId) {
+        var proj = HHpro.Cart.listProjects().filter(function (p) { return p.id === projectId; })[0];
+        if (!proj) {
+            if (HHpro.UI.toast) HHpro.UI.toast('This project is no longer saved.', true);
+            return;
+        }
+
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        var modal = document.createElement('div');
+        modal.className = 'modal share-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = 'Share Project';
+        modal.appendChild(title);
+
+        var desc = document.createElement('p');
+        desc.className = 'modal-desc';
+        desc.textContent = 'Send a copy of “' + proj.name + '” to another HHpro user. ' +
+            'They get their own copy: changes either of you make later stay separate.';
+        modal.appendChild(desc);
+
+        var inputWrap = document.createElement('div');
+        inputWrap.className = 'modal-input-wrap';
+        var label = document.createElement('label');
+        label.className = 'share-modal-label';
+        label.textContent = 'Their email address';
+        label.htmlFor = 'share-project-email';
+        inputWrap.appendChild(label);
+        var input = document.createElement('input');
+        input.type = 'email';
+        input.id = 'share-project-email';
+        input.className = 'modal-input';
+        input.placeholder = 'name@company.com';
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        inputWrap.appendChild(input);
+        modal.appendChild(inputWrap);
+
+        var warning = document.createElement('p');
+        warning.className = 'share-modal-warning';
+        warning.setAttribute('role', 'alert');
+        warning.hidden = true;
+        modal.appendChild(warning);
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'modal-btn modal-btn-secondary';
+        cancelBtn.textContent = 'Cancel';
+        var shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.className = 'modal-btn modal-btn-primary';
+        shareBtn.textContent = 'Share';
+        actions.appendChild(cancelBtn);
+        actions.appendChild(shareBtn);
+        modal.appendChild(actions);
+
+        var busy = false;
+
+        function showWarning(message) {
+            warning.textContent = '';
+            warning.appendChild(HHpro.UI.icon('alert-triangle'));
+            var span = document.createElement('span');
+            span.textContent = message;
+            warning.appendChild(span);
+            warning.hidden = false;
+        }
+
+        function close() {
+            document.removeEventListener('keydown', onKey);
+            if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape' && !busy) close();
+        }
+
+        function submit() {
+            if (busy) return;
+            var email = input.value.trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showWarning('Enter their full email address.');
+                input.focus();
+                return;
+            }
+            var me = HHpro.State.getUser();
+            if (me && String(me.email).toLowerCase() === email) {
+                showWarning('That is your own account. Enter the email of the person you want to share with.');
+                input.focus();
+                return;
+            }
+            busy = true;
+            warning.hidden = true;
+            shareBtn.disabled = true;
+            cancelBtn.disabled = true;
+            input.disabled = true;
+            shareBtn.textContent = 'Sharing...';
+            HHpro.Cart.shareProject(proj.id, email).then(function () {
+                close();
+                if (HHpro.UI.toast) HHpro.UI.toast('Shared a copy of “' + proj.name + '” with ' + email + '.');
+            }, function (err) {
+                busy = false;
+                shareBtn.disabled = false;
+                cancelBtn.disabled = false;
+                input.disabled = false;
+                shareBtn.textContent = 'Share';
+                // A 404 with no code is a server that doesn't know the route yet.
+                showWarning(err.status === 404 && !(err.data && err.data.code)
+                    ? 'Sharing isn’t available on the server yet. Try again later.'
+                    : (err.message || 'The project could not be shared.'));
+                input.focus();
+                input.select();
+            });
+        }
+
+        cancelBtn.addEventListener('click', function () { if (!busy) close(); });
+        shareBtn.addEventListener('click', submit);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); submit(); }
+        });
+        input.addEventListener('input', function () { warning.hidden = true; });
+        backdrop.addEventListener('click', function (e) {
+            if (e.target === backdrop && !busy) close();
+        });
+        document.addEventListener('keydown', onKey);
+
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+        setTimeout(function () { input.focus(); }, 0);
+    }
+
+    HHpro.Projects = {
+        openShareDialog: openShareDialog
+    };
 
     function confirmDiscardTempCart(proceed) {
         if (!HHpro.Cart.hasUnsavedCartItems()) {

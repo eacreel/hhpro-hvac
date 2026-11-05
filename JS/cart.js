@@ -62,6 +62,9 @@
      HHpro.Cart.createAndActivateProject(name)
      HHpro.Cart.promptProjectName(onDone)
      HHpro.Cart.mergeImportedProjects(list, options)
+     HHpro.Cart.shareProject(id, email)   -> Promise; copies it to another account
+     HHpro.Cart.countNewShared()          -> projects shared with me, not yet looked at
+     HHpro.Cart.markSharedSeen(id?)       -> clear that flag (one project or all)
 
      -- Server store --
      HHpro.Cart.loadProjectsFromServer()   -> Promise; fires 'hhpro:projects-loaded'
@@ -157,6 +160,9 @@
         activateProject: activateProject,
         deleteProject: deleteProject,
         createAndActivateProject: createAndActivateProject,
+        shareProject: shareProject,
+        countNewShared: countNewShared,
+        markSharedSeen: markSharedSeen,
         exitProject: clearActiveState,
         promptProjectName: promptProjectName,
         ensureModeChosen: ensureModeChosen,
@@ -627,6 +633,7 @@
     function activateProject(id) {
         var projects = loadProjects();
         if (!projects[id]) return false;
+        markSharedSeen(id);
         clearHistory();
         startProjectMode(projects[id]);
         renderPanel();
@@ -643,6 +650,44 @@
             clearActiveState();
         }
         return true;
+    }
+
+    // ---- sharing ---------------------------------------------------
+    // The server copies a shared project into the other person's
+    // folder (POST /api/projects/:id/share). Their copy arrives with
+    // sharedBy { name, email, at } and sharedNew: true; sharedNew lights
+    // the badge on the overview's Projects tile until they open Projects
+    // or the project itself.
+
+    /** Send a copy of one project to another account. Promise; rejects with the API error. */
+    function shareProject(id, email) {
+        var projects = loadProjects();
+        if (!projects[id]) return Promise.reject(new Error('This project is no longer saved.'));
+        var copy = deepClone(projects[id]);
+        delete copy.sharedNew;
+        return HHpro.Api.post('/api/projects/' + encodeURIComponent(id) + '/share', {
+            email: email,
+            project: copy
+        });
+    }
+
+    /** How many projects others have shared that this person hasn't looked at yet. */
+    function countNewShared() {
+        var projects = loadProjects();
+        return Object.keys(projects).filter(function (id) { return projects[id].sharedNew; }).length;
+    }
+
+    /** Clear the "new" flag on one shared project, or on all of them. */
+    function markSharedSeen(id) {
+        var projects = loadProjects();
+        var changed = false;
+        Object.keys(projects).forEach(function (pid) {
+            if ((id === undefined || pid === id) && projects[pid].sharedNew) {
+                delete projects[pid].sharedNew;
+                changed = true;
+            }
+        });
+        if (changed) saveProjects(projects);
     }
 
     function createAndActivateProject(name) {
