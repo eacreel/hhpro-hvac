@@ -106,7 +106,7 @@
             ],
             ahu: {
                 preset: 'custom',                            // system type; opens on Custom (no stages)
-                oa:  { enabled: false, db: 95, key: 'wb', value: 78 },
+                oa:  { enabled: false, db: 95, key: 'wb', value: 75 },
                 // effBasis: 'total' = sensible + total, as selection software
                 // prints it; 'latent' = sensible + latent (AHRI 1060 style).
                 erv: { enabled: false, mode: 'mix', effBasis: 'total', effS: 70, effT: 65, effL: 60, exhCfm: null },
@@ -861,7 +861,7 @@
         { key: 'rtu', label: 'Packaged RTU / split (mixed air)', short: 'RTU',
           desc: 'Outdoor and return air mix ahead of the cooling coil. Add Reheat for hot gas reheat, Space check to size against the space load.',
           on: ['oa', 'ra', 'coil'],
-          values: { oa: { db: 95, key: 'wb', value: 78 }, ra: { db: 75, key: 'rh', value: 50 }, room: { checkSens: true, checkLat: true, latentBy: 'supply' } } },
+          values: { oa: { db: 95, key: 'wb', value: 75 }, ra: { db: 75, key: 'rh', value: 50 }, room: { checkSens: true, checkLat: true, latentBy: 'supply' } } },
         { key: 'rtu_ma', label: 'Packaged RTU / split (mixed air known)', short: 'RTU (MA)',
           desc: 'Start from a known mixed (entering) air condition instead of outdoor and return air. MA goes straight to the coil; no OA, RA or mixing line is drawn.',
           on: ['ma', 'coil'],
@@ -869,7 +869,7 @@
         { key: 'doas', label: '100% outdoor air / DOAS', short: 'DOAS',
           desc: 'Dedicated outdoor air unit: cooling coil and reheat on 100% outdoor air. The Space check runs the latent check only: the supply dew point the ventilation air needs to carry the space latent load (Law #1). Add Energy recovery with Return air as the exhaust.',
           on: ['oa', 'coil', 'reheat', 'room'], erv: 'doas',
-          values: { oa: { db: 95, key: 'wb', value: 78 }, room: { checkSens: false, checkLat: true, latentBy: 'vent' } } },
+          values: { oa: { db: 95, key: 'wb', value: 75 }, room: { checkSens: false, checkLat: true, latentBy: 'vent' } } },
         { key: 'mau', label: 'Makeup air / heating', short: 'Makeup air',
           desc: '100% outdoor air through a heating coil.',
           on: ['oa', 'preheat'],

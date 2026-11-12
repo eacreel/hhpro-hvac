@@ -42,7 +42,7 @@
             altitude: 0,
             basis: 'actual',          // 'actual' (Psychrometrics default) | 'std' (0.075 lb/ft3)
             flowMode: 'each',         // 'each' = OA + RA CFM | 'pct' = total CFM + % OA
-            oa: { db: 95, key: 'wb', value: 78 },
+            oa: { db: 95, key: 'wb', value: 75 },
             ra: { db: 75, key: 'wb', value: 63 },
             oaCfm: 2000, raCfm: 8000,
             totalCfm: 10000, oaPct: 20
@@ -412,7 +412,7 @@
         var s = state;
 
         form.appendChild(streamSection('oa', 'Outdoor air', s.oa,
-            'Outdoor design condition, e.g. 95 °F DB / 78 °F WB for summer cooling.'));
+            'Outdoor design condition, e.g. 95 °F DB / 75 °F WB for summer cooling.'));
         form.appendChild(streamSection('ra', 'Return air', s.ra,
             'Air coming back from the space, normally at the room condition.'));
 
