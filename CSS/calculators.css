@@ -1519,6 +1519,48 @@
     gap: var(--space-xs);
 }
 
+/* ---------- Mixed air calculator ----------
+   Reuses the dew point layout (dp-*). The hero carries the chart's MA
+   colour (.psy-point-ma sets --psy-color); the property tables sit
+   beside it, sized to their content rather than the narrow panel
+   widths the Psychrometrics tables use. */
+
+.ma-hero .dp-hero-value {
+    color: var(--psy-color);
+}
+
+.ma-hero-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.ma-tables {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.ma-tables .psy-table-wrap {
+    overflow-x: auto;
+    margin-bottom: var(--space-sm);
+}
+
+.ma-tables .psy-table {
+    width: auto;
+    table-layout: auto;
+    font-size: var(--font-size-sm);
+}
+
+.ma-tables .psy-table th,
+.ma-tables .psy-table td {
+    width: auto;
+    padding: 4px 12px;
+}
+
 /* ---------------------------------------------------------------
    Ductulator calculator
    --------------------------------------------------------------- */

@@ -148,6 +148,12 @@
             ['circle', { cx: 12, cy: 12, r: 5.5 }],
             ['line', { x1: 12, y1: 2, x2: 12, y2: 6.5 }],
             ['line', { x1: 12, y1: 12, x2: 15.5, y2: 8.5 }]
+        ],
+        // Two streams joining (lucide "merge") - Mixed air calculator card
+        'merge': [
+            ['path', { d: 'm8 6 4-4 4 4' }],
+            ['path', { d: 'M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22' }],
+            ['path', { d: 'm20 22-5-5' }]
         ]
     };
 

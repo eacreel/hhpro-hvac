@@ -407,6 +407,13 @@
                 if (saved) { state = fromSnapshot(saved.snapshot); save(); }
             }
             if (params && params.seed) applySeed(params.seed);
+            if (params && params.mixSeed) {
+                applyMixSeed(params.mixSeed);
+                // Applied once: app.js keeps this params object for the
+                // history entry, so Back to this page keeps any stages
+                // added since instead of starting over from the seed.
+                delete params.mixSeed;
+            }
             root.innerHTML = '';
             refs = {};
             fieldErrorEls = {};
@@ -464,6 +471,38 @@
             a.coil.key = 'dp';
             a.coil.value = Number(seed.supplyDp);
         }
+        save();
+    }
+
+    // Hand-off from the Mixed air calculator (mixedair.js): a Custom
+    // system with Outdoor air and Return air switched on and the same
+    // streams, airflow entry and air basis, so OA, RA and the MA they mix
+    // to plot with the mixing line. Stages can be added from the chips.
+    // seed = { units, altitude, basis, oa: {db, key, value}, ra: {...},
+    //          flowMode, oaCfm, raCfm, totalCfm, oaPct }
+    function applyMixSeed(seed) {
+        state = defaults();
+        if (seed.units === 'SI') state.units = 'SI';
+        var alt = toNum(seed.altitude, null);
+        if (alt !== null) state.altitude = alt;
+        var a = state.ahu;
+        a.preset = 'custom';
+        if (seed.basis === 'std' || seed.basis === 'actual') a.basis = seed.basis;
+        ['oa', 'ra'].forEach(function (k) {
+            var src = seed[k] || {};
+            a[k].enabled = true;
+            if (toNum(src.db, null) !== null) a[k].db = Number(src.db);
+            if (src.key) a[k].key = src.key;
+            if (toNum(src.value, null) !== null) a[k].value = Number(src.value);
+        });
+        a.flowMode = seed.flowMode === 'pct' ? 'pct' : 'each';
+        ['oaCfm', 'raCfm', 'totalCfm', 'oaPct'].forEach(function (k) {
+            var v = toNum(seed[k], null);
+            if (v !== null) a[k] = v;
+        });
+        // The standard range starts at 20 °F; widen it for a colder stream.
+        var low = Math.min(a.oa.db, a.ra.db);
+        state.dbMin = low >= 20 ? 20 : (low >= 0 ? 0 : -20);
         save();
     }
 
