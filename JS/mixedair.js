@@ -43,7 +43,7 @@
             basis: 'actual',          // 'actual' (Psychrometrics default) | 'std' (0.075 lb/ft3)
             flowMode: 'each',         // 'each' = OA + RA CFM | 'pct' = total CFM + % OA
             oa: { db: 95, key: 'wb', value: 75 },
-            ra: { db: 75, key: 'wb', value: 63 },
+            ra: { db: 75, key: 'wb', value: 62 },
             oaCfm: 2000, raCfm: 8000,
             totalCfm: 10000, oaPct: 20
         };
