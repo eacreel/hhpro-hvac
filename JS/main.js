@@ -3,6 +3,7 @@
    ------------------------------------------------------------
    The landing page shown after login. A grid of tiles:
      - Projects (top-left, distinct styling) -> 'projects' view
+     - Cook Select / Price Select logo links (new tab)
      - One tile per product type               -> 'product' view
    Calculators-only accounts (Manufacturer) get the Calculators
    tile alone.
@@ -88,6 +89,12 @@
         projectsRow.appendChild(createCalculatorsTile());
         main.appendChild(projectsRow);
 
+        // Manufacturer selection program links, centered under the action
+        // tiles. Hidden from calculators-only (Manufacturer) accounts along
+        // with everything else engineer-facing.
+        var selectLinks = calcOnly ? null : buildSelectLinks();
+        if (selectLinks) main.appendChild(selectLinks);
+
         // Product grid: one tile per product type, laid out in the same
         // responsive auto-fill grid as before.
         var grid = null;
@@ -103,6 +110,13 @@
         // Soft staggered reveal as the overview paints in.
         if (HHpro.FX && HHpro.FX.staggerReveal) {
             HHpro.FX.staggerReveal(projectsRow);
+            // The logo row reveals as one piece just after the action tiles
+            // (revealing the links themselves would pin their transform and
+            // cancel the hover lift).
+            if (selectLinks) {
+                selectLinks.style.setProperty('--reveal-delay', '135ms');
+                selectLinks.classList.add('hh-reveal');
+            }
             if (grid) HHpro.FX.staggerReveal(grid);
         }
 
@@ -111,6 +125,70 @@
         }
 
         return main;
+    }
+
+    // Manufacturer selection programs engineers can sign in to or register
+    // for. Each logo sits on a card in the background it was drawn for (the
+    // Price logo is navy, Cook's is red and white), and both images render
+    // at the same height (main.css .select-link img). Links open in a new tab.
+    var SELECTION_PROGRAMS = [
+        {
+            name: 'Cook Select',
+            url: 'https://cookselect.lorencook.com/login',
+            logo: 'DATA/PICTURES/red-white-cook-select-logo.svg',
+            cardClass: 'select-link-dark'
+        },
+        {
+            name: 'Price Select',
+            // Price's sign-in page (Customer / Employee, with registration).
+            // Don't paste a URL copied from the address bar mid-login: those
+            // carry a one-time, IP-stamped state token that expires.
+            url: 'https://sso.priceindustries.com/am/XUI/?realm=/alpha#/',
+            logo: 'DATA/PICTURES/Price_Logo_Blue.svg',
+            cardClass: 'select-link-light'
+        }
+    ];
+
+    function buildSelectLinks() {
+        var section = document.createElement('section');
+        section.className = 'select-links';
+        section.setAttribute('aria-label', 'Manufacturer selection programs');
+
+        var heading = document.createElement('p');
+        heading.className = 'select-links-title';
+        heading.textContent = 'Manufacturer selection programs';
+        section.appendChild(heading);
+
+        var row = document.createElement('div');
+        row.className = 'select-links-row';
+        SELECTION_PROGRAMS.forEach(function (program) {
+            var hint = 'Click to open or register for ' + program.name;
+
+            var link = document.createElement('a');
+            link.className = 'select-link ' + program.cardClass;
+            link.href = program.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.setAttribute('aria-label', hint + ' (opens in a new tab)');
+
+            var img = document.createElement('img');
+            img.src = program.logo;
+            img.alt = program.name;
+            link.appendChild(img);
+
+            // Hover / keyboard-focus hint; the aria-label already says it
+            // for screen readers.
+            var tip = document.createElement('span');
+            tip.className = 'select-link-tip';
+            tip.setAttribute('aria-hidden', 'true');
+            tip.textContent = hint;
+            link.appendChild(tip);
+
+            row.appendChild(link);
+        });
+        section.appendChild(row);
+
+        return section;
     }
 
     function createProjectsTile() {

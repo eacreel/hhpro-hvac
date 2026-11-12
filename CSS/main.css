@@ -144,6 +144,132 @@
     .tile-shared-badge { animation: none; }
 }
 
+/* Manufacturer selection program links (main.js buildSelectLinks) -
+   a small centered row of logo cards between the action tiles and the
+   product grid. Every logo renders at the same height; each card keeps
+   the background its logo was drawn for (white for Price's navy mark,
+   black like the product photos for Cook's red-and-white one).
+   z-index keeps the hover hint above the product tiles below it. */
+.select-links {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.select-links-title {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.select-links-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    max-width: 100%;
+}
+
+.select-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    max-width: 100%;
+    padding: 0 var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.select-link img {
+    display: block;
+    height: 32px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.select-link-light {
+    background-color: #ffffff;
+    border-color: transparent;
+}
+
+.select-link-dark {
+    background-color: #000000;
+}
+
+.select-link:hover,
+.select-link:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--color-primary-light);
+    border-color: transparent;
+}
+
+.select-link:active {
+    transform: translateY(0) scale(0.99);
+}
+
+/* Hover hint under the card, with a small arrow pointing up at it. */
+.select-link-tip {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translate(-50%, -4px);
+    white-space: nowrap;
+    padding: 6px 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-dark);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast),
+                transform var(--transition-fast);
+}
+
+.select-link-tip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border: 6px solid transparent;
+    border-bottom-color: var(--color-border-strong);
+}
+
+.select-link:hover .select-link-tip,
+.select-link:focus-visible .select-link-tip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .select-link,
+    .select-link-tip {
+        transition: none;
+    }
+
+    .select-link:hover,
+    .select-link:focus-visible,
+    .select-link:active {
+        transform: none;
+    }
+}
+
 /* Product grid - centered on the page. Each tile is capped at 320px
    wide so they stay a reasonable size on ultra-wide monitors. */
 .tile-grid {
