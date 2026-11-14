@@ -97,6 +97,11 @@ from openpyxl.utils import get_column_letter, column_index_from_string
 #   ahuElectricalSheet Optional. Name of a tab holding each air handler's
 #                      heater kits, voltages and MCA / MOP. Written to the
 #                      JSON as "ahuElectrical". See extract_ahu_electrical.
+#   dropTagColumn      Optional. True when the SCHEDULE RANGE starts with a
+#                      TAG column (e.g. "WSHP-" on every row). The site adds
+#                      its own Tag column, so that first column is left out
+#                      of the JSON; every other column keeps its Excel
+#                      letter. See tag_column_dropped below.
 #   searchSchema      Drives the Design Search page on the site. Two parts:
 #                        displayName  - shown in the category picker
 #                        description  - one-line blurb shown above the form
@@ -243,6 +248,32 @@ PRODUCT_CONFIGS = {
                 {"label": "Indoor Airflow",         "col": "C", "unit": "CFM",    "defaultTolerance": 10},
                 {"label": "AFUE",                   "col": "M", "unit": "%",      "defaultTolerance": 5},
                 {"label": "Compressor Stages",      "col": "AA", "unit": "stages", "defaultTolerance": 0},
+            ],
+        },
+    },
+    # Daikin water source heat pumps (added 2026-11-14), SmartSource
+    # Compact single stage, horizontal + vertical on one schedule. Title
+    # row 2, headers rows 3-5, data from row 6. Each unit has two rows,
+    # one per cooling entering air (75/63, 80/67); the site shows one row
+    # with an EDB dropdown (data.js kwVariants). Column A is the TAG
+    # ("WSHP-") and is dropped; the site's autoTagPrefix replaces it.
+    "DAIKIN WSHP DATA.xlsx": {
+        "productType": "DAIKIN WATER SOURCE HEAT PUMPS",
+        "outputFileName": "wshp.json",
+        "headerRows": 4,
+        "dataStartRow": 6,
+        "supportsMultiRow": False,
+        "assetsFolder": "DAIKIN WSHP",
+        "dropTagColumn": True,
+        "searchSchema": {
+            "displayName": "Daikin Water Source Heat Pumps",
+            "description": "Water source heat pumps (horizontal and vertical). Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Total Cooling Capacity",    "col": "N", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Sensible Cooling Capacity", "col": "O", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heating Capacity",          "col": "X", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Airflow",                   "col": "C", "unit": "CFM",   "defaultTolerance": 10},
+                {"label": "Fluid Flow",                "col": "F", "unit": "GPM",   "defaultTolerance": 10},
             ],
         },
     },
@@ -1481,14 +1512,19 @@ def extract_schedule_header(ws, schedule_cols, header_rows, cell_to_merge, ancho
         row_cells = []
         for c in range(min_col, max_col + 1):
             mr = cell_to_merge.get((r, c))
-            if mr is not None and (r, c) != (mr.min_row, mr.min_col):
+            # A merge that starts left of the range (the row-2 title when
+            # dropTagColumn leaves out column A) is clipped: its first
+            # in-range cell stands in for the anchor.
+            clipped = (mr is not None and mr.min_col < min_col and
+                       c == min_col and r == mr.min_row)
+            if mr is not None and (r, c) != (mr.min_row, mr.min_col) and not clipped:
                 continue  # covered by a merge, not the anchor
 
-            val = clean_value(ws.cell(row=r, column=c).value)
+            val = clean_value(ws.cell(row=r, column=mr.min_col if clipped else c).value)
             colspan = 1
             rowspan = 1
             if mr is not None:
-                colspan = mr.max_col - mr.min_col + 1
+                colspan = mr.max_col - (min_col if clipped else mr.min_col) + 1
                 rowspan = mr.max_row - mr.min_row + 1
 
             row_cells.append({
@@ -2598,6 +2634,20 @@ def convert_combined_group(script_dir, group, output_path):
 # MAIN CONVERSION
 # -----------------------------------------------------------------------------
 
+def tag_column_dropped(ws, schedule_cols, config):
+    """True when config asks for dropTagColumn and the SCHEDULE RANGE's
+    first column really is headed TAG (row 3, under the title). The site
+    gives every item its own tag, so that column is left out of the JSON
+    (the title row is still read from column A)."""
+    if not config.get("dropTagColumn"):
+        return False
+    head = clean_value(ws.cell(row=3, column=schedule_cols[0]).value)
+    if head is None or str(head).strip().upper() != "TAG":
+        raise ValueError("dropTagColumn is set but the first schedule column "
+                         f"is headed {head!r}, not TAG.")
+    return True
+
+
 def convert_file(input_path, config, output_path):
     """Convert a single Excel file to JSON using the given config."""
     print(f"\nConverting: {os.path.basename(input_path)}")
@@ -2616,6 +2666,8 @@ def convert_file(input_path, config, output_path):
     cell_to_merge, anchors = merge_lookup(ws)
 
     schedule_title = clean_value(ws.cell(row=2, column=schedule_cols[0]).value)
+    if tag_column_dropped(ws, schedule_cols, config):
+        schedule_cols = (schedule_cols[0] + 1, schedule_cols[1])
 
     schedule_header_rows = extract_schedule_header(
         ws, schedule_cols, config["headerRows"], cell_to_merge, anchors

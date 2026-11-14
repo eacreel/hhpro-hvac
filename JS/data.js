@@ -134,6 +134,40 @@
             tileClass: 'tile-gas-splits'
         },
         {
+            // Daikin water source heat pumps (added 2026-11-14), horizontal
+            // and vertical on one schedule (DAIKIN WSHP DATA.xlsx). The
+            // display name is also the product's row name on the Users
+            // Permissions tab.
+            productKey: 'wshp',
+            displayName: 'Daikin Water Source Heat Pumps',
+            jsonFile: 'DATA/JSON/wshp.json',
+            pictureFile: 'DATA/PICTURES/WSHP (Black).jpg',
+            assetsFolder: 'ASSETS/DAIKIN WSHP',
+            tileClass: 'tile-wshp',
+            autoTagPrefix: 'WSHP-',
+            // The workbook lists every unit twice, once per cooling
+            // entering air (75/63 and 80/67). Collapse each pair into one
+            // row with a dropdown in the cooling EDB cell; it swaps the
+            // EWB, LWT, leaving air, capacities, heat of rejection and EER
+            // (and the submittal / Revit / CAD, which differ per row).
+            kwVariants: {
+                variantColumn: 'J',
+                dependentColumns: ['H', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'],
+                defaultValue: 75,
+                singleAsText: true,
+                ariaLabel: 'Cooling entering air dry bulb (°F)'
+            },
+            // Notes work like the Price RAC: every row's Accessories column
+            // (AT) says "All" for the fixed SCHEDULE NOTES list, so the
+            // list can't be edited, the site's free-text Accessories
+            // column is not added, and AT is hidden while browsing.
+            scheduleNotesReadOnly: true,
+            hiddenSelectionColumns: ['AT'],
+            hideAccessoriesColumn: true,
+            // The first filter is the nominal BTU/H, not tons.
+            cartSizeLabel: '{} BTU/H'
+        },
+        {
             // Markel electric heaters (added 2026-11-14). Two workbooks
             // with different columns (MARKEL DATA - 3320 wall heaters,
             // MARKEL DATA - 5100 suspended unit heaters) are converted into

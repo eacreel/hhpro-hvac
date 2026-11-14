@@ -1450,6 +1450,7 @@ WHAT'S IN THE GRID
             'mini_splits':            'MINI SPLIT SCHEDULE',
             'multi_position_splits':  'SPLIT SYSTEM SCHEDULE',
             'gas_splits':             'GAS SPLIT SCHEDULE',
+            'wshp':                   'WATER SOURCE HEAT PUMP SCHEDULE',
             'markel':                 'ELECTRIC HEATER SCHEDULES',
             'vfds':                   'VFD SCHEDULE',
             'diffusers':              'DIFFUSER SCHEDULE',
@@ -2569,6 +2570,7 @@ WHAT'S IN THE GRID
             // "Daikin Unitary & Light Commercial Split Systems".
             'multi_position_splits': 'Daikin Unitary & LC Splits',
             'gas_splits': 'Daikin Gas Splits',
+            'wshp': 'Daikin Water Source Heat Pumps',
             'markel': 'Markel Electric Heaters',
             'vfds': 'ABB VFDs',
             'diffusers': 'Price Diffusers',
@@ -3417,9 +3419,13 @@ WHAT'S IN THE GRID
     // xlsx, and browser print-PDF keep the real circled glyphs; only
     // these two outputs fall back to parentheses (CAD viewers like
     // LibreCAD wouldn't render an embedded Unicode/Arial glyph).
+    // Subscript digits (the WSHP "inH₂O" headers) become plain digits
+    // there too, rather than dropping to '?'.
     function asciiizeCircledDigits(s) {
         return String(s).replace(/[①-⑳]/g, function (ch) {
             return '(' + (ch.charCodeAt(0) - 0x2460 + 1) + ')';
+        }).replace(/[₀-₉]/g, function (ch) {
+            return String(ch.charCodeAt(0) - 0x2080);
         });
     }
 

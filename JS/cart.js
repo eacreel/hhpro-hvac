@@ -1112,7 +1112,8 @@
                     ? String(cell.value).trim().replace(/\s+/g, ' ').toUpperCase() : '';
                 if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' ||
                     val === 'MODEL #' || val === 'GPS MODEL' ||
-                    val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (PRICE)' ||
+                    val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (DAIKIN)' ||
+                    val === 'MODEL (PRICE)' ||
                     val === 'MODEL/CATALOG NUMBER (MARKEL)') {
                     found = cell.col;
                 }
