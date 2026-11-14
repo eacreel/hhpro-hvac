@@ -134,6 +134,42 @@
             tileClass: 'tile-gas-splits'
         },
         {
+            // Markel electric heaters (added 2026-11-14). Two workbooks
+            // with different columns (MARKEL DATA - 3320 wall heaters,
+            // MARKEL DATA - 5100 suspended unit heaters) are converted into
+            // one markel.json holding two sub-schedules, the same shape as
+            // GPS, so the project view and exports stack one schedule per
+            // heater type. The display name is also the product's row name
+            // on the Users Permissions tab.
+            productKey: 'markel',
+            displayName: 'Markel Electric Heaters',
+            jsonFile: 'DATA/JSON/markel.json',
+            pictureFile: 'DATA/PICTURES/MARKEL ELECTRIC HEATERS.jpg',
+            assetsFolder: 'ASSETS/MARKEL',
+            tileClass: 'tile-markel',
+            autoTagPrefix: 'EH-',
+            // The workbooks' Notes column cites the numbered notes under
+            // each schedule, so the notes are a fixed list (like GPS).
+            scheduleNotesReadOnly: true,
+            // Two column sets make tolerance targets awkward (like GPS).
+            excludeFromDesignSearch: true,
+            // Cart labels lead with the heater kW, e.g. "1.5 KW / <model>".
+            cartSizeFilter: 'KW',
+            cartSizeLabel: '{} KW',
+            // Photo page shown first (JS/markel.js). Clicking a card opens
+            // the schedule with `filter` set to that card's `value`; with
+            // the filter cleared, both schedules stack on the page.
+            typePicker: {
+                filter: 'Type',
+                prompt: 'Select a heater type to open its schedule',
+                backLabel: 'All Heater Types',
+                cards: [
+                    { value: 'Wall',      label: 'Wall Mounted', picture: 'DATA/PICTURES/Markel 3320 (Black).jpg' },
+                    { value: 'Suspended', label: 'Suspended',    picture: 'DATA/PICTURES/Markel 5100 (Black).jpg' }
+                ]
+            }
+        },
+        {
             productKey: 'marvair',
             displayName: 'Marvair Vertical Wall Mount',
             jsonFile: 'DATA/JSON/marvair.json',

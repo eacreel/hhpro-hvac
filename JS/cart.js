@@ -1057,6 +1057,14 @@
 
         var sizeValue = null;
         var filterColumns = (data && data.filterColumns) || [];
+        // cartSizeFilter names the filter to lead with (Markel: KW, as
+        // its first filter is the heater Type); else the first filter.
+        var sizeFilter = product && product.cartSizeFilter;
+        if (sizeFilter) {
+            filterColumns = filterColumns.filter(function (fc) {
+                return fc.name === sizeFilter;
+            });
+        }
         for (var i = 0; i < filterColumns.length; i++) {
             var v = filterData[filterColumns[i].name];
             if (v !== null && v !== undefined && v !== '' && v !== '-') {
@@ -1104,7 +1112,8 @@
                     ? String(cell.value).trim().replace(/\s+/g, ' ').toUpperCase() : '';
                 if (val === 'MODEL' || val === 'MODEL NUMBER' || val === 'MODEL#' ||
                     val === 'MODEL #' || val === 'GPS MODEL' ||
-                    val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (PRICE)') {
+                    val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (PRICE)' ||
+                    val === 'MODEL/CATALOG NUMBER (MARKEL)') {
                     found = cell.col;
                 }
             }

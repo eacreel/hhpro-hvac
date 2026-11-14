@@ -1200,3 +1200,63 @@
     min-height: 0;
     max-height: max(360px, calc(100vh - 230px));
 }
+
+/* Markel's heater-type photo page (JS/markel.js): the GPS card look,
+   but only a couple of cards, so they come out larger and centered
+   (auto-fit collapses the empty tracks auto-fill would keep). */
+.gps-gallery.type-picker-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 300px));
+}
+
+/* ============================================================
+   Multi-schedule browse page (Markel Electric Heaters)
+   ------------------------------------------------------------
+   One titled table per heater type in view, each with its fixed
+   notes underneath. With both types showing the stack is taller
+   than the window, so the inner column takes its natural height
+   and the page scrolls (.product-view overflow-y); each table
+   still caps near the viewport and scrolls inside with sticky
+   headers.
+   ============================================================ */
+.product-view-inner.multi-schedule-inner {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+}
+
+.multi-schedule-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.multi-schedule-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.multi-schedule-title {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text);
+}
+
+.schedule-wrap.multi-schedule-wrap,
+.product-view .schedule-wrap.multi-schedule-wrap {
+    flex: none;
+    height: auto;
+    min-height: 0;
+    max-height: max(360px, calc(100vh - 200px));
+    align-self: flex-start;
+}
+
+/* Long note lines add nothing to the column's intrinsic width, then
+   fill and wrap, so the notes never widen the block past its table. */
+.multi-schedule-section .gps-notes-wrap {
+    width: 0;
+    min-width: 100%;
+}

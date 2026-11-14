@@ -85,6 +85,7 @@
         'MODEL NUMBER': true,
         'MODEL NUMBER (DAIKIN)': true,
         'MODEL (PRICE)': true,
+        'MODEL/CATALOG NUMBER (MARKEL)': true,
         'MODEL#': true,
         'MODEL #': true,
         'GPS MODEL': true
@@ -273,6 +274,14 @@
                     var msg = (err && err.message) ? err.message : String(err);
                     renderError(root, product, msg);
                 });
+        },
+
+        // The standard browse page (title, filters, schedule), for a
+        // product extension whose renderProductPage shows a page of its
+        // own first (Markel's heater-type photos). params.initialFilters
+        // ({ name: value }) presets filters as if the user had picked them.
+        renderStandardPage: function (root, product, data, params) {
+            renderPage(root, product, data, params);
         }
     };
 
@@ -374,13 +383,25 @@
         backBtn.className = 'product-back-btn';
         backBtn.appendChild(HHpro.UI.icon('arrow-left'));
         var backLabel = document.createElement('span');
-        backLabel.textContent = 'Back to Products';
+        // Products that open on a type-picker page (data.js typePicker,
+        // Markel) go back to it rather than to the product grid.
+        var picker = product.typePicker;
+        backLabel.textContent = (picker && picker.backLabel) || 'Back to Products';
         backBtn.appendChild(backLabel);
         backBtn.addEventListener('click', function () {
-            HHpro.App.showView('main');
+            if (picker) {
+                HHpro.App.showView('product', { productKey: product.productKey });
+            } else {
+                HHpro.App.showView('main');
+            }
         });
         header.appendChild(backBtn);
         main.appendChild(header);
+
+        // Multi-schedule payloads (Markel): each sub-schedule in view gets
+        // its own table + notes, stacked, and the page scrolls instead of
+        // one table filling the window (products.css .multi-schedule-*).
+        var isMultiSchedule = !!(HHpro.GPS && HHpro.GPS.isMulti && HHpro.GPS.isMulti(data));
 
         // --- Shared mutable state ---
         var filterValues = {};
@@ -438,14 +459,14 @@
         }
 
         var scheduleWrap = document.createElement('div');
-        scheduleWrap.className = 'schedule-wrap';
+        scheduleWrap.className = isMultiSchedule ? 'multi-schedule-stack' : 'schedule-wrap';
         main.appendChild(scheduleWrap);
 
         // Wrap header/filters/status/schedule in an inner column that
         // shrink-wraps to the schedule's width, so they all share that
         // width and center together on the page.
         var inner = document.createElement('div');
-        inner.className = 'product-view-inner';
+        inner.className = 'product-view-inner' + (isMultiSchedule ? ' multi-schedule-inner' : '');
         while (main.firstChild) inner.appendChild(main.firstChild);
         main.appendChild(inner);
 
@@ -454,6 +475,13 @@
         // --- Initial state ---
         var initialVisible = getVisibleFilters(product.productKey, data, filterValues);
         initialVisible.forEach(function (fc) { filterValues[fc.name] = null; });
+        // Presets from the caller (Markel's photo cards set Type). They
+        // count as the user's own picks: Clear all filters clears them.
+        var presets = (params && params.initialFilters) || {};
+        initialVisible.forEach(function (fc) {
+            var v = presets[fc.name];
+            if (v !== null && v !== undefined && v !== '') filterValues[fc.name] = String(v);
+        });
 
         // Per-product intro section (diffuser model gallery). The api
         // lets the section read + drive the filter state and re-sync
@@ -480,9 +508,8 @@
         window.addEventListener('resize', onResize);
 
         function onResize() {
-            var table = scheduleWrap.querySelector('.schedule-table');
-            if (!table) return;
-            applyStickyHeaderOffsets(table);
+            var tables = scheduleWrap.querySelectorAll('.schedule-table');
+            for (var i = 0; i < tables.length; i++) applyStickyHeaderOffsets(tables[i]);
         }
 
         function applyFilterChange(preserve) {
@@ -623,7 +650,9 @@
             scheduleWrap.innerHTML = '';
             var visible = applyFilters(data.selections || [], filterValues);
             if (modelFilter) {
-                visible = applyModelFilter(visible, modelFilter, data);
+                visible = isMultiSchedule
+                    ? applyModelFilterMulti(visible)
+                    : applyModelFilter(visible, modelFilter, data);
             }
             updateStatus(visible.length, (data.selections || []).length);
             if (visible.length === 0) {
@@ -641,6 +670,10 @@
                 zeroHint.textContent = 'Try removing one or more filters.';
                 zero.appendChild(zeroHint);
                 scheduleWrap.appendChild(zero);
+                return;
+            }
+            if (isMultiSchedule) {
+                renderSubSchedules(visible);
                 return;
             }
             // Products with very large datasets (grilles: 22k+ rows) cap
@@ -664,6 +697,57 @@
             applyStickyHeaderOffsets(table);
             scheduleStickyRecomputes(table);
             focusRequestedSelection(table);
+        }
+
+        // The model columns live in each sub-schedule's own header, so a
+        // multi-schedule payload matches the model per sub-schedule.
+        function applyModelFilterMulti(list) {
+            var keep = {};
+            HHpro.GPS.getSubSchedules(data).forEach(function (sub) {
+                var sd = HHpro.GPS.subData(data, sub.index);
+                applyModelFilter(sd.selections, modelFilter, sd).forEach(function (sel) {
+                    keep[sel.id] = true;
+                });
+            });
+            return list.filter(function (sel) { return keep[sel.id]; });
+        }
+
+        // Multi-schedule payloads: one titled table per sub-schedule that
+        // has rows in view, in sub-schedule order, each followed by its
+        // fixed, pre-numbered notes (the rows' Notes column cites them).
+        function renderSubSchedules(visible) {
+            var inView = {};
+            visible.forEach(function (sel) { inView[sel.id] = true; });
+            HHpro.GPS.getSubSchedules(data).forEach(function (sub) {
+                var sd = HHpro.GPS.subData(data, sub.index);
+                var rows = sd.selections.filter(function (sel) { return inView[sel.id]; });
+                if (!rows.length) return;
+
+                var section = document.createElement('section');
+                section.className = 'multi-schedule-section';
+
+                var subTitle = document.createElement('h2');
+                subTitle.className = 'multi-schedule-title';
+                subTitle.textContent = sub.title || '';
+                section.appendChild(subTitle);
+
+                var wrap = document.createElement('div');
+                wrap.className = 'schedule-wrap multi-schedule-wrap';
+                var table = buildScheduleTable(sd, rows, product);
+                table.__renderList = rows;
+                wrap.appendChild(table);
+                section.appendChild(wrap);
+
+                if (sd.scheduleNotes.notes.length) {
+                    var notesWrap = document.createElement('div');
+                    notesWrap.className = 'gps-notes-wrap';
+                    notesWrap.appendChild(HHpro.GPS.buildNotesBlock(sd.scheduleNotes.notes));
+                    section.appendChild(notesWrap);
+                }
+                scheduleWrap.appendChild(section);
+                applyStickyHeaderOffsets(table);
+                scheduleStickyRecomputes(table);
+            });
         }
 
         // Arriving from Design Search: bring the matched row into view and

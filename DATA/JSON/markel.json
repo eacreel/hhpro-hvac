@@ -1,0 +1,4322 @@
+{
+  "productType": "MARKEL ELECTRIC HEATERS",
+  "assetsFolder": "MARKEL",
+  "scheduleTitle": "ELECTRIC HEATER SCHEDULES",
+  "supportsMultiRowSelections": false,
+  "multiSchedule": true,
+  "searchSchema": {
+    "displayName": "Markel Electric Heaters",
+    "description": "Markel wall and suspended electric heaters.",
+    "targets": []
+  },
+  "filterColumns": [
+    {
+      "name": "Type",
+      "col": "Q"
+    },
+    {
+      "name": "Voltage/Phase",
+      "col": "R"
+    },
+    {
+      "name": "CFM",
+      "col": "S"
+    },
+    {
+      "name": "Wattage",
+      "col": "T"
+    },
+    {
+      "name": "KW",
+      "col": "U"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "W",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "X",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "Y",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "Z",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "AA",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "AB",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AC",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "AD",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "AE",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "AF",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "AG",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AH",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AI",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AJ",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AK",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AL",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AM",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AN",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "refrigerantColumns": [],
+  "subSchedules": [
+    {
+      "index": 0,
+      "title": "WALL HEATER SCHEDULE",
+      "filterValue": "Wall",
+      "photoKey": null,
+      "scheduleHeader": {
+        "columnLetters": [
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O"
+        ],
+        "rows": [
+          [
+            {
+              "col": "B",
+              "value": "Model/Catalog Number\n(Markel)",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "C",
+              "value": "CFM",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "D",
+              "value": "BTU",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "E",
+              "value": "Voltage/Phase",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "F",
+              "value": "KW",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "G",
+              "value": "Wattage",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "H",
+              "value": "Temperature \nRise",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "I",
+              "value": "Amp",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "J",
+              "value": "Agency \nRating",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "K",
+              "value": "Dimensions & Weight",
+              "colspan": 4,
+              "rowspan": 1
+            },
+            {
+              "col": "O",
+              "value": "Notes",
+              "colspan": 1,
+              "rowspan": 2
+            }
+          ],
+          [
+            {
+              "col": "K",
+              "value": "Length\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "L",
+              "value": "Width\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "M",
+              "value": "Height\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "N",
+              "value": "Weight\n(lbs)",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_1001",
+        "sel_1002",
+        "sel_1003",
+        "sel_1004",
+        "sel_1005",
+        "sel_1006",
+        "sel_1007",
+        "sel_1008",
+        "sel_1009",
+        "sel_1010",
+        "sel_1011",
+        "sel_1012",
+        "sel_1013",
+        "sel_1014",
+        "sel_1015",
+        "sel_1016",
+        "sel_1017",
+        "sel_1018",
+        "sel_1019",
+        "sel_1020",
+        "sel_1021",
+        "sel_1022",
+        "sel_1023",
+        "sel_1024",
+        "sel_1025",
+        "sel_1026",
+        "sel_1027",
+        "sel_1028"
+      ],
+      "notes": [
+        "1. Made in U.S.A.",
+        "2. Automatic fan delay circuit.",
+        "3. Automatic reset thermal limit.",
+        "4. Powder coated 18 gauge steel grill with extruded Aluminum front frame.",
+        "5. Steel block fin element.",
+        "6. Color: Aluminum Trim/Bankers Bronze",
+        "7. Built-In tamper proof thermostat.",
+        "8. Disconnect Switch",
+        "9. Manual reset thermal limit."
+      ],
+      "sourceFile": "MARKEL DATA - 3320.xlsx"
+    },
+    {
+      "index": 1,
+      "title": "SUSPENDED FAN FORCED UNIT HEATER SCHEDULE",
+      "filterValue": "Suspended",
+      "photoKey": null,
+      "scheduleHeader": {
+        "columnLetters": [
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q",
+          "R"
+        ],
+        "rows": [
+          [
+            {
+              "col": "B",
+              "value": "Model/Catalog Number\n(Markel)",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "C",
+              "value": "CFM",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "D",
+              "value": "KW",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "E",
+              "value": "BTU",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "F",
+              "value": "Temperature \nRise",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "G",
+              "value": "Voltage/Phase",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "H",
+              "value": "Amp",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "I",
+              "value": "Control \nVoltage",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "J",
+              "value": "Air \nThrow",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "K",
+              "value": "Agency \nRating",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "L",
+              "value": "Recommended\nMounting Height \nHorizontal",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "M",
+              "value": "Recommended\nMounting Height \nVertical",
+              "colspan": 1,
+              "rowspan": 2
+            },
+            {
+              "col": "N",
+              "value": "Dimensions & Weight",
+              "colspan": 4,
+              "rowspan": 1
+            },
+            {
+              "col": "R",
+              "value": "Notes",
+              "colspan": 1,
+              "rowspan": 2
+            }
+          ],
+          [
+            {
+              "col": "N",
+              "value": "Length\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "O",
+              "value": "Width\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "P",
+              "value": "Height\n(in)",
+              "colspan": 1,
+              "rowspan": 1
+            },
+            {
+              "col": "Q",
+              "value": "Weight\n(lbs)",
+              "colspan": 1,
+              "rowspan": 1
+            }
+          ]
+        ]
+      },
+      "selectionIds": [
+        "sel_2001",
+        "sel_2002",
+        "sel_2003",
+        "sel_2004",
+        "sel_2005",
+        "sel_2006",
+        "sel_2007",
+        "sel_2008",
+        "sel_2009",
+        "sel_2010",
+        "sel_2011",
+        "sel_2012",
+        "sel_2013",
+        "sel_2014",
+        "sel_2015",
+        "sel_2016",
+        "sel_2017",
+        "sel_2018",
+        "sel_2019",
+        "sel_2020",
+        "sel_2021",
+        "sel_2022",
+        "sel_2023",
+        "sel_2024",
+        "sel_2025",
+        "sel_2026",
+        "sel_2027",
+        "sel_2028",
+        "sel_2029",
+        "sel_2030",
+        "sel_2031",
+        "sel_2032",
+        "sel_2033",
+        "sel_2034",
+        "sel_2035",
+        "sel_2036",
+        "sel_2037",
+        "sel_2038",
+        "sel_2039",
+        "sel_2040",
+        "sel_2041",
+        "sel_2042",
+        "sel_2043",
+        "sel_2044",
+        "sel_2045",
+        "sel_2046",
+        "sel_2047",
+        "sel_2048",
+        "sel_2049",
+        "sel_2050",
+        "sel_2051",
+        "sel_2052",
+        "sel_2053",
+        "sel_2054",
+        "sel_2055",
+        "sel_2056",
+        "sel_2057",
+        "sel_2058",
+        "sel_2059",
+        "sel_2060",
+        "sel_2061",
+        "sel_2062",
+        "sel_2063",
+        "sel_2064",
+        "sel_2065",
+        "sel_2066",
+        "sel_2067",
+        "sel_2068",
+        "sel_2069",
+        "sel_2070",
+        "sel_2071",
+        "sel_2072",
+        "sel_2073",
+        "sel_2074",
+        "sel_2075",
+        "sel_2076",
+        "sel_2077",
+        "sel_2078"
+      ],
+      "notes": [
+        "1. Made in U.S.A.",
+        "2. CONSTRUCTION: Heavy 18 gauge welded steel cabinet with powder coated beige and brown two tone finish and control compartment housing a master terminal board with a hinged and latched access door, simplifying wiring, installation & maintenance.",
+        "3. HEATING ELEMENT: Copper clad steel sheath element with continuously brazed steel fins formed to allow side draw through air flow.",
+        "4. OVERHEAT PROTECTION: All units come equipped with automatic reset type limit controls to de-energize the heater should an over-temperature situation occur.",
+        "5. FAN and MOTOR: Totally enclosed, 1-speed, 1-phase, permanently lubricated, thermally protected motors with unit bearings on 3 KW - 20 KW models. Totally enclosed, 2-speed, 1-phase, permanently lubricated, thermally protected motors with sleeve bearings on 25 KW - 50 KW models. All motors mounted with rubber insulators to minimize vibration & noise. Fan over-ride purges unit of residual heat at shutdown.",
+        "6. LOUVER ASSEMBLY: Louvers are individually adjustable for directional control of air flow up to 15° from straight horizontal. Optional diffusers available for down flow (vertical discharge) applications.",
+        "7. TEMPERATURE CONTROLS: Optional low voltage and line voltage thermostats available with an adjustable temperature range of 40°F to 110°F. Units with model numbers ending in CA1 are factory wired for low voltage controls. 25 KW through 50 KW units are designed for two stage heating operation.",
+        "8. CONSTRUCTION:Heavy gauge steel cabinet with powder coated finish and control compartment housing a master terminal board. The control compartment allows for access through a hinged and latched door, simplifying wiring, installation, and maintenance. Made in U.S.A",
+        "9. HEATING ELEMENT:The heating element is a copper clad steel sheath element with continuously brazed steel fins formed to allow side draw through air flow.",
+        "10. OVERHEAT PROTECTION:All units come equipped with manual reset type limit controls to de-energize the heater should an over-temperature situation occur.",
+        "11. FAN & MOTOR:Single speed, single phase permanently lubricated, thermally protected motors with ball bearings. The fan override purges the unit of residual heat at shutdown.",
+        "12. FIELD INSTALLED OPTIONS:Summer fan switch to operate the fan only, and a heat stratification thermostat for high bay areas.",
+        "13. HEATER STAGING:60 KW and 70 KW are three stage; 80 KW, 90 KW, & 100 KW are four stage.",
+        "14. SC5100 FACTORY INSTALLED ELECTRONIC STEP CONTROLLER:The optional factory installed step controller is a first on last off sequencer that will cycle the unit heater stages through an optional wall thermostat. Additionally, the step controller can be controlled by any building management system with 4 to 20 MA or 0 - 10 VDC field supplied control signal."
+      ],
+      "sourceFile": "MARKEL DATA - 5100.xlsx"
+    }
+  ],
+  "selections": [
+    {
+      "id": "sel_1001",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "E3323TD-RP/03808802",
+            "C": 175,
+            "D": 5120,
+            "E": "120/1",
+            "F": 1.5,
+            "G": 1500,
+            "H": 27,
+            "I": 12.5,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "120/1",
+            "CFM": 175,
+            "Wattage": 1500,
+            "KW": 1.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1002",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3326TD-RP/03809302",
+            "C": 175,
+            "D": 13800,
+            "E": "208/1",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 19.2,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1003",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3323TD-RP/03809402",
+            "C": 175,
+            "D": 5120,
+            "E": "240/1",
+            "F": 1.5,
+            "G": 1500,
+            "H": 27,
+            "I": 6.2,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/1",
+            "CFM": 175,
+            "Wattage": 1500,
+            "KW": 1.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1004",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3323TD-RP/03809402",
+            "C": 175,
+            "D": 3840,
+            "E": "208/1",
+            "F": 1.125,
+            "G": 1125,
+            "H": 21,
+            "I": 5.4,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 1125,
+            "KW": 1.125
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1005",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3324TD-RP/03809502",
+            "C": 175,
+            "D": 6826,
+            "E": "240/1",
+            "F": 2,
+            "G": 2000,
+            "H": 36,
+            "I": 8.3,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 27,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/1",
+            "CFM": 175,
+            "Wattage": 2000,
+            "KW": 2
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1006",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3324TD-RP/03809502",
+            "C": 175,
+            "D": 5120,
+            "E": "208/1",
+            "F": 1.5,
+            "G": 1500,
+            "H": 27,
+            "I": 7.2,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 27,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 1500,
+            "KW": 1.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1007",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3325TD-RP/03809602",
+            "C": 175,
+            "D": 10350,
+            "E": "240/1",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 12.5,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/1",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1008",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3325TD-RP/03809602",
+            "C": 175,
+            "D": 7763,
+            "E": "208/1",
+            "F": 2.25,
+            "G": 2250,
+            "H": 41,
+            "I": 10.8,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 2250,
+            "KW": 2.25
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1009",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3326TD-RP/03809702",
+            "C": 175,
+            "D": 13800,
+            "E": "240/1",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 16.7,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/1",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1010",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3326TD-RP/03809702",
+            "C": 175,
+            "D": 10350,
+            "E": "208/1",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 14.4,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1011",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G3323TD-RP/03809802",
+            "C": 175,
+            "D": 5120,
+            "E": "277/1",
+            "F": 1.5,
+            "G": 1500,
+            "H": 27,
+            "I": 5.4,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "277/1",
+            "CFM": 175,
+            "Wattage": 1500,
+            "KW": 1.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1012",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G3324TD-RP/03809902",
+            "C": 175,
+            "D": 6826,
+            "E": "277/1",
+            "F": 2,
+            "G": 2000,
+            "H": 36,
+            "I": 7.2,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 27,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "277/1",
+            "CFM": 175,
+            "Wattage": 2000,
+            "KW": 2
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1013",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G3325TD-RP/03810002",
+            "C": 175,
+            "D": 10350,
+            "E": "277/1",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 10.8,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "277/1",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1014",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G3326TD-RP/03810102",
+            "C": 175,
+            "D": 13800,
+            "E": "277/1",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 14.4,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "277/1",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1015",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3327TD-RP/03810202",
+            "C": 175,
+            "D": 16560,
+            "E": "208/1",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 23,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/1",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1016",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "H3327TD-RP/03810302",
+            "C": 175,
+            "D": 16560,
+            "E": "240/1",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 20,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/1",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1017",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G3327TD-RP/03810402",
+            "C": 175,
+            "D": 16560,
+            "E": "277/1",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 17.3,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 29,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "277/1",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1018",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "E3322TD-RP/03819902",
+            "C": 175,
+            "D": 3413,
+            "E": "120/1",
+            "F": 1,
+            "G": 1000,
+            "H": 18,
+            "I": 8.3,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "120/1",
+            "CFM": 175,
+            "Wattage": 1000,
+            "KW": 1
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1019",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "E3321TD-RP/03820502",
+            "C": 175,
+            "D": 2560,
+            "E": "120/1",
+            "F": 0.75,
+            "G": 750,
+            "H": 14,
+            "I": 6.25,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 26,
+            "O": "1-8"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "120/1",
+            "CFM": 175,
+            "Wattage": 750,
+            "KW": 0.75
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1020",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "J3326TD-RP/03980702",
+            "C": 175,
+            "D": 13649,
+            "E": "208/3",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 11.11,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/3",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1021",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "J3327TD-RP/03980802",
+            "C": 175,
+            "D": 16378,
+            "E": "208/3",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 13.33,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/3",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1022",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "K3326TD-RP/03980902",
+            "C": 175,
+            "D": 13649,
+            "E": "240/3",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 9.64,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/3",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1023",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "K3327TD-RP/03981002",
+            "C": 175,
+            "D": 16378,
+            "E": "240/3",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 11.57,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/3",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1024",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "J3325TD-RP/04763602",
+            "C": 175,
+            "D": 10239,
+            "E": "208/3",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 8.3,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "208/3",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1025",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "K3325TD-RP/04763702",
+            "C": 175,
+            "D": 10239,
+            "E": "240/3",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 7.2,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "240/3",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1026",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3325T-RP/04763802",
+            "C": 175,
+            "D": 10239,
+            "E": "480/3",
+            "F": 3,
+            "G": 3000,
+            "H": 55,
+            "I": 3.6,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-7, 9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "480/3",
+            "CFM": 175,
+            "Wattage": 3000,
+            "KW": 3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1027",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3326T-RP/04763902",
+            "C": 175,
+            "D": 13649,
+            "E": "480/3",
+            "F": 4,
+            "G": 4000,
+            "H": 73,
+            "I": 4.8,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-7, 9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "480/3",
+            "CFM": 175,
+            "Wattage": 4000,
+            "KW": 4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_1028",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3327T-RP/04764002",
+            "C": 175,
+            "D": 16378,
+            "E": "480/3",
+            "F": 4.8,
+            "G": 4800,
+            "H": 88,
+            "I": 5.8,
+            "J": "C-ETL-US",
+            "K": 4,
+            "L": "14 1/8",
+            "M": "19 1/2",
+            "N": 30,
+            "O": "1-2, 4-7, 9"
+          },
+          "filterData": {
+            "Type": "Wall",
+            "Voltage/Phase": "480/3",
+            "CFM": 175,
+            "Wattage": 4800,
+            "KW": 4.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 3320 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 3320 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2001",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F1F5103N/06450802",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "208/1",
+            "H": 16,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2002",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5103N/06456802",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "208/1",
+            "H": 16,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2003",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5103N/06456802",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "208/3",
+            "H": 9.2,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2004",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G1G5103N/06457202",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "277/1",
+            "H": 12,
+            "I": 277,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "277/1",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2005",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF1B5103N/06451002",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "240/1",
+            "H": 13.9,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2006",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF1B5103N/06451002",
+            "C": 400,
+            "D": 2.5,
+            "E": 8500,
+            "F": 20,
+            "G": "208/1",
+            "H": 12,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2007",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5103N/06457002",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "240/1",
+            "H": 13.9,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2008",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5103N/06457002",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "240/3",
+            "H": 8,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2009",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5103N/06457002",
+            "C": 400,
+            "D": 2.48,
+            "E": 8500,
+            "F": 20,
+            "G": "208/1",
+            "H": 12,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 2.48
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2010",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5103N/06457002",
+            "C": 400,
+            "D": 2.48,
+            "E": 8500,
+            "F": 20,
+            "G": "208/3",
+            "H": 6.9,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 400,
+            "KW": 2.48
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2011",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5103CA1N/06451202",
+            "C": 400,
+            "D": 3.3,
+            "E": 11200,
+            "F": 26,
+            "G": "480/3",
+            "H": 4,
+            "I": 24,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 400,
+            "KW": 3.3
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2012",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F1F5105N/06455402",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "208/1",
+            "H": 24.4,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2013",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5105N/06451402",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "208/1",
+            "H": 24.4,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2014",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5105N/06451402",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "208/3",
+            "H": 14.2,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2015",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G1G5105N/06458402",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "277/1",
+            "H": 18.4,
+            "I": 277,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "277/1",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2016",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5105N/06451602",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "240/1",
+            "H": 21.2,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2017",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5105N/06451602",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "240/3",
+            "H": 12.3,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2018",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5105N/06451602",
+            "C": 400,
+            "D": 3.7,
+            "E": 12800,
+            "F": 30,
+            "G": "208/1",
+            "H": 18.3,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 3.7
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2019",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5105N/06451602",
+            "C": 400,
+            "D": 3.7,
+            "E": 12800,
+            "F": 30,
+            "G": "208/3",
+            "H": 10.7,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 400,
+            "KW": 3.7
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2020",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF1B5105N/06455602",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "240/1",
+            "H": 21.2,
+            "I": 240,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2021",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF1B5105N/06455602",
+            "C": 400,
+            "D": 3.7,
+            "E": 12800,
+            "F": 30,
+            "G": "208/1",
+            "H": 18.3,
+            "I": 208,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 25,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 400,
+            "KW": 3.7
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2022",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5105CA1N/06451802",
+            "C": 400,
+            "D": 5,
+            "E": 17100,
+            "F": 40,
+            "G": "480/3",
+            "H": 6.18,
+            "I": 24,
+            "J": 12,
+            "K": "C-UL-US",
+            "L": 9,
+            "M": 9,
+            "N": "6 1/2",
+            "O": "14 15/32",
+            "P": "17 3/4",
+            "Q": 27,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 400,
+            "KW": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2023",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5107CA1L/06452002",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "208/1",
+            "H": 36.7,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2024",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5107CA1L/06452002",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "208/3",
+            "H": 21.4,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2025",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5107CA1N/06452402",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "480/3",
+            "H": 9.3,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2026",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G1G5107CA1L/06459202",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "277/1",
+            "H": 27.5,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "277/1",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2027",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5107CA1L/06452202",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "240/1",
+            "H": 31.8,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2028",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5107CA1L/06452202",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "240/3",
+            "H": 18.6,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2029",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5107CA1L/06452202",
+            "C": 700,
+            "D": 5.6,
+            "E": 19200,
+            "F": 26,
+            "G": "208/1",
+            "H": 27.6,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 700,
+            "KW": 5.6
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2030",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5107CA1L/06452202",
+            "C": 700,
+            "D": 5.6,
+            "E": 19200,
+            "F": 26,
+            "G": "208/3",
+            "H": 16.2,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 12,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 54,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 700,
+            "KW": 5.6
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2031",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5110CA1L/06452602",
+            "C": 700,
+            "D": 9.9,
+            "E": 33800,
+            "F": 45,
+            "G": "208/1",
+            "H": 48,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 700,
+            "KW": 9.9
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2032",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F2F5110CA1L/06452602",
+            "C": 700,
+            "D": 9.9,
+            "E": 33800,
+            "F": 45,
+            "G": "208/3",
+            "H": 28.1,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 700,
+            "KW": 9.9
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2033",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "G1G5110CA1L/06456402",
+            "C": 700,
+            "D": 10,
+            "E": 34100,
+            "F": 46,
+            "G": "277/1",
+            "H": 36.6,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "277/1",
+            "CFM": 700,
+            "KW": 10
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2034",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5110CA1L/06452802",
+            "C": 700,
+            "D": 10,
+            "E": 34100,
+            "F": 46,
+            "G": "240/1",
+            "H": 42.2,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/1",
+            "CFM": 700,
+            "KW": 10
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2035",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5110CA1L/06452802",
+            "C": 700,
+            "D": 10,
+            "E": 34100,
+            "F": 46,
+            "G": "240/3",
+            "H": 24.6,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 700,
+            "KW": 10
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2036",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5110CA1L/06452802",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "208/1",
+            "H": 36.7,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/1",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2037",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF2B5110CA1L/06452802",
+            "C": 700,
+            "D": 7.5,
+            "E": 25600,
+            "F": 34,
+            "G": "208/3",
+            "H": 21.4,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 700,
+            "KW": 7.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2038",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5110CA1N/06453002",
+            "C": 700,
+            "D": 10,
+            "E": 34100,
+            "F": 46,
+            "G": "480/3",
+            "H": 12.3,
+            "I": 24,
+            "J": 22,
+            "K": "C-UL-US",
+            "L": 10,
+            "M": 14,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "24 5/16",
+            "Q": 55,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 700,
+            "KW": 10
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2039",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5115CA1L/06453202",
+            "C": 1100,
+            "D": 15,
+            "E": 51200,
+            "F": 44,
+            "G": "208/3",
+            "H": 42.9,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 11,
+            "M": 20,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 64,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 1100,
+            "KW": 15
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2040",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5115CA1L/06453402",
+            "C": 1100,
+            "D": 15,
+            "E": 51200,
+            "F": 44,
+            "G": "240/3",
+            "H": 37.2,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 11,
+            "M": 20,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 64,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 1100,
+            "KW": 15
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2041",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5115CA1L/06453402",
+            "C": 1100,
+            "D": 11.2,
+            "E": 38400,
+            "F": 33,
+            "G": "208/3",
+            "H": 32.3,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 11,
+            "M": 20,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 64,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 1100,
+            "KW": 11.2
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2042",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5115CA1N/06453602",
+            "C": 1100,
+            "D": 15,
+            "E": 51200,
+            "F": 44,
+            "G": "480/3",
+            "H": 18.6,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 11,
+            "M": 20,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 64,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 1100,
+            "KW": 15
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2043",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5120CA1L/06453802",
+            "C": 1100,
+            "D": 19.7,
+            "E": 67200,
+            "F": 57,
+            "G": "240/3",
+            "H": 48,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 18,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 65,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 1100,
+            "KW": 19.7
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2044",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5120CA1L/06453802",
+            "C": 1100,
+            "D": 14.8,
+            "E": 50500,
+            "F": 43,
+            "G": "208/3",
+            "H": 41.7,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 18,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 65,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 1100,
+            "KW": 14.8
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2045",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5120CA1N/06454002",
+            "C": 1100,
+            "D": 20,
+            "E": 68300,
+            "F": 58,
+            "G": "480/3",
+            "H": 24.7,
+            "I": 24,
+            "J": 32,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 18,
+            "N": "6 1/2",
+            "O": "21 1/2",
+            "P": "28 11/16",
+            "Q": 65,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 1100,
+            "KW": 20
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2046",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5125CA1L/06458802",
+            "C": "2000/1800",
+            "D": 25,
+            "E": 85300,
+            "F": "40/44",
+            "G": "208/3",
+            "H": 70,
+            "I": 24,
+            "J": 45,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "2000/1800",
+            "KW": 25
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2047",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5125CA1L/06459402",
+            "C": "2000/1800",
+            "D": 25,
+            "E": 85300,
+            "F": "40/44",
+            "G": "240/3",
+            "H": 60.6,
+            "I": 24,
+            "J": 45,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": "2000/1800",
+            "KW": 25
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2048",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5125CA1L/06459402",
+            "C": "2000/1800",
+            "D": 18.7,
+            "E": 64000,
+            "F": "30/33",
+            "G": "208/3",
+            "H": 52.5,
+            "I": 24,
+            "J": 45,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "2000/1800",
+            "KW": 18.7
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2049",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5125CA1N/06459802",
+            "C": "2000/1800",
+            "D": 25,
+            "E": 85300,
+            "F": "40/44",
+            "G": "480/3",
+            "H": 30.4,
+            "I": 24,
+            "J": 45,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": "2000/1800",
+            "KW": 25
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2050",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5130CA1L/06454402",
+            "C": "2000/1800",
+            "D": 30,
+            "E": 102400,
+            "F": "47/53",
+            "G": "240/3",
+            "H": 72.7,
+            "I": 24,
+            "J": 40,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 20,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": "2000/1800",
+            "KW": 30
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2051",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5130CA1L/06454402",
+            "C": "2000/1800",
+            "D": 22.5,
+            "E": 76800,
+            "F": "35/40",
+            "G": "208/3",
+            "H": 63,
+            "I": 24,
+            "J": 40,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 20,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "2000/1800",
+            "KW": 22.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2052",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5130CA1L/06454202",
+            "C": "2000/1800",
+            "D": 30,
+            "E": 102400,
+            "F": "47/53",
+            "G": "208/3",
+            "H": 83.9,
+            "I": 24,
+            "J": 40,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 20,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "2000/1800",
+            "KW": 30
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2053",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5130CA1N/06454602",
+            "C": "2000/1800",
+            "D": 30,
+            "E": 102400,
+            "F": "47/53",
+            "G": "480/3",
+            "H": 36.4,
+            "I": 24,
+            "J": 40,
+            "K": "C-UL-US",
+            "L": 12,
+            "M": 20,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": "2000/1800",
+            "KW": 30
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2054",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5140CA1L/06440402",
+            "C": "3100/2800",
+            "D": 40,
+            "E": 136500,
+            "F": "40/45",
+            "G": "208/3",
+            "H": 111,
+            "I": 24,
+            "J": 55,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 24,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "3100/2800",
+            "KW": 40
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2055",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5140CA1L/06440602",
+            "C": "3100/2800",
+            "D": 40,
+            "E": 136500,
+            "F": "40/45",
+            "G": "240/3",
+            "H": 96.2,
+            "I": 24,
+            "J": 55,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 24,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": "3100/2800",
+            "KW": 40
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2056",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5140CA1L/06440602",
+            "C": "3100/2800",
+            "D": 30,
+            "E": 102400,
+            "F": "30/34",
+            "G": "208/3",
+            "H": 83.3,
+            "I": 24,
+            "J": 55,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 24,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "3100/2800",
+            "KW": 30
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2057",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5140CA1N/06440802",
+            "C": "3100/2800",
+            "D": 39,
+            "E": 133100,
+            "F": "40/45",
+            "G": "480/3",
+            "H": 46.9,
+            "I": 24,
+            "J": 55,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 24,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": "3100/2800",
+            "KW": 39
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2058",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5150CA1L/06454802",
+            "C": "3100/2800",
+            "D": 49.6,
+            "E": 169300,
+            "F": "51/56",
+            "G": "208/3",
+            "H": 138.2,
+            "I": 24,
+            "J": 50,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "3100/2800",
+            "KW": 49.6
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2059",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5150CA1N/06455202",
+            "C": "3100/2800",
+            "D": 50,
+            "E": 170600,
+            "F": "51/56",
+            "G": "480/3",
+            "H": 60.1,
+            "I": 24,
+            "J": 50,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": "3100/2800",
+            "KW": 50
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2060",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5150CA1L/06455002",
+            "C": "3100/2800",
+            "D": 50,
+            "E": 170600,
+            "F": "51/56",
+            "G": "240/3",
+            "H": 120.3,
+            "I": 24,
+            "J": 50,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": "3100/2800",
+            "KW": 50
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2061",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5150CA1L/06455002",
+            "C": "3100/2800",
+            "D": 37.5,
+            "E": 128000,
+            "F": "38/42",
+            "G": "208/3",
+            "H": 104.1,
+            "I": 24,
+            "J": 50,
+            "K": "C-UL-US",
+            "L": 15,
+            "M": 22,
+            "N": "10 1/16",
+            "O": "29 1/4",
+            "P": 34,
+            "Q": 120,
+            "R": "1 - 7"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": "3100/2800",
+            "KW": 37.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2062",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5160CA1/07213402",
+            "C": 3400,
+            "D": 60,
+            "E": 204700,
+            "F": 60,
+            "G": "208/3",
+            "H": 166.7,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 3400,
+            "KW": 60
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2063",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5160CA1/07213502",
+            "C": 3400,
+            "D": 60,
+            "E": 204700,
+            "F": 60,
+            "G": "240/3",
+            "H": 144.6,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 3400,
+            "KW": 60
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2064",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5160CA1/07213502",
+            "C": 3400,
+            "D": 45,
+            "E": 153600,
+            "F": 45,
+            "G": "208/3",
+            "H": 125,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 3400,
+            "KW": 45
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2065",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5160CA1/07213602",
+            "C": 3400,
+            "D": 60,
+            "E": 204700,
+            "F": 60,
+            "G": "480/3",
+            "H": 72.3,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 3400,
+            "KW": 60
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2066",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "F3F5170CA1/07214202",
+            "C": 3400,
+            "D": 70,
+            "E": 238900,
+            "F": 70,
+            "G": "208/3",
+            "H": 194.4,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 3400,
+            "KW": 70
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2067",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5170CA1/07214302",
+            "C": 3400,
+            "D": 70,
+            "E": 238900,
+            "F": 70,
+            "G": "240/3",
+            "H": 168.7,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 3400,
+            "KW": 70
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2068",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5170CA1/07214302",
+            "C": 3400,
+            "D": 52.5,
+            "E": 179200,
+            "F": 53,
+            "G": "208/3",
+            "H": 145.8,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 3400,
+            "KW": 52.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2069",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5170CA1/07214402",
+            "C": 3400,
+            "D": 70,
+            "E": 238900,
+            "F": 70,
+            "G": "480/3",
+            "H": 84.3,
+            "I": 24,
+            "J": 50,
+            "K": "ETL-CUS",
+            "L": 18,
+            "M": 31,
+            "N": "14 1/2",
+            "O": "30 1/2",
+            "P": "35 1/2",
+            "Q": 141,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 3400,
+            "KW": 70
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2070",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5180CA1/07217002",
+            "C": 5000,
+            "D": 80,
+            "E": 273000,
+            "F": 55,
+            "G": "240/3",
+            "H": 192.8,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 5000,
+            "KW": 80
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2071",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5180CA1/07217002",
+            "C": 5000,
+            "D": 60,
+            "E": 204700,
+            "F": 41,
+            "G": "208/3",
+            "H": 166.7,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 5000,
+            "KW": 60
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2072",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5180CA1/07217102",
+            "C": 5000,
+            "D": 80,
+            "E": 273000,
+            "F": 55,
+            "G": "480/3",
+            "H": 96.3,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 5000,
+            "KW": 80
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2073",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5190CA1/07217602",
+            "C": 5000,
+            "D": 90,
+            "E": 307100,
+            "F": 61,
+            "G": "240/3",
+            "H": 216.9,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 5000,
+            "KW": 90
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2074",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B5190CA1/07217602",
+            "C": 5000,
+            "D": 67.5,
+            "E": 230400,
+            "F": 46,
+            "G": "208/3",
+            "H": 187.5,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 5000,
+            "KW": 67.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2075",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P5190CA1/07217702",
+            "C": 5000,
+            "D": 90,
+            "E": 307100,
+            "F": 61,
+            "G": "480/3",
+            "H": 108.4,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 5000,
+            "KW": 90
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2076",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B51100CA1/07218202",
+            "C": 5000,
+            "D": 100,
+            "E": 341300,
+            "F": 68,
+            "G": "240/3",
+            "H": 241,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "240/3",
+            "CFM": 5000,
+            "KW": 100
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2077",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "HF3B51100CA1/07218202",
+            "C": 5000,
+            "D": 75,
+            "E": 256000,
+            "F": 51,
+            "G": "208/3",
+            "H": 208.3,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "208/3",
+            "CFM": 5000,
+            "KW": 75
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_2078",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "P3P51100CA1/07218302",
+            "C": 5000,
+            "D": 100,
+            "E": 341300,
+            "F": 68,
+            "G": "480/3",
+            "H": 120.4,
+            "I": 24,
+            "J": 65,
+            "K": "ETL-CUS",
+            "L": 22,
+            "M": 40,
+            "N": "18 1/2",
+            "O": "37 5/8",
+            "P": "39 1/2",
+            "Q": 202,
+            "R": "8 - 14"
+          },
+          "filterData": {
+            "Type": "Suspended",
+            "Voltage/Phase": "480/3",
+            "CFM": 5000,
+            "KW": 100
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Markel 5100 Unit Heater Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Markel 5100 Unit Heater IOM"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": []
+  },
+  "_meta": {
+    "sourceFiles": [
+      "MARKEL DATA - 3320.xlsx",
+      "MARKEL DATA - 5100.xlsx"
+    ],
+    "generatedAt": "2026-11-14T11:38:39",
+    "subScheduleCount": 2,
+    "selectionCount": 106
+  }
+}

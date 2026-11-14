@@ -41,10 +41,12 @@ How to add a new DOCUMENTATION column:
 """
 
 import json
+import math
 import os
 import re
 import sys
 from datetime import datetime
+from fractions import Fraction
 
 import openpyxl
 from openpyxl.utils import get_column_letter, column_index_from_string
@@ -367,6 +369,49 @@ PRODUCT_CONFIGS = {
             "targets": [
                 {"label": "Airflow", "col": "C", "unit": "CFM", "defaultTolerance": 15},
             ],
+        },
+    },
+    # Markel electric heaters (added 2026-11-14). Two workbooks with
+    # different columns become ONE site product: picking either file in
+    # the menu converts both into markel.json. See COMBINED_GROUPS below.
+    "MARKEL DATA - 3320.xlsx": {"combinedGroup": "markel"},
+    "MARKEL DATA - 5100.xlsx": {"combinedGroup": "markel"},
+}
+
+
+# -----------------------------------------------------------------------------
+# COMBINED GROUPS (several workbooks -> one JSON)
+# -----------------------------------------------------------------------------
+# A group's workbooks each hold one complete schedule on their SCHEDULE tab
+# (title in row 2, column headers from row 3, data rows, then a "Notes:"
+# block under the data). They are written to one JSON shaped like the GPS
+# one: shared filterColumns / documentationColumns plus a subSchedules list
+# (one per workbook, in the order below), so the site's multi-schedule code
+# renders, exports and groups them. See convert_combined_group.
+#
+#   files        Workbooks in schedule order. idBase keeps each workbook's
+#                selection ids in its own block (3320 rows are sel_1001,
+#                sel_1002, ...; 5100 rows sel_2001, ...), so adding a row
+#                to one workbook never renumbers the other's saved items.
+#   scheduleTitle  Overall title (the sub-schedules carry their own).
+# -----------------------------------------------------------------------------
+
+COMBINED_GROUPS = {
+    "markel": {
+        "productType": "MARKEL ELECTRIC HEATERS",
+        "outputFileName": "markel.json",
+        "assetsFolder": "MARKEL",
+        "scheduleTitle": "ELECTRIC HEATER SCHEDULES",
+        "files": [
+            {"file": "MARKEL DATA - 3320.xlsx", "idBase": 1000},
+            {"file": "MARKEL DATA - 5100.xlsx", "idBase": 2000},
+        ],
+        # Kept for shape-consistency; the site leaves Markel out of
+        # Design Search (two column sets, like GPS).
+        "searchSchema": {
+            "displayName": "Markel Electric Heaters",
+            "description": "Markel wall and suspended electric heaters.",
+            "targets": [],
         },
     },
 }
@@ -2293,6 +2338,263 @@ def convert_multi_schedule_file(input_path, config, output_path):
 
 
 # -----------------------------------------------------------------------------
+# COMBINED-GROUP CONVERSION (Markel)
+# -----------------------------------------------------------------------------
+# Each workbook in a COMBINED_GROUPS entry holds one schedule:
+#
+#   row 1       SCHEDULE RANGE / FILTERS / DOCUMENTATION sections
+#   row 2       schedule title, merged across the schedule width
+#   rows 3..    column headers (vertical merges set how many rows)
+#   data rows   one selection per row
+#   "Notes:"    marker row in column A, then one note per row: the
+#               number in column A ("1-") and the text in column B
+#
+# A leading "Tag" column is left out: the site adds its own Tag column
+# (autoTagPrefix in data.js). Numbers are written the way Excel displays
+# them (whole-number and fraction formats), since the site shows cell
+# values as-is.
+# -----------------------------------------------------------------------------
+
+def _cg_round_half_up(v):
+    """Excel-style rounding to a whole number (52.5 -> 53, not Python's 52)."""
+    n = int(math.floor(abs(v) + 0.5))
+    return n if v >= 0 else -n
+
+
+def _cg_display_value(cell):
+    """A data cell's value as Excel shows it: "0" / "#,##0" formats round
+    to a whole number, "# ??/??" formats become text like "14 1/8". Text
+    and General numbers go through clean_value unchanged."""
+    val = cell.value
+    if isinstance(val, bool) or not isinstance(val, (int, float)):
+        return clean_value(val)
+    fmt = (cell.number_format or "General").strip()
+    if fmt in ("0", "#,##0"):
+        return _cg_round_half_up(val)
+    if "?/?" in fmt:
+        whole = int(math.floor(abs(val)))
+        frac = Fraction(abs(val) - whole).limit_denominator(99)
+        if frac >= 1:
+            whole, frac = whole + 1, Fraction(0)
+        sign = "-" if val < 0 else ""
+        if frac == 0:
+            return -whole if val < 0 else whole
+        if whole == 0:
+            return f"{sign}{frac.numerator}/{frac.denominator}"
+        return f"{sign}{whole} {frac.numerator}/{frac.denominator}"
+    return clean_value(val)
+
+
+def _cg_header_rows(ws, first_row, last_row, col_start, col_end, cell_to_merge):
+    """Column headers for rows first_row..last_row, as scheduleHeader rows
+    ({col, value, colspan, rowspan}). An empty, unmerged cell under a
+    single-column header belongs to that header (its rowspan grows), and
+    rows left with no header cells of their own (spacer rows) are dropped,
+    shrinking the rowspans that crossed them."""
+    cells = []
+    owner = {}
+    for r in range(first_row, last_row + 1):
+        for c in range(col_start, col_end + 1):
+            mr = cell_to_merge.get((r, c))
+            if mr is not None and (r, c) != (mr.min_row, mr.min_col):
+                anchor = owner.get((mr.min_row, mr.min_col))
+                if anchor is not None:
+                    owner[(r, c)] = anchor
+                continue
+            val = clean_value(ws.cell(row=r, column=c).value)
+            if mr is None and val is None and r > first_row:
+                above = owner.get((r - 1, c))
+                if above is not None and above["colspan"] == 1:
+                    above["_last"] = r
+                    owner[(r, c)] = above
+                    continue
+            colspan, last = 1, r
+            if mr is not None:
+                colspan = min(mr.max_col, col_end) - c + 1
+                last = min(mr.max_row, last_row)
+            cell = {"col": get_column_letter(c), "value": val,
+                    "colspan": colspan, "_row": r, "_last": last}
+            cells.append(cell)
+            owner[(r, c)] = cell
+    kept = sorted({cell["_row"] for cell in cells})
+    rows_out = []
+    for r in kept:
+        row_cells = []
+        for cell in cells:
+            if cell["_row"] != r:
+                continue
+            rowspan = sum(1 for k in kept if cell["_row"] <= k <= cell["_last"])
+            row_cells.append({"col": cell["col"], "value": cell["value"],
+                              "colspan": cell["colspan"], "rowspan": rowspan})
+        rows_out.append(row_cells)
+    return rows_out
+
+
+def _cg_read_workbook(input_path, id_base):
+    """Read one workbook of a combined group. Returns a dict with the
+    sub-schedule fields plus its filter/doc columns and selections."""
+    wb = openpyxl.load_workbook(input_path, data_only=True)
+    if "SCHEDULE" not in wb.sheetnames:
+        raise ValueError(f"'{os.path.basename(input_path)}' has no SCHEDULE tab.")
+    ws = wb["SCHEDULE"]
+    max_row = ws.max_row
+
+    sections = _ms_row1_sections(ws)
+    filter_columns = extract_filter_columns(ws, sections["FILTERS"])
+    doc_columns = extract_doc_columns(ws, sections["DOCUMENTATION"])
+    cell_to_merge, _anchors = merge_lookup(ws)
+
+    def cellv(r, c):
+        return clean_value(ws.cell(row=r, column=c).value)
+
+    # Schedule width: the row-2 title's merged span, else SCHEDULE RANGE.
+    title = _ms_clean_text(ws.cell(row=2, column=1).value) or ""
+    title_merge = cell_to_merge.get((2, 1))
+    col_end = title_merge.max_col if title_merge is not None else sections["SCHEDULE RANGE"][1]
+    header_row = 3
+    tag = cellv(header_row, 1)
+    col_start = 2 if tag is not None and str(tag).strip().upper() == "TAG" else 1
+
+    # The header block runs as far down as the row-3 vertical merges.
+    header_end = header_row
+    for c in range(col_start, col_end + 1):
+        mr = cell_to_merge.get((header_row, c))
+        if mr is not None and mr.max_row > header_end:
+            header_end = mr.max_row
+    header_rows = _cg_header_rows(ws, header_row, header_end, col_start, col_end, cell_to_merge)
+
+    selections, sel_ids = [], []
+    row = header_end + 1
+    notes_marker_row = None
+    while row <= max_row:
+        a_val = cellv(row, 1)
+        if a_val is not None and str(a_val).strip().upper().startswith("NOTES"):
+            notes_marker_row = row
+            break
+        if not any(cellv(row, c) is not None for c in range(col_start, col_end + 1)):
+            break
+        sel_id = f"sel_{id_base + len(selections) + 1:04d}"
+        schedule_data = {}
+        for c in range(col_start, col_end + 1):
+            v = _cg_display_value(ws.cell(row=row, column=c))
+            if v is not None:
+                schedule_data[get_column_letter(c)] = v
+        selections.append({"id": sel_id, "rows": [{
+            "scheduleData":      schedule_data,
+            "filterData":        row_data_for_range_by_name(ws, row, filter_columns),
+            "documentationData": row_data_for_range_by_name(ws, row, doc_columns),
+        }]})
+        sel_ids.append(sel_id)
+        row += 1
+
+    # Notes: "1-" in column A + the text in column B -> "1. text". A line
+    # typed whole into column A is kept as-is.
+    notes = []
+    if notes_marker_row is not None:
+        r = notes_marker_row + 1
+        while r <= max_row:
+            num = _ms_clean_text(ws.cell(row=r, column=1).value)
+            text = _ms_clean_text(ws.cell(row=r, column=2).value)
+            if num is None and text is None:
+                break
+            m = re.match(r"^(\d+)\s*[-.):]?$", num or "")
+            if m and text:
+                notes.append(f"{m.group(1)}. {text}")
+            else:
+                notes.append(" ".join(t for t in (num, text) if t))
+            r += 1
+
+    filter_value = None
+    if selections and filter_columns:
+        filter_value = selections[0]["rows"][0]["filterData"].get(filter_columns[0]["name"])
+
+    return {
+        "title":          title.upper(),
+        "filterValue":    filter_value,
+        "scheduleHeader": {
+            "columnLetters": [get_column_letter(c) for c in range(col_start, col_end + 1)],
+            "rows":          header_rows,
+        },
+        "notes":          notes,
+        "selectionIds":   sel_ids,
+        "selections":     selections,
+        "filterColumns":  filter_columns,
+        "docColumns":     doc_columns,
+    }
+
+
+def convert_combined_group(script_dir, group, output_path):
+    """Convert a COMBINED_GROUPS entry (several one-schedule workbooks) to
+    one multi-schedule JSON (same shape as the GPS one)."""
+    names = [f["file"] for f in group["files"]]
+    print(f"\nConverting: {' + '.join(names)}")
+
+    sub_schedules, selections = [], []
+    filter_columns, doc_columns = [], []
+    seen_filters, seen_docs = set(), set()
+    for part in group["files"]:
+        info = _cg_read_workbook(os.path.join(script_dir, part["file"]), part["idBase"])
+        # Shared filter / doc columns, by name in first-seen order. Rows
+        # key their values by name, so a filter only one workbook has
+        # (3320 Wattage) simply has no value on the other's rows.
+        for fc in info["filterColumns"]:
+            if fc["name"] not in seen_filters:
+                seen_filters.add(fc["name"])
+                filter_columns.append(fc)
+        for dc in info["docColumns"]:
+            if dc["name"] not in seen_docs:
+                seen_docs.add(dc["name"])
+                doc_columns.append(dc)
+        sub_schedules.append({
+            "index":          len(sub_schedules),
+            "title":          info["title"],
+            "filterValue":    info["filterValue"],
+            "photoKey":       None,
+            "scheduleHeader": info["scheduleHeader"],
+            "selectionIds":   info["selectionIds"],
+            # Verbatim, pre-numbered lines (data rows cite these
+            # numbers) - rendered without renumbering everywhere.
+            "notes":          info["notes"],
+            "sourceFile":     part["file"],
+        })
+        selections.extend(info["selections"])
+
+    payload = {
+        "productType":                group["productType"],
+        "assetsFolder":               group.get("assetsFolder"),
+        "scheduleTitle":              group["scheduleTitle"],
+        "supportsMultiRowSelections": False,
+        "multiSchedule":              True,
+        "searchSchema":               group["searchSchema"],
+        "filterColumns":              filter_columns,
+        "documentationColumns":       doc_columns,
+        "refrigerantColumns":         [],
+        "subSchedules":               sub_schedules,
+        "selections":                 selections,
+        # Notes live per sub-schedule (see subSchedules[].notes).
+        "scheduleNotes":              {"format": "list", "notes": []},
+        "_meta": {
+            "sourceFiles":      names,
+            "generatedAt":      datetime.now().isoformat(timespec="seconds"),
+            "subScheduleCount": len(sub_schedules),
+            "selectionCount":   len(selections),
+        },
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    print(f"  -> {len(sub_schedules)} schedules / {len(selections)} selections "
+          f"written to {os.path.basename(output_path)}")
+    for sub in sub_schedules:
+        ids = sub["selectionIds"]
+        span = f"{ids[0]} ... {ids[-1]}" if ids else "no rows"
+        print(f"     [{sub['index']}] {sub['title']} ({sub['sourceFile']})")
+        print(f"         type={sub['filterValue']!r} rows={len(ids)} ({span}) "
+              f"notes={len(sub['notes'])}")
+
+
+# -----------------------------------------------------------------------------
 # MAIN CONVERSION
 # -----------------------------------------------------------------------------
 
@@ -2499,8 +2801,27 @@ def main():
     to_convert = choose_files(candidates) if candidates else []
 
     converted = 0
+    groups_ok = {}   # combined group key -> converted without error
     for fname in to_convert:
         input_path = os.path.join(script_dir, fname)
+        group_key = PRODUCT_CONFIGS.get(fname, {}).get("combinedGroup")
+        if group_key:
+            # One JSON from several workbooks: converting any of them
+            # rebuilds the whole group, once per run.
+            if group_key not in groups_ok:
+                group = COMBINED_GROUPS[group_key]
+                try:
+                    convert_combined_group(
+                        script_dir, group,
+                        os.path.join(output_dir, group["outputFileName"]),
+                    )
+                    groups_ok[group_key] = True
+                except Exception as e:
+                    print(f"  ERROR processing {fname}: {e}")
+                    groups_ok[group_key] = False
+            if groups_ok[group_key]:
+                converted += 1
+            continue
         if fname == CAPACITY_FILE:
             try:
                 convert_capacity_tables(

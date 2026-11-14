@@ -1450,6 +1450,7 @@ WHAT'S IN THE GRID
             'mini_splits':            'MINI SPLIT SCHEDULE',
             'multi_position_splits':  'SPLIT SYSTEM SCHEDULE',
             'gas_splits':             'GAS SPLIT SCHEDULE',
+            'markel':                 'ELECTRIC HEATER SCHEDULES',
             'vfds':                   'VFD SCHEDULE',
             'diffusers':              'DIFFUSER SCHEDULE',
             'grilles':                'GRILLE SCHEDULE',
@@ -2568,6 +2569,7 @@ WHAT'S IN THE GRID
             // "Daikin Unitary & Light Commercial Split Systems".
             'multi_position_splits': 'Daikin Unitary & LC Splits',
             'gas_splits': 'Daikin Gas Splits',
+            'markel': 'Markel Electric Heaters',
             'vfds': 'ABB VFDs',
             'diffusers': 'Price Diffusers',
             'grilles': 'Price Grilles',
