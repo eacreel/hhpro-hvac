@@ -14,9 +14,9 @@
      Help         how the levels, invitations and the spreadsheet
                   work, plus backup status from the server.
      Analytics    Super Admins only: every active account with its
-                  sign-ins, last active date and saved projects
-                  (dates, items, equipment types, layout), with the
-                  same column filters as the Users tab.
+                  sign-ins, last active date, saved projects (dates,
+                  items, equipment types, layout) and temporary-cart
+                  adds, with the same column filters as the Users tab.
 
    Emails are never sent by the site: "Send invitation" and
    "Reset password" get a one-time link from the backend, then
@@ -257,10 +257,13 @@
         return { filters: filters, choices: filterChoices, redraw: drawTable, idPrefix: 'users-filter-' };
     }
 
+    /** mm/dd/yyyy in local time, e.g. 11/06/2026 (Users and Analytics tabs). */
     function shortDate(iso) {
         if (!iso) return '';
         var d = new Date(iso);
-        return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
+        if (isNaN(d.getTime())) return '';
+        function two(n) { return (n < 10 ? '0' : '') + n; }
+        return two(d.getMonth() + 1) + '/' + two(d.getDate()) + '/' + d.getFullYear();
     }
 
     /** The value(s) a column filter compares against for one user. */
@@ -1643,7 +1646,8 @@
     var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     // Date filters pick from ranges, not single days. "Inactive 30+ days"
     // = the last two ranges ticked together.
-    var RECENT_BUCKETS = ['Last 7 days', '8–30 days ago', '31–90 days ago', 'Over 90 days ago', 'Never', 'No projects'];
+    var RECENT_BUCKETS = ['Last 7 days', '8–30 days ago', '31–90 days ago', 'Over 90 days ago',
+        'Never', 'No projects', 'No cart use'];
 
     // desc: the first click sorts newest / largest first.
     var A_COLUMNS = [
@@ -1655,11 +1659,16 @@
         { key: 'createdAt', label: 'Added', filter: true, date: true, desc: true },
         { key: 'registeredAt', label: 'Registered', filter: true, date: true, desc: true },
         { key: 'signIns', label: 'Sign-ins', number: true, desc: true },
+        { key: 'visits', label: 'Visits', number: true, desc: true },
         { key: 'lastActiveAt', label: 'Last active', filter: true, date: true, desc: true },
         { key: 'projectCount', label: 'Projects', number: true, desc: true },
         { key: 'itemCount', label: 'Items', number: true, desc: true },
         { key: 'types', label: 'Equipment types', filter: true },
-        { key: 'lastSavedAt', label: 'Last project saved', filter: true, date: true, desc: true }
+        { key: 'lastSavedAt', label: 'Last project saved', filter: true, date: true, desc: true },
+        // Temporary-cart adds: selections that never reached a project.
+        { key: 'cartItems', label: 'Cart items', number: true, desc: true },
+        { key: 'cartTypes', label: 'Cart equipment', filter: true },
+        { key: 'lastCartAt', label: 'Last cart use', filter: true, date: true, desc: true }
     ];
 
     function analyticsFilterCtx() {
@@ -1709,7 +1718,9 @@
         var note = document.createElement('p');
         note.className = 'analytics-note';
         note.textContent = 'Active accounts only. Last active updates while someone uses the site, to within ' +
-            '5 minutes. Sign-ins are counted from Sept 15, 2026. Totals follow the search and filters.';
+            '5 minutes. Sign-ins are counted from Sept 15, 2026. A visit is each time someone opens the site, ' +
+            'or comes back after 30+ minutes away. Cart items are selections added to a temporary cart instead ' +
+            'of a project. Visits and cart items are counted from Nov 14, 2026. Totals follow the search and filters.';
         panel.appendChild(note);
 
         var totals = document.createElement('div');
@@ -1745,6 +1756,7 @@
     /** Totals per person from their project summaries. */
     function prepPerson(p) {
         p.name = ((p.firstName || '') + ' ' + (p.lastName || '')).trim() || p.email;
+        p.visits = p.visits || 0;
         p.projects = p.projects || [];
         p.projectCount = p.projects.length;
         p.itemCount = 0;
@@ -1758,10 +1770,23 @@
             });
             if (pr.updatedAt && (!p.lastSavedAt || pr.updatedAt > p.lastSavedAt)) p.lastSavedAt = pr.updatedAt;
         });
-        p.types = Object.keys(p.typeCounts).sort(function (a, b) {
-            return (p.typeCounts[b] - p.typeCounts[a]) || (a < b ? -1 : 1);
+        p.types = namesByCount(p.typeCounts);
+        // Temporary-cart adds, by product display name.
+        p.cartItems = p.cartItems || 0;
+        p.cartTypeCounts = {};
+        Object.keys(p.cartTypes || {}).forEach(function (k) {
+            var n = productName(k);
+            p.cartTypeCounts[n] = (p.cartTypeCounts[n] || 0) + p.cartTypes[k];
         });
+        p.cartTypes = namesByCount(p.cartTypeCounts);
         return p;
+    }
+
+    /** The names in a { name: count } map, largest count first. */
+    function namesByCount(counts) {
+        return Object.keys(counts).sort(function (a, b) {
+            return (counts[b] - counts[a]) || (a < b ? -1 : 1);
+        });
     }
 
     function daysAgo(iso) {
@@ -1804,10 +1829,12 @@
         switch (key) {
             case 'location': return p.locations || [];
             case 'types': return p.types.length ? p.types : ['None'];
+            case 'cartTypes': return p.cartTypes.length ? p.cartTypes : ['None'];
             case 'createdAt':
             case 'registeredAt': return monthBucket(p[key]);
             case 'lastActiveAt': return recentBucket(p.lastActiveAt, 'Never');
             case 'lastSavedAt': return recentBucket(p.lastSavedAt, 'No projects');
+            case 'lastCartAt': return recentBucket(p.lastCartAt, 'No cart use');
             default: return String(p[key] || '');
         }
     }
@@ -1823,7 +1850,7 @@
         });
         if (key === 'userLevel') {
             out.sort(function (a, b) { return LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b); });
-        } else if (key === 'lastActiveAt' || key === 'lastSavedAt') {
+        } else if (key === 'lastActiveAt' || key === 'lastSavedAt' || key === 'lastCartAt') {
             out.sort(function (a, b) { return RECENT_BUCKETS.indexOf(a) - RECENT_BUCKETS.indexOf(b); });
         } else if (key === 'createdAt' || key === 'registeredAt') {
             out.sort(function (a, b) { return monthOrder(b) - monthOrder(a); });
@@ -1843,6 +1870,7 @@
         if (key === 'userLevel') return LEVEL_ORDER.indexOf(p.userLevel);
         if (key === 'location') return (p.locations || []).join('; ').toLowerCase();
         if (key === 'types') return p.types.join(', ').toLowerCase();
+        if (key === 'cartTypes') return p.cartTypes.join(', ').toLowerCase();
         if (col.number) return p[key] || 0;
         return String(p[key] || '').toLowerCase();   // ISO dates sort as text
     }
@@ -1858,7 +1886,7 @@
             }
             if (!q) return true;
             var hay = [p.name, p.email, p.company, (p.locations || []).join(' '), p.userLevel,
-                p.invitedBy, p.types.join(' ')].join(' ').toLowerCase();
+                p.invitedBy, p.types.join(' '), p.cartTypes.join(' ')].join(' ').toLowerCase();
             return hay.indexOf(q) !== -1;
         });
         var col = A_COLUMNS.filter(function (c) { return c.key === aSortKey; })[0] || A_COLUMNS[0];
@@ -1941,20 +1969,24 @@
         var box = els.aTotals;
         if (!box) return;
         box.innerHTML = '';
-        var a7 = 0, a30 = 0, projects = 0, items = 0, types = {};
+        var a7 = 0, a30 = 0, visits = 0, projects = 0, items = 0, cartItems = 0, types = {}, cartTypes = {};
         list.forEach(function (p) {
             var d = daysAgo(p.lastActiveAt);
             if (d !== null && d <= 7) a7++;
             if (d !== null && d <= 30) a30++;
+            visits += p.visits;
             projects += p.projectCount;
             items += p.itemCount;
+            cartItems += p.cartItems;
             Object.keys(p.typeCounts).forEach(function (n) { types[n] = (types[n] || 0) + p.typeCounts[n]; });
+            Object.keys(p.cartTypeCounts).forEach(function (n) { cartTypes[n] = (cartTypes[n] || 0) + p.cartTypeCounts[n]; });
         });
 
         var stats = document.createElement('div');
         stats.className = 'analytics-stats';
         [['People', list.length], ['Active in last 7 days', a7], ['Active in last 30 days', a30],
-            ['Projects', projects], ['Items', items]].forEach(function (s) {
+            ['Visits', visits], ['Projects', projects], ['Project items', items],
+            ['Cart items', cartItems]].forEach(function (s) {
             var stat = document.createElement('div');
             stat.className = 'analytics-stat';
             var v = document.createElement('div');
@@ -1969,17 +2001,43 @@
         });
         box.appendChild(stats);
 
-        var names = Object.keys(types).sort(function (a, b) { return (types[b] - types[a]) || (a < b ? -1 : 1); });
-        if (names.length) {
-            var row = document.createElement('div');
-            row.className = 'analytics-type-totals';
-            var cap = document.createElement('span');
-            cap.className = 'analytics-type-caption';
-            cap.textContent = 'Items by equipment type:';
-            row.appendChild(cap);
-            names.forEach(function (n) { row.appendChild(typeChip(n, types[n])); });
-            box.appendChild(row);
+        typeTotalsRow(box, 'Project items by equipment type:', types);
+        typeTotalsRow(box, 'Cart items by equipment type:', cartTypes);
+    }
+
+    /** A caption and one chip per equipment type, largest first (nothing when empty). */
+    function typeTotalsRow(box, caption, counts) {
+        var names = namesByCount(counts);
+        if (!names.length) return;
+        var row = document.createElement('div');
+        row.className = 'analytics-type-totals';
+        var cap = document.createElement('span');
+        cap.className = 'analytics-type-caption';
+        cap.textContent = caption;
+        row.appendChild(cap);
+        names.forEach(function (n) { row.appendChild(typeChip(n, counts[n])); });
+        box.appendChild(row);
+    }
+
+    /**
+     * Equipment types in a table cell. The top three keep rows short; the
+     * rest is one "+N more" (all of them on hover).
+     */
+    function fillTypesCell(td, names, counts) {
+        td.className = 'analytics-types-cell';
+        if (!names.length) {
+            td.className += ' users-td-muted';
+            td.textContent = '—';
+            return;
         }
+        names.slice(0, 3).forEach(function (n) { td.appendChild(typeChip(n, counts[n])); });
+        if (names.length > 3) {
+            var more = document.createElement('span');
+            more.className = 'analytics-type analytics-type-more';
+            more.textContent = '+' + (names.length - 3) + ' more';
+            td.appendChild(more);
+        }
+        td.title = names.map(function (n) { return n + ': ' + counts[n]; }).join('\n');
     }
 
     function typeChip(name, n) {
@@ -1999,7 +2057,8 @@
             return;
         }
         var d = new Date(iso);
-        td.title = isNaN(d.getTime()) ? '' : d.toLocaleString();
+        td.title = isNaN(d.getTime()) ? ''
+            : shortDate(iso) + ' ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         td.textContent = shortDate(iso);
         if (withRelative) {
             var rel = document.createElement('span');
@@ -2065,28 +2124,19 @@
                     break;
                 case 'createdAt':
                 case 'registeredAt':
-                case 'lastSavedAt':
-                    dateCell(td, p[col.key], col.key === 'lastSavedAt');
+                    dateCell(td, p[col.key], false);
                     break;
                 case 'lastActiveAt':
-                    dateCell(td, p.lastActiveAt, true);
+                case 'lastSavedAt':
+                case 'lastCartAt':
+                    dateCell(td, p[col.key], true);
                     break;
                 case 'types':
-                    // The top three keep rows short; the rest is one "+N more"
-                    // (all of them on hover, and per project when opened).
-                    td.className = 'analytics-types-cell';
-                    if (!p.types.length) {
-                        td.className += ' users-td-muted';
-                        td.textContent = '—';
-                    }
-                    p.types.slice(0, 3).forEach(function (n) { td.appendChild(typeChip(n, p.typeCounts[n])); });
-                    if (p.types.length > 3) {
-                        var more = document.createElement('span');
-                        more.className = 'analytics-type analytics-type-more';
-                        more.textContent = '+' + (p.types.length - 3) + ' more';
-                        td.appendChild(more);
-                    }
-                    td.title = p.types.map(function (n) { return n + ': ' + p.typeCounts[n]; }).join('\n');
+                    // Per project too, when the row is opened.
+                    fillTypesCell(td, p.types, p.typeCounts);
+                    break;
+                case 'cartTypes':
+                    fillTypesCell(td, p.cartTypes, p.cartTypeCounts);
                     break;
                 default:
                     if (col.number) td.className = 'analytics-num';
@@ -2138,7 +2188,7 @@
                 var n = productName(k);
                 counts[n] = (counts[n] || 0) + pr.types[k];
             });
-            var names = Object.keys(counts).sort(function (a, b) { return (counts[b] - counts[a]) || (a < b ? -1 : 1); });
+            var names = namesByCount(counts);
             if (!names.length) {
                 types.className += ' users-td-muted';
                 types.textContent = 'Empty';

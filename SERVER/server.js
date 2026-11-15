@@ -11,6 +11,8 @@
      routes/users.js     /api/users/*     the Users screen (admins)
      routes/projects.js  /api/projects/*  saved projects, one folder
                                           per person under Users/Projects
+     routes/usage.js     /api/usage/*     basic usage records (temporary-
+                                          cart adds) for the Analytics tab
    ============================================================ */
 
 'use strict';
@@ -26,6 +28,7 @@ const auth = require('./lib/auth');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
+const usageRoutes = require('./routes/usage');
 const backup = require('./lib/backup');
 const folders = require('./lib/folders');
 const pkg = require('./package.json');
@@ -60,6 +63,7 @@ app.use(auth.attach);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/usage', usageRoutes);
 
 app.get('/health', (req, res) => {
     const perms = permissions.getPermissions();

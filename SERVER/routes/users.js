@@ -13,8 +13,9 @@
      GET    /export.xlsx    the user list as a spreadsheet download
      GET    /status         backup and spreadsheet-sync status (Help tab)
      GET    /analytics      Super Admin only: every active account with
-                            sign-ins, last active and a summary of each
-                            saved project (Analytics tab)
+                            sign-ins, last active, a summary of each
+                            saved project and their temporary-cart adds
+                            (Analytics tab)
      GET    /companies      the managed company list with user counts
      POST   /companies      add a company (refuses look-alikes unless
                             force is set)
@@ -298,8 +299,10 @@ router.get('/analytics', (req, res) => {
     const all = db.listUsers();
     const nameByEmail = {};
     all.forEach((u) => { nameByEmail[u.email] = displayName(u); });
+    const carts = db.cartSummaries();
     const people = all.filter((u) => u.status === 'active').map((u) => {
         const by = db.normalizeEmail(u.created_by);
+        const cart = carts[u.id] || { items: 0, last: null, types: {} };
         return {
             id: u.id,
             email: u.email,
@@ -313,7 +316,14 @@ router.get('/analytics', (req, res) => {
             registeredAt: u.registered_at,
             lastActiveAt: u.last_active_at || null,
             signIns: u.login_count || 0,
-            projects: projectSummaries(u)
+            // Opened the site, or came back after 30+ minutes away
+            // (counted since backend 0.13.0).
+            visits: u.visit_count || 0,
+            projects: projectSummaries(u),
+            // Items added to a temporary cart (counted since backend 0.12.0).
+            cartItems: cart.items,
+            lastCartAt: cart.last,
+            cartTypes: cart.types
         };
     });
     res.json({ people, generatedAt: new Date().toISOString() });

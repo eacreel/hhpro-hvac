@@ -958,10 +958,24 @@
             }
             state.items.push(item);
             saveStateToSession();
+            reportCartAdd(productKey);
             renderPanel();
             renderToggle();
             flashToggle();
         });
+    }
+
+    /**
+     * A temporary cart never reaches the server, so each item added to
+     * one is noted for the Super Admin Analytics tab: the product type
+     * only (POST /api/usage/cart-add; the account comes from the
+     * session). Project items are already counted from the saved
+     * project. Fire and forget - a failed note never bothers anyone.
+     */
+    function reportCartAdd(productKey) {
+        if (state.mode !== 'cart' || !productKey) return;
+        if (!HHpro.Api || typeof HHpro.Api.post !== 'function') return;
+        HHpro.Api.post('/api/usage/cart-add', { productKey: productKey }).catch(function () {});
     }
 
     function duplicateItem(instanceId) {
@@ -989,6 +1003,7 @@
 
         state.items.splice(idx + 1, 0, duplicate);
         saveStateToSession();
+        reportCartAdd(duplicate.productKey);
         renderPanel();
         renderToggle();
     }

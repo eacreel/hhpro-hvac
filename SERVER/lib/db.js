@@ -7,11 +7,14 @@
      users     one row per account. The email is the username.
                password_hash is empty until the person registers.
                prefs holds the person's saved site preferences (JSON).
-               login_count / last_active_at feed the Super Admin
-               Analytics tab: sign-ins, and the last time the person
-               used the site (to within the 5-minute session refresh).
+               login_count / visit_count / last_active_at feed the
+               Super Admin Analytics tab: sign-ins, visits (new after
+               30 minutes away), and the last time the person used
+               the site (to within the 5-minute session refresh).
      sessions  one row per signed-in browser. The browser holds
                only the random session id in a cookie.
+     cart_adds one row per item added to a temporary cart (product
+               type + time), for the Analytics tab.
 
    The schema is created on first open and upgraded in place by
    the numbered migrations below, so a new column later never
@@ -95,8 +98,31 @@ const MIGRATIONS = [
     `
     ALTER TABLE users ADD COLUMN login_count INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE users ADD COLUMN last_active_at TEXT;
+    `,
+
+    // v6: one row per item added to a temporary cart (selections that
+    // never reach a saved project), for the Analytics tab. Only the
+    // product type and the time; gone with the account.
+    `
+    CREATE TABLE IF NOT EXISTS cart_adds (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_key TEXT    NOT NULL,
+        at          TEXT    NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS cart_adds_user ON cart_adds(user_id);
+    `,
+
+    // v7: visits for the Analytics tab - each time someone opens the
+    // site, or comes back after VISIT_GAP_MS without using it. Counted
+    // from this version on (there is no history to fill it from).
+    `
+    ALTER TABLE users ADD COLUMN visit_count INTEGER NOT NULL DEFAULT 0;
     `
 ];
+
+// A request after this long without activity starts a new visit.
+const VISIT_GAP_MS = 30 * 60 * 1000;
 
 // The migration whose upgrade runs the one-time activity back-fill.
 const ACTIVITY_VERSION = 5;
@@ -336,14 +362,24 @@ function projectFolderTaken(folder) {
 
 // ---- sessions ----------------------------------------------------
 
+// Last active = now, and one more visit when the person had been away
+// for VISIT_GAP_MS or more (SQLite reads last_active_at before the SET).
+const MARK_ACTIVE_SQL = `
+    visit_count = visit_count + (CASE WHEN last_active_at IS NULL OR last_active_at < ? THEN 1 ELSE 0 END),
+    last_active_at = ?`;
+
+function visitCutoff() {
+    return new Date(Date.now() - VISIT_GAP_MS).toISOString();
+}
+
 /** A new session = a sign-in (password, registration or reset): count it. */
 function createSession(id, userId) {
     const t = now();
     const d = open();
     d.prepare('INSERT INTO sessions (id, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)')
         .run(id, userId, t, t);
-    d.prepare('UPDATE users SET login_count = login_count + 1, last_active_at = ? WHERE id = ?')
-        .run(t, userId);
+    d.prepare(`UPDATE users SET login_count = login_count + 1, ${MARK_ACTIVE_SQL} WHERE id = ?`)
+        .run(visitCutoff(), t, userId);
 }
 
 /** Session row joined with its user, or null. */
@@ -361,8 +397,30 @@ function touchSession(id) {
     const t = now();
     const d = open();
     d.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(t, id);
-    d.prepare('UPDATE users SET last_active_at = ? WHERE id = (SELECT user_id FROM sessions WHERE id = ?)')
-        .run(t, id);
+    d.prepare(`UPDATE users SET ${MARK_ACTIVE_SQL} WHERE id = (SELECT user_id FROM sessions WHERE id = ?)`)
+        .run(visitCutoff(), t, id);
+}
+
+// ---- temporary-cart adds (Analytics) -------------------------------
+
+function recordCartAdd(userId, productKey) {
+    open().prepare('INSERT INTO cart_adds (user_id, product_key, at) VALUES (?, ?, ?)')
+        .run(userId, productKey, now());
+}
+
+/** { userId: { items, last, types: { productKey: count } } } for everyone with cart adds. */
+function cartSummaries() {
+    const out = {};
+    open().prepare(`
+        SELECT user_id, product_key, COUNT(*) AS n, MAX(at) AS last
+        FROM cart_adds GROUP BY user_id, product_key
+    `).all().forEach((r) => {
+        const s = out[r.user_id] || (out[r.user_id] = { items: 0, last: null, types: {} });
+        s.items += r.n;
+        s.types[r.product_key] = r.n;
+        if (!s.last || r.last > s.last) s.last = r.last;
+    });
+    return out;
 }
 
 function deleteSession(id) {
@@ -406,6 +464,8 @@ module.exports = {
     createSession,
     getSession,
     touchSession,
+    recordCartAdd,
+    cartSummaries,
     deleteSession,
     deleteSessionsForUser
 };
