@@ -7,6 +7,9 @@
      users     one row per account. The email is the username.
                password_hash is empty until the person registers.
                prefs holds the person's saved site preferences (JSON).
+               login_count / last_active_at feed the Super Admin
+               Analytics tab: sign-ins, and the last time the person
+               used the site (to within the 5-minute session refresh).
      sessions  one row per signed-in browser. The browser holds
                only the random session id in a cookie.
 
@@ -20,6 +23,8 @@
 const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const config = require('./config');
+const log = require('./log');
+const activityBackfill = require('./activity_backfill');
 
 const USER_LEVELS = ['Super Admin', 'Admin', 'Hoffman', 'Engineer', 'Contractor', 'Manufacturer'];
 const USER_STATUSES = ['invited', 'active'];
@@ -81,8 +86,20 @@ const MIGRATIONS = [
     // Kept off the spreadsheet and the admin lists.
     `
     ALTER TABLE users ADD COLUMN prefs TEXT NOT NULL DEFAULT '{}';
+    `,
+
+    // v5: activity for the Super Admin Analytics tab. Kept on the user
+    // row because session rows are deleted at sign-out and password
+    // reset. Filled in once from the logs (lib/activity_backfill.js),
+    // then kept current by createSession / touchSession.
+    `
+    ALTER TABLE users ADD COLUMN login_count INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE users ADD COLUMN last_active_at TEXT;
     `
 ];
+
+// The migration whose upgrade runs the one-time activity back-fill.
+const ACTIVITY_VERSION = 5;
 
 let db = null;
 
@@ -101,6 +118,16 @@ function open() {
     for (let v = row.version; v < MIGRATIONS.length; v++) {
         db.exec('BEGIN');
         db.exec(MIGRATIONS[v]);
+        if (v + 1 === ACTIVITY_VERSION) {
+            // A failed back-fill only leaves the counts at 0; it must
+            // never stop the service from starting.
+            try {
+                const done = activityBackfill.backfill(db, config.logsDir);
+                log.info('Activity back-filled from logs and sessions', done);
+            } catch (e) {
+                log.error(`Activity back-fill failed: ${e.message}`);
+            }
+        }
         db.prepare('UPDATE schema_version SET version = ?').run(v + 1);
         db.exec('COMMIT');
     }
@@ -309,10 +336,14 @@ function projectFolderTaken(folder) {
 
 // ---- sessions ----------------------------------------------------
 
+/** A new session = a sign-in (password, registration or reset): count it. */
 function createSession(id, userId) {
     const t = now();
-    open().prepare('INSERT INTO sessions (id, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)')
+    const d = open();
+    d.prepare('INSERT INTO sessions (id, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)')
         .run(id, userId, t, t);
+    d.prepare('UPDATE users SET login_count = login_count + 1, last_active_at = ? WHERE id = ?')
+        .run(t, userId);
 }
 
 /** Session row joined with its user, or null. */
@@ -325,8 +356,13 @@ function getSession(id) {
     `).get(id) || null;
 }
 
+/** Called at most every 5 minutes per session (lib/auth.js attach). */
 function touchSession(id) {
-    open().prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(now(), id);
+    const t = now();
+    const d = open();
+    d.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(t, id);
+    d.prepare('UPDATE users SET last_active_at = ? WHERE id = (SELECT user_id FROM sessions WHERE id = ?)')
+        .run(t, id);
 }
 
 function deleteSession(id) {

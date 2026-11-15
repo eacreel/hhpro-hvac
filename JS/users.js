@@ -13,6 +13,10 @@
                   location gets.
      Help         how the levels, invitations and the spreadsheet
                   work, plus backup status from the server.
+     Analytics    Super Admins only: every active account with its
+                  sign-ins, last active date and saved projects
+                  (dates, items, equipment types, layout), with the
+                  same column filters as the Users tab.
 
    Emails are never sent by the site: "Send invitation" and
    "Reset password" get a one-time link from the backend, then
@@ -94,6 +98,9 @@
         tabs.appendChild(permsTab);
         tabs.appendChild(companiesTab);
         tabs.appendChild(helpTab);
+        // Analytics: Super Admins only (the backend refuses anyone else too).
+        var analyticsTab = isSuperAdmin() ? tabButton('Analytics', 'analytics') : null;
+        if (analyticsTab) tabs.appendChild(analyticsTab);
         titleBar.appendChild(tabs);
         main.appendChild(titleBar);
 
@@ -102,6 +109,7 @@
         main.appendChild(panel);
         els.panel = panel;
         els.tabs = { users: usersTab, permissions: permsTab, companies: companiesTab, help: helpTab };
+        if (analyticsTab) els.tabs.analytics = analyticsTab;
 
         showTab(activeTab);
         return main;
@@ -119,6 +127,7 @@
 
     function showTab(key) {
         closeFilterMenu();
+        if (!els.tabs[key]) key = 'users';
         Object.keys(els.tabs).forEach(function (k) {
             els.tabs[k].classList.toggle('users-tab-active', k === key);
             els.tabs[k].setAttribute('aria-selected', k === key ? 'true' : 'false');
@@ -127,6 +136,7 @@
         if (key === 'permissions') renderPermissions(els.panel);
         else if (key === 'companies') renderCompanies(els.panel);
         else if (key === 'help') renderHelp(els.panel);
+        else if (key === 'analytics') renderAnalytics(els.panel);
         else renderUsers(els.panel);
     }
 
@@ -237,7 +247,15 @@
     // column key -> the values ticked. No entry means All. A row shows
     // when it matches any ticked value in every filtered column.
     var filters = {};
-    var openFilter = null;   // { key, menu } while a filter dropdown is open
+    // { key, menu, prefix } while a filter dropdown is open. The
+    // dropdowns serve the Users and Analytics tables alike: each passes a
+    // filter context (filterButton's ctx) naming its filters object, its
+    // choices, its redraw and the id prefix of its buttons.
+    var openFilter = null;
+
+    function usersFilterCtx() {
+        return { filters: filters, choices: filterChoices, redraw: drawTable, idPrefix: 'users-filter-' };
+    }
 
     function shortDate(iso) {
         if (!iso) return '';
@@ -286,16 +304,23 @@
         return Object.keys(filters).filter(function (k) { return filters[k] && filters[k].length; });
     }
 
-    /** The button in the filter row: All, or the ticked values. Opens the checkbox list. */
-    function filterButton(col) {
-        var picked = filters[col.key] || [];
+    function isOpenFilter(key, ctx) {
+        return !!openFilter && openFilter.key === key && openFilter.prefix === ctx.idPrefix;
+    }
+
+    /**
+     * The button in the filter row: All, or the ticked values. Opens the
+     * checkbox list. ctx = { filters, choices(key), redraw(), idPrefix }.
+     */
+    function filterButton(col, ctx) {
+        var picked = ctx.filters[col.key] || [];
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'users-filter' + (picked.length ? ' users-filter-active' : '');
-        btn.id = 'users-filter-' + col.key;
+        btn.id = ctx.idPrefix + col.key;
         btn.setAttribute('aria-label', 'Filter by ' + col.label.toLowerCase());
         btn.setAttribute('aria-haspopup', 'true');
-        btn.setAttribute('aria-expanded', openFilter && openFilter.key === col.key ? 'true' : 'false');
+        btn.setAttribute('aria-expanded', isOpenFilter(col.key, ctx) ? 'true' : 'false');
         var text = picked.length ? picked.join(', ') : 'All';
         if (picked.length) btn.title = text;
         // As wide as the longest choice, like the <select> it replaced;
@@ -303,15 +328,15 @@
         var sizer = document.createElement('span');
         sizer.className = 'users-filter-sizer';
         sizer.setAttribute('aria-hidden', 'true');
-        sizer.textContent = filterChoices(col.key).reduce(function (a, b) { return b.length > a.length ? b : a; }, 'All');
+        sizer.textContent = ctx.choices(col.key).reduce(function (a, b) { return b.length > a.length ? b : a; }, 'All');
         var label = document.createElement('span');
         label.className = 'users-filter-label';
         label.textContent = text;
         btn.appendChild(sizer);
         btn.appendChild(label);
         btn.addEventListener('click', function () {
-            if (openFilter && openFilter.key === col.key) closeFilterMenu();
-            else openFilterMenu(col);
+            if (isOpenFilter(col.key, ctx)) closeFilterMenu();
+            else openFilterMenu(col, ctx);
         });
         return btn;
     }
@@ -321,10 +346,11 @@
      * table's scroll box cannot clip it, and stays open while boxes are
      * ticked: each change redraws the table behind it.
      */
-    function openFilterMenu(col) {
+    function openFilterMenu(col, ctx) {
         closeFilterMenu();
         var key = col.key;
-        var choices = filterChoices(key);
+        var filters = ctx.filters;   // this table's filters object
+        var choices = ctx.choices(key);
         var menu = document.createElement('div');
         menu.className = 'users-filter-menu';
         menu.setAttribute('role', 'group');
@@ -369,7 +395,7 @@
         allBox.addEventListener('change', function () {
             delete filters[key];
             sync();
-            drawTable();
+            ctx.redraw();
         });
         boxes.forEach(function (b) {
             b.addEventListener('change', function () {
@@ -378,7 +404,7 @@
                 if (!picked.length || picked.length === choices.length) delete filters[key];
                 else filters[key] = picked;
                 sync();
-                drawTable();
+                ctx.redraw();
             });
         });
         if (find) {
@@ -395,8 +421,8 @@
         });
 
         document.body.appendChild(menu);
-        openFilter = { key: key, menu: menu };
-        var anchor = document.getElementById('users-filter-' + key);
+        openFilter = { key: key, menu: menu, prefix: ctx.idPrefix };
+        var anchor = document.getElementById(ctx.idPrefix + key);
         if (anchor) anchor.setAttribute('aria-expanded', 'true');
         placeFilterMenu();
         (find || allBox).focus();
@@ -405,7 +431,7 @@
     /** Line the open list up under its button (or above it near the bottom of the window). */
     function placeFilterMenu() {
         if (!openFilter) return;
-        var anchor = document.getElementById('users-filter-' + openFilter.key);
+        var anchor = document.getElementById(openFilter.prefix + openFilter.key);
         var r = anchor && anchor.getBoundingClientRect();
         if (!r || r.bottom < 0 || r.top > window.innerHeight) { closeFilterMenu(); return; }
         var menu = openFilter.menu;
@@ -422,9 +448,10 @@
     function closeFilterMenu(returnFocus) {
         if (!openFilter) return;
         var key = openFilter.key;
+        var prefix = openFilter.prefix;
         openFilter.menu.remove();
         openFilter = null;
-        var anchor = document.getElementById('users-filter-' + key);
+        var anchor = document.getElementById(prefix + key);
         if (anchor) {
             anchor.setAttribute('aria-expanded', 'false');
             if (returnFocus) anchor.focus();
@@ -433,7 +460,7 @@
 
     document.addEventListener('mousedown', function (e) {
         if (!openFilter || openFilter.menu.contains(e.target)) return;
-        var anchor = document.getElementById('users-filter-' + openFilter.key);
+        var anchor = document.getElementById(openFilter.prefix + openFilter.key);
         if (anchor && anchor.contains(e.target)) return;   // its own click toggles it
         closeFilterMenu();
     });
@@ -514,7 +541,7 @@
         fr.className = 'users-filter-row';
         COLUMNS.forEach(function (col) {
             var td = document.createElement('th');
-            td.appendChild(filterButton(col));
+            td.appendChild(filterButton(col, usersFilterCtx()));
             fr.appendChild(td);
         });
         var clearTd = document.createElement('th');
@@ -1587,6 +1614,546 @@
         });
 
         panel.appendChild(wrap);
+    }
+
+    // =================================================================
+    // Analytics tab (Super Admins only)
+    // -----------------------------------------------------------------
+    // One row per active account: who they are, sign-ins, last active,
+    // and a summary of their saved projects, from GET /api/users/analytics
+    // (which refuses anyone but a Super Admin). Search, the column
+    // filters, sorting and the totals above the table all work on the
+    // loaded list in the browser. Clicking a person lists their projects
+    // underneath.
+    // =================================================================
+
+    function isSuperAdmin() {
+        var u = HHpro.State && HHpro.State.getUser ? HHpro.State.getUser() : null;
+        return !!u && u.userLevel === 'Super Admin';
+    }
+
+    var people = [];          // active accounts, with the derived fields below
+    var aFilters = {};        // like `filters`, for this table
+    var aQuery = '';
+    var aSortKey = 'lastActiveAt';
+    var aSortDir = -1;        // newest first
+    var aOpen = {};           // person id -> true while their projects are shown
+
+    var DAY_MS = 86400000;
+    var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Date filters pick from ranges, not single days. "Inactive 30+ days"
+    // = the last two ranges ticked together.
+    var RECENT_BUCKETS = ['Last 7 days', '8–30 days ago', '31–90 days ago', 'Over 90 days ago', 'Never', 'No projects'];
+
+    // desc: the first click sorts newest / largest first.
+    var A_COLUMNS = [
+        { key: 'name', label: 'Name', filter: true },
+        { key: 'company', label: 'Company', filter: true },
+        { key: 'location', label: 'Locations', filter: true },
+        { key: 'userLevel', label: 'Level', filter: true },
+        { key: 'invitedBy', label: 'Invited by', filter: true },
+        { key: 'createdAt', label: 'Added', filter: true, date: true, desc: true },
+        { key: 'registeredAt', label: 'Registered', filter: true, date: true, desc: true },
+        { key: 'signIns', label: 'Sign-ins', number: true, desc: true },
+        { key: 'lastActiveAt', label: 'Last active', filter: true, date: true, desc: true },
+        { key: 'projectCount', label: 'Projects', number: true, desc: true },
+        { key: 'itemCount', label: 'Items', number: true, desc: true },
+        { key: 'types', label: 'Equipment types', filter: true },
+        { key: 'lastSavedAt', label: 'Last project saved', filter: true, date: true, desc: true }
+    ];
+
+    function analyticsFilterCtx() {
+        return { filters: aFilters, choices: aFilterChoices, redraw: drawAnalytics, idPrefix: 'analytics-filter-' };
+    }
+
+    function renderAnalytics(panel) {
+        var toolbar = document.createElement('div');
+        toolbar.className = 'users-toolbar';
+
+        var searchWrap = document.createElement('div');
+        searchWrap.className = 'users-search';
+        searchWrap.appendChild(HHpro.UI.icon('search'));
+        var search = document.createElement('input');
+        search.type = 'search';
+        search.id = 'analytics-search';
+        search.className = 'users-search-input';
+        search.placeholder = 'Search name, company, location, equipment...';
+        search.setAttribute('aria-label', 'Search analytics');
+        search.value = aQuery;
+        search.addEventListener('input', function () {
+            aQuery = search.value;
+            drawAnalytics();
+        });
+        searchWrap.appendChild(search);
+        toolbar.appendChild(searchWrap);
+
+        var count = document.createElement('span');
+        count.className = 'users-count';
+        toolbar.appendChild(count);
+        els.aCount = count;
+
+        var clear = document.createElement('button');
+        clear.type = 'button';
+        clear.className = 'users-action';
+        clear.textContent = 'Clear filters';
+        clear.hidden = true;
+        clear.addEventListener('click', function () {
+            aFilters = {};
+            closeFilterMenu();
+            drawAnalytics();
+        });
+        toolbar.appendChild(clear);
+        els.aClear = clear;
+        panel.appendChild(toolbar);
+
+        var note = document.createElement('p');
+        note.className = 'analytics-note';
+        note.textContent = 'Active accounts only. Last active updates while someone uses the site, to within ' +
+            '5 minutes. Sign-ins are counted from Sept 15, 2026. Totals follow the search and filters.';
+        panel.appendChild(note);
+
+        var totals = document.createElement('div');
+        totals.className = 'analytics-summary';
+        panel.appendChild(totals);
+        els.aTotals = totals;
+
+        var wrap = document.createElement('div');
+        wrap.className = 'users-table-wrap';
+        panel.appendChild(wrap);
+        els.aWrap = wrap;
+        wrap.appendChild(spinner('Loading analytics...'));
+
+        Promise.all([
+            HHpro.Api.get('/api/users/analytics'),
+            options ? Promise.resolve(options) : HHpro.Api.get('/api/users/options')
+        ]).then(function (results) {
+            people = (results[0].people || []).map(prepPerson);
+            options = results[1];
+            drawAnalytics();
+        }, function (err) {
+            wrap.innerHTML = '';
+            wrap.appendChild(problem(err));
+            if (err.status === 401) HHpro.App.refreshSession();
+        });
+    }
+
+    function productName(key) {
+        var p = HHpro.Data && HHpro.Data.getProduct ? HHpro.Data.getProduct(key) : null;
+        return p ? p.displayName : key;
+    }
+
+    /** Totals per person from their project summaries. */
+    function prepPerson(p) {
+        p.name = ((p.firstName || '') + ' ' + (p.lastName || '')).trim() || p.email;
+        p.projects = p.projects || [];
+        p.projectCount = p.projects.length;
+        p.itemCount = 0;
+        p.typeCounts = {};
+        p.lastSavedAt = null;
+        p.projects.forEach(function (pr) {
+            p.itemCount += pr.items || 0;
+            Object.keys(pr.types || {}).forEach(function (k) {
+                var n = productName(k);
+                p.typeCounts[n] = (p.typeCounts[n] || 0) + pr.types[k];
+            });
+            if (pr.updatedAt && (!p.lastSavedAt || pr.updatedAt > p.lastSavedAt)) p.lastSavedAt = pr.updatedAt;
+        });
+        p.types = Object.keys(p.typeCounts).sort(function (a, b) {
+            return (p.typeCounts[b] - p.typeCounts[a]) || (a < b ? -1 : 1);
+        });
+        return p;
+    }
+
+    function daysAgo(iso) {
+        var t = iso ? new Date(iso).getTime() : NaN;
+        return isNaN(t) ? null : (Date.now() - t) / DAY_MS;
+    }
+
+    function recentBucket(iso, none) {
+        var d = daysAgo(iso);
+        if (d === null) return none;
+        if (d <= 7) return RECENT_BUCKETS[0];
+        if (d <= 30) return RECENT_BUCKETS[1];
+        if (d <= 90) return RECENT_BUCKETS[2];
+        return RECENT_BUCKETS[3];
+    }
+
+    function monthBucket(iso) {
+        var d = iso ? new Date(iso) : null;
+        return d && !isNaN(d.getTime()) ? MONTHS[d.getMonth()] + ' ' + d.getFullYear() : 'Unknown';
+    }
+
+    function monthOrder(label) {
+        var m = MONTHS.indexOf(label.slice(0, 3));
+        return m === -1 ? -1 : parseInt(label.slice(4), 10) * 12 + m;
+    }
+
+    /** "today", "yesterday", "5 days ago", "3 months ago". */
+    function relativeDay(iso) {
+        var d = daysAgo(iso);
+        if (d === null) return '';
+        var n = Math.floor(d);
+        if (n <= 0) return 'today';
+        if (n === 1) return 'yesterday';
+        if (n < 60) return n + ' days ago';
+        return Math.round(n / 30) + ' months ago';
+    }
+
+    /** The value(s) a column filter compares against for one person. */
+    function aFilterValue(p, key) {
+        switch (key) {
+            case 'location': return p.locations || [];
+            case 'types': return p.types.length ? p.types : ['None'];
+            case 'createdAt':
+            case 'registeredAt': return monthBucket(p[key]);
+            case 'lastActiveAt': return recentBucket(p.lastActiveAt, 'Never');
+            case 'lastSavedAt': return recentBucket(p.lastSavedAt, 'No projects');
+            default: return String(p[key] || '');
+        }
+    }
+
+    function aFilterChoices(key) {
+        var seen = {};
+        var out = [];
+        people.forEach(function (p) {
+            var v = aFilterValue(p, key);
+            (Array.isArray(v) ? v : [v]).forEach(function (x) {
+                if (x && !seen[x]) { seen[x] = true; out.push(x); }
+            });
+        });
+        if (key === 'userLevel') {
+            out.sort(function (a, b) { return LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b); });
+        } else if (key === 'lastActiveAt' || key === 'lastSavedAt') {
+            out.sort(function (a, b) { return RECENT_BUCKETS.indexOf(a) - RECENT_BUCKETS.indexOf(b); });
+        } else if (key === 'createdAt' || key === 'registeredAt') {
+            out.sort(function (a, b) { return monthOrder(b) - monthOrder(a); });
+        } else {
+            out.sort(function (a, b) {
+                if (a === 'None') return 1;
+                if (b === 'None') return -1;
+                return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+            });
+        }
+        return out;
+    }
+
+    function aSortValue(p, col) {
+        var key = col.key;
+        if (key === 'name') return (p.lastName + ' ' + p.firstName).toLowerCase();
+        if (key === 'userLevel') return LEVEL_ORDER.indexOf(p.userLevel);
+        if (key === 'location') return (p.locations || []).join('; ').toLowerCase();
+        if (key === 'types') return p.types.join(', ').toLowerCase();
+        if (col.number) return p[key] || 0;
+        return String(p[key] || '').toLowerCase();   // ISO dates sort as text
+    }
+
+    function visiblePeople() {
+        var q = aQuery.trim().toLowerCase();
+        var active = Object.keys(aFilters).filter(function (k) { return aFilters[k] && aFilters[k].length; });
+        var list = people.filter(function (p) {
+            for (var i = 0; i < active.length; i++) {
+                var v = aFilterValue(p, active[i]);
+                var wanted = aFilters[active[i]];
+                if (!(Array.isArray(v) ? v : [v]).some(function (x) { return wanted.indexOf(x) !== -1; })) return false;
+            }
+            if (!q) return true;
+            var hay = [p.name, p.email, p.company, (p.locations || []).join(' '), p.userLevel,
+                p.invitedBy, p.types.join(' ')].join(' ').toLowerCase();
+            return hay.indexOf(q) !== -1;
+        });
+        var col = A_COLUMNS.filter(function (c) { return c.key === aSortKey; })[0] || A_COLUMNS[0];
+        list.sort(function (a, b) {
+            var av = aSortValue(a, col), bv = aSortValue(b, col);
+            if (av < bv) return -aSortDir;
+            if (av > bv) return aSortDir;
+            var an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+            return an < bn ? -1 : (an > bn ? 1 : 0);
+        });
+        return list;
+    }
+
+    function drawAnalytics() {
+        var wrap = els.aWrap;
+        if (!wrap) return;
+        var list = visiblePeople();
+        if (els.aCount) {
+            els.aCount.textContent = list.length === people.length
+                ? people.length + ' active ' + (people.length === 1 ? 'person' : 'people')
+                : list.length + ' of ' + people.length;
+        }
+        if (els.aClear) {
+            els.aClear.hidden = !Object.keys(aFilters).some(function (k) { return aFilters[k] && aFilters[k].length; });
+        }
+        drawAnalyticsTotals(list);
+
+        wrap.innerHTML = '';
+        var table = document.createElement('table');
+        table.className = 'users-table analytics-table';
+        var thead = document.createElement('thead');
+        var hr = document.createElement('tr');
+        A_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            if (col.number) th.className = 'analytics-num';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'users-sort' + (aSortKey === col.key ? ' users-sort-active' : '');
+            btn.textContent = col.label + (aSortKey === col.key ? (aSortDir > 0 ? ' ▴' : ' ▾') : '');
+            btn.addEventListener('click', function () {
+                if (aSortKey === col.key) aSortDir = -aSortDir;
+                else { aSortKey = col.key; aSortDir = col.desc ? -1 : 1; }
+                drawAnalytics();
+            });
+            th.appendChild(btn);
+            hr.appendChild(th);
+        });
+        thead.appendChild(hr);
+
+        var fr = document.createElement('tr');
+        fr.className = 'users-filter-row';
+        A_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            if (col.filter) th.appendChild(filterButton(col, analyticsFilterCtx()));
+            fr.appendChild(th);
+        });
+        thead.appendChild(fr);
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        if (!list.length) {
+            var tr = document.createElement('tr');
+            var td = document.createElement('td');
+            td.colSpan = A_COLUMNS.length;
+            td.className = 'users-empty';
+            td.textContent = people.length ? 'Nobody matches that search.' : 'No active accounts yet.';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+        list.forEach(function (p) {
+            tbody.appendChild(personRow(p));
+            if (aOpen[p.id] && p.projectCount) tbody.appendChild(projectsRow(p));
+        });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+    }
+
+    /** People, activity, project and item totals, then items per equipment type. */
+    function drawAnalyticsTotals(list) {
+        var box = els.aTotals;
+        if (!box) return;
+        box.innerHTML = '';
+        var a7 = 0, a30 = 0, projects = 0, items = 0, types = {};
+        list.forEach(function (p) {
+            var d = daysAgo(p.lastActiveAt);
+            if (d !== null && d <= 7) a7++;
+            if (d !== null && d <= 30) a30++;
+            projects += p.projectCount;
+            items += p.itemCount;
+            Object.keys(p.typeCounts).forEach(function (n) { types[n] = (types[n] || 0) + p.typeCounts[n]; });
+        });
+
+        var stats = document.createElement('div');
+        stats.className = 'analytics-stats';
+        [['People', list.length], ['Active in last 7 days', a7], ['Active in last 30 days', a30],
+            ['Projects', projects], ['Items', items]].forEach(function (s) {
+            var stat = document.createElement('div');
+            stat.className = 'analytics-stat';
+            var v = document.createElement('div');
+            v.className = 'analytics-stat-value';
+            v.textContent = s[1].toLocaleString();
+            var l = document.createElement('div');
+            l.className = 'analytics-stat-label';
+            l.textContent = s[0];
+            stat.appendChild(v);
+            stat.appendChild(l);
+            stats.appendChild(stat);
+        });
+        box.appendChild(stats);
+
+        var names = Object.keys(types).sort(function (a, b) { return (types[b] - types[a]) || (a < b ? -1 : 1); });
+        if (names.length) {
+            var row = document.createElement('div');
+            row.className = 'analytics-type-totals';
+            var cap = document.createElement('span');
+            cap.className = 'analytics-type-caption';
+            cap.textContent = 'Items by equipment type:';
+            row.appendChild(cap);
+            names.forEach(function (n) { row.appendChild(typeChip(n, types[n])); });
+            box.appendChild(row);
+        }
+    }
+
+    function typeChip(name, n) {
+        var chip = document.createElement('span');
+        chip.className = 'analytics-type';
+        chip.appendChild(document.createTextNode(name + ' '));
+        var b = document.createElement('b');
+        b.textContent = n.toLocaleString();
+        chip.appendChild(b);
+        return chip;
+    }
+
+    function dateCell(td, iso, withRelative) {
+        if (!iso) {
+            td.className = 'users-td-muted';
+            td.textContent = '—';
+            return;
+        }
+        var d = new Date(iso);
+        td.title = isNaN(d.getTime()) ? '' : d.toLocaleString();
+        td.textContent = shortDate(iso);
+        if (withRelative) {
+            var rel = document.createElement('span');
+            rel.className = 'analytics-sub-line';
+            rel.textContent = relativeDay(iso);
+            td.appendChild(rel);
+        }
+    }
+
+    function toggleProjects(p) {
+        if (aOpen[p.id]) delete aOpen[p.id];
+        else aOpen[p.id] = true;
+        drawAnalytics();
+    }
+
+    function personRow(p) {
+        var tr = document.createElement('tr');
+        var open = !!aOpen[p.id];
+        if (p.projectCount) {
+            tr.className = 'analytics-row-expandable' + (open ? ' analytics-row-open' : '');
+            // Anywhere on the row opens it; the arrow button handles its own click.
+            tr.addEventListener('click', function (e) {
+                if (e.target.closest('button')) return;
+                toggleProjects(p);
+            });
+        }
+        A_COLUMNS.forEach(function (col) {
+            var td = document.createElement('td');
+            switch (col.key) {
+                case 'name':
+                    var nameBox = document.createElement('div');
+                    nameBox.className = 'analytics-name';
+                    td.appendChild(nameBox);
+                    if (p.projectCount) {
+                        var btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'analytics-toggle';
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                        btn.setAttribute('aria-label', (open ? 'Hide' : 'Show') + ' projects for ' + p.name);
+                        btn.textContent = '▸';
+                        btn.addEventListener('click', function () { toggleProjects(p); });
+                        nameBox.appendChild(btn);
+                    } else {
+                        var spacer = document.createElement('span');
+                        spacer.className = 'analytics-toggle-spacer';
+                        nameBox.appendChild(spacer);
+                    }
+                    var who = document.createElement('span');
+                    who.className = 'analytics-who';
+                    who.appendChild(document.createTextNode(p.name));
+                    var email = document.createElement('span');
+                    email.className = 'analytics-sub-line';
+                    email.textContent = p.email;
+                    who.appendChild(email);
+                    nameBox.appendChild(who);
+                    break;
+                case 'location':
+                    td.appendChild(locationsCell(p));
+                    break;
+                case 'invitedBy':
+                    td.className = 'users-td-muted';
+                    td.textContent = p.invitedBy || '';
+                    break;
+                case 'createdAt':
+                case 'registeredAt':
+                case 'lastSavedAt':
+                    dateCell(td, p[col.key], col.key === 'lastSavedAt');
+                    break;
+                case 'lastActiveAt':
+                    dateCell(td, p.lastActiveAt, true);
+                    break;
+                case 'types':
+                    // The top three keep rows short; the rest is one "+N more"
+                    // (all of them on hover, and per project when opened).
+                    td.className = 'analytics-types-cell';
+                    if (!p.types.length) {
+                        td.className += ' users-td-muted';
+                        td.textContent = '—';
+                    }
+                    p.types.slice(0, 3).forEach(function (n) { td.appendChild(typeChip(n, p.typeCounts[n])); });
+                    if (p.types.length > 3) {
+                        var more = document.createElement('span');
+                        more.className = 'analytics-type analytics-type-more';
+                        more.textContent = '+' + (p.types.length - 3) + ' more';
+                        td.appendChild(more);
+                    }
+                    td.title = p.types.map(function (n) { return n + ': ' + p.typeCounts[n]; }).join('\n');
+                    break;
+                default:
+                    if (col.number) td.className = 'analytics-num';
+                    td.textContent = col.number ? String(p[col.key] || 0) : (p[col.key] || '');
+            }
+            tr.appendChild(td);
+        });
+        return tr;
+    }
+
+    /** The person's projects, newest save first, in a row under theirs. */
+    function projectsRow(p) {
+        var tr = document.createElement('tr');
+        tr.className = 'analytics-sub';
+        var td = document.createElement('td');
+        td.colSpan = A_COLUMNS.length;
+        var table = document.createElement('table');
+        table.className = 'analytics-projects';
+        var head = document.createElement('tr');
+        [['Project'], ['Created'], ['Last saved'], ['Items', true], ['Equipment types'], ['Layout']].forEach(function (h) {
+            var th = document.createElement('th');
+            th.textContent = h[0];
+            if (h[1]) th.className = 'analytics-num';
+            head.appendChild(th);
+        });
+        var thead = document.createElement('thead');
+        thead.appendChild(head);
+        table.appendChild(thead);
+        var body = document.createElement('tbody');
+        p.projects.forEach(function (pr) {
+            var row = document.createElement('tr');
+            var name = document.createElement('td');
+            name.textContent = pr.name || '(untitled)';
+            row.appendChild(name);
+            var created = document.createElement('td');
+            dateCell(created, pr.createdAt, false);
+            row.appendChild(created);
+            var saved = document.createElement('td');
+            dateCell(saved, pr.updatedAt, true);
+            row.appendChild(saved);
+            var items = document.createElement('td');
+            items.className = 'analytics-num';
+            items.textContent = String(pr.items || 0);
+            row.appendChild(items);
+            var types = document.createElement('td');
+            types.className = 'analytics-types-cell';
+            var counts = {};
+            Object.keys(pr.types || {}).forEach(function (k) {
+                var n = productName(k);
+                counts[n] = (counts[n] || 0) + pr.types[k];
+            });
+            var names = Object.keys(counts).sort(function (a, b) { return (counts[b] - counts[a]) || (a < b ? -1 : 1); });
+            if (!names.length) {
+                types.className += ' users-td-muted';
+                types.textContent = 'Empty';
+            }
+            names.forEach(function (n) { types.appendChild(typeChip(n, counts[n])); });
+            row.appendChild(types);
+            var layout = document.createElement('td');
+            layout.textContent = pr.layout || '';
+            row.appendChild(layout);
+            body.appendChild(row);
+        });
+        table.appendChild(body);
+        td.appendChild(table);
+        tr.appendChild(td);
+        return tr;
     }
 
     // =================================================================

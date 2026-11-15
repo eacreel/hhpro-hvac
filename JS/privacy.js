@@ -6,9 +6,12 @@
    is kept, how to get it corrected or removed, and the date.
 
    HHpro has a backend run by Hoffman & Hoffman that holds
-   accounts and saved projects. There are no analytics, no
-   advertising and no third-party scripts, and the site itself
-   sends no email.
+   accounts and saved projects, plus basic usage records on each
+   account: sign-ins (the backend logs them, with the IP address)
+   and when the person last used the site. Super Admins see these,
+   with a summary of saved projects, on the Users > Analytics tab.
+   There is no third-party analytics, no advertising and no
+   third-party script, and the site itself sends no email.
 
    KEEP THIS PAGE HONEST. If anything is ever added that phones
    home - analytics, a CDN asset, an error reporter, a hosted
@@ -24,7 +27,7 @@
 
     // Shown at the bottom of the page. Update whenever the substance
     // changes, not for typo fixes.
-    var LAST_UPDATED = 'September 15, 2026';
+    var LAST_UPDATED = 'November 14, 2026';
 
     var CONTACT = 'eric.creel@hoffman-hoffman.com';
 
@@ -39,15 +42,16 @@
         {
             title: 'What we collect',
             paragraphs: [
-                'Your name, company, office location(s), user level and email address, entered by ' +
-                'the administrator who set up your account, plus a scrambled form of your password. ' +
-                'Projects you save on the site are stored with your account.'
+                'Your account details (name, company, office location, user level and email address), ' +
+                'a scrambled form of your password, the projects you save, and basic records of your ' +
+                'use of the site, such as when you sign in.'
             ]
         },
         {
             title: 'Why',
             paragraphs: [
-                'To sign you in, show you the products for your locations, and keep your saved projects.'
+                'To run the site, keep your saved projects, and understand how the site is used so we ' +
+                'can improve it.'
             ]
         },
         {

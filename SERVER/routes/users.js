@@ -12,6 +12,9 @@
      GET    /permissions    the Permissions tab, for display
      GET    /export.xlsx    the user list as a spreadsheet download
      GET    /status         backup and spreadsheet-sync status (Help tab)
+     GET    /analytics      Super Admin only: every active account with
+                            sign-ins, last active and a summary of each
+                            saved project (Analytics tab)
      GET    /companies      the managed company list with user counts
      POST   /companies      add a company (refuses look-alikes unless
                             force is set)
@@ -38,6 +41,8 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const config = require('../lib/config');
 const db = require('../lib/db');
@@ -46,6 +51,7 @@ const permissions = require('../lib/permissions');
 const folders = require('../lib/folders');
 const usersExcel = require('../lib/users_excel');
 const backup = require('../lib/backup');
+const templates = require('../lib/templates');
 const log = require('../lib/log');
 const ExcelJS = require('exceljs');
 
@@ -235,6 +241,82 @@ router.get('/status', (req, res) => {
         lastWeekly: b.lastWeekly,
         includeAssets: b.includeAssets
     });
+});
+
+// ---- analytics (Super Admin) ---------------------------------------
+// The Analytics tab: every active account with its activity, plus a
+// summary of each project saved in its folder (never the project
+// contents). Read only. Filtering and totals happen in the browser.
+
+function displayName(user) {
+    return `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+}
+
+function layoutLabel(key) {
+    const k = key || 'hoffman';
+    const hit = templates.ENGINEERS.find((e) => e.key === k);
+    return hit ? hit.label : k;
+}
+
+/** One summary per saved project: dates, item count, items per product, layout. */
+function projectSummaries(user) {
+    const dir = folders.folderPath(user);
+    if (!dir || !fs.existsSync(dir)) return [];
+    const out = [];
+    for (const name of fs.readdirSync(dir)) {
+        if (!name.endsWith('.json') || name === '_order.json') continue;
+        let p;
+        try {
+            p = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+        } catch (e) {
+            continue;   // unreadable file: the Projects page skips it too
+        }
+        if (!p || !p.id || name !== p.id + '.json') continue;
+        const items = Array.isArray(p.items) ? p.items : [];
+        const types = {};
+        items.forEach((it) => {
+            const k = String((it && it.productKey) || 'unknown');
+            types[k] = (types[k] || 0) + 1;
+        });
+        out.push({
+            name: String(p.name || ''),
+            createdAt: p.createdAt || null,
+            updatedAt: p.updatedAt || p.createdAt || null,
+            items: items.length,
+            types,
+            layout: layoutLabel(p.engineer)
+        });
+    }
+    out.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+    return out;
+}
+
+router.get('/analytics', (req, res) => {
+    if (req.user.user_level !== 'Super Admin') {
+        return res.status(403).json({ error: 'Only a Super Admin can see Analytics.' });
+    }
+    const all = db.listUsers();
+    const nameByEmail = {};
+    all.forEach((u) => { nameByEmail[u.email] = displayName(u); });
+    const people = all.filter((u) => u.status === 'active').map((u) => {
+        const by = db.normalizeEmail(u.created_by);
+        return {
+            id: u.id,
+            email: u.email,
+            firstName: u.first_name,
+            lastName: u.last_name,
+            company: u.company,
+            locations: db.locationsOf(u),
+            userLevel: u.user_level,
+            invitedBy: nameByEmail[by] || u.created_by || '',
+            createdAt: u.created_at,
+            registeredAt: u.registered_at,
+            lastActiveAt: u.last_active_at || null,
+            signIns: u.login_count || 0,
+            projects: projectSummaries(u)
+        };
+    });
+    res.json({ people, generatedAt: new Date().toISOString() });
 });
 
 // ---- companies -----------------------------------------------------
