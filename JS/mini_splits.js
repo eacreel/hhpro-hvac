@@ -11,7 +11,7 @@
    (the old ...AVJU9 outdoor models) onto their new systems, using
    the JSON's selectionAliases (see convert_to_json.py).
 
-   System type switch (browse page, above the photo cards):
+   System type switch (browse page, stacked left of the photo cards):
    - prepareData adds a SYSTEM TYPE filter to every system,
      "1:1 Mini Splits" (one indoor unit) or "Multi Splits" (2-5).
      It has no dropdown (data.js galleryOnlyFilters); the two
@@ -51,8 +51,8 @@
     var SINGLE = '1:1 Mini Splits';
     var MULTI = 'Multi Splits';
     var SYSTEM_BUTTONS = [
-        { value: SINGLE, sub: 'One indoor unit per outdoor unit' },
-        { value: MULTI,  sub: '2 to 5 indoor units on one outdoor unit' }
+        { value: SINGLE, sub: 'One indoor unit' },
+        { value: MULTI,  sub: '2 to 5 indoor units' }
     ];
 
     HHpro.ProductExtensions.mini_splits = {
@@ -202,8 +202,11 @@
 
             // The photo cards go away while Multi Splits is selected,
             // whether by its button or by picking 2+ indoor units.
+            // With the cards gone the two buttons sit side by side (one
+            // short row) instead of stacked beside the cards.
             function syncGallery() {
                 gallery.hidden = systemValue(api) === MULTI;
+                wrap.classList.toggle('is-compact', gallery.hidden);
             }
             syncGallery();
             api.onFilterChange(syncGallery);
