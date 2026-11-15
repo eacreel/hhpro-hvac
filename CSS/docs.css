@@ -153,6 +153,27 @@
     border-color: var(--color-primary-light);
 }
 
+/* A document whose file isn't on the site yet (HHpro.Docs.checkUrls):
+   muted row, a "Not available yet" note, its button switched off. */
+.docs-item-missing .docs-item-name,
+.docs-item-missing .docs-item-file {
+    color: var(--color-text-muted);
+}
+
+.docs-item-missing-note {
+    display: inline-block;
+    margin-left: var(--space-sm);
+    font-size: var(--font-size-xs);
+    font-style: italic;
+}
+
+.docs-item-action:disabled {
+    background-color: transparent;
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
+
 /* ---------- Empty state + footer ---------- */
 
 /* Compact variant of the shared .hh-empty for use inside the modal;

@@ -194,3 +194,52 @@
 .quick-lookup-item-active .quick-lookup-product {
     color: #b3c0d4;
 }
+
+/* ---------- Search by need (JS/need_search.js) ---------- */
+
+/* Small caps label over each group when both kinds of result show. */
+.quick-lookup-section {
+    padding: 8px 14px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+/* An equipment suggestion: product + what was understood on the left,
+   where it goes (schedule / Design Search) on the right. */
+.quick-lookup-need {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+}
+
+.quick-lookup-need-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.quick-lookup-need-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.quick-lookup-need-chip {
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    white-space: nowrap;
+}
+
+.quick-lookup-need .quick-lookup-product {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

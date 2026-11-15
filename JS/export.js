@@ -533,9 +533,11 @@ WHAT'S IN THE GRID
                     var targetCol = letterToCol[letter];
                     var cellValue = (capOverrides[letter] !== undefined)
                         ? capOverrides[letter] : cell.value;
+                    // Thousands separators like the on-screen schedule
+                    // (Excel turns them back into numbers - xlsxCell).
                     putCell(rows, merges,
                             curRow + rIdx, targetCol,
-                            { value: formatCellValue(cellValue, letter, productKey), dataRow: true },
+                            { value: displayCellValue(cellValue, letter, productKey), dataRow: true },
                             cell.rowSpan || 1,
                             cell.colSpan || 1);
                 });
@@ -1916,7 +1918,9 @@ WHAT'S IN THE GRID
               //  10  watermark footer (italic, light gray, right-aligned,
               //      bottom+left+right border so it sits inside the
               //      schedule-notes box as the final row of that section)
-              '<cellXfs count="11">' +
+              //  11  data cell like 1, number format #,##0 (built-in 3) -
+              //      a "11,200" value, kept a real number
+              '<cellXfs count="12">' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
                 '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
@@ -1938,6 +1942,8 @@ WHAT'S IN THE GRID
                   '<alignment horizontal="left" vertical="center" wrapText="1"/></xf>' +
                 '<xf numFmtId="0" fontId="3" fillId="0" borderId="4" applyFont="1" applyBorder="1" applyAlignment="1">' +
                   '<alignment horizontal="right" vertical="center"/></xf>' +
+                '<xf numFmtId="3" fontId="0" fillId="0" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1">' +
+                  '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
               '</cellXfs>' +
               '<cellStyles count="1">' +
                 '<cellStyle name="Normal" xfId="0" builtinId="0"/>' +
@@ -2049,6 +2055,14 @@ WHAT'S IN THE GRID
         var str = String(value);
         if (/^-?\d+(\.\d+)?$/.test(str)) {
             return '<c r="' + ref + '" s="' + style + '"><v>' + str + '</v></c>';
+        }
+        // "11,200" (a schedule number with thousands separators): a real
+        // number again, shown with the same separators by format #,##0.
+        // Decimals keep General format (#,##0 would round them).
+        if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(str)) {
+            var num = str.replace(/,/g, '');
+            var numStyle = (style === 1 && num.indexOf('.') < 0) ? 11 : style;
+            return '<c r="' + ref + '" s="' + numStyle + '"><v>' + num + '</v></c>';
         }
         return '<c r="' + ref + '" s="' + style + '" t="inlineStr"><is><t xml:space="preserve">' +
                 xmlEscape(str) + '</t></is></c>';
@@ -2505,16 +2519,27 @@ WHAT'S IN THE GRID
         return String(val);
     }
 
+    // formatCellValue plus thousands separators on numbers of 1,000+
+    // (JS/format.js) - the native schedules. Firm templates keep the raw
+    // formatCellValue: their derive() math needs plain numbers.
+    function displayCellValue(val, colLetter, productKey) {
+        var text = formatCellValue(val, colLetter, productKey);
+        if (typeof val === 'number' && HHpro.Format && text === String(val)) {
+            return HHpro.Format.number(val);
+        }
+        return text;
+    }
+
     /** Build the 2D layout of data cells with outdoor-column rowSpans
      *  preserved. Mirrors the logic in project_view.js. */
     // A row's value for a column with its scheduleCellSuffix appended - the
-    // "*" after a multi split's nominal indoor capacity (blank and "-"
-    // cells get none). Same rule as base.js.
+    // "*" after a multi split's nominal indoor capacity, as "7,000*" (blank
+    // and "-" cells get none). Same rule as base.js.
     function suffixedCellValue(row, colLetter) {
         var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
         var sfx = row.scheduleCellSuffix && row.scheduleCellSuffix[colLetter];
         if (!sfx || v === undefined || v === null || v === '' || v === '-') return v;
-        return String(v) + sfx;
+        return (HHpro.Format ? HHpro.Format.number(v) : String(v)) + sfx;
     }
 
     function computeCellLayout(sel, visibleLetters) {

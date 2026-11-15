@@ -3386,9 +3386,9 @@
                             depCells, varCfg, capCtrl));
                     } else if (rowIndex === 0 &&
                                Object.prototype.hasOwnProperty.call(gpOv, colLetter)) {
-                        td.textContent = formatCellValue(gpOv[colLetter], colLetter, productKey);
+                        setCellText(td, formatCellValue(gpOv[colLetter], colLetter, productKey));
                     } else {
-                        td.textContent = formatCellValue(cell.value, colLetter, productKey);
+                        setCellText(td, formatCellValue(cell.value, colLetter, productKey));
                         if (depColSet[colLetter]) depCells[colLetter] = td;
                     }
 
@@ -3523,7 +3523,7 @@
             var sd = (newSel.rows[0] && newSel.rows[0].scheduleData) || {};
             (kwVariants.dependentColumns || []).forEach(function (col) {
                 var td = depCells[col];
-                if (td) td.textContent = formatCellValue(sd[col], col, productKey);
+                if (td) setCellText(td, formatCellValue(sd[col], col, productKey));
             });
             if (capCtrl) capCtrl.setAuxKw(variants[idx].kw);
 
@@ -3759,7 +3759,15 @@
             if (override !== undefined) return override;
         }
         if (val === null || val === undefined) return '';
+        // Thousands separators on numbers of 1,000+ (JS/format.js).
+        if (typeof val === 'number' && HHpro.Format) return HHpro.Format.number(val);
         return String(val);
+    }
+
+    // Cell text + the muted look for a lone "-" (JS/format.js).
+    function setCellText(td, text) {
+        if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, text);
+        else td.textContent = text;
     }
 
     function applyStickyHeaderOffsets(table) {
@@ -4572,6 +4580,36 @@
                 docTypeNames: orderedNames,
                 signature: signature
             };
+        }).then(partitionMissingFiles);
+    }
+
+    // Files the workbooks name but the site doesn't have yet (HHpro.Docs
+    // checkUrls) move to item.missingFiles: listed greyed out, never
+    // selected, never fetched into the ZIP. A document type left with no
+    // file at all drops out of the sidebar.
+    function partitionMissingFiles(filesData) {
+        if (!HHpro.Docs || typeof HHpro.Docs.checkUrls !== 'function') return filesData;
+        var urls = [];
+        filesData.products.forEach(function (p) {
+            p.items.forEach(function (it) {
+                it.files.forEach(function (f) { if (f.url) urls.push(f.url); });
+            });
+        });
+        return HHpro.Docs.checkUrls(urls).then(function (found) {
+            filesData.products.forEach(function (p) {
+                p.items.forEach(function (it) {
+                    it.missingFiles = it.files.filter(function (f) {
+                        return f.url && found[f.url] === false;
+                    });
+                    it.files = it.files.filter(function (f) {
+                        return !(f.url && found[f.url] === false);
+                    });
+                });
+            });
+            filesData.docTypeNames = filesData.docTypeNames.filter(function (name) {
+                return countTypeFiles(filesData, name) > 0;
+            });
+            return filesData;
         });
     }
 
@@ -4712,6 +4750,34 @@
                                       activeState.name || '');
             });
             toolbar.appendChild(refReportBtn);
+        }
+
+        // Submittal package: one PDF with a cover, a clickable index, the
+        // schedules and every item's submittals (JS/submittal_package.js).
+        // A generated schedule needs the split system voltage / kW check
+        // first, like the ZIP.
+        if (HHpro.SubmittalPackage) {
+            var pkgBtn = document.createElement('button');
+            pkgBtn.type = 'button';
+            pkgBtn.className = 'projects-btn projects-btn-secondary';
+            pkgBtn.title = 'One PDF: cover page, index, schedules and every item\'s submittals';
+            pkgBtn.appendChild(HHpro.UI.icon('file-text'));
+            var pkgLabel = document.createElement('span');
+            pkgLabel.textContent = 'Submittal Package PDF';
+            pkgBtn.appendChild(pkgLabel);
+            pkgBtn.addEventListener('click', function () {
+                HHpro.SubmittalPackage.open(filesData, activeState, {
+                    button: pkgBtn,
+                    beforeBuild: function (proceed) {
+                        var mps = filesData.products.filter(function (p) {
+                            return p.productKey === 'multi_position_splits';
+                        })[0];
+                        if (mps) confirmElecExport(mps._rawItems, mps._data, proceed);
+                        else proceed();
+                    }
+                });
+            });
+            toolbar.appendChild(pkgBtn);
         }
 
         var downloadBtn = document.createElement('button');
@@ -4909,7 +4975,8 @@
         itemHeader.appendChild(itemName);
         itemNode.appendChild(itemHeader);
 
-        if (item.files.length === 0) {
+        var missing = item.missingFiles || [];
+        if (item.files.length === 0 && !missing.length) {
             var emptyRow = document.createElement('div');
             emptyRow.className = 'files-item-empty';
             emptyRow.textContent = 'No documents referenced for this item.';
@@ -4922,9 +4989,43 @@
         item.files.forEach(function (file) {
             filesList.appendChild(buildFileRow(file, handles, filesData));
         });
+        missing.forEach(function (file) {
+            filesList.appendChild(buildMissingFileRow(file));
+        });
         itemNode.appendChild(filesList);
 
         return itemNode;
+    }
+
+    // A document the workbook names but the site doesn't have yet: shown
+    // for the record, greyed out, with no checkbox to tick.
+    function buildMissingFileRow(file) {
+        var row = document.createElement('div');
+        row.className = 'files-file-row files-file-missing';
+        row.title = 'This file isn\'t available on the site yet';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'files-file-cb';
+        cb.disabled = true;
+
+        var name = document.createElement('span');
+        name.className = 'files-file-name';
+        name.textContent = file.docTypeName;
+
+        var fname = document.createElement('span');
+        fname.className = 'files-file-fname';
+        fname.textContent = file.filenameWithExt;
+
+        var badge = document.createElement('span');
+        badge.className = 'files-file-badge files-file-badge-missing';
+        badge.textContent = 'NOT AVAILABLE';
+
+        row.appendChild(cb);
+        row.appendChild(name);
+        row.appendChild(fname);
+        row.appendChild(badge);
+        return row;
     }
 
     function buildFileRow(file, handles, filesData) {
@@ -5198,10 +5299,16 @@
         dedupedList.forEach(function (d) {
             chain = chain.then(function () {
                 var file = d.entry.file;
+                // A missing file on Cloudflare answers 200 with the site's
+                // HTML page - never zip that as the document.
                 var source = (typeof file.generator === 'function')
                     ? file.generator()
                     : fetch(file.url).then(function (resp) {
                           if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                          if (HHpro.Docs && HHpro.Docs.isMissingResponse &&
+                              HHpro.Docs.isMissingResponse(resp, file.url)) {
+                              throw new Error('not on the site yet');
+                          }
                           return resp.blob();
                       });
                 return Promise.resolve(source)

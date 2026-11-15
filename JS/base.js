@@ -545,10 +545,14 @@
         // --- Initial state ---
         var initialVisible = getVisibleFilters(product.productKey, data, filterValues);
         initialVisible.forEach(function (fc) { filterValues[fc.name] = null; });
-        // Presets from the caller (Markel's photo cards set Type). They
-        // count as the user's own picks: Clear all filters clears them.
+        // Presets from the caller (Markel's photo cards set Type; the top
+        // bar's search by need sets several). They count as the user's own
+        // picks: Clear all filters clears them. Any of the product's
+        // filters can be preset - including ones only shown once another
+        // is picked (mini split TYPE (INDOOR UNIT #1)); the visibility
+        // pass in applyFilterChange drops any that don't apply.
         var presets = (params && params.initialFilters) || {};
-        initialVisible.forEach(function (fc) {
+        (data.filterColumns || []).forEach(function (fc) {
             var v = presets[fc.name];
             if (v !== null && v !== undefined && v !== '') filterValues[fc.name] = String(v);
         });
@@ -1016,7 +1020,9 @@
             options.forEach(function (v) {
                 var opt = document.createElement('option');
                 opt.value = String(v);
-                opt.textContent = String(v);
+                // Shown with thousands separators ("12,000"); the value
+                // stays the raw data value the filter matches on.
+                opt.textContent = formatNumber(v);
                 select.appendChild(opt);
             });
 
@@ -1404,7 +1410,7 @@
                         // on repaints without rebuilding the whole table.
                         gpCells[colLetter] = td;
                     }
-                    td.textContent = formatCellValue(value, colLetter, product && product.productKey);
+                    setCellText(td, formatCellValue(value, colLetter, product && product.productKey));
                     if (rowIndex === 0) decorateCell(product, td, colLetter, data, sel, gpOv || {});
                     if (cell.rowSpan > 1) td.rowSpan = cell.rowSpan;
                     if (cell.colSpan > 1) td.colSpan = cell.colSpan;
@@ -1426,8 +1432,8 @@
                 Object.keys(gpCells).forEach(function (L) {
                     var td = gpCells[L];
                     var useDesign = Object.prototype.hasOwnProperty.call(ov, L);
-                    td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
-                        product && product.productKey);
+                    setCellText(td, formatCellValue(useDesign ? ov[L] : sd[L], L,
+                        product && product.productKey));
                     td.classList.toggle('gp-design-cell', useDesign);
                     decorateCell(product, td, L, data, sel, ov);
                 });
@@ -1535,14 +1541,16 @@
     }
 
     // A row's value for a column with its scheduleCellSuffix appended
-    // (blank and "-" cells get none).
+    // (blank and "-" cells get none): "7,000*".
     function suffixedCellValue(row, colLetter) {
         var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
         var sfx = row.scheduleCellSuffix && row.scheduleCellSuffix[colLetter];
         if (!sfx || v === undefined || v === null || v === '' || v === '-') return v;
-        return String(v) + sfx;
+        return formatNumber(v) + sfx;
     }
 
+    // Shown text for a schedule value: a product's own override first,
+    // then thousands separators on numbers of 1,000+ (JS/format.js).
     function formatCellValue(val, colLetter, productKey) {
         var ext = productKey && HHpro.ProductExtensions && HHpro.ProductExtensions[productKey];
         if (ext && typeof ext.formatScheduleCellValue === 'function') {
@@ -1550,7 +1558,18 @@
             if (override !== undefined) return override;
         }
         if (val === null || val === undefined) return '';
+        if (typeof val === 'number') return formatNumber(val);
         return String(val);
+    }
+
+    function formatNumber(v) {
+        return (HHpro.Format && HHpro.Format.number) ? HHpro.Format.number(v) : String(v);
+    }
+
+    // Cell text + the muted look for a lone "-" (JS/format.js).
+    function setCellText(td, text) {
+        if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, text);
+        else td.textContent = text;
     }
 
     // ---------------------------------------------------------------
@@ -1635,17 +1654,45 @@
         });
 
         // Strike through the button when the selection has no submittal
-        // file. Clicking still shows the "no submittal" alert. Exposed on
-        // the row as refreshDocState so kW-variant rows can re-check when
-        // the dropdown swaps the selection.
+        // file, or when every submittal it names isn't on the site yet
+        // (HHpro.Docs.checkUrls - checked when the row is drawn, so the
+        // click usually knows already). Clicking still explains why.
+        // Exposed on the row as refreshDocState so kW-variant rows can
+        // re-check when the dropdown swaps the selection. The Docs button
+        // strikes through when the site's file index shows none of its
+        // documents (no per-file checks: a row can name a dozen).
         function refreshDocState() {
-            var has = !(HHpro.Docs && typeof HHpro.Docs.hasSubmittal === 'function')
-                || HHpro.Docs.hasSubmittal(getSel(), data);
-            subBtn.classList.toggle('action-btn-no-file', !has);
-            if (has) subBtn.removeAttribute('title');
-            else subBtn.title = 'No submittal available for this item';
+            var D = HHpro.Docs;
+            var sel = getSel();
+            var named = !(D && typeof D.hasSubmittal === 'function') || D.hasSubmittal(sel, data);
+            var urls = (named && D && D.submittalUrls) ? D.submittalUrls(product, sel, data) : [];
+            var states = urls.map(function (u) { return D.isAvailable(u); });
+            var allMissing = urls.length > 0 && states.every(function (s) { return s === false; });
+            var off = !named || allMissing;
+            subBtn.classList.toggle('action-btn-no-file', off);
+            if (!off) subBtn.removeAttribute('title');
+            else subBtn.title = named ? 'This item\'s submittal isn\'t available yet'
+                                      : 'No submittal available for this item';
+            if (states.some(function (s) { return s === undefined; })) {
+                D.checkUrls(urls).then(function () {
+                    if (subBtn.isConnected && getSel() === sel) refreshDocState();
+                });
+            } else if (D && D.ready && !refreshDocState.indexWaited) {
+                // Drawn before the index arrived: look again once it has.
+                refreshDocState.indexWaited = true;
+                D.ready().then(function (index) {
+                    if (index && subBtn.isConnected && getSel() === sel) refreshDocState();
+                });
+            }
+
+            var docUrls = (D && D.docUrls) ? D.docUrls(product, sel, data) : [];
+            var noDocs = docUrls.length > 0 && !docOpts() && docUrls.every(function (u) {
+                return D.isAvailable(u) === false;
+            });
+            docsBtn.classList.toggle('action-btn-no-file', noDocs);
+            if (noDocs) docsBtn.title = 'This item\'s documents aren\'t available yet';
+            else docsBtn.removeAttribute('title');
         }
-        refreshDocState();
         row.refreshDocState = refreshDocState;
 
         // ----- Docs (popup with all available documents) -----
@@ -1658,6 +1705,8 @@
                 HHpro.Docs.openDocsModal(product, getSel(), data, docOpts());
             }
         });
+
+        refreshDocState();
 
         row.appendChild(selectBtn);
         row.appendChild(subBtn);
@@ -1790,8 +1839,8 @@
             Object.keys(valueCells).forEach(function (L) {
                 var td = valueCells[L];
                 var useDesign = Object.prototype.hasOwnProperty.call(ov, L);
-                td.textContent = formatCellValue(useDesign ? ov[L] : sd[L], L,
-                    product && product.productKey);
+                setCellText(td, formatCellValue(useDesign ? ov[L] : sd[L], L,
+                    product && product.productKey));
                 td.classList.toggle('gp-design-cell', useDesign);
                 decorateCell(product, td, L, data, getCurrentSel(), ov);
             });

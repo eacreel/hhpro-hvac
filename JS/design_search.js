@@ -46,7 +46,12 @@
         // LC RTU "Configure": the unit waiting to be applied once the data
         // loads, and the token of the last click applied (see render).
         pendingConfigure: null,
-        configureToken: null
+        configureToken: null,
+        // Top-bar "search by need" (JS/need_search.js): targets / filters
+        // waiting to be filled in once the data loads, and the token of
+        // the last one applied (see render).
+        pendingPreset: null,
+        presetToken: null
     };
 
     // Gas Pack RTUs get a purpose-built form rather than the schema-driven
@@ -140,16 +145,27 @@
          * GasPackDesign.configureFor) starts a fresh search narrowed to
          * that unit and runs it. Applied once per click: coming back to
          * the page through browser history keeps what was changed since.
+         *
+         * params.preset ({ token, targets: { col: number }, filters:
+         * { name: value } } - the top bar's search by need) starts a
+         * fresh search with those targets / filters filled in and runs
+         * it, once per token like configure.
          */
         render: function (root, params) {
             var requested = params && params.productKey;
             var configure = params && params.configure;
+            var preset = params && params.preset;
             var loadKey = null;
             if (requested && isSearchableProduct(requested)) {
                 if (configure && configure.token !== state.configureToken) {
                     selectCategory(requested);
                     state.configureToken = configure.token;
                     state.pendingConfigure = configure;
+                    loadKey = requested;
+                } else if (preset && preset.token !== state.presetToken) {
+                    selectCategory(requested);
+                    state.presetToken = preset.token;
+                    state.pendingPreset = preset;
                     loadKey = requested;
                 } else if (requested !== state.productKey) {
                     selectCategory(requested);
@@ -204,6 +220,7 @@
         state.gasPack = freshGasPackState();
         state.gasPackError = null;
         state.pendingConfigure = null;
+        state.pendingPreset = null;
     }
 
     // -----------------------------------------------------------------
@@ -314,6 +331,32 @@
                     noteSearch();
                     runGasPackSearch();
                     return;
+                }
+
+                // Search by need from the top bar: fill in and run.
+                var preset = state.pendingPreset;
+                state.pendingPreset = null;
+                if (preset && !gasPackUiActive()) {
+                    var targetCols = {};
+                    schema.targets.forEach(function (t) { targetCols[t.col] = true; });
+                    var any = false;
+                    Object.keys(preset.targets || {}).forEach(function (col) {
+                        var v = Number(preset.targets[col]);
+                        if (targetCols[col] && isFinite(v)) { state.targetValues[col] = v; any = true; }
+                    });
+                    var names = {};
+                    (data.filterColumns || []).forEach(function (fc) { names[fc.name] = true; });
+                    Object.keys(preset.filters || {}).forEach(function (name) {
+                        if (names[name] && preset.filters[name] != null) {
+                            state.filterValues[name] = String(preset.filters[name]);
+                            any = true;
+                        }
+                    });
+                    if (any) {
+                        noteSearch();
+                        runSearch();
+                        return;
+                    }
                 }
 
                 rerenderWorkArea();
@@ -1272,7 +1315,8 @@
         values.forEach(function (v) {
             var opt = document.createElement('option');
             opt.value = String(v);
-            opt.textContent = String(v);
+            // "12,000" shown; the value stays raw (JS/format.js).
+            opt.textContent = HHpro.Format ? HHpro.Format.number(v) : String(v);
             if (state.filterValues[filterCol.name] === String(v)) opt.selected = true;
             select.appendChild(opt);
         });

@@ -266,8 +266,9 @@
             var input = document.createElement('input');
             input.type = 'search';
             input.className = 'quick-lookup-input';
-            input.placeholder = 'Find a model number...';
-            input.setAttribute('aria-label', 'Find a model number');
+            // Model numbers, or equipment in words (JS/need_search.js).
+            input.placeholder = 'Model number, or e.g. "10 ton heat pump RTU"';
+            input.setAttribute('aria-label', 'Find a model number, or describe the equipment you need');
             wrap.appendChild(input);
 
             // Defer the attach until QuickLookup is loaded (script order

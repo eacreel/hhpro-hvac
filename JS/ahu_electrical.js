@@ -297,7 +297,9 @@
             var v = valuesOf(entry, st, cfm);
             [['rise', riseText(v.rise)], ['mca', v.mca], ['mop', v.mop]].forEach(function (p) {
                 var td = cells[c[p[0]]];
-                if (td) td.textContent = String(p[1]);
+                if (!td) return;
+                if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, String(p[1]));
+                else td.textContent = String(p[1]);
             });
         }
 

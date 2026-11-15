@@ -38,6 +38,27 @@
    the browser (the LC RTU "performance at design conditions" sheet).
    generate() returns a PDF Blob; it opens in a new tab beside the
    submittal(s), and is listed first in the popup.
+
+   Missing files (Nov 2026)
+   ------------------------
+   The workbooks can name a document before its file is in ASSETS.
+   On Cloudflare a missing file doesn't 404: the site's own page
+   comes back instead, so a broken Submittal opened the home page
+   and a ZIP could hold an HTML page named ".pdf". Every document
+   is now checked before it's offered:
+     - DATA/asset_index.json lists every file under ASSETS. It is
+       written at deploy time by DATA/DATA FILES/build_asset_index.js
+       (Cloudflare build command) and is never committed.
+     - A file the index doesn't list - or every file, when there is
+       no index (local testing, or before the build step is set
+       up) - is checked with a HEAD request: missing when it fails
+       or answers with an HTML page. Results are cached per page
+       load, a few requests at a time.
+   checkUrls(urls) -> Promise<{ url: true | false }>
+   isAvailable(url) -> true / false, or undefined until checked
+   Submittal / Docs buttons strike through once every file they
+   would open is known to be missing; the popup greys missing
+   files out; openSubmittal opens only files that exist.
    ============================================================ */
 
 (function () {
@@ -47,8 +68,145 @@
     HHpro.Docs = {
         openSubmittal: openSubmittal,
         openDocsModal: openDocsModal,
-        hasSubmittal: hasSubmittal
+        hasSubmittal: hasSubmittal,
+        // Document availability (see the header).
+        checkUrls: checkUrls,
+        isAvailable: isAvailable,
+        // Resolves once the asset index has loaded (or proved absent).
+        ready: function () { return loadIndex(); },
+        isMissingResponse: isMissingResponse,
+        buildDocUrl: buildDocUrl,
+        submittalUrls: submittalUrls,
+        docUrls: docUrls,
+        collectSelectionDocs: function (sel, data) {
+            return collectSelectionDocs(sel, (data && data.documentationColumns) || []);
+        },
+        collectSelectionSubmittals: function (sel, data) {
+            return collectSelectionSubmittals(sel, (data && data.documentationColumns) || []);
+        }
     };
+
+    // =================================================================
+    // Availability: asset index + HEAD checks
+    // =================================================================
+
+    var INDEX_URL = 'DATA/asset_index.json';
+    var MAX_IN_FLIGHT = 6;
+
+    var indexPromise = null;
+    var indexSet = null;      // decoded paths ("ASSETS/.../x.pdf") or null
+    var known = {};           // decoded path -> true / false
+    var waiting = {};         // decoded path -> Promise<boolean>
+    var queue = [];
+    var inFlight = 0;
+
+    function loadIndex() {
+        if (indexPromise) return indexPromise;
+        indexPromise = fetch(INDEX_URL, { cache: 'no-cache' })
+            .then(function (r) {
+                if (!r.ok || isHtml(r)) return null;
+                return r.json();
+            })
+            .then(function (json) {
+                var folders = json && json.folders;
+                if (!folders) return null;
+                var set = {};
+                Object.keys(folders).forEach(function (dir) {
+                    (folders[dir] || []).forEach(function (name) {
+                        set[dir + '/' + name] = true;
+                    });
+                });
+                indexSet = set;
+                return set;
+            })
+            .catch(function () { return null; });
+        return indexPromise;
+    }
+
+    function isHtml(resp) {
+        return /text\/html/i.test((resp.headers && resp.headers.get('content-type')) || '');
+    }
+
+    // A fetch/HEAD response for a document that isn't really there: an
+    // error status, or the site's HTML page served in its place.
+    function isMissingResponse(resp, url) {
+        if (!resp || !resp.ok) return true;
+        return isHtml(resp) && !/\.html?$/i.test(String(url || '').split('?')[0]);
+    }
+
+    function pathOf(url) {
+        try { return decodeURI(String(url)); } catch (e) { return String(url); }
+    }
+
+    // The index is written from the very files being deployed, so with it
+    // loaded a path it doesn't list is missing - no request needed.
+    function isAvailable(url) {
+        var p = pathOf(url);
+        if (indexSet) return !!indexSet[p];
+        if (known[p] !== undefined) return known[p];
+        return undefined;
+    }
+
+    function headCheck(url) {
+        var p = pathOf(url);
+        if (waiting[p]) return waiting[p];
+        waiting[p] = new Promise(function (resolve) {
+            queue.push({ url: url, resolve: resolve });
+            pump();
+        }).then(function (ok) {
+            known[p] = ok;
+            delete waiting[p];
+            return ok;
+        });
+        return waiting[p];
+    }
+
+    function pump() {
+        while (inFlight < MAX_IN_FLIGHT && queue.length) {
+            var job = queue.shift();
+            inFlight++;
+            (function (job) {
+                fetch(job.url, { method: 'HEAD', cache: 'no-cache' })
+                    .then(function (r) { return !isMissingResponse(r, job.url); })
+                    .catch(function () { return false; })
+                    .then(function (ok) {
+                        inFlight--;
+                        job.resolve(ok);
+                        pump();
+                    });
+            })(job);
+        }
+    }
+
+    // { url: true | false } for every url, once each one is known.
+    function checkUrls(urls) {
+        var list = (urls || []).filter(Boolean);
+        return loadIndex().then(function () {
+            return Promise.all(list.map(function (url) {
+                var now = isAvailable(url);
+                if (now !== undefined) return now;
+                return headCheck(url);
+            })).then(function (results) {
+                var out = {};
+                list.forEach(function (url, i) { out[url] = results[i]; });
+                return out;
+            });
+        });
+    }
+
+    function submittalUrls(product, sel, data) {
+        return collectSelectionSubmittals(sel, (data && data.documentationColumns) || [])
+            .map(function (it) { return buildDocUrl(product, it.docColumn, it.filename); });
+    }
+
+    function docUrls(product, sel, data) {
+        return collectSelectionDocs(sel, (data && data.documentationColumns) || [])
+            .map(function (it) { return buildDocUrl(product, it.docColumn, it.filename); });
+    }
+
+    // Start loading the index straight away: by the time a schedule's
+    // buttons ask, it's usually there.
+    loadIndex();
 
     // =================================================================
     // Public: open every submittal PDF for a selection
@@ -58,15 +216,36 @@
         var docColumns = (data && data.documentationColumns) || [];
         var submittals = collectSelectionSubmittals(sel, docColumns);
         var generated = (opts && opts.generated) || [];
-        submittals.forEach(function (item) {
-            var url = buildDocUrl(product, item.docColumn, item.filename);
-            openInNewTab(url);
+        var urls = submittals.map(function (item) {
+            return buildDocUrl(product, item.docColumn, item.filename);
         });
-        generated.forEach(openGenerated);
-        if (!submittals.length) {
-            alert('No submittal is available for this item.' +
-                (generated.length ? ' Its performance sheet opened in a new tab.' : ''));
+
+        function finish(found) {
+            var opened = urls.filter(function (url) { return found[url] !== false; });
+            opened.forEach(openInNewTab);
+            generated.forEach(openGenerated);
+            if (!opened.length) {
+                alert((submittals.length
+                        ? 'The submittal for this item isn\'t available yet.'
+                        : 'No submittal is available for this item.') +
+                    (generated.length ? ' Its performance sheet opened in a new tab.' : ''));
+            } else if (opened.length < urls.length) {
+                alert((urls.length - opened.length) + ' of ' + urls.length +
+                    ' submittals for this item aren\'t available yet; the others opened in new tabs.');
+            }
         }
+
+        // Already known (the usual case - the asset index, or the check
+        // the button ran when it was drawn): open now, inside the click,
+        // so no popup blocker objects.
+        var allKnown = urls.every(function (url) { return isAvailable(url) !== undefined; });
+        if (allKnown) {
+            var found = {};
+            urls.forEach(function (url) { found[url] = isAvailable(url); });
+            finish(found);
+            return;
+        }
+        checkUrls(urls).then(finish);
     }
 
     // A generated document's PDF in a new tab. The object URL outlives the
@@ -153,10 +332,23 @@
         } else {
             var list = document.createElement('div');
             list.className = 'docs-list';
+            var rowsByUrl = {};
             items.forEach(function (item) {
-                list.appendChild(buildDocListItem(product, item));
+                var rowEl = buildDocListItem(product, item);
+                list.appendChild(rowEl);
+                if (!item.generated) {
+                    var url = buildDocUrl(product, item.docColumn, item.filename);
+                    (rowsByUrl[url] = rowsByUrl[url] || []).push(rowEl);
+                }
             });
             modal.appendChild(list);
+            // Grey out the files that aren't on the site yet.
+            checkUrls(Object.keys(rowsByUrl)).then(function (found) {
+                Object.keys(found).forEach(function (url) {
+                    if (found[url] !== false) return;
+                    rowsByUrl[url].forEach(markMissingRow);
+                });
+            });
         }
 
         var actions = document.createElement('div');
@@ -234,6 +426,23 @@
         row.appendChild(info);
         row.appendChild(actionBtn);
         return row;
+    }
+
+    // A popup row whose file isn't on the site: muted, its button off.
+    function markMissingRow(rowEl) {
+        rowEl.classList.add('docs-item-missing');
+        var btn = rowEl.querySelector('.docs-item-action');
+        if (btn) {
+            btn.disabled = true;
+            btn.title = 'This file isn\'t available yet';
+        }
+        var file = rowEl.querySelector('.docs-item-file');
+        if (file && !file.querySelector('.docs-item-missing-note')) {
+            var note = document.createElement('span');
+            note.className = 'docs-item-missing-note';
+            note.textContent = 'Not available yet';
+            file.appendChild(note);
+        }
     }
 
     // A generated document's row: same look, View builds it.

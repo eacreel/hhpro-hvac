@@ -132,7 +132,15 @@
                     return;
                 }
                 currentQuery = query.toLowerCase();
-                currentMatches = search(currentQuery);
+                // Equipment described in words ("10 ton heat pump RTU",
+                // JS/need_search.js) first, then model number matches.
+                var needs = [];
+                if (indexBuilt && HHpro.NeedSearch) {
+                    try { needs = HHpro.NeedSearch.suggest(query); } catch (e) { needs = []; }
+                }
+                currentMatches = needs.map(function (n) {
+                    return { kind: 'need', need: n };
+                }).concat(search(currentQuery));
                 activeIdx = currentMatches.length ? 0 : -1;
                 renderMatches();
                 position();
@@ -165,12 +173,24 @@
                 } else {
                     var empty = document.createElement('div');
                     empty.className = 'quick-lookup-empty';
-                    empty.textContent = 'No matching models.';
+                    empty.textContent = 'No matching models. You can also describe what you need, ' +
+                        'e.g. "10 ton heat pump RTU" or "400 cfm return grille".';
                     dropdown.appendChild(empty);
                 }
                 return;
             }
+            var hasNeeds = currentMatches.some(function (m) { return m.kind === 'need'; });
+            var hasModels = currentMatches.some(function (m) { return m.kind !== 'need'; });
             currentMatches.forEach(function (m, idx) {
+                if (hasNeeds && idx === 0) dropdown.appendChild(sectionLabel('Find equipment'));
+                if (hasNeeds && hasModels && m.kind !== 'need' &&
+                    currentMatches[idx - 1] && currentMatches[idx - 1].kind === 'need') {
+                    dropdown.appendChild(sectionLabel('Model numbers'));
+                }
+                if (m.kind === 'need') {
+                    dropdown.appendChild(buildNeedItem(m.need, idx));
+                    return;
+                }
                 var item = document.createElement('button');
                 item.type = 'button';
                 item.className = 'quick-lookup-item' +
@@ -214,6 +234,54 @@
             });
         }
 
+        function sectionLabel(text) {
+            var label = document.createElement('div');
+            label.className = 'quick-lookup-section';
+            label.textContent = text;
+            return label;
+        }
+
+        // A "search by need" row: the product, what was understood
+        // (chips) and where it goes (schedule or Design Search).
+        function buildNeedItem(need, idx) {
+            var item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'quick-lookup-item quick-lookup-need' +
+                (idx === activeIdx ? ' quick-lookup-item-active' : '');
+            item.setAttribute('role', 'option');
+            item.dataset.idx = String(idx);
+
+            var main = document.createElement('span');
+            main.className = 'quick-lookup-need-main';
+            var title = document.createElement('span');
+            title.className = 'quick-lookup-model';
+            title.textContent = need.title;
+            main.appendChild(title);
+            if (need.chips && need.chips.length) {
+                var chips = document.createElement('span');
+                chips.className = 'quick-lookup-need-chips';
+                need.chips.forEach(function (c) {
+                    var chip = document.createElement('span');
+                    chip.className = 'quick-lookup-need-chip';
+                    chip.textContent = c;
+                    chips.appendChild(chip);
+                });
+                main.appendChild(chips);
+            }
+
+            var action = document.createElement('span');
+            action.className = 'quick-lookup-product';
+            action.textContent = need.action + ' →';
+
+            item.appendChild(main);
+            item.appendChild(action);
+            item.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                pickMatch({ kind: 'need', need: need });
+            });
+            return item;
+        }
+
         function refreshActive() {
             var items = dropdown.querySelectorAll('.quick-lookup-item');
             for (var i = 0; i < items.length; i++) {
@@ -228,6 +296,10 @@
             inputEl.value = '';
             hide();
             inputEl.blur();
+            if (m.kind === 'need') {
+                m.need.go();
+                return;
+            }
             // Pass the model string so the product view can filter the
             // schedule down to just selections containing it.
             HHpro.App.showView('product', {

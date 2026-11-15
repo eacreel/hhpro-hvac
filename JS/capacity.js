@@ -111,6 +111,19 @@
         return text.replace(/\d+(\.\d+)?/g, function (n) { return String(rise(Number(n))); });
     }
 
+    // Shown text for a capacity value or dropdown option: thousands
+    // separators on 1,000+ like the rest of the schedule (JS/format.js).
+    function fmt(v) {
+        return (HHpro.Format && HHpro.Format.number) ? HHpro.Format.number(v) : String(v);
+    }
+
+    // An output cell's text ("-" when there's no value, muted).
+    function paintOut(td, value) {
+        var text = (value == null) ? '-' : fmt(value);
+        if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, text);
+        else td.textContent = text;
+    }
+
     var ARIA = {
         eatDb:     'Entering air dry bulb (°F)',
         eatWb:     'Entering air wet bulb (°F)',
@@ -762,7 +775,7 @@
             vals.forEach(function (v) {
                 var o = el('option');
                 o.value = String(v);
-                o.textContent = String(v);
+                o.textContent = fmt(v);
                 if (v === st[field]) o.selected = true;
                 sel.appendChild(o);
             });
@@ -770,7 +783,7 @@
 
         function setOut(field, value) {
             (outCells[field] || []).forEach(function (td) {
-                td.textContent = (value == null) ? '-' : String(value);
+                paintOut(td, value);
             });
         }
 
@@ -871,8 +884,7 @@
         function buildOutput(td, field) {
             td.classList.add('capacity-output-cell');
             (outCells[field] = outCells[field] || []).push(td);
-            var v = outValue(field);
-            td.textContent = (v == null) ? '-' : String(v);
+            paintOut(td, outValue(field));
         }
 
         function getState() {
@@ -1019,7 +1031,7 @@
             vals.forEach(function (v) {
                 var o = el('option');
                 o.value = String(v);
-                o.textContent = String(v);
+                o.textContent = fmt(v);
                 if (v === cur) o.selected = true;
                 sel.appendChild(o);
             });

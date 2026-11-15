@@ -326,6 +326,14 @@
     background-color: var(--color-surface);
 }
 
+/* A lone "-" (no value for this unit) is muted so the real values stand
+   out (HHpro.Format.setCellText in JS/format.js marks the cell). Covers
+   the browse page, Design Search and the project schedule. */
+.schedule-table td.cell-dash {
+    color: var(--color-text-muted);
+    opacity: 0.55;
+}
+
 /* Headers wrap at word boundaries so long names ("OPERATING WEIGHT") can
    break onto two lines and keep the column narrower. word-break: normal
    means individual words WON'T be broken mid-letter even if they don't
