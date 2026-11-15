@@ -78,12 +78,29 @@
             }
         },
         {
+            // 1:1 mini splits AND multi splits (MINI SPLIT DATA.xlsx, two
+            // schedule tabs since Nov 2026). The display name is also the
+            // product's row name on the Users Permissions tab; the key and
+            // JSON name stay so saved projects keep resolving.
             productKey: 'mini_splits',
-            displayName: 'Daikin Mini Splits',
+            displayName: 'Daikin Mini & Multi Splits',
             jsonFile: 'DATA/JSON/mini_splits.json',
             pictureFile: 'DATA/PICTURES/MINI SPLITS.jpg',
             assetsFolder: 'ASSETS/MINI SPLITS',
             tileClass: 'tile-mini-splits',
+            // Hide every column with nothing but "-" (or blanks) in the rows
+            // in view: multi splits have no LDB / LWB / sensible / heat pump
+            // capacity, 1:1 systems no Available Capacity. Browse page per
+            // the filters; project schedule + exports per the project items.
+            hideEmptyColumns: true,
+            emptyColumnValues: ['-'],
+            // ~28,000 multi split systems: render at most this many schedule
+            // rows (indoor unit rows, not systems) until the filters narrow it.
+            maxBrowseRows: 500,
+            // A SCHEDULE NOTES line starting with this applies to multi
+            // splits only ("*Capacity listed is nominal ..."): it is left
+            // out unless a multi split system is in the project.
+            multiOnlyNotePrefix: '*',
             // Indoor-unit-type picker gallery rendered above the filters
             // on the browse page (see JS/mini_splits.js). `type` must
             // match a TYPE (INDOOR UNIT #1) filter value exactly -
@@ -423,6 +440,48 @@
     // In-memory cache for loaded product JSON (filled lazily by loadProduct)
     var productDataCache = {};
 
+    // Rebuild the normal selections from a "compactSelections" block (the
+    // multi splits, see convert_mini_multi_split_file in convert_to_json.py)
+    // and append them to data.selections. Each system is [id, [row numbers],
+    // [filter value numbers]]. Rows are shared between systems: a row's
+    // scheduleData etc. are the same objects everywhere it appears, which
+    // is safe because the only writers (the leaving-air / temp rise fills)
+    // compute from the row itself. filterData lives on the first row, as
+    // on every multi-row selection.
+    function expandCompactSelections(data) {
+        var c = data && data.compactSelections;
+        if (!c || !Array.isArray(c.systems)) return data;
+        var filterCols = data.filterColumns || [];
+        var values = c.filterValues || [];
+        var rows = c.rows || [];
+        var empty = {};
+        var out = data.selections || (data.selections = []);
+        c.systems.forEach(function (sys) {
+            var fd = {};
+            (sys[2] || []).forEach(function (code, i) {
+                if (code < 0 || !filterCols[i]) return;
+                fd[filterCols[i].name] = values[i][code];
+            });
+            out.push({
+                id: sys[0],
+                rows: sys[1].map(function (ri, k) {
+                    var t = rows[ri];
+                    var row = {
+                        scheduleData: t.scheduleData,
+                        filterData: k === 0 ? fd : empty,
+                        documentationData: t.documentationData || empty
+                    };
+                    if (t.refrigerantData) row.refrigerantData = t.refrigerantData;
+                    if (t.scheduleCellSpans) row.scheduleCellSpans = t.scheduleCellSpans;
+                    if (t.scheduleCellSuffix) row.scheduleCellSuffix = t.scheduleCellSuffix;
+                    return row;
+                })
+            });
+        });
+        delete data.compactSelections;
+        return data;
+    }
+
     // One-time post-processing of a freshly loaded product JSON. Split
     // system schedules leave their leaving-air cells (LDB / LWB, LAT (WB))
     // blank in the Excel; the site fills them from each row's rated point
@@ -530,6 +589,7 @@
                     // its continuation files (selections-only chunks in
                     // the same folder); fetch them all and re-join the
                     // selections in order before caching.
+                    expandCompactSelections(data);
                     var cont = data.continuationFiles;
                     if (!cont || !cont.length) {
                         productDataCache[productKey] = postProcess(productKey, data);

@@ -1,8 +1,15 @@
 /* ============================================================
-   HHpro - MINI SPLITS product extension
+   HHpro - MINI & MULTI SPLITS product extension
    ------------------------------------------------------------
-   Multi-row (multi-indoor-unit) rendering is handled generically
-   by base.js via computeCellLayout.
+   One product for the 1:1 mini splits (MINI SPLITS tab) and the
+   multi splits (MULTI SPLITS tab, ~28,000 systems stored compactly
+   and rebuilt by data.js expandCompactSelections). Multi-row
+   (multi-indoor-unit) rendering is handled generically by base.js
+   via computeCellLayout.
+
+   afterLoad moves saved items off pre-Nov-2026 multi split ids
+   (the old ...AVJU9 outdoor models) onto their new systems, using
+   the JSON's selectionAliases (see convert_to_json.py).
 
    Mini splits DO customize which filters are visible:
    - By default, all "(INDOOR UNIT #n)" filters are hidden.
@@ -26,6 +33,26 @@
     var TYPE_1_FILTER = 'TYPE (INDOOR UNIT #1)';
 
     HHpro.ProductExtensions.mini_splits = {
+        // Every time the JSON is handed out: an open cart / project item on
+        // a retired selection id moves to the system it was aliased to, and
+        // its cart label is rebuilt (it named the old outdoor model).
+        afterLoad: function (data) {
+            var aliases = data && data.selectionAliases;
+            if (!aliases || !HHpro.Cart || !HHpro.Cart.migrateItems) return;
+            var product = HHpro.Data.getProduct('mini_splits');
+            HHpro.Cart.migrateItems(function (it) {
+                if (!it || it.productKey !== 'mini_splits') return false;
+                var to = aliases[it.selectionId];
+                if (!to) return false;
+                it.selectionId = to;
+                var sel = findSelection(data, to);
+                if (sel && HHpro.Cart.computeLabel) {
+                    it.label = HHpro.Cart.computeLabel(product, sel, data);
+                }
+                return true;
+            });
+        },
+
         /**
          * Return the subset of filter columns that should be shown right now
          * based on the current filter values.
@@ -124,6 +151,14 @@
             return wrap;
         }
     };
+
+    function findSelection(data, id) {
+        var sels = (data && data.selections) || [];
+        for (var i = 0; i < sels.length; i++) {
+            if (sels[i].id === id) return sels[i];
+        }
+        return null;
+    }
 
     function findFilter(filters, name) {
         for (var i = 0; i < filters.length; i++) {

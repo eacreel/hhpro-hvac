@@ -40,11 +40,14 @@ How to add a new DOCUMENTATION column:
        in and the expected file extension.
 """
 
+import html
 import json
 import math
 import os
 import re
 import sys
+import time
+import zipfile
 from datetime import datetime
 from fractions import Fraction
 
@@ -170,6 +173,10 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    # Since 2026-11-15 this workbook has no SCHEDULE tab: 1:1 systems on
+    # MINI SPLITS, multi-zone systems on MULTI SPLITS (~117k rows), shared
+    # SCHEDULE NOTES. See convert_mini_multi_split_file. headerRows and
+    # dataStartRow apply to both tabs.
     "MINI SPLIT DATA.xlsx": {
         "productType": "MINI SPLITS",
         "outputFileName": "mini_splits.json",
@@ -177,9 +184,24 @@ PRODUCT_CONFIGS = {
         "dataStartRow": 7,
         "supportsMultiRow": True,
         "assetsFolder": "MINI SPLITS",
+        "miniMultiSplit": {
+            "singleSheet": "MINI SPLITS",
+            "multiSheet": "MULTI SPLITS",
+            # Rows per multi split system (filter column).
+            "unitCountFilter": "NUMBER OF INDOOR UNITS",
+            # Outdoor unit columns (first, last). On the site they show once
+            # per system, spanning its indoor rows.
+            "systemColumns": ["R", "AD"],
+            # MODEL columns that name a system (ids, legacy matching).
+            "modelColumns": {"outdoor": "AB", "indoor": "Q"},
+            # Multi split indoor capacities are nominal: the site shows
+            # them as "7000*", pointing at the "*" schedule note.
+            "nominalMark": {"columns": ["F"], "suffix": "*"},
+            "legacyIdsFile": "MINI SPLIT LEGACY IDS.json",
+        },
         "searchSchema": {
-            "displayName": "Daikin Mini Splits",
-            "description": "Ductless split systems (1:1 and multi-zone). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
+            "displayName": "Daikin Mini & Multi Splits",
+            "description": "Ductless split systems (1:1 mini splits and multi splits). Enter per-zone capacity targets; results include systems with at least one indoor unit matching.",
             "targets": [
                 {"label": "Indoor Unit Cooling Capacity",             "col": "F", "unit": "BTU/h", "defaultTolerance": 10},
                 {"label": "Indoor Unit Sensible Capacity",            "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
@@ -2634,6 +2656,436 @@ def convert_combined_group(script_dir, group, output_path):
 # MAIN CONVERSION
 # -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
+# MINI + MULTI SPLITS (two schedule tabs -> one JSON)
+# -----------------------------------------------------------------------------
+# Since November 2026 MINI SPLIT DATA.xlsx has no SCHEDULE tab. Instead:
+#   MINI SPLITS     1:1 systems, one row each (row-1 sections, title in row
+#                   2, headers below it, data from dataStartRow).
+#   MULTI SPLITS    multi-zone systems, same columns. One row per indoor unit
+#                   and NO merges joining a system's rows: a system is
+#                   NUMBER OF INDOOR UNITS consecutive rows, each repeating
+#                   the outdoor unit, filters and documents (~117,000 rows,
+#                   ~28,000 systems).
+#   SCHEDULE NOTES  shared notes. A note starting with "*" is for multi
+#                   splits only; the site shows it only when one is in the
+#                   project.
+#
+# Both become one mini_splits.json that the site reads like any product:
+#   "selections"         the 1:1 systems, in the usual shape.
+#   "compactSelections"  the multi splits. Their 117k rows are only a few
+#                        hundred distinct rows, so each distinct row is
+#                        stored once ("rows") and each system is
+#                        [id, [row numbers], [filter value numbers]], the
+#                        filter values numbered within "filterValues" (one
+#                        list per filterColumns entry, -1 = blank). Written
+#                        in full the JSON would be ~350 MB; Cloudflare Pages
+#                        stops at 25 MiB. The site (data.js) rebuilds normal
+#                        selections on load, with the outdoor unit columns
+#                        (systemColumns) on the first row only so they span
+#                        the indoor rows like the old merged layout.
+# The workbook is read in openpyxl's read-only mode (merges come straight
+# from the sheet XML): about a minute instead of five and several GB.
+#
+# Ids: the 1:1 systems keep their pre-rework sel_NNNN ids, and the old multi
+# split ids are aliased to their new systems ("selectionAliases"), via
+# MINI SPLIT LEGACY IDS.json (see _mm_assign_ids). Every other id is built
+# from the system's models, ms_<outdoor>_<indoor 1>_<indoor 2>..., so it
+# survives row inserts or a re-sort of the generated MULTI SPLITS tab.
+# -----------------------------------------------------------------------------
+
+class _GridCell:
+    __slots__ = ("value",)
+
+    def __init__(self, value):
+        self.value = value
+
+
+class _GridMerges:
+    def __init__(self, ranges):
+        self.ranges = ranges
+
+
+class _SheetGrid:
+    """Just enough of an openpyxl worksheet (cell(row, column).value,
+    merged_cells.ranges, max_row, max_column) for the schedule helpers
+    above, built from a read-only sheet's values plus its merges."""
+
+    def __init__(self, title, rows, merges):
+        self.title = title
+        self._rows = rows
+        self.merged_cells = _GridMerges(merges)
+        self.max_row = len(rows)
+        self.max_column = max((len(r) for r in rows), default=0)
+
+    def cell(self, row, column):
+        r = self._rows[row - 1] if 0 < row <= len(self._rows) else ()
+        return _GridCell(r[column - 1] if 0 < column <= len(r) else None)
+
+
+_MERGE_REF = re.compile(rb'<mergeCell\s+ref="([A-Z]+[0-9]+:[A-Z]+[0-9]+)"')
+
+
+def _xlsx_sheet_merges(path, sheet_names):
+    """{sheet name: [CellRange, ...]} for the named sheets, read from the
+    workbook XML (openpyxl's read-only mode has no merged cells). The
+    sheet XML is streamed: the MULTI SPLITS one is well over 100 MB."""
+    from openpyxl.worksheet.cell_range import CellRange
+
+    def attr(tag, name):
+        m = re.search(r'\s' + name + r'="([^"]*)"', tag)
+        return html.unescape(m.group(1)) if m else None
+
+    out = {}
+    with zipfile.ZipFile(path) as z:
+        rels = z.read("xl/_rels/workbook.xml.rels").decode("utf-8")
+        targets = {}
+        for m in re.finditer(r"<Relationship\b[^>]*>", rels):
+            targets[attr(m.group(0), "Id")] = attr(m.group(0), "Target")
+        book = z.read("xl/workbook.xml").decode("utf-8")
+        for m in re.finditer(r"<sheet\b[^>]*>", book):
+            tag = m.group(0)
+            name = attr(tag, "name")
+            if name not in sheet_names:
+                continue
+            rid = attr(tag, r"\w+:id")
+            target = targets.get(rid) or ""
+            member = target.lstrip("/") if target.startswith("/") else "xl/" + target
+            refs = []
+            with z.open(member) as fh:
+                tail = b""
+                while True:
+                    chunk = fh.read(1 << 22)
+                    if not chunk:
+                        break
+                    buf = tail + chunk
+                    last_end = 0
+                    for mm in _MERGE_REF.finditer(buf):
+                        refs.append(mm.group(1).decode("ascii"))
+                        last_end = mm.end()
+                    tail = buf[max(last_end, len(buf) - 200):]
+            out[name] = [CellRange(ref) for ref in refs]
+    return out
+
+
+def _mm_tab_layout(ws, config):
+    """Header, filter / document / refrigerant columns and data extent of
+    one tab, read the way convert_file reads a SCHEDULE tab."""
+    sections = find_row1_sections(ws)
+    schedule_cols = sections["SCHEDULE RANGE"]
+    cell_to_merge, anchors = merge_lookup(ws)
+    refrigerant_cols = sections.get("REFRIGERANT CALCULATIONS")
+    return {
+        "scheduleCols": schedule_cols,
+        "cellToMerge": cell_to_merge,
+        "title": clean_value(ws.cell(row=2, column=schedule_cols[0]).value),
+        "header": extract_schedule_header(ws, schedule_cols, config["headerRows"],
+                                          cell_to_merge, anchors),
+        "filters": extract_filter_columns(ws, sections["FILTERS"]),
+        "docs": extract_doc_columns(ws, sections["DOCUMENTATION"]),
+        "refrigerant": (extract_refrigerant_columns(ws, refrigerant_cols)
+                        if refrigerant_cols else []),
+        "lastRow": find_last_data_row(ws, config["dataStartRow"], schedule_cols),
+    }
+
+
+def _mm_docs(ws, row, doc_columns):
+    """documentationData for a row, without "-" (no document)."""
+    return {k: v for k, v in row_data_for_range_by_name(ws, row, doc_columns).items()
+            if v != "-"}
+
+
+def _mm_family(model):
+    """Outdoor model family for legacy matching: '2MXM18AVJU9' and
+    '2MXM18AVJU8' are both '2MXM18'."""
+    m = re.match(r"\d*[A-Z]+\d+", str(model).strip().upper())
+    return m.group(0) if m else str(model).strip().upper()
+
+
+def _mm_content_id(models):
+    return "ms_" + "_".join(re.sub(r"[^A-Za-z0-9]+", "-", str(m).strip()) for m in models)
+
+
+def _mm_assign_ids(systems, legacy_path):
+    """systems: list of dicts with "models" ([outdoor, indoor...]) and "id"
+    (filled in here). Returns the selectionAliases dict.
+
+    A legacy id whose models match a system exactly becomes that system's
+    id. Any other legacy id is aliased to the system with the same outdoor
+    family and the same indoor models in the same order. The rest get
+    ms_... content ids (numbered _2, _3 if two systems share models)."""
+    legacy = {}
+    if legacy_path and os.path.exists(legacy_path):
+        with open(legacy_path, encoding="utf-8") as f:
+            legacy = (json.load(f) or {}).get("ids") or {}
+    elif legacy_path:
+        print(f"  WARNING: {os.path.basename(legacy_path)} not found - pre-rework "
+              f"selection ids are not kept; saved project items will show missing.")
+
+    by_models = {}
+    for s in systems:
+        by_models.setdefault(tuple(s["models"]), []).append(s)
+
+    for old_id, models in legacy.items():
+        hits = by_models.get(tuple(models))
+        if hits and hits[0]["id"] is None:
+            hits[0]["id"] = old_id
+
+    used = {s["id"] for s in systems if s["id"]}
+    dupes = 0
+    for s in systems:
+        if s["id"]:
+            continue
+        base = _mm_content_id(s["models"])
+        new_id, n = base, 1
+        while new_id in used:
+            n += 1
+            new_id = f"{base}_{n}"
+        if n > 1:
+            dupes += 1
+        s["id"] = new_id
+        used.add(new_id)
+    if dupes:
+        print(f"  WARNING: {dupes} system(s) repeat another system's models exactly "
+              f"(ids numbered _2, _3 ...).")
+
+    by_family = {}
+    for s in systems:
+        key = (_mm_family(s["models"][0]),) + tuple(s["models"][1:])
+        by_family.setdefault(key, s["id"])
+    aliases, unmatched = {}, []
+    for old_id, models in legacy.items():
+        if old_id in used:
+            continue
+        target = by_family.get((_mm_family(models[0]),) + tuple(models[1:]))
+        if target:
+            aliases[old_id] = target
+        else:
+            unmatched.append(old_id)
+    kept = sum(1 for k in legacy if k in used)
+    if legacy:
+        print(f"  -> legacy ids: {kept} kept, {len(aliases)} moved to a new system, "
+              f"{len(unmatched)} with no match")
+    if unmatched:
+        print(f"  WARNING: no system in the workbook for {', '.join(unmatched[:12])}"
+              f"{' ...' if len(unmatched) > 12 else ''} (saved items on them show missing).")
+    return aliases
+
+
+def _mm_check_model_column(layout, letter, what):
+    for row in layout["header"]:
+        for cell in row:
+            if cell["col"] == letter:
+                if str(cell["value"] or "").strip().upper() == "MODEL":
+                    return
+    raise ValueError(f"miniMultiSplit modelColumns '{what}' is {letter}, but no header "
+                     f"cell in {letter} reads MODEL - update the config to the new column.")
+
+
+def convert_mini_multi_split_file(input_path, config, output_path):
+    """MINI SPLITS + MULTI SPLITS tabs -> one JSON (see the section notes)."""
+    mm = config["miniMultiSplit"]
+    single_name, multi_name = mm["singleSheet"], mm["multiSheet"]
+    print(f"\nConverting: {os.path.basename(input_path)}")
+    t0 = time.time()
+
+    merges = _xlsx_sheet_merges(input_path, (single_name, multi_name))
+    wb = openpyxl.load_workbook(input_path, data_only=True, read_only=True)
+    try:
+        grids = {}
+        for name in (single_name, multi_name):
+            if name not in wb.sheetnames:
+                raise ValueError(f"'{os.path.basename(input_path)}' has no '{name}' tab.")
+            rows = [tuple(r) for r in wb[name].iter_rows(values_only=True)]
+            grids[name] = _SheetGrid(name, rows, merges.get(name, []))
+            print(f"  read {name}: {len(rows):,} rows, {len(merges.get(name, [])):,} "
+                  f"merged cells ({time.time() - t0:.0f} s)")
+        schedule_notes = extract_schedule_notes(wb, config.get("notesFormat"))
+    finally:
+        wb.close()
+
+    ws1, ws2 = grids[single_name], grids[multi_name]
+    lay1, lay2 = _mm_tab_layout(ws1, config), _mm_tab_layout(ws2, config)
+    for key, label in (("scheduleCols", "SCHEDULE RANGE"), ("header", "schedule headers"),
+                       ("filters", "FILTERS"), ("docs", "DOCUMENTATION"),
+                       ("refrigerant", "REFRIGERANT CALCULATIONS")):
+        if lay1[key] != lay2[key]:
+            raise ValueError(f"The {multi_name} tab's {label} don't match the "
+                             f"{single_name} tab's - both tabs need the same columns.")
+    sc0, sc1 = lay1["scheduleCols"]
+    filter_columns, doc_columns = lay1["filters"], lay1["docs"]
+    refrigerant_columns = lay1["refrigerant"]
+    start = config["dataStartRow"]
+
+    out_col = column_index_from_string(mm["modelColumns"]["outdoor"])
+    in_col = column_index_from_string(mm["modelColumns"]["indoor"])
+    _mm_check_model_column(lay1, mm["modelColumns"]["outdoor"], "outdoor")
+    _mm_check_model_column(lay1, mm["modelColumns"]["indoor"], "indoor")
+    sys_lo, sys_hi = (column_index_from_string(c) for c in mm["systemColumns"])
+    mark = mm.get("nominalMark") or {}
+    mark_cols = mark.get("columns") or []
+
+    def model(ws, r, c):
+        return str(clean_value(ws.cell(row=r, column=c).value) or "").strip()
+
+    # ---- 1:1 systems: the usual shape, one row each.
+    groups = build_groups(ws1, start, lay1["lastRow"], lay1["scheduleCols"], False,
+                          lay1["cellToMerge"])
+    singles = extract_selections(
+        ws1, groups, lay1["scheduleCols"], None, None, filter_columns, doc_columns,
+        lay1["cellToMerge"], refrigerant_columns_meta=refrigerant_columns or None)
+    for sel, (lo, _) in zip(singles, groups):
+        sel["rows"][0]["documentationData"] = _mm_docs(ws1, lo, doc_columns)
+        sel["models"] = [model(ws1, lo, out_col), model(ws1, lo, in_col)]
+        sel["id"] = None
+
+    # ---- Multi split systems: NUMBER OF INDOOR UNITS consecutive rows.
+    count_meta = next((fc for fc in filter_columns if fc["name"] == mm["unitCountFilter"]), None)
+    if not count_meta:
+        raise ValueError(f"No '{mm['unitCountFilter']}' filter column.")
+    count_col = column_index_from_string(count_meta["col"])
+    last2 = lay2["lastRow"]
+    blocks, r = [], start
+    while r <= last2:
+        raw = clean_value(ws2.cell(row=r, column=count_col).value)
+        if raw is None and not row_data_for_range(ws2, r, sc0, sc1):
+            r += 1          # blank row
+            continue
+        try:
+            n = int(float(raw))
+        except (TypeError, ValueError):
+            raise ValueError(f"{multi_name} row {r}: {mm['unitCountFilter']} is {raw!r}, "
+                             f"not a number of indoor units.")
+        if n < 1 or r + n - 1 > last2:
+            raise ValueError(f"{multi_name} row {r}: {n} indoor units runs past the last row.")
+        blocks.append((r, r + n - 1))
+        r += n
+
+    row_index, rows_out = {}, []
+
+    def template(r, first):
+        sd = row_data_for_range(ws2, r, sc0, sc1)
+        spans = row_horizontal_spans(lay2["cellToMerge"], r, sc0, sc1)
+        if not first:
+            sd = {k: v for k, v in sd.items()
+                  if not sys_lo <= column_index_from_string(k) <= sys_hi}
+            spans = {k: v for k, v in spans.items()
+                     if not sys_lo <= column_index_from_string(k) <= sys_hi}
+        entry = {"scheduleData": sd, "documentationData": _mm_docs(ws2, r, doc_columns)}
+        if refrigerant_columns:
+            entry["refrigerantData"] = (row_data_for_range_by_name(ws2, r, refrigerant_columns)
+                                        if first else {})
+        if spans:
+            entry["scheduleCellSpans"] = spans
+        suffix = {c: mark["suffix"] for c in mark_cols if sd.get(c) not in (None, "-")}
+        if suffix:
+            entry["scheduleCellSuffix"] = suffix
+        key = json.dumps(entry, sort_keys=True, ensure_ascii=False)
+        if key not in row_index:
+            row_index[key] = len(rows_out)
+            rows_out.append(entry)
+        return row_index[key]
+
+    filter_values = [[] for _ in filter_columns]
+    filter_lookup = [{} for _ in filter_columns]
+    multis, mismatches = [], []
+    for lo, hi in blocks:
+        filters0 = row_data_for_range(ws2, lo, column_index_from_string(filter_columns[0]["col"]),
+                                      column_index_from_string(filter_columns[-1]["col"]))
+        outdoor0 = row_data_for_range(ws2, lo, sys_lo, sys_hi)
+        for rr in range(lo + 1, hi + 1):
+            if (row_data_for_range(ws2, rr, column_index_from_string(filter_columns[0]["col"]),
+                                   column_index_from_string(filter_columns[-1]["col"])) != filters0
+                    or row_data_for_range(ws2, rr, sys_lo, sys_hi) != outdoor0):
+                mismatches.append(rr)
+        fd = row_data_for_range_by_name(ws2, lo, filter_columns)
+        codes = []
+        for i, fc in enumerate(filter_columns):
+            v = fd.get(fc["name"])
+            if v is None:
+                codes.append(-1)
+                continue
+            k = json.dumps(v)
+            if k not in filter_lookup[i]:
+                filter_lookup[i][k] = len(filter_values[i])
+                filter_values[i].append(v)
+            codes.append(filter_lookup[i][k])
+        multis.append({
+            "id": None,
+            "rows": [template(rr, rr == lo) for rr in range(lo, hi + 1)],
+            "filters": codes,
+            "models": [model(ws2, lo, out_col)] + [model(ws2, rr, in_col)
+                                                   for rr in range(lo, hi + 1)],
+        })
+    if mismatches:
+        print(f"  WARNING: {len(mismatches)} {multi_name} row(s) don't repeat their "
+              f"system's first-row filters / outdoor unit (first row's values used): "
+              f"rows {', '.join(str(x) for x in mismatches[:10])}"
+              f"{' ...' if len(mismatches) > 10 else ''}")
+
+    script_dir = os.path.dirname(os.path.abspath(input_path))
+    legacy = mm.get("legacyIdsFile")
+    aliases = _mm_assign_ids(singles + multis,
+                             os.path.join(script_dir, legacy) if legacy else None)
+    for sel in singles:
+        del sel["models"]
+
+    payload = {
+        "productType":               config["productType"],
+        "assetsFolder":              config.get("assetsFolder"),
+        "scheduleTitle":             lay1["title"],
+        "supportsMultiRowSelections": True,
+        "searchSchema":              config["searchSchema"],
+        "scheduleHeader": {
+            "columnLetters": [get_column_letter(c) for c in range(sc0, sc1 + 1)],
+            "rows":          lay1["header"],
+        },
+        "filterColumns":        filter_columns,
+        "documentationColumns": doc_columns,
+        "refrigerantColumns":   refrigerant_columns,
+        "selections":           singles,
+        "scheduleNotes":        schedule_notes,
+    }
+    if aliases:
+        payload["selectionAliases"] = aliases
+    placeholder = "@@SYSTEMS@@"
+    payload["compactSelections"] = {
+        "about": ("Multi split systems (the " + multi_name + " tab). Each system is "
+                  "[id, [rows], [filterValues]]: indexes into rows (in indoor unit "
+                  "order) and, per filterColumns entry, into that filter's "
+                  "filterValues list (-1 = blank). The site rebuilds normal "
+                  "selections from these on load (JS/data.js)."),
+        "rows":         rows_out,
+        "filterValues": filter_values,
+        "systems":      placeholder,
+    }
+    payload["_meta"] = {
+        "sourceFile":        os.path.basename(input_path),
+        "generatedAt":       datetime.now().isoformat(timespec="seconds"),
+        "singleRowCount":    lay1["lastRow"] - start + 1,
+        "multiRowCount":     last2 - start + 1,
+        "selectionCount":    len(singles) + len(multis),
+        "multiSystemCount":  len(multis),
+        "distinctMultiRows": len(rows_out),
+    }
+
+    text = json.dumps(payload, indent=2, ensure_ascii=False)
+    systems_text = "[\n" + ",\n".join(
+        "      " + json.dumps([s["id"], s["rows"], s["filters"]],
+                              ensure_ascii=False, separators=(",", ":"))
+        for s in multis) + "\n    ]"
+    text = text.replace(json.dumps(placeholder), systems_text, 1)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+    size = os.path.getsize(output_path) / 1048576
+    print(f"  -> {len(singles)} mini split + {len(multis):,} multi split systems "
+          f"({len(rows_out)} distinct multi split rows) written to "
+          f"{os.path.basename(output_path)}, {size:.1f} MiB ({time.time() - t0:.0f} s)")
+    if size > 24:
+        print("  WARNING: over 24 MiB - Cloudflare Pages rejects files over 25 MiB.")
+
+
 def tag_column_dropped(ws, schedule_cols, config):
     """True when config asks for dropTagColumn and the SCHEDULE RANGE's
     first column really is headed TAG (row 3, under the title). The site
@@ -2919,6 +3371,8 @@ def main():
         try:
             if config.get("multiSchedule"):
                 convert_multi_schedule_file(input_path, config, output_path)
+            elif config.get("miniMultiSplit"):
+                convert_mini_multi_split_file(input_path, config, output_path)
             else:
                 convert_file(input_path, config, output_path)
             converted += 1

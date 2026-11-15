@@ -297,13 +297,14 @@ WHAT'S IN THE GRID
             hidden = (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns)
                 ? HHpro.Capacity.scheduleHiddenColumns(productKey, data, defSels)
                 : [];
-            // hideEmptyColumns products (diffusers): mirror the on-screen
-            // default of dropping columns with no data for these items.
+            // hideEmptyColumns products (diffusers, mini & multi splits):
+            // mirror the on-screen default of dropping columns with no data
+            // (or only "-", per emptyColumnValues) for these items.
             var hepProduct = HHpro.Data && HHpro.Data.getProduct
                 ? HHpro.Data.getProduct(productKey) : null;
             if (hepProduct && hepProduct.hideEmptyColumns &&
                 HHpro.Schedule && HHpro.Schedule.emptyDataColumns) {
-                HHpro.Schedule.emptyDataColumns(data, defSels).forEach(function (l) {
+                HHpro.Schedule.emptyDataColumns(data, defSels, hepProduct).forEach(function (l) {
                     if (hidden.indexOf(l) < 0) hidden.push(l);
                 });
             }
@@ -594,7 +595,7 @@ WHAT'S IN THE GRID
         // occupies the right-hand columns of the same rows; the anchor
         // tells the XLSX/PDF renderers where the image goes.
         var legendAnchor = appendNotesSection(rows, merges, colCount,
-            productKey, data, curRow, notesCtx, legendImage);
+            productKey, data, curRow, notesCtx, legendImage, entries);
 
         // Column width heuristics (Excel character units)
         var colWidths = computeColumnWidths(
@@ -1200,8 +1201,8 @@ WHAT'S IN THE GRID
     // =================================================================
 
     function appendNotesSection(rows, merges, colCount, productKey, data,
-                                startRow, notesCtx, legendImage) {
-        var notes = collectVisibleNotes(productKey, data);
+                                startRow, notesCtx, legendImage, entries) {
+        var notes = collectVisibleNotes(productKey, data, entries);
         var r = startRow;
         // Cell descriptor for the watermark line. Always emitted as the
         // last row of whatever notes box is last so it sits inside the
@@ -1386,8 +1387,10 @@ WHAT'S IN THE GRID
      * Merge data.scheduleNotes with the user's state-level edits
      * (deleted built-ins, added custom notes, removed customs) to
      * produce the notes that should actually print on the schedule.
+     * `entries` ({ item, selection } per schedule unit) decides notes that
+     * only apply to multi splits (data.js multiOnlyNotePrefix).
      */
-    function collectVisibleNotes(productKey, data) {
+    function collectVisibleNotes(productKey, data, entries) {
         var sn = data.scheduleNotes;
         var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
             ? HHpro.Cart.getProjectExtra(productKey) || {} : {};
@@ -1439,8 +1442,20 @@ WHAT'S IN THE GRID
         var rawList = [];
         if (sn && Array.isArray(sn.notes)) rawList = sn.notes;
         else if (Array.isArray(sn)) rawList = sn;
+        // A note starting with the product's multiOnlyNotePrefix ("*" on
+        // the mini & multi splits) prints only when a multi split (a
+        // selection with more than one indoor row) is on the schedule.
+        var noteProduct = (HHpro.Data && HHpro.Data.getProduct)
+            ? HHpro.Data.getProduct(productKey) : null;
+        var multiPrefix = noteProduct && noteProduct.multiOnlyNotePrefix;
+        var skipMultiOnly = !!multiPrefix && !(entries || []).some(function (e) {
+            return e && e.selection && e.selection.rows && e.selection.rows.length > 1;
+        });
         var visibleBuiltIn = rawList
-            .filter(function (_, i) { return !deletedSet[i]; })
+            .filter(function (n, i) {
+                if (deletedSet[i]) return false;
+                return !(skipMultiOnly && String(n || '').indexOf(multiPrefix) === 0);
+            })
             .map(function (n) { return String(n || ''); });
         return {
             format: 'list',
@@ -2492,6 +2507,16 @@ WHAT'S IN THE GRID
 
     /** Build the 2D layout of data cells with outdoor-column rowSpans
      *  preserved. Mirrors the logic in project_view.js. */
+    // A row's value for a column with its scheduleCellSuffix appended - the
+    // "*" after a multi split's nominal indoor capacity (blank and "-"
+    // cells get none). Same rule as base.js.
+    function suffixedCellValue(row, colLetter) {
+        var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+        var sfx = row.scheduleCellSuffix && row.scheduleCellSuffix[colLetter];
+        if (!sfx || v === undefined || v === null || v === '' || v === '-') return v;
+        return String(v) + sfx;
+    }
+
     function computeCellLayout(sel, visibleLetters) {
         var numRows = sel.rows.length;
         var layout = [];
@@ -2510,7 +2535,7 @@ WHAT'S IN THE GRID
                 }
             } else if (rowsWithValue.length === 1 && rowsWithValue[0] === 0 && numRows > 1) {
                 layout[0][colLetter] = {
-                    value: sel.rows[0].scheduleData[colLetter],
+                    value: suffixedCellValue(sel.rows[0], colLetter),
                     rowSpan: numRows,
                     colSpan: 1
                 };
@@ -2519,7 +2544,7 @@ WHAT'S IN THE GRID
                 }
             } else {
                 sel.rows.forEach(function (row, i) {
-                    var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+                    var v = suffixedCellValue(row, colLetter);
                     layout[i][colLetter] = {
                         value: (v !== undefined ? v : ''),
                         rowSpan: 1,
@@ -2576,7 +2601,7 @@ WHAT'S IN THE GRID
         var fallback = {
             'gas_packs': 'Daikin Light Commercial RTUs',
             'marvair': 'Marvair Vertical Wall Mount',
-            'mini_splits': 'Daikin Mini Splits',
+            'mini_splits': 'Daikin Mini & Multi Splits',
             // Excel caps sheet names at 31 characters, so not the full
             // "Daikin Unitary & Light Commercial Split Systems".
             'multi_position_splits': 'Daikin Unitary & LC Splits',

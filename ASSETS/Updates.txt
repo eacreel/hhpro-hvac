@@ -12,3 +12,4 @@
 10.29.2026: Unitary & Light Commercial Splits - updated electric heat and AHU electrical options.
 11.5.2026: Projects can now be shared directly along with sharing CSV files. 
 11.14.2026: Added Markel Electric Heaters & Daikin Water Source Heat Pumps.
+11.15.2026: Added remaining multi split systems with more indoor unit options.

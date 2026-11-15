@@ -828,10 +828,11 @@
     var MODEL_COLS_BY_PRODUCT = {
         // Letters follow the Sept 2026 column inserts (mini splits: LDB /
         // LWB at D:E, heat pump TEMP RISE at I; multi position: LAT (WB)
-        // at I, heat pump TEMP RISE at M; gas splits: TEMP RISE at K).
+        // at I, heat pump TEMP RISE at M; gas splits: TEMP RISE at K) and
+        // the Nov 2026 mini split AVAILABLE CAPACITY columns at T:U.
         'mini_splits': {
             indoor:  { make: 'P', model: 'Q' },
-            outdoor: { make: 'Y', model: 'Z' }
+            outdoor: { make: 'AA', model: 'AB' }
         },
         'multi_position_splits': {
             indoor:  { make: 'A', model: 'B' },
@@ -1602,6 +1603,10 @@
     // they read on a line set (3/8, 1-1/8). Anything that isn't a whole
     // number of sixteenths ("-", blanks, odd values) passes through as-is.
     function formatLineSize(v) {
+        // Text already written in fractions ("3/8", or a multi split's
+        // suction ports "3/8 (x1), 1/2 (x2)") shows as-is - parseFloat
+        // would read it as 3.
+        if (typeof v !== 'number' && !/^\s*\d*\.?\d+\s*$/.test(String(v))) return v;
         var n = parseFloatOrNull(v);
         if (n === null || n <= 0) return v;
         var sixteenths = Math.round(n * 16);
@@ -2271,14 +2276,15 @@
         if (HHpro.Capacity && HHpro.Capacity.scheduleHiddenColumns) {
             hidden = HHpro.Capacity.scheduleHiddenColumns(productKey, data, sels);
         }
-        // hideEmptyColumns products (diffusers): also hide any data
-        // column that's empty for every item in the project, so the
-        // schedule only shows the columns relevant to its models.
+        // hideEmptyColumns products (diffusers, mini & multi splits): also
+        // hide any data column that's empty (or all "-" where the product
+        // says so) for every item in the project, so the schedule only
+        // shows the columns relevant to its models.
         var product = HHpro.Data && HHpro.Data.getProduct
             ? HHpro.Data.getProduct(productKey) : null;
         if (product && product.hideEmptyColumns &&
             HHpro.Schedule && HHpro.Schedule.emptyDataColumns) {
-            HHpro.Schedule.emptyDataColumns(data, sels).forEach(function (l) {
+            HHpro.Schedule.emptyDataColumns(data, sels, product).forEach(function (l) {
                 if (hidden.indexOf(l) < 0) hidden.push(l);
             });
         }
@@ -5314,7 +5320,8 @@
         var section = document.createElement('section');
         section.className = 'schedule-notes-section';
 
-        var notes = normalizeScheduleNotes(data.scheduleNotes);
+        var notes = dropMultiOnlyNotes(productKey,
+            normalizeScheduleNotes(data.scheduleNotes), data, items || []);
         var nstate = loadNotesState(productKey);
         var readOnly = isScheduleNotesReadOnly(productKey);
 
@@ -5556,6 +5563,29 @@
         return nstate.customAdded.filter(function (a) { return !hidden[a.id]; });
     }
 
+    // A list note starting with the product's multiOnlyNotePrefix ("*" on
+    // the mini & multi splits) applies to multi splits only. With no multi
+    // split (a selection with more than one indoor row) among the items,
+    // its slot becomes null: the list builders skip it without renumbering
+    // the others, and it never shows as "removed".
+    function dropMultiOnlyNotes(productKey, notes, data, items) {
+        var product = HHpro.Data && HHpro.Data.getProduct
+            ? HHpro.Data.getProduct(productKey) : null;
+        var prefix = product && product.multiOnlyNotePrefix;
+        if (!prefix || notes.format !== 'list') return notes;
+        var hasMulti = items.some(function (it) {
+            var sel = findSelectionById(data, it.selectionId);
+            return !!(sel && sel.rows && sel.rows.length > 1);
+        });
+        if (hasMulti) return notes;
+        return {
+            format: 'list',
+            notes: notes.notes.map(function (n) {
+                return String(n).indexOf(prefix) === 0 ? null : n;
+            })
+        };
+    }
+
     // =================================================================
     // Normalization
     // =================================================================
@@ -5773,8 +5803,9 @@
         block.className = 'notes-block notes-plain';
         block.appendChild(buildBlockHeader('SCHEDULE NOTES:'));
 
-        var builtInVisible = notes.notes.filter(function (_, idx) {
-            return nstate.deletedIndices.indexOf(idx) < 0;
+        // null = a note that doesn't apply to these items (dropMultiOnlyNotes).
+        var builtInVisible = notes.notes.filter(function (text, idx) {
+            return text !== null && nstate.deletedIndices.indexOf(idx) < 0;
         });
         var addedVisible = visibleCustomAdded(nstate);
 
@@ -5795,6 +5826,7 @@
         list.className = 'notes-list';
 
         notes.notes.forEach(function (text, originalIdx) {
+            if (text === null) return;
             if (nstate.deletedIndices.indexOf(originalIdx) >= 0) return;
 
             var li = document.createElement('li');
@@ -5860,7 +5892,7 @@
                 displayText = String(mm.text || '');
             } else {
                 var t = notes.notes[idx];
-                if (t === undefined) return;
+                if (t === undefined || t === null) return;
                 displayText = String(t);
             }
 

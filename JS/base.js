@@ -140,9 +140,16 @@
         // products flagged with hideEmptyColumns in data.js (diffusers)
         // to drop the columns that don't apply to the models in view -
         // on the browse page, the project schedule, and the exports.
-        emptyDataColumns: function (data, selections) {
-            return emptyDataColumns(data, selections);
+        emptyDataColumns: function (data, selections, product) {
+            return emptyDataColumns(data, selections, product);
         },
+        // The selections to render under a maxBrowseRows cap (counted in
+        // schedule rows, so a 5-zone multi split costs 5). Used by the
+        // browse page and the Design Search results.
+        capBrowseRows: function (selections, product, keepId) {
+            return capBrowseRows(selections, product, keepId);
+        },
+        buildRowCapNotice: function (cap) { return buildRowCapNotice(cap); },
         // Columns owned by a unit TYPE that isn't among `selections`
         // (products with typeColumns in data.js - the LC RTUs hide the
         // heat pump columns on a gas-only schedule and vice versa). Same
@@ -175,24 +182,86 @@
      * Return the schedule column letters that have NO value in any row
      * of the given selections. An empty selection list returns [] so a
      * fresh/unfiltered view never hides everything by accident.
+     *
+     * `product.emptyColumnValues` (data.js) lists values that count as no
+     * data too - the mini splits' "-". A cell merged across columns
+     * (scheduleCellSpans, e.g. "Indoor Powered From Outdoor Unit" over
+     * Voltage / MCA / MOP) fills every column it covers, so those columns
+     * never drop out from under it.
      */
-    function emptyDataColumns(data, selections) {
+    function emptyDataColumns(data, selections, product) {
         var allLetters = (data && data.scheduleHeader &&
                           data.scheduleHeader.columnLetters) || [];
         if (!Array.isArray(selections) || !selections.length) return [];
+        var blankValues = {};
+        ((product && product.emptyColumnValues) || []).forEach(function (v) {
+            blankValues[String(v)] = true;
+        });
+        function filled(v) {
+            if (v === null || v === undefined) return false;
+            var s = String(v);
+            return s !== '' && !blankValues[s.trim()];
+        }
         var hasValue = {};
         selections.forEach(function (sel) {
             (sel.rows || []).forEach(function (row) {
                 var sd = row.scheduleData || {};
                 Object.keys(sd).forEach(function (k) {
-                    var v = sd[k];
-                    if (v !== null && v !== undefined && String(v) !== '') {
-                        hasValue[k] = true;
+                    if (filled(sd[k])) hasValue[k] = true;
+                });
+                var spans = row.scheduleCellSpans;
+                if (!spans) return;
+                Object.keys(spans).forEach(function (start) {
+                    if (!filled(sd[start])) return;
+                    var i = allLetters.indexOf(start);
+                    var n = parseInt(spans[start], 10) || 1;
+                    for (var k = 1; i >= 0 && k < n && allLetters[i + k]; k++) {
+                        hasValue[allLetters[i + k]] = true;
                     }
                 });
             });
         });
         return allLetters.filter(function (l) { return !hasValue[l]; });
+    }
+
+    /**
+     * Apply a product's maxBrowseRows cap (data.js). The cap counts schedule
+     * rows, so a multi-row selection costs one per row; a selection is
+     * never cut in half (the first one always shows). `keepId` (a Design
+     * Search hand-off) moves that selection to the top when the cap would
+     * otherwise drop it. Returns { list, cap, total } - list === the input
+     * when nothing was cut.
+     */
+    function capBrowseRows(selections, product, keepId) {
+        var cap = product && product.maxBrowseRows;
+        var total = selections.length;
+        if (!cap) return { list: selections, cap: 0, total: total };
+        var list = [];
+        var rows = 0;
+        for (var i = 0; i < selections.length; i++) {
+            var n = (selections[i].rows && selections[i].rows.length) || 1;
+            if (list.length && rows + n > cap) break;
+            list.push(selections[i]);
+            rows += n;
+        }
+        if (list.length === total) return { list: selections, cap: 0, total: total };
+        if (keepId && !list.some(function (s) { return s.id === keepId; })) {
+            var want = selections.filter(function (s) { return s.id === keepId; })[0];
+            if (want) {
+                list.unshift(want);
+                list.pop();
+            }
+        }
+        return { list: list, cap: cap, total: total };
+    }
+
+    function buildRowCapNotice(cap) {
+        var notice = document.createElement('div');
+        notice.className = 'schedule-row-cap-notice';
+        notice.textContent = 'Showing the first ' + cap.list.length.toLocaleString() +
+            ' of ' + cap.total.toLocaleString() +
+            ' matching selections - use the filters to narrow the list.';
+        return notice;
     }
 
     /**
@@ -677,21 +746,14 @@
                 renderSubSchedules(visible);
                 return;
             }
-            // Products with very large datasets (grilles: 22k+ rows) cap
-            // how many rows the browse table renders at once; the status
-            // line still reports the true match count and a notice tells
-            // the user to narrow the filters to see the rest.
-            var renderList = visible;
-            var cap = product && product.maxBrowseRows;
-            if (cap && visible.length > cap) {
-                renderList = visible.slice(0, cap);
-                var notice = document.createElement('div');
-                notice.className = 'schedule-row-cap-notice';
-                notice.textContent = 'Showing the first ' + cap.toLocaleString() +
-                    ' of ' + visible.length.toLocaleString() +
-                    ' matching selections - use the filters or the model cards above to narrow the list.';
-                scheduleWrap.appendChild(notice);
-            }
+            // Products with very large datasets (grilles: 22k+ rows, mini
+            // and multi splits: 28k systems) cap how many schedule rows the
+            // browse table renders at once; the status line still reports
+            // the true match count and a notice tells the user to narrow
+            // the filters to see the rest.
+            var capped = capBrowseRows(visible, product, params && params.focusSelectionId);
+            var renderList = capped.list;
+            if (capped.cap) scheduleWrap.appendChild(buildRowCapNotice(capped));
             var table = buildScheduleTable(data, renderList, product);
             table.__renderList = renderList;
             scheduleWrap.appendChild(table);
@@ -756,15 +818,23 @@
         function focusRequestedSelection(table) {
             var wantId = params && params.focusSelectionId;
             if (!wantId) return;
-            var visible = applyFilters(data.selections || [], filterValues);
-            // kW-variant products render one row per family, not per
-            // selection, so count families to find the row.
+            // The rows actually rendered (a row cap may have trimmed the
+            // matches). kW-variant products render one row per family, not
+            // per selection, so count families to find the row; multi-row
+            // selections (multi splits) take one row per indoor unit.
+            var list = table.__renderList || [];
             var kwCfg = product && product.kwVariants;
-            var idx = kwCfg
-                ? groupKwFamilies(visible, kwCfg).findIndex(function (fam) {
+            var idx = -1;
+            if (kwCfg) {
+                idx = groupKwFamilies(list, kwCfg).findIndex(function (fam) {
                     return fam.variants.some(function (v) { return v.sel.id === wantId; });
-                })
-                : visible.findIndex(function (s) { return s.id === wantId; });
+                });
+            } else {
+                for (var i = 0, n = 0; i < list.length; i++) {
+                    if (list[i].id === wantId) { idx = n; break; }
+                    n += (list[i].rows && list[i].rows.length) || 1;
+                }
+            }
             if (idx < 0) return;
             var rows = table.querySelectorAll('tbody tr');
             var tr = rows[idx];
@@ -1070,7 +1140,7 @@
         // e.g. filtering to SPD hides the columns that only apply to
         // other models (APPLICATION, DUCT SIZE, CFM/SIDE, ...).
         if (product && product.hideEmptyColumns) {
-            emptyDataColumns(data, selections).forEach(function (letter) {
+            emptyDataColumns(data, selections, product).forEach(function (letter) {
                 hiddenSet[letter] = true;
             });
         }
@@ -1366,6 +1436,9 @@
      *      original Excel, such as the Voltage cell spanning J:L for
      *      "Indoor Powered From Outdoor Unit").
      *   3. Default: each cell spans 1x1.
+     *
+     * A row's scheduleCellSuffix ({colLetter: text}) is appended to that
+     * cell's value - the "*" after a multi split's nominal indoor capacity.
      */
     function computeCellLayout(sel, colLetters, colIndexMap) {
         var numRows = sel.rows.length;
@@ -1386,7 +1459,7 @@
                 }
             } else if (rowsWithValue.length === 1 && rowsWithValue[0] === 0 && numRows > 1) {
                 layout[0][colLetter] = {
-                    value: sel.rows[0].scheduleData[colLetter],
+                    value: suffixedCellValue(sel.rows[0], colLetter),
                     rowSpan: numRows,
                     colSpan: 1
                 };
@@ -1395,7 +1468,7 @@
                 }
             } else {
                 sel.rows.forEach(function (row, i) {
-                    var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+                    var v = suffixedCellValue(row, colLetter);
                     layout[i][colLetter] = {
                         value: (v !== undefined ? v : ''),
                         rowSpan: 1,
@@ -1435,6 +1508,15 @@
         });
 
         return layout;
+    }
+
+    // A row's value for a column with its scheduleCellSuffix appended
+    // (blank and "-" cells get none).
+    function suffixedCellValue(row, colLetter) {
+        var v = row.scheduleData ? row.scheduleData[colLetter] : undefined;
+        var sfx = row.scheduleCellSuffix && row.scheduleCellSuffix[colLetter];
+        if (!sfx || v === undefined || v === null || v === '' || v === '-') return v;
+        return String(v) + sfx;
     }
 
     function formatCellValue(val, colLetter, productKey) {

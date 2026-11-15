@@ -205,7 +205,7 @@
                 { scope: 'row', derive: function (g) { return g.cell('C'); } },
                 { scope: 'row', derive: function (g) { return g.cell('J'); } },
                 { scope: 'row', derive: function (g) { return g.cell('S'); } },
-                { scope: 'item', derive: function (g) { return firstNumber(g.cell('U')); } },
+                { scope: 'item', derive: function (g) { return firstNumber(g.cell('W')); } },
                 // Indoor units fed from the outdoor single-point feed have
                 // no independent service, so BOTH the indoor VOLT/PH and
                 // MCA/MOCP read "-" (the real feed lives in the SINGLE POINT
@@ -214,14 +214,14 @@
                 // fall back to showing its own voltage.
                 { scope: 'item', derive: function (g) {
                     return /powered from outdoor/i.test(g.cell('M'))
-                        ? '-' : voltPh(g.cell('V'));
+                        ? '-' : voltPh(g.cell('X'));
                 } },
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return combine(g.cell('Y'), g.cell('Z')); } },
-                { scope: 'item', derive: function (g) { return g.cell('T'); } },
-                { scope: 'item', derive: function (g) { return voltPh(g.cell('V')); } },
-                { scope: 'item', derive: function (g) { return slash(g.cell('W'), g.cell('X')); } }
+                { scope: 'item', derive: function (g) { return combine(g.cell('AA'), g.cell('AB')); } },
+                { scope: 'item', derive: function (g) { return g.cell('V'); } },
+                { scope: 'item', derive: function (g) { return voltPh(g.cell('X')); } },
+                { scope: 'item', derive: function (g) { return slash(g.cell('Y'), g.cell('Z')); } }
             ],
             notesTitle: '',
             // One bordered note box, text on multiple rows (matches the
@@ -803,19 +803,19 @@
                 { scope: 'row', derive: function (g) { return div1000(g.cell('G')); } },
                 { scope: 'row', derive: function (g) { return div1000(g.cell('J')); } },
                 { scope: 'row', editable: true, fieldKey: 'saber_min_aux_kw' },
-                { scope: 'row', derive: function (g) { return voltPh(g.cell('V')); } },
+                { scope: 'row', derive: function (g) { return voltPh(g.cell('X')); } },
                 { scope: 'row', derive: function () { return 'NA'; } },
                 { scope: 'row', derive: function () { return 'NA'; } },
                 // --- Condensing unit: shared across the indoor rows ---
                 { scope: 'item', editable: true, fieldKey: 'saber_min_odu_tag', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return combine2(g.cell('Y'), g.cell('Z')); } },
+                { scope: 'item', derive: function (g) { return combine2(g.cell('AA'), g.cell('AB')); } },
                 { scope: 'item', derive: function (g) { return g.filter('SIZE (OUTDOOR UNIT)'); } },
-                { scope: 'item', derive: function (g) { var r = g.cell('U'); return r ? r + '\n(SEER2/EER2/HSPF2)' : r; } },
-                { scope: 'item', derive: function (g) { return voltPh(g.cell('V')); } },
-                { scope: 'item', derive: function (g) { return g.cell('W'); } },
-                { scope: 'item', derive: function (g) { return g.cell('X'); } },
+                { scope: 'item', derive: function (g) { var r = g.cell('W'); return r ? r + '\n(SEER2/EER2/HSPF2)' : r; } },
+                { scope: 'item', derive: function (g) { return voltPh(g.cell('X')); } },
+                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
                 // --- Weight (indoor / outdoor, per row) + notes ---
-                { scope: 'row', derive: function (g) { return s(g.cell('K')) + '/' + s(g.cellAt('T', 0)); } },
+                { scope: 'row', derive: function (g) { return s(g.cell('K')) + '/' + s(g.cellAt('V', 0)); } },
                 { scope: 'item', derive: function () { return '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14'; } }
             ],
             notesTitle: 'NOTES:',
@@ -961,29 +961,29 @@
                 // Indoor units are powered from the outdoor single-point
                 // feed, so fan-motor volts/phase mirror the outdoor service
                 // (which multi-zone selections only store on sub-row 0).
-                { scope: 'row', derive: function (g) { return voltOnly(g.cellAt('V', 0)); } },
-                { scope: 'row', derive: function (g) { return phaseOnly(g.cellAt('V', 0)); } },
+                { scope: 'row', derive: function (g) { return voltOnly(g.cellAt('X', 0)); } },
+                { scope: 'row', derive: function (g) { return phaseOnly(g.cellAt('X', 0)); } },
                 { scope: 'row', derive: function (g) { return slash(g.cell('B'), g.cell('C')); } },
                 { scope: 'row', derive: function (g) { return g.cell('F'); } },
                 { scope: 'row', derive: function (g) { return g.cell('G'); } },
-                { scope: 'item', derive: function (g) { return firstNumber(g.cell('U')); } },
+                { scope: 'item', derive: function (g) { return firstNumber(g.cell('W')); } },
                 { scope: 'row', derive: function (g) { return g.cell('H'); } },
                 { scope: 'row', derive: function (g) { return g.cell('J'); } },
                 // Heating COP: no data source yet
                 { scope: 'item', derive: function () { return '-'; } },
                 // --- Outdoor unit ---
                 { scope: 'item', editable: true, fieldKey: 'mswg_min_odu_tag', derive: function (g) { return s(g.item.tag); } },
-                { scope: 'item', derive: function (g) { return g.cell('T'); } },
+                { scope: 'item', derive: function (g) { return g.cell('V'); } },
                 // Outdoor fan No. / FLA(ea): no data source yet
                 { scope: 'item', derive: function () { return '-'; } },
                 { scope: 'item', derive: function () { return '-'; } },
-                { scope: 'item', derive: function (g) { return g.cell('W'); } },
-                { scope: 'item', derive: function (g) { return g.cell('X'); } },
-                { scope: 'item', derive: function (g) { return voltOnly(g.cell('V')); } },
-                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('V')); } },
+                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return voltOnly(g.cell('X')); } },
+                { scope: 'item', derive: function (g) { return phaseOnly(g.cell('X')); } },
                 // --- Model columns + remarks ---
                 { scope: 'row', derive: function (g) { return g.cell('Q'); } },
-                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AB'); } },
                 { scope: 'item', derive: function () { return '1-9'; } }
             ],
             notesTitle: '',

@@ -2916,7 +2916,13 @@
         var product = HHpro.Data.getProduct(state.productKey);
         var tableWrap = document.createElement('div');
         tableWrap.className = 'schedule-wrap design-search-schedule-wrap';
-        var table = HHpro.Schedule.buildTable(state.productData, selections, product);
+        // Products with a maxBrowseRows cap (grilles, mini & multi splits)
+        // render only the closest matches; the count above stays the true
+        // total. Results are sorted best first, so the cut drops the worst.
+        var capped = HHpro.Schedule.capBrowseRows
+            ? HHpro.Schedule.capBrowseRows(selections, product) : { list: selections, cap: 0 };
+        if (capped.cap) tableWrap.appendChild(HHpro.Schedule.buildRowCapNotice(capped));
+        var table = HHpro.Schedule.buildTable(state.productData, capped.list, product);
         tableWrap.appendChild(table);
 
         HHpro.Schedule.applyStickyHeaderOffsets(table);

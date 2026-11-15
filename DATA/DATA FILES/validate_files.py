@@ -134,17 +134,21 @@ def collect_references(payload):
     col_meta = {
         dc["name"]: dc for dc in (payload.get("documentationColumns") or [])
     }
-    for sel in (payload.get("selections") or []):
-        for row in (sel.get("rows") or []):
-            for col_name, filename in (row.get("documentationData") or {}).items():
-                meta = col_meta.get(col_name)
-                if not meta or not filename:
-                    continue
-                by_folder.setdefault(meta["folder"], []).append({
-                    "column":   col_name,
-                    "filename": str(filename),
-                    "fileExt":  meta.get("fileExtension", ""),
-                })
+    rows = [row for sel in (payload.get("selections") or [])
+            for row in (sel.get("rows") or [])]
+    # Mini & multi splits: the multi split systems share a list of distinct
+    # rows (compactSelections) instead of carrying their own.
+    rows += (payload.get("compactSelections") or {}).get("rows") or []
+    for row in rows:
+        for col_name, filename in (row.get("documentationData") or {}).items():
+            meta = col_meta.get(col_name)
+            if not meta or not filename:
+                continue
+            by_folder.setdefault(meta["folder"], []).append({
+                "column":   col_name,
+                "filename": str(filename),
+                "fileExt":  meta.get("fileExtension", ""),
+            })
     return by_folder
 
 
