@@ -1243,6 +1243,37 @@
     font-style: italic;
 }
 
+/* Auto-growing schedule input (autoGrowInput in project_view.js). The
+   wrapper is a one-cell grid: the input and an invisible copy of its text
+   (::after, from data-value) share the cell, so the column is always at
+   least as wide as the text and nothing gets clipped. The copy has no
+   height and adds side room for the input's padding + border plus a
+   little slack (italic placeholder, bold header text). */
+.auto-grow-input {
+    display: grid;
+}
+
+.auto-grow-input > input,
+.auto-grow-input::after {
+    grid-area: 1 / 1;
+}
+
+/* Centered like the schedule's other cells (a short tag would otherwise
+   sit at the left edge of a column widened by a longer one). */
+.auto-grow-input > input {
+    width: 100%;
+    min-width: 0;
+    text-align: inherit;
+}
+
+.auto-grow-input::after {
+    content: attr(data-value);
+    visibility: hidden;
+    white-space: pre;
+    height: 0;
+    padding: 0 10px;
+}
+
 /* <select> variant for the Marvair Configuration cell */
 .project-sched-select {
     cursor: pointer;
@@ -1844,6 +1875,16 @@
     background-color: var(--color-bg);
 }
 
+/* Ordinary cells in edit mode are wrapped in .auto-grow-input: the input
+   fills the wrapper, which is as wide as the text (3 characters minimum). */
+.tpl-editing .auto-grow-input > .tpl-edit-input {
+    width: 100%;
+}
+
+.tpl-editing .auto-grow-input {
+    min-width: calc(3ch + 10px);
+}
+
 /* Inputs in edit mode inherit each cell's alignment; keep title/header
    inputs readable on the dark header background. */
 .tpl-editing .tpl-left .tpl-edit-input,
@@ -1915,10 +1956,10 @@
     margin-right: var(--space-xs);
 }
 
-.project-sched-acc-cell-auto .project-sched-input {
-    width: auto;
+.project-sched-acc-cell-auto .auto-grow-input {
+    display: inline-grid;
     min-width: 90px;
-    display: inline-block;
+    vertical-align: middle;
 }
 
 /* ============================================================

@@ -2471,7 +2471,11 @@
                 if (cell.align === 'left') cls.push('tpl-left');
                 if (cls.length) el.className = cls.join(' ');
 
-                el.appendChild(buildCellOverrideInput(productKey, r, c, cell.value));
+                // Title and notes inputs fill their full-width cell and
+                // scroll inside it; every other cell's column grows to fit
+                // its text.
+                var ovInput = buildCellOverrideInput(productKey, r, c, cell.value);
+                el.appendChild((cell.title || cell.notesRow) ? ovInput : autoGrowInput(ovInput));
                 tr.appendChild(el);
             }
             table.appendChild(tr);
@@ -2485,10 +2489,8 @@
         input.className = 'tpl-field-input tpl-edit-input';
         var str = (value == null) ? '' : String(value);
         input.value = str;
-        // Size the input to its current text so the existing value stays
-        // readable (the schedule has many narrow columns; a fixed-width
-        // input would clip everything). The table then grows/scrolls
-        // horizontally like the normal schedule view.
+        // Ordinary cells get wrapped in autoGrowInput (column grows to the
+        // text); title and notes inputs fill their full-width cell instead.
         input.size = Math.min(Math.max(str.length, 3), 30);
         input.addEventListener('change', function () {
             updateCellOverride(productKey, r, c, input.value);
@@ -2708,7 +2710,7 @@
         input.addEventListener('change', function () {
             updateTemplateField(cell.instanceId, cell.fieldKey, input.value);
         });
-        return input;
+        return autoGrowInput(input);
     }
 
     // Merge one template field value into the item's templateFields bag
@@ -3645,7 +3647,33 @@
                 input.blur();
             }
         });
-        return input;
+        return autoGrowInput(input);
+    }
+
+    /**
+     * Wrap a text input that sits in a schedule cell so the column grows
+     * to show all of its text. A column already widens for plain text
+     * (tbody td is nowrap), but an input keeps whatever width the column
+     * has and clips the rest ("WSHP-2 ROOF NORTH WING" read "WSHP-2").
+     * The wrapper is a one-cell grid holding the input plus an invisible
+     * copy of its text (the ::after, fed from data-value, see
+     * project_view.css), so the column is at least as wide as the text.
+     * The copy follows every keystroke, so the column widens as you type.
+     * Returns the wrapper - append it where the input would have gone.
+     */
+    function autoGrowInput(input) {
+        var wrap = document.createElement('span');
+        wrap.className = 'auto-grow-input';
+        // size=1 keeps the input's own minimum width out of the way; the
+        // text copy sets the width.
+        input.size = 1;
+        function sync() {
+            wrap.setAttribute('data-value', input.value || input.placeholder || '');
+        }
+        input.addEventListener('input', sync);
+        sync();
+        wrap.appendChild(input);
+        return wrap;
     }
 
     // =================================================================
@@ -3751,6 +3779,25 @@
                 row.cells[k].style.top = topPx;
             }
         }
+
+        applyIndoorTagStickyLeft(table);
+    }
+
+    // The pinned Indoor Tag column sits right after the pinned Tag column.
+    // CSS assumes Tag is its 90px minimum (left: 190px), but Tag widens to
+    // fit long tags (autoGrowInput), so pin Indoor Tag at Tag's real right
+    // edge. Runs with the header offsets, which re-run from the thead
+    // ResizeObserver whenever the table width changes (typing a long tag).
+    function applyIndoorTagStickyLeft(table) {
+        if (!table.classList.contains('schedule-has-indoor-tag')) return;
+        var tagHead = table.querySelector('th.project-sched-tag-head');
+        if (!tagHead) return;
+        var tagWidth = tagHead.getBoundingClientRect().width;
+        if (!tagWidth) return;   // not laid out yet (hidden tab)
+        var left = (parseFloat(getComputedStyle(tagHead).left) || 0) + tagWidth;
+        var cells = table.querySelectorAll(
+            '.project-sched-indoor-tag-head, .project-sched-indoor-tag-cell');
+        for (var i = 0; i < cells.length; i++) cells[i].style.left = left + 'px';
     }
 
     // =================================================================

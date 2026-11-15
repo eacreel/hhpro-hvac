@@ -3340,13 +3340,46 @@ WHAT'S IN THE GRID
         return { width: x0 + BAR_LEN, height: topY - bottom };
     }
 
+    // Text sizing for the equipment-drawings labels. The Standard style is
+    // txt.shx, which advances about one text height per character (less
+    // for lower case), so this slightly overestimates - the safe side for
+    // keeping text clear of the views. An MTEXT line pitch at spacing
+    // factor 1.0 is 5/3 of the text height.
+    var CAD_CHAR_W = 1.0;
+    function cadTextWidth(s, h) { return String(s).length * h * CAD_CHAR_W; }
+    function cadTextBlockHeight(lineCount, h) {
+        return lineCount > 0 ? h + (lineCount - 1) * h * 5 / 3 : 0;
+    }
+
+    // Greedy word wrap to a character budget. A word longer than the
+    // budget keeps its own line whole (model codes are never split); the
+    // caller widens the label column to fit it.
+    function wrapWordsToChars(text, perLine) {
+        var lines = [];
+        var cur = '';
+        String(text).split(/\s+/).filter(Boolean).forEach(function (w) {
+            if (!cur) cur = w;
+            else if (cur.length + 1 + w.length <= perLine) cur += ' ' + w;
+            else { lines.push(cur); cur = w; }
+        });
+        if (cur) lines.push(cur);
+        return lines.length ? lines : [''];
+    }
+
     // Equipment drawings band. topY = world Y of the band's top (negative,
     // continuing below the schedule). Lays each unit out as [label + overall
     // W/H/D | front | right | top] at one shared 1:1 scale (true relative
     // size across units), stacked downward. Returns {width, height}.
+    //
+    // Labels are wrapped onto explicit lines (some CAD viewers ignore the
+    // MTEXT box width and draw one long line - the WSHP names ran across
+    // the views), and the label column is one width for the whole band so
+    // the views still line up: LABEL_W, or wider if a line needs it. Each
+    // unit's row is at least as tall as its label + W/H/D text, so a short
+    // unit's text can't reach the next unit either.
     function emitCadDrawings(drawings, topY, ctx) {
         var TITLE_H = 4, LABEL_H = 3.5, DIM_H = 2.5;
-        var VIEW_GAP = 10, LABEL_W = 60, UNIT_GAP = 16;
+        var VIEW_GAP = 10, LABEL_W = 60, LABEL_PAD = 4, UNIT_GAP = 16;
         var VIEWS = ['front', 'right', 'top'];
         var y = topY;
         var maxX = 0;
@@ -3365,13 +3398,30 @@ WHAT'S IN THE GRID
         // One fixed factor for every unit, so relative sizes stay correct.
         var S = MM_TO_IN;   // mm -> inches
 
+        // First pass: each unit's views and text lines, and the label
+        // column width they need.
+        var perLine = Math.max(1, Math.floor((LABEL_W - LABEL_PAD) / (LABEL_H * CAD_CHAR_W)));
+        var colW = LABEL_W;
+        var units = [];
         drawings.forEach(function (d) {
             var byName = {};
             var views = VIEWS.map(function (v) { return [v, d.geom && d.geom[v]]; })
                              .filter(function (p) { return p[1]; });
             if (!views.length) return;
             views.forEach(function (p) { byName[p[0]] = p[1]; });
+            var labelLines = wrapWordsToChars(d.label, perLine);
+            var dimLines = unitDimLines(byName);
+            labelLines.forEach(function (l) {
+                colW = Math.max(colW, cadTextWidth(l, LABEL_H) + LABEL_PAD);
+            });
+            dimLines.forEach(function (l) {
+                colW = Math.max(colW, cadTextWidth(l, DIM_H) + LABEL_PAD);
+            });
+            units.push({ views: views, labelLines: labelLines, dimLines: dimLines });
+        });
 
+        units.forEach(function (u) {
+            var views = u.views;
             var rowH = 0;
             views.forEach(function (p) {
                 var h = (p[1].bbox[3] - p[1].bbox[1]) * S;
@@ -3380,16 +3430,19 @@ WHAT'S IN THE GRID
 
             // Model label + overall W/H/D callout (inches & feet), top-aligned
             // with the views in the left column.
+            var labelH = cadTextBlockHeight(u.labelLines.length, LABEL_H);
             ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
-                0, y, LABEL_H, LABEL_W, 1, mtextEscape(d.label)));
-            var dimLines = unitDimLines(byName);
-            if (dimLines.length) {
-                var dimText = dimLines.map(mtextEscape).join('\\P');
+                0, y, LABEL_H, colW, 1, u.labelLines.map(mtextEscape).join('\\P')));
+            var textH = labelH;
+            if (u.dimLines.length) {
+                var dimText = u.dimLines.map(mtextEscape).join('\\P');
                 ctx.entities.push(dxfMTextEntity(nextHandle(ctx), 'EQUIP_LABEL',
-                    0, y - LABEL_H - 2, DIM_H, LABEL_W, 1, dimText));
+                    0, y - labelH - 2, DIM_H, colW, 1, dimText));
+                textH += 2 + cadTextBlockHeight(u.dimLines.length, DIM_H);
             }
+            if (textH > rowH) rowH = textH;
 
-            var x = LABEL_W;
+            var x = colW;
             views.forEach(function (p) {
                 var g = p[1], b = g.bbox;
                 var w = (b[2] - b[0]) * S, h = (b[3] - b[1]) * S;
