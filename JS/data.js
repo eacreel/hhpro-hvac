@@ -101,10 +101,15 @@
             // splits only ("*Capacity listed is nominal ..."): it is left
             // out unless a multi split system is in the project.
             multiOnlyNotePrefix: '*',
+            // SYSTEM TYPE (1:1 Mini Splits / Multi Splits) is made on the
+            // site (mini_splits.js prepareData) and driven by the two
+            // buttons above the photo cards - no dropdown.
+            galleryOnlyFilters: ['SYSTEM TYPE'],
             // Indoor-unit-type picker gallery rendered above the filters
-            // on the browse page (see JS/mini_splits.js). `type` must
-            // match a TYPE (INDOOR UNIT #1) filter value exactly -
-            // clicking a card filters the schedule to that indoor type.
+            // on the browse page (see JS/mini_splits.js), hidden while
+            // Multi Splits is selected. `type` must match a TYPE (INDOOR
+            // UNIT #1) filter value exactly - clicking a card filters the
+            // schedule to that 1:1 indoor type.
             // Photos are the indoor-unit shots from the submittal PDFs,
             // flood-filled onto black like the Price "(Black)" renders.
             typeGallery: [

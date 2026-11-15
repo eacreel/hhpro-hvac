@@ -562,7 +562,14 @@
         if (introExt && typeof introExt.buildIntroSection === 'function') {
             var intro = introExt.buildIntroSection(product, data, {
                 setFilter: function (name, value) { onUserFilterChange(name, value); },
+                // Several filters at once ({ name: value or null }), as one
+                // user change with a single redraw (the mini split system
+                // type switch also resets the indoor unit filters).
+                setFilters: function (values) { onUserFiltersChange(values); },
                 getFilterValue: function (name) { return filterValues[name]; },
+                // True when a filter's value was picked automatically (it
+                // was the only option left), not by the user.
+                isAutoFilter: function (name) { return !!autoSelectedNames[name]; },
                 onFilterChange: function (cb) {
                     if (typeof cb === 'function') introListeners.push(cb);
                 }
@@ -592,19 +599,21 @@
             // deletes the user's new value, then auto-select restores the
             // driver, so the choice silently vanished. If the filter is
             // visible again after auto-select, re-assert the user's value
-            // and let auto-select re-evaluate around it.
-            if (preserve && preserve.value !== null &&
-                (filterValues[preserve.name] === null ||
-                 filterValues[preserve.name] === undefined)) {
+            // and let auto-select re-evaluate around it. `preserve` is one
+            // { name, value } or a list of them (setFilters).
+            [].concat(preserve || []).forEach(function (keep) {
+                if (keep.value === null || keep.value === undefined) return;
+                if (filterValues[keep.name] !== null &&
+                    filterValues[keep.name] !== undefined) return;
                 var visibleNow = getVisibleFilters(product.productKey, data, filterValues);
                 var stillThere = visibleNow.some(function (fc) {
-                    return fc.name === preserve.name;
+                    return fc.name === keep.name;
                 });
                 if (stillThere) {
-                    filterValues[preserve.name] = preserve.value;
+                    filterValues[keep.name] = keep.value;
                     autoSelectSingleOptions();
                 }
-            }
+            });
             renderFilterBar();
             refreshSchedule();
             // Let the intro section (model gallery) re-sync its active
@@ -624,6 +633,21 @@
             autoSelectedNames = {};
 
             applyFilterChange({ name: filterName, value: newValue });
+        }
+
+        // onUserFilterChange for several filters at once, redrawn once.
+        function onUserFiltersChange(values) {
+            var keep = [];
+            Object.keys(values || {}).forEach(function (name) {
+                delete autoSelectedNames[name];
+                filterValues[name] = values[name];
+                keep.push({ name: name, value: values[name] });
+            });
+            Object.keys(autoSelectedNames).forEach(function (name) {
+                filterValues[name] = null;
+            });
+            autoSelectedNames = {};
+            applyFilterChange(keep);
         }
 
         function onClearAllFilters() {

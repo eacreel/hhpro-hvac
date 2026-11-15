@@ -742,6 +742,78 @@
     justify-content: center;
 }
 
+/* Mini & multi split intro: the system type switch (1:1 Mini Splits /
+   Multi Splits) centered above the indoor unit type photo cards, which
+   hide while Multi Splits is selected (JS/mini_splits.js). */
+.ms-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.ms-intro > .model-gallery {
+    align-self: stretch;
+}
+
+.ms-intro > .model-gallery[hidden] {
+    display: none;
+}
+
+.ms-system-switch {
+    display: flex;
+    gap: var(--space-sm);
+    max-width: 100%;
+}
+
+.ms-system-btn {
+    flex: 0 1 240px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+                background-color var(--transition-fast);
+}
+
+.ms-system-btn:hover {
+    border-color: var(--color-primary-light);
+}
+
+.ms-system-btn:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 2px;
+}
+
+.ms-system-btn.is-active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 1px var(--color-primary-light);
+}
+
+.ms-system-title {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+}
+
+.ms-system-sub {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.ms-system-btn.is-active .ms-system-sub {
+    color: var(--color-text);
+}
+
 /* Wide variant (split system air handler styles): only three cards, so
    each gets room for a one-line style name ("Ceiling Mounted") above
    its tonnage range. Short windows still shrink it (rule below). */
