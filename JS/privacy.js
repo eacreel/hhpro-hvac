@@ -10,6 +10,9 @@
    account: sign-ins (the backend logs them, with the IP address)
    and when the person last used the site. Super Admins see these,
    with a summary of saved projects, on the Users > Analytics tab.
+   A basic record of every saved project (name, dates, equipment
+   counts) is kept even after the project or account is deleted
+   (project_log); "How long we keep it" says so.
    There is no third-party analytics, no advertising and no
    third-party script, and the site itself sends no email.
 
@@ -72,7 +75,8 @@
             title: 'How long we keep it',
             paragraphs: [
                 'For as long as your account is active. Deleted accounts and deleted projects are ' +
-                'removed within 30 days.'
+                'removed within 30 days, except a basic record of each saved project (such as its name ' +
+                'and the number of items), which we keep for usage statistics.'
             ]
         },
         {

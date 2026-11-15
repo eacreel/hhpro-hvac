@@ -18,6 +18,9 @@
      usage_events / daily_active  schedule exports, calculator opens,
                Design Search runs, and the days each person used the
                site, for the Analytics tab.
+     project_log  a permanent record of every saved project (name, dates,
+               equipment counts, owner details), kept after deletion,
+               for the Analytics tab's Projects view.
 
    The schema is created on first open and upgraded in place by
    the numbered migrations below, so a new column later never
@@ -145,8 +148,40 @@ const MIGRATIONS = [
         day     TEXT    NOT NULL,
         PRIMARY KEY (user_id, day)
     ) WITHOUT ROWID;
+    `,
+
+    // v9: project_log, a permanent record of every saved project for the
+    // Analytics tab's Projects view: its name, dates, equipment counts
+    // and the owner's details as of the last save. Rows are kept after
+    // the project is deleted (deleted_at set) and after the account is
+    // deleted (person cleared, account_deleted = 1), so user_id has no
+    // foreign key. Filled once from the saved and trashed project files.
+    `
+    CREATE TABLE IF NOT EXISTS project_log (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id         INTEGER,
+        project_id      TEXT    NOT NULL,
+        name            TEXT    NOT NULL DEFAULT '',
+        created_at      TEXT,
+        updated_at      TEXT,
+        items           INTEGER NOT NULL DEFAULT 0,
+        types           TEXT    NOT NULL DEFAULT '{}',
+        layout          TEXT    NOT NULL DEFAULT '',
+        shared_from     TEXT    NOT NULL DEFAULT '',
+        deleted_at      TEXT,
+        owner_name      TEXT    NOT NULL DEFAULT '',
+        owner_email     TEXT    NOT NULL DEFAULT '',
+        company         TEXT    NOT NULL DEFAULT '',
+        locations       TEXT    NOT NULL DEFAULT '[]',
+        user_level      TEXT    NOT NULL DEFAULT '',
+        account_deleted INTEGER NOT NULL DEFAULT 0,
+        UNIQUE (user_id, project_id)
+    );
     `
 ];
+
+// The migration whose upgrade fills project_log from the project files.
+const PROJECT_LOG_VERSION = 9;
 
 // The migration whose upgrade estimates daily_active from before it.
 const DAILY_ACTIVE_VERSION = 8;
@@ -190,6 +225,14 @@ function open() {
                 log.info('Daily activity estimated from logs and saved projects', done);
             } catch (e) {
                 log.error(`Daily activity back-fill failed: ${e.message}`);
+            }
+        }
+        if (v + 1 === PROJECT_LOG_VERSION) {
+            try {
+                const done = activityBackfill.backfillProjectLog(db, config.projectsDir, projectLogUpsert);
+                log.info('Project log filled from saved and trashed projects', done);
+            } catch (e) {
+                log.error(`Project log back-fill failed: ${e.message}`);
             }
         }
         db.prepare('UPDATE schema_version SET version = ?').run(v + 1);
@@ -506,6 +549,71 @@ function activeDays() {
     return out;
 }
 
+// ---- project_log (Analytics > Projects) ----------------------------
+
+/**
+ * Insert or refresh one project's permanent record from the project as
+ * saved, with the owner's details as they are now. A re-save clears
+ * deleted_at (the project is back). opts.sharedFrom names the sender of
+ * a shared copy; opts.deletedAt records an already-deleted project.
+ */
+function projectLogUpsert(d, user, project, opts) {
+    const o = opts || {};
+    const items = Array.isArray(project.items) ? project.items : [];
+    const types = {};
+    items.forEach((it) => {
+        const k = String((it && it.productKey) || 'unknown');
+        types[k] = (types[k] || 0) + 1;
+    });
+    const sharedFrom = o.sharedFrom || (project.sharedBy && project.sharedBy.name) || '';
+    d.prepare(`
+        INSERT INTO project_log (user_id, project_id, name, created_at, updated_at, items, types, layout,
+                                 shared_from, deleted_at, owner_name, owner_email, company, locations, user_level)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (user_id, project_id) DO UPDATE SET
+            name = excluded.name,
+            created_at = COALESCE(project_log.created_at, excluded.created_at),
+            updated_at = excluded.updated_at,
+            items = excluded.items,
+            types = excluded.types,
+            layout = excluded.layout,
+            shared_from = CASE WHEN excluded.shared_from <> '' THEN excluded.shared_from ELSE project_log.shared_from END,
+            deleted_at = excluded.deleted_at,
+            owner_name = excluded.owner_name,
+            owner_email = excluded.owner_email,
+            company = excluded.company,
+            locations = excluded.locations,
+            user_level = excluded.user_level
+    `).run(
+        user.id, String(project.id), String(project.name || ''),
+        project.createdAt || null, project.updatedAt || project.createdAt || now(),
+        items.length, JSON.stringify(types), String(project.engineer || 'hoffman'),
+        sharedFrom, o.deletedAt || null,
+        `${user.first_name || ''} ${user.last_name || ''}`.trim(), user.email || '',
+        user.company || '', JSON.stringify(locationsOf(user)), user.user_level || ''
+    );
+}
+
+/** A project was saved (PUT) or arrived as a shared copy. */
+function logProjectSave(user, project, opts) {
+    projectLogUpsert(open(), user, project, opts);
+}
+
+/** A project went to the trash: keep its record, mark it deleted. */
+function logProjectDelete(user, project) {
+    projectLogUpsert(open(), user, project, { deletedAt: now() });
+}
+
+/** An account was deleted: keep its projects' records without the person. */
+function anonymizeProjectLog(userId) {
+    open().prepare(`UPDATE project_log SET owner_name = '', owner_email = '', account_deleted = 1
+                    WHERE user_id = ?`).run(userId);
+}
+
+function listProjectLog() {
+    return open().prepare('SELECT * FROM project_log ORDER BY updated_at DESC').all();
+}
+
 function deleteSession(id) {
     open().prepare('DELETE FROM sessions WHERE id = ?').run(id);
 }
@@ -553,6 +661,10 @@ module.exports = {
     eventSummaries,
     activeDays,
     localDay,
+    logProjectSave,
+    logProjectDelete,
+    anonymizeProjectLog,
+    listProjectLog,
     deleteSession,
     deleteSessionsForUser
 };

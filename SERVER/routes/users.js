@@ -351,7 +351,33 @@ router.get('/analytics', (req, res) => {
         locations: db.locationsOf(u),
         userLevel: u.user_level
     }));
-    res.json({ people, invited, generatedAt: new Date().toISOString() });
+    // Every project ever saved (Projects view), deleted ones included.
+    // The owner's current details when the account still exists, else
+    // what was recorded at their last save.
+    const byId = {};
+    all.forEach((u) => { byId[u.id] = u; });
+    const projectLog = db.listProjectLog().map((r) => {
+        const u = byId[r.user_id];
+        let types = {};
+        try { types = JSON.parse(r.types || '{}'); } catch (e) { types = {}; }
+        return {
+            name: r.name,
+            person: u ? displayName(u) : (r.owner_name || ''),
+            email: u ? u.email : r.owner_email,
+            company: u ? u.company : r.company,
+            locations: u ? db.locationsOf(u) : db.normalizeLocations(r.locations),
+            userLevel: u ? u.user_level : r.user_level,
+            accountDeleted: !u,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+            items: r.items,
+            types,
+            layout: layoutLabel(r.layout),
+            sharedFrom: r.shared_from,
+            deletedAt: r.deleted_at
+        };
+    });
+    res.json({ people, invited, projectLog, generatedAt: new Date().toISOString() });
 });
 
 // ---- companies -----------------------------------------------------
@@ -476,6 +502,8 @@ router.delete('/:id', (req, res) => {
     if (!target) return;
     if (target.id === req.user.id) return res.status(400).json({ error: 'You cannot delete your own account.' });
     const retired = folders.retireFolder(target);
+    // Their projects stay in the Analytics project record, without the person.
+    db.anonymizeProjectLog(target.id);
     db.deleteUser(target.id);
     usersExcel.syncUsersTab();
     log.info('User deleted', { by: req.user.email, email: target.email, folderSetAside: retired });

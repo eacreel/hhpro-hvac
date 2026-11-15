@@ -15,6 +15,10 @@
      DELETE /:id         move the file to the folder's _trash
      POST   /:id/share   { email, project } copy it to another person
 
+   Every save, delete and share also updates project_log, the
+   permanent record behind the Super Admin Analytics > Projects view
+   (name, dates, equipment counts); it outlives the file.
+
    Only the owner can reach their folder: the folder comes from
    the session, never from the request. Calculators-only levels
    (Manufacturer) get no projects at all. Sharing is the one write
@@ -107,8 +111,21 @@ router.put('/:id', (req, res) => {
     if (size > MAX_BYTES) return res.status(413).json({ error: 'Project is too large to save.' });
 
     writeJsonAtomic(path.join(userDir(req), id + '.json'), project);
+    logProject(() => db.logProjectSave(req.user, project));
     res.json({ ok: true, updatedAt: project.updatedAt || null });
 });
+
+/**
+ * Keep the permanent project record (Analytics > Projects) in step.
+ * Never lets a record-keeping problem fail the save itself.
+ */
+function logProject(fn) {
+    try {
+        fn();
+    } catch (e) {
+        log.warn(`Project log not updated: ${e.message}`);
+    }
+}
 
 router.delete('/:id', (req, res) => {
     const id = req.params.id;
@@ -116,6 +133,9 @@ router.delete('/:id', (req, res) => {
     const dir = userDir(req);
     const file = path.join(dir, id + '.json');
     if (!fs.existsSync(file)) return res.status(404).json({ error: 'Project not found.' });
+
+    // The permanent record keeps the project's last saved state.
+    logProject(() => db.logProjectDelete(req.user, readJson(file)));
 
     const trash = path.join(dir, '_trash');
     fs.mkdirSync(trash, { recursive: true });
@@ -197,6 +217,7 @@ router.post('/:id/share', (req, res) => {
     copy.sharedNew = true;
 
     writeJsonAtomic(path.join(dir, copy.id + '.json'), copy);
+    logProject(() => db.logProjectSave(target, copy, { sharedFrom: displayName(req.user) }));
     log.info('Project shared (copied)', { from: req.user.email, to: target.email, id, copy: copy.id });
     res.json({ ok: true });
 });

@@ -935,6 +935,24 @@
     font-weight: 600;
 }
 
+/* Projects view: deleted projects stay listed, quieter, with a badge. */
+.analytics-project-name {
+    font-weight: 600;
+}
+
+.analytics-row-deleted td {
+    color: var(--color-text-muted);
+}
+
+.analytics-row-deleted .analytics-project-name {
+    font-weight: 400;
+}
+
+.analytics-badge-deleted {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
 /* Trends: one card per chart. */
 .analytics-trends {
     display: grid;

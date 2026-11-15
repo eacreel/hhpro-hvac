@@ -167,4 +167,66 @@ function backfillDays(d, logsDir, projectsDir) {
     return { people: Object.keys(days).length, days: rows };
 }
 
-module.exports = { backfill, backfillDays, readSignIns };
+// ---- v9: project_log (the Analytics Projects view) -------------------
+// Every project file still on the server: the saved ones, plus the
+// deleted ones waiting in each person's _trash (kept 30 days; the trash
+// file name carries the deletion time). Projects deleted and cleared
+// out before v9 are gone and can't be recovered. upsert = db.js's
+// projectLogUpsert, passed in to avoid a circular require.
+
+const TRASH_STAMP_RE = /\.(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z\.json$/;
+
+function backfillProjectLog(d, projectsDir, upsert) {
+    const byLeaf = {};
+    d.prepare('SELECT * FROM users').all().forEach((u) => {
+        if (u.project_folder) byLeaf[u.project_folder] = u;
+    });
+    const saved = [];
+    const trashed = [];
+    function walk(dir) {
+        let entries = [];
+        try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return; }
+        entries.forEach((ent) => {
+            const full = path.join(dir, ent.name);
+            if (ent.isDirectory()) {
+                if (ent.name.startsWith('_deleted_')) return;   // a deleted account's set-aside folder
+                walk(full);
+                return;
+            }
+            if (!ent.name.endsWith('.json') || ent.name.startsWith('_')) return;
+            const inTrash = path.basename(dir) === '_trash';
+            const leaf = path.basename(inTrash ? path.dirname(dir) : dir);
+            let p;
+            try { p = JSON.parse(fs.readFileSync(full, 'utf8')); } catch (e) { return; }
+            if (!p || !p.id) return;
+            if (inTrash) {
+                const m = TRASH_STAMP_RE.exec(ent.name);
+                const deletedAt = m ? `${m[1]}T${m[2]}:${m[3]}:${m[4]}.${m[5]}Z` : new Date().toISOString();
+                trashed.push({ leaf, p, deletedAt });
+            } else if (ent.name === p.id + '.json') {
+                saved.push({ leaf, p });
+            }
+        });
+    }
+    walk(projectsDir);
+
+    // Trashed first, so a project that is saved again (same id) ends up
+    // as not deleted.
+    let deleted = 0;
+    let kept = 0;
+    trashed.forEach((t) => {
+        const u = byLeaf[t.leaf];
+        if (!u) return;
+        upsert(d, u, t.p, { deletedAt: t.deletedAt });
+        deleted += 1;
+    });
+    saved.forEach((s) => {
+        const u = byLeaf[s.leaf];
+        if (!u) return;
+        upsert(d, u, s.p, {});
+        kept += 1;
+    });
+    return { saved: kept, deleted };
+}
+
+module.exports = { backfill, backfillDays, backfillProjectLog, readSignIns };

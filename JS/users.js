@@ -1637,7 +1637,11 @@
 
     var people = [];          // active accounts, with the derived fields below
     var invited = [];         // accounts not yet registered: { company, locations, userLevel }
-    var aView = 'people';     // people | companies | offices | trends
+    var projectLog = [];      // every project ever saved, deleted ones included (Projects view)
+    var pFilters = {};        // the Projects view's own column filters
+    var pSortKey = 'updatedAt';
+    var pSortDir = -1;
+    var aView = 'people';     // people | projects | companies | offices | trends
     // Sort per summary table (Companies, Offices): key + direction.
     var aGroupSort = { company: { key: 'a30', dir: -1 }, location: { key: 'a30', dir: -1 } };
     // Weeks from this date on are fully tracked; earlier weeks of the
@@ -1733,7 +1737,8 @@
         clear.textContent = 'Clear filters';
         clear.hidden = true;
         clear.addEventListener('click', function () {
-            aFilters = {};
+            if (aView === 'projects') pFilters = {};
+            else aFilters = {};
             closeFilterMenu();
             drawAnalytics();
         });
@@ -1746,15 +1751,17 @@
         note.textContent = 'Active accounts only. Sign-ins are counted from 09/15/2026; visits, cart items, ' +
             'schedule exports, calculator uses and Design Searches from 11/14/2026. A visit is each time someone ' +
             'opens the site or comes back after 30+ minutes away. Cart items are selections added to a temporary ' +
-            'cart instead of a project. Everything below follows the search and the People filters.';
+            'cart instead of a project. Companies, offices and trends follow the search and the People filters; ' +
+            'Projects has its own filters and keeps every project ever saved, deleted ones included.';
         panel.appendChild(note);
 
-        // People / Companies / Offices / Trends.
+        // People / Projects / Companies / Offices / Trends.
         var views = document.createElement('div');
         views.className = 'analytics-views';
         views.setAttribute('role', 'tablist');
         els.aViews = {};
-        [['people', 'People'], ['companies', 'Companies'], ['offices', 'Hoffman offices'], ['trends', 'Trends']]
+        [['people', 'People'], ['projects', 'Projects'], ['companies', 'Companies'],
+            ['offices', 'Hoffman offices'], ['trends', 'Trends']]
             .forEach(function (v) {
                 var b = document.createElement('button');
                 b.type = 'button';
@@ -1788,6 +1795,7 @@
         ]).then(function (results) {
             people = (results[0].people || []).map(prepPerson);
             invited = results[0].invited || [];
+            projectLog = (results[0].projectLog || []).map(prepProject);
             options = results[1];
             drawAnalytics();
         }, function (err) {
@@ -1962,14 +1970,23 @@
     function drawAnalytics() {
         var wrap = els.aWrap;
         if (!wrap) return;
+        var isProjects = aView === 'projects';
         var list = visiblePeople();
+        var plist = isProjects ? visibleProjects() : null;
         if (els.aCount) {
-            els.aCount.textContent = list.length === people.length
-                ? people.length + ' active ' + (people.length === 1 ? 'person' : 'people')
-                : list.length + ' of ' + people.length;
+            if (isProjects) {
+                els.aCount.textContent = plist.length === projectLog.length
+                    ? projectLog.length + ' project' + (projectLog.length === 1 ? '' : 's')
+                    : plist.length + ' of ' + projectLog.length + ' projects';
+            } else {
+                els.aCount.textContent = list.length === people.length
+                    ? people.length + ' active ' + (people.length === 1 ? 'person' : 'people')
+                    : list.length + ' of ' + people.length;
+            }
         }
         if (els.aClear) {
-            els.aClear.hidden = !Object.keys(aFilters).some(function (k) { return aFilters[k] && aFilters[k].length; });
+            var f = isProjects ? pFilters : aFilters;
+            els.aClear.hidden = !Object.keys(f).some(function (k) { return f[k] && f[k].length; });
         }
         if (els.aViews) {
             Object.keys(els.aViews).forEach(function (k) {
@@ -1977,11 +1994,13 @@
                 els.aViews[k].setAttribute('aria-selected', k === aView ? 'true' : 'false');
             });
         }
-        drawAnalyticsTotals(list);
+        if (isProjects) drawProjectTotals(plist);
+        else drawAnalyticsTotals(list);
 
         wrap.innerHTML = '';
         wrap.className = aView === 'trends' ? 'analytics-trends' : 'users-table-wrap';
-        if (aView === 'companies') drawGroupTable(wrap, list, 'company');
+        if (isProjects) drawProjectsTable(wrap, plist);
+        else if (aView === 'companies') drawGroupTable(wrap, list, 'company');
         else if (aView === 'offices') drawGroupTable(wrap, list, 'location');
         else if (aView === 'trends') drawTrends(wrap, list);
         else drawPeopleTable(wrap, list);
@@ -2297,6 +2316,257 @@
         table.appendChild(body);
         td.appendChild(table);
         tr.appendChild(td);
+        return tr;
+    }
+
+    // ---- Projects --------------------------------------------------------
+    // Every project ever saved on the site, from the backend's permanent
+    // project record: still saved, deleted, and those of deleted accounts.
+    // Its own column filters (the People filters don't apply here); the
+    // search box does.
+
+    var P_COLUMNS = [
+        { key: 'name', label: 'Project', filter: true },
+        { key: 'person', label: 'Person', filter: true },
+        { key: 'company', label: 'Company', filter: true },
+        { key: 'location', label: 'Locations', filter: true },
+        { key: 'userLevel', label: 'Level', filter: true },
+        { key: 'createdAt', label: 'Created', filter: true, date: true, desc: true },
+        { key: 'updatedAt', label: 'Last saved', filter: true, date: true, desc: true },
+        { key: 'items', label: 'Items', number: true, desc: true },
+        { key: 'types', label: 'Equipment types', filter: true },
+        { key: 'layout', label: 'Layout', filter: true },
+        { key: 'status', label: 'Status', filter: true }
+    ];
+
+    function projectsFilterCtx() {
+        return { filters: pFilters, choices: pFilterChoices, redraw: drawAnalytics, idPrefix: 'projects-filter-' };
+    }
+
+    function prepProject(r) {
+        r.name = r.name || '(untitled)';
+        r.person = r.accountDeleted ? 'Deleted account' : (r.person || r.email || '');
+        r.locations = r.locations || [];
+        r.items = r.items || 0;
+        r.typeCounts = {};
+        Object.keys(r.types || {}).forEach(function (k) {
+            var n = productName(k);
+            r.typeCounts[n] = (r.typeCounts[n] || 0) + r.types[k];
+        });
+        r.typeNames = namesByCount(r.typeCounts);
+        r.status = r.deletedAt ? 'Deleted' : 'Saved';
+        return r;
+    }
+
+    function pFilterValue(r, key) {
+        switch (key) {
+            case 'location': return r.locations;
+            case 'types': return r.typeNames.length ? r.typeNames : ['None'];
+            case 'createdAt': return monthBucket(r.createdAt);
+            case 'updatedAt': return recentBucket(r.updatedAt, 'Never');
+            default: return String(r[key] || '');
+        }
+    }
+
+    function pFilterChoices(key) {
+        var seen = {};
+        var out = [];
+        projectLog.forEach(function (r) {
+            var v = pFilterValue(r, key);
+            (Array.isArray(v) ? v : [v]).forEach(function (x) {
+                if (x && !seen[x]) { seen[x] = true; out.push(x); }
+            });
+        });
+        if (key === 'userLevel') {
+            out.sort(function (a, b) { return LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b); });
+        } else if (key === 'updatedAt') {
+            out.sort(function (a, b) { return RECENT_BUCKETS.indexOf(a) - RECENT_BUCKETS.indexOf(b); });
+        } else if (key === 'createdAt') {
+            out.sort(function (a, b) { return monthOrder(b) - monthOrder(a); });
+        } else {
+            out.sort(function (a, b) {
+                if (a === 'None') return 1;
+                if (b === 'None') return -1;
+                return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+            });
+        }
+        return out;
+    }
+
+    function visibleProjects() {
+        var q = aQuery.trim().toLowerCase();
+        var active = Object.keys(pFilters).filter(function (k) { return pFilters[k] && pFilters[k].length; });
+        var list = projectLog.filter(function (r) {
+            for (var i = 0; i < active.length; i++) {
+                var v = pFilterValue(r, active[i]);
+                var wanted = pFilters[active[i]];
+                if (!(Array.isArray(v) ? v : [v]).some(function (x) { return wanted.indexOf(x) !== -1; })) return false;
+            }
+            if (!q) return true;
+            var hay = [r.name, r.person, r.email, r.company, r.locations.join(' '), r.userLevel,
+                r.typeNames.join(' '), r.layout, r.sharedFrom].join(' ').toLowerCase();
+            return hay.indexOf(q) !== -1;
+        });
+        var col = P_COLUMNS.filter(function (c) { return c.key === pSortKey; })[0] || P_COLUMNS[0];
+        function value(r) {
+            if (col.key === 'location') return r.locations.join('; ').toLowerCase();
+            if (col.key === 'types') return r.typeNames.join(', ').toLowerCase();
+            if (col.key === 'userLevel') return LEVEL_ORDER.indexOf(r.userLevel);
+            if (col.number) return r[col.key] || 0;
+            return String(r[col.key] || '').toLowerCase();
+        }
+        list.sort(function (a, b) {
+            var av = value(a), bv = value(b);
+            if (av < bv) return -pSortDir;
+            if (av > bv) return pSortDir;
+            return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+        });
+        return list;
+    }
+
+    /** Totals for the projects shown, then items per equipment type. */
+    function drawProjectTotals(list) {
+        var box = els.aTotals;
+        if (!box) return;
+        box.innerHTML = '';
+        var saved = 0, deleted = 0, items = 0, who = {}, firms = {}, types = {};
+        list.forEach(function (r) {
+            if (r.deletedAt) deleted++; else saved++;
+            items += r.items;
+            who[r.email || r.person] = true;
+            if (r.company) firms[r.company] = true;
+            Object.keys(r.typeCounts).forEach(function (n) { types[n] = (types[n] || 0) + r.typeCounts[n]; });
+        });
+        var stats = document.createElement('div');
+        stats.className = 'analytics-stats';
+        [['Projects', list.length], ['Still saved', saved], ['Deleted', deleted], ['Items', items],
+            ['People', Object.keys(who).length], ['Companies', Object.keys(firms).length]].forEach(function (s) {
+            var stat = document.createElement('div');
+            stat.className = 'analytics-stat';
+            var v = document.createElement('div');
+            v.className = 'analytics-stat-value';
+            v.textContent = s[1].toLocaleString();
+            var l = document.createElement('div');
+            l.className = 'analytics-stat-label';
+            l.textContent = s[0];
+            stat.appendChild(v);
+            stat.appendChild(l);
+            stats.appendChild(stat);
+        });
+        box.appendChild(stats);
+        typeTotalsRow(box, 'Items by equipment type:', types);
+    }
+
+    function drawProjectsTable(wrap, list) {
+        var table = document.createElement('table');
+        table.className = 'users-table analytics-table';
+        var thead = document.createElement('thead');
+        var hr = document.createElement('tr');
+        P_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            if (col.number) th.className = 'analytics-num';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'users-sort' + (pSortKey === col.key ? ' users-sort-active' : '');
+            btn.textContent = col.label + (pSortKey === col.key ? (pSortDir > 0 ? ' ▴' : ' ▾') : '');
+            btn.addEventListener('click', function () {
+                if (pSortKey === col.key) pSortDir = -pSortDir;
+                else { pSortKey = col.key; pSortDir = col.desc ? -1 : 1; }
+                drawAnalytics();
+            });
+            th.appendChild(btn);
+            hr.appendChild(th);
+        });
+        thead.appendChild(hr);
+        var fr = document.createElement('tr');
+        fr.className = 'users-filter-row';
+        P_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            if (col.filter) th.appendChild(filterButton(col, projectsFilterCtx()));
+            fr.appendChild(th);
+        });
+        thead.appendChild(fr);
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        if (!list.length) {
+            var etr = document.createElement('tr');
+            var etd = document.createElement('td');
+            etd.colSpan = P_COLUMNS.length;
+            etd.className = 'users-empty';
+            etd.textContent = projectLog.length ? 'No projects match that search.' : 'No projects saved yet.';
+            etr.appendChild(etd);
+            tbody.appendChild(etr);
+        }
+        list.forEach(function (r) { tbody.appendChild(projectLogRow(r)); });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+    }
+
+    function projectLogRow(r) {
+        var tr = document.createElement('tr');
+        if (r.deletedAt) tr.className = 'analytics-row-deleted';
+        P_COLUMNS.forEach(function (col) {
+            var td = document.createElement('td');
+            switch (col.key) {
+                case 'name':
+                    td.className = 'analytics-project-name';
+                    td.appendChild(document.createTextNode(r.name));
+                    if (r.sharedFrom) {
+                        var sh = document.createElement('span');
+                        sh.className = 'analytics-sub-line';
+                        sh.textContent = 'Shared by ' + r.sharedFrom;
+                        td.appendChild(sh);
+                    }
+                    break;
+                case 'person':
+                    if (r.accountDeleted) td.className = 'users-td-muted';
+                    td.appendChild(document.createTextNode(r.person));
+                    if (r.email && !r.accountDeleted) {
+                        var em = document.createElement('span');
+                        em.className = 'analytics-sub-line';
+                        em.textContent = r.email;
+                        td.appendChild(em);
+                    }
+                    break;
+                case 'location':
+                    td.appendChild(locationsCell(r));
+                    break;
+                case 'createdAt':
+                    dateCell(td, r.createdAt, false);
+                    break;
+                case 'updatedAt':
+                    dateCell(td, r.updatedAt, true);
+                    break;
+                case 'items':
+                    td.className = 'analytics-num';
+                    td.textContent = String(r.items);
+                    break;
+                case 'types':
+                    fillTypesCell(td, r.typeNames, r.typeCounts);
+                    break;
+                case 'status':
+                    if (r.deletedAt) {
+                        var badge = document.createElement('span');
+                        badge.className = 'users-badge analytics-badge-deleted';
+                        badge.textContent = 'Deleted';
+                        td.appendChild(badge);
+                        var when = document.createElement('span');
+                        when.className = 'analytics-sub-line';
+                        when.textContent = shortDate(r.deletedAt);
+                        td.appendChild(when);
+                    } else {
+                        var ok = document.createElement('span');
+                        ok.className = 'users-badge users-badge-active';
+                        ok.textContent = 'Saved';
+                        td.appendChild(ok);
+                    }
+                    break;
+                default:
+                    td.textContent = r[col.key] || '';
+            }
+            tr.appendChild(td);
+        });
         return tr;
     }
 
