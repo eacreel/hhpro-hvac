@@ -311,6 +311,7 @@
                 var cfg = state.pendingConfigure;
                 state.pendingConfigure = null;
                 if (cfg && gasPackUiActive() && applyGasPackConfigure(cfg)) {
+                    noteSearch();
                     runGasPackSearch();
                     return;
                 }
@@ -406,6 +407,7 @@
         form.className = 'design-search-form';
         form.addEventListener('submit', function (e) {
             e.preventDefault();
+            noteSearch();
             runSearch();
         });
 
@@ -1307,6 +1309,13 @@
     // -----------------------------------------------------------------
     // Search execution
     // -----------------------------------------------------------------
+
+    /** Super Admin Analytics: one Design Search run (the Search button or Configure). */
+    function noteSearch() {
+        if (HHpro.Api && typeof HHpro.Api.usage === 'function') {
+            HHpro.Api.usage('design_search', '', state.productKey);
+        }
+    }
 
     function runSearch() {
         var data = state.productData;

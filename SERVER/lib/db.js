@@ -15,6 +15,9 @@
                only the random session id in a cookie.
      cart_adds one row per item added to a temporary cart (product
                type + time), for the Analytics tab.
+     usage_events / daily_active  schedule exports, calculator opens,
+               Design Search runs, and the days each person used the
+               site, for the Analytics tab.
 
    The schema is created on first open and upgraded in place by
    the numbered migrations below, so a new column later never
@@ -118,8 +121,35 @@ const MIGRATIONS = [
     // from this version on (there is no history to fill it from).
     `
     ALTER TABLE users ADD COLUMN visit_count INTEGER NOT NULL DEFAULT 0;
+    `,
+
+    // v8: for the Analytics tab -
+    //   usage_events  schedule exports, calculator opens and Design
+    //                 Search runs (kind + a short detail + product key)
+    //   daily_active  one row per person per day they used the site
+    //                 (server local date), for the weekly trend. Days
+    //                 before v8 are estimated once from sign-ins in the
+    //                 logs and saved project dates (activity_backfill).
+    `
+    CREATE TABLE IF NOT EXISTS usage_events (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        kind        TEXT    NOT NULL,
+        detail      TEXT    NOT NULL DEFAULT '',
+        product_key TEXT    NOT NULL DEFAULT '',
+        at          TEXT    NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS usage_events_user ON usage_events(user_id);
+    CREATE TABLE IF NOT EXISTS daily_active (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        day     TEXT    NOT NULL,
+        PRIMARY KEY (user_id, day)
+    ) WITHOUT ROWID;
     `
 ];
+
+// The migration whose upgrade estimates daily_active from before it.
+const DAILY_ACTIVE_VERSION = 8;
 
 // A request after this long without activity starts a new visit.
 const VISIT_GAP_MS = 30 * 60 * 1000;
@@ -152,6 +182,14 @@ function open() {
                 log.info('Activity back-filled from logs and sessions', done);
             } catch (e) {
                 log.error(`Activity back-fill failed: ${e.message}`);
+            }
+        }
+        if (v + 1 === DAILY_ACTIVE_VERSION) {
+            try {
+                const done = activityBackfill.backfillDays(db, config.logsDir, config.projectsDir);
+                log.info('Daily activity estimated from logs and saved projects', done);
+            } catch (e) {
+                log.error(`Daily activity back-fill failed: ${e.message}`);
             }
         }
         db.prepare('UPDATE schema_version SET version = ?').run(v + 1);
@@ -372,6 +410,13 @@ function visitCutoff() {
     return new Date(Date.now() - VISIT_GAP_MS).toISOString();
 }
 
+/** YYYY-MM-DD in the server's local time (the weekly trend's days). */
+function localDay(date) {
+    const d = date || new Date();
+    const two = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
 /** A new session = a sign-in (password, registration or reset): count it. */
 function createSession(id, userId) {
     const t = now();
@@ -380,6 +425,7 @@ function createSession(id, userId) {
         .run(id, userId, t, t);
     d.prepare(`UPDATE users SET login_count = login_count + 1, ${MARK_ACTIVE_SQL} WHERE id = ?`)
         .run(visitCutoff(), t, userId);
+    d.prepare('INSERT OR IGNORE INTO daily_active (user_id, day) VALUES (?, ?)').run(userId, localDay());
 }
 
 /** Session row joined with its user, or null. */
@@ -399,6 +445,8 @@ function touchSession(id) {
     d.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').run(t, id);
     d.prepare(`UPDATE users SET ${MARK_ACTIVE_SQL} WHERE id = (SELECT user_id FROM sessions WHERE id = ?)`)
         .run(visitCutoff(), t, id);
+    d.prepare('INSERT OR IGNORE INTO daily_active (user_id, day) SELECT user_id, ? FROM sessions WHERE id = ?')
+        .run(localDay(), id);
 }
 
 // ---- temporary-cart adds (Analytics) -------------------------------
@@ -419,6 +467,41 @@ function cartSummaries() {
         s.items += r.n;
         s.types[r.product_key] = r.n;
         if (!s.last || r.last > s.last) s.last = r.last;
+    });
+    return out;
+}
+
+// ---- usage events + daily activity (Analytics) ---------------------
+
+function recordEvent(userId, kind, detail, productKey) {
+    open().prepare('INSERT INTO usage_events (user_id, kind, detail, product_key, at) VALUES (?, ?, ?, ?, ?)')
+        .run(userId, kind, detail || '', productKey || '', now());
+}
+
+/**
+ * { userId: { kind: { count, last, details: { detail: count } } } } for
+ * every user with usage events.
+ */
+function eventSummaries() {
+    const out = {};
+    open().prepare(`
+        SELECT user_id, kind, detail, COUNT(*) AS n, MAX(at) AS last
+        FROM usage_events GROUP BY user_id, kind, detail
+    `).all().forEach((r) => {
+        const u = out[r.user_id] || (out[r.user_id] = {});
+        const k = u[r.kind] || (u[r.kind] = { count: 0, last: null, details: {} });
+        k.count += r.n;
+        if (r.detail) k.details[r.detail] = (k.details[r.detail] || 0) + r.n;
+        if (!k.last || r.last > k.last) k.last = r.last;
+    });
+    return out;
+}
+
+/** { userId: ['YYYY-MM-DD', ...] } - the days each person used the site. */
+function activeDays() {
+    const out = {};
+    open().prepare('SELECT user_id, day FROM daily_active ORDER BY day').all().forEach((r) => {
+        (out[r.user_id] || (out[r.user_id] = [])).push(r.day);
     });
     return out;
 }
@@ -466,6 +549,10 @@ module.exports = {
     touchSession,
     recordCartAdd,
     cartSummaries,
+    recordEvent,
+    eventSummaries,
+    activeDays,
+    localDay,
     deleteSession,
     deleteSessionsForUser
 };

@@ -1636,6 +1636,16 @@
     }
 
     var people = [];          // active accounts, with the derived fields below
+    var invited = [];         // accounts not yet registered: { company, locations, userLevel }
+    var aView = 'people';     // people | companies | offices | trends
+    // Sort per summary table (Companies, Offices): key + direction.
+    var aGroupSort = { company: { key: 'a30', dir: -1 }, location: { key: 'a30', dir: -1 } };
+    // Weeks from this date on are fully tracked; earlier weeks of the
+    // active-people trend are estimated (backend 0.14.0 went live).
+    var FULL_TRACKING_SINCE = '2026-11-14';
+    // Accounts started here. Trend charts begin this week; a few projects
+    // saved in the browser before then are mentioned in a note instead.
+    var ACCOUNTS_SINCE = '2026-09-15';
     var aFilters = {};        // like `filters`, for this table
     var aQuery = '';
     var aSortKey = 'lastActiveAt';
@@ -1668,8 +1678,24 @@
         // Temporary-cart adds: selections that never reached a project.
         { key: 'cartItems', label: 'Cart items', number: true, desc: true },
         { key: 'cartTypes', label: 'Cart equipment', filter: true },
-        { key: 'lastCartAt', label: 'Last cart use', filter: true, date: true, desc: true }
+        { key: 'lastCartAt', label: 'Last cart use', filter: true, date: true, desc: true },
+        // Schedule downloads, calculator opens, Design Search runs.
+        { key: 'exportCount', label: 'Schedule exports', number: true, desc: true },
+        { key: 'calcCount', label: 'Calculator uses', number: true, desc: true },
+        { key: 'searchCount', label: 'Design searches', number: true, desc: true }
     ];
+
+    var FORMAT_LABELS = { xlsx: 'Excel', dxf: 'CAD', pdf: 'PDF' };
+
+    function calculatorName(key) {
+        var def = HHpro.Calculators && HHpro.Calculators.get ? HHpro.Calculators.get(key) : null;
+        return def && def.name ? def.name : key;
+    }
+
+    /** "Excel 3, PDF 1" from { xlsx: 3, pdf: 1 }, largest first. */
+    function detailLine(details, label) {
+        return namesByCount(details || {}).map(function (k) { return label(k) + ' ' + details[k]; }).join(', ');
+    }
 
     function analyticsFilterCtx() {
         return { filters: aFilters, choices: aFilterChoices, redraw: drawAnalytics, idPrefix: 'analytics-filter-' };
@@ -1717,11 +1743,33 @@
 
         var note = document.createElement('p');
         note.className = 'analytics-note';
-        note.textContent = 'Active accounts only. Last active updates while someone uses the site, to within ' +
-            '5 minutes. Sign-ins are counted from Sept 15, 2026. A visit is each time someone opens the site, ' +
-            'or comes back after 30+ minutes away. Cart items are selections added to a temporary cart instead ' +
-            'of a project. Visits and cart items are counted from Nov 14, 2026. Totals follow the search and filters.';
+        note.textContent = 'Active accounts only. Sign-ins are counted from 09/15/2026; visits, cart items, ' +
+            'schedule exports, calculator uses and Design Searches from 11/14/2026. A visit is each time someone ' +
+            'opens the site or comes back after 30+ minutes away. Cart items are selections added to a temporary ' +
+            'cart instead of a project. Everything below follows the search and the People filters.';
         panel.appendChild(note);
+
+        // People / Companies / Offices / Trends.
+        var views = document.createElement('div');
+        views.className = 'analytics-views';
+        views.setAttribute('role', 'tablist');
+        els.aViews = {};
+        [['people', 'People'], ['companies', 'Companies'], ['offices', 'Hoffman offices'], ['trends', 'Trends']]
+            .forEach(function (v) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'analytics-view';
+                b.setAttribute('role', 'tab');
+                b.textContent = v[1];
+                b.addEventListener('click', function () {
+                    aView = v[0];
+                    closeFilterMenu();
+                    drawAnalytics();
+                });
+                views.appendChild(b);
+                els.aViews[v[0]] = b;
+            });
+        panel.appendChild(views);
 
         var totals = document.createElement('div');
         totals.className = 'analytics-summary';
@@ -1739,6 +1787,7 @@
             options ? Promise.resolve(options) : HHpro.Api.get('/api/users/options')
         ]).then(function (results) {
             people = (results[0].people || []).map(prepPerson);
+            invited = results[0].invited || [];
             options = results[1];
             drawAnalytics();
         }, function (err) {
@@ -1779,6 +1828,16 @@
             p.cartTypeCounts[n] = (p.cartTypeCounts[n] || 0) + p.cartTypes[k];
         });
         p.cartTypes = namesByCount(p.cartTypeCounts);
+        // Schedule exports (by format), calculator opens (by calculator),
+        // Design Search runs.
+        var none = { count: 0, last: null, details: {} };
+        p.exports = p.exports || none;
+        p.calculators = p.calculators || none;
+        p.designSearches = p.designSearches || none;
+        p.exportCount = p.exports.count || 0;
+        p.calcCount = p.calculators.count || 0;
+        p.searchCount = p.designSearches.count || 0;
+        p.activeDays = p.activeDays || [];
         return p;
     }
 
@@ -1912,9 +1971,24 @@
         if (els.aClear) {
             els.aClear.hidden = !Object.keys(aFilters).some(function (k) { return aFilters[k] && aFilters[k].length; });
         }
+        if (els.aViews) {
+            Object.keys(els.aViews).forEach(function (k) {
+                els.aViews[k].classList.toggle('analytics-view-active', k === aView);
+                els.aViews[k].setAttribute('aria-selected', k === aView ? 'true' : 'false');
+            });
+        }
         drawAnalyticsTotals(list);
 
         wrap.innerHTML = '';
+        wrap.className = aView === 'trends' ? 'analytics-trends' : 'users-table-wrap';
+        if (aView === 'companies') drawGroupTable(wrap, list, 'company');
+        else if (aView === 'offices') drawGroupTable(wrap, list, 'location');
+        else if (aView === 'trends') drawTrends(wrap, list);
+        else drawPeopleTable(wrap, list);
+    }
+
+    /** The People view: one row per person, with the column filters. */
+    function drawPeopleTable(wrap, list) {
         var table = document.createElement('table');
         table.className = 'users-table analytics-table';
         var thead = document.createElement('thead');
@@ -1970,6 +2044,7 @@
         if (!box) return;
         box.innerHTML = '';
         var a7 = 0, a30 = 0, visits = 0, projects = 0, items = 0, cartItems = 0, types = {}, cartTypes = {};
+        var exportsN = 0, calcs = 0, searches = 0;
         list.forEach(function (p) {
             var d = daysAgo(p.lastActiveAt);
             if (d !== null && d <= 7) a7++;
@@ -1978,6 +2053,9 @@
             projects += p.projectCount;
             items += p.itemCount;
             cartItems += p.cartItems;
+            exportsN += p.exportCount;
+            calcs += p.calcCount;
+            searches += p.searchCount;
             Object.keys(p.typeCounts).forEach(function (n) { types[n] = (types[n] || 0) + p.typeCounts[n]; });
             Object.keys(p.cartTypeCounts).forEach(function (n) { cartTypes[n] = (cartTypes[n] || 0) + p.cartTypeCounts[n]; });
         });
@@ -1986,7 +2064,8 @@
         stats.className = 'analytics-stats';
         [['People', list.length], ['Active in last 7 days', a7], ['Active in last 30 days', a30],
             ['Visits', visits], ['Projects', projects], ['Project items', items],
-            ['Cart items', cartItems]].forEach(function (s) {
+            ['Cart items', cartItems], ['Schedule exports', exportsN], ['Calculator uses', calcs],
+            ['Design searches', searches]].forEach(function (s) {
             var stat = document.createElement('div');
             stat.className = 'analytics-stat';
             var v = document.createElement('div');
@@ -2138,6 +2217,21 @@
                 case 'cartTypes':
                     fillTypesCell(td, p.cartTypes, p.cartTypeCounts);
                     break;
+                case 'exportCount':
+                case 'calcCount':
+                    // The count, with what it was under it ("Excel 3, PDF 1").
+                    td.className = 'analytics-num';
+                    td.textContent = String(p[col.key] || 0);
+                    var line = col.key === 'exportCount'
+                        ? detailLine(p.exports.details, function (k) { return FORMAT_LABELS[k] || k; })
+                        : detailLine(p.calculators.details, calculatorName);
+                    if (line) {
+                        var sub = document.createElement('span');
+                        sub.className = 'analytics-sub-line';
+                        sub.textContent = line;
+                        td.appendChild(sub);
+                    }
+                    break;
                 default:
                     if (col.number) td.className = 'analytics-num';
                     td.textContent = col.number ? String(p[col.key] || 0) : (p[col.key] || '');
@@ -2204,6 +2298,333 @@
         td.appendChild(table);
         tr.appendChild(td);
         return tr;
+    }
+
+    // ---- Companies / Hoffman offices -------------------------------------
+    // One summary row per company or office location, over the people
+    // the search and People filters leave. Clicking a row filters the
+    // People view to it.
+
+    var G_COLUMNS = [
+        { key: 'name', label: '' },          // Company / Office, set per view
+        { key: 'people', label: 'People', number: true },
+        { key: 'a7', label: 'Active 7 days', number: true },
+        { key: 'a30', label: 'Active 30 days', number: true },
+        { key: 'visits', label: 'Visits', number: true },
+        { key: 'projects', label: 'Projects', number: true },
+        { key: 'items', label: 'Project items', number: true },
+        { key: 'cart', label: 'Cart items', number: true },
+        { key: 'exports', label: 'Schedule exports', number: true },
+        { key: 'calcs', label: 'Calculator uses', number: true },
+        { key: 'searches', label: 'Design searches', number: true },
+        { key: 'lastActiveAt', label: 'Last active', date: true }
+    ];
+
+    /** by = 'company' or 'location' (a person with several locations counts in each). */
+    function groupSummaries(list, by) {
+        var groups = {};
+        list.forEach(function (p) {
+            var names = by === 'company' ? [p.company || ''] : (p.locations && p.locations.length ? p.locations : ['']);
+            names.forEach(function (n) {
+                var g = groups[n] || (groups[n] = { name: n, people: 0, a7: 0, a30: 0, visits: 0, projects: 0,
+                    items: 0, cart: 0, exports: 0, calcs: 0, searches: 0, lastActiveAt: null });
+                var d = daysAgo(p.lastActiveAt);
+                g.people += 1;
+                if (d !== null && d <= 7) g.a7 += 1;
+                if (d !== null && d <= 30) g.a30 += 1;
+                g.visits += p.visits;
+                g.projects += p.projectCount;
+                g.items += p.itemCount;
+                g.cart += p.cartItems;
+                g.exports += p.exportCount;
+                g.calcs += p.calcCount;
+                g.searches += p.searchCount;
+                if (p.lastActiveAt && (!g.lastActiveAt || p.lastActiveAt > g.lastActiveAt)) g.lastActiveAt = p.lastActiveAt;
+            });
+        });
+        return Object.keys(groups).map(function (k) { return groups[k]; });
+    }
+
+    function drawGroupTable(wrap, list, by) {
+        var sort = aGroupSort[by];
+        var rows = groupSummaries(list, by);
+        function value(g) {
+            if (sort.key === 'name') return g.name.toLowerCase();
+            if (sort.key === 'lastActiveAt') return g.lastActiveAt || '';
+            return g[sort.key] || 0;
+        }
+        rows.sort(function (a, b) {
+            var av = value(a), bv = value(b);
+            if (av < bv) return -sort.dir;
+            if (av > bv) return sort.dir;
+            return (b.people - a.people) || (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
+        });
+
+        var table = document.createElement('table');
+        table.className = 'users-table analytics-table analytics-group-table';
+        var caption = document.createElement('caption');
+        caption.className = 'analytics-table-note';
+        caption.textContent = rows.length + (by === 'company' ? ' companies.' :
+            ' office locations. Someone with several locations counts in each.') + ' Click a row to see its people.';
+        table.appendChild(caption);
+
+        var thead = document.createElement('thead');
+        var hr = document.createElement('tr');
+        G_COLUMNS.forEach(function (col) {
+            var th = document.createElement('th');
+            if (col.number) th.className = 'analytics-num';
+            var label = col.key === 'name' ? (by === 'company' ? 'Company' : 'Office') : col.label;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'users-sort' + (sort.key === col.key ? ' users-sort-active' : '');
+            btn.textContent = label + (sort.key === col.key ? (sort.dir > 0 ? ' ▴' : ' ▾') : '');
+            btn.addEventListener('click', function () {
+                if (sort.key === col.key) sort.dir = -sort.dir;
+                else { sort.key = col.key; sort.dir = col.key === 'name' ? 1 : -1; }
+                drawAnalytics();
+            });
+            th.appendChild(btn);
+            hr.appendChild(th);
+        });
+        thead.appendChild(hr);
+        table.appendChild(thead);
+
+        var tbody = document.createElement('tbody');
+        if (!rows.length) {
+            var etr = document.createElement('tr');
+            var etd = document.createElement('td');
+            etd.colSpan = G_COLUMNS.length;
+            etd.className = 'users-empty';
+            etd.textContent = 'Nobody matches the search and filters.';
+            etr.appendChild(etd);
+            tbody.appendChild(etr);
+        }
+        rows.forEach(function (g) {
+            var tr = document.createElement('tr');
+            if (g.name) {
+                tr.className = 'analytics-row-expandable';
+                tr.title = 'Show these people';
+                tr.addEventListener('click', function () {
+                    aFilters[by] = [g.name];
+                    aView = 'people';
+                    drawAnalytics();
+                });
+            }
+            G_COLUMNS.forEach(function (col) {
+                var td = document.createElement('td');
+                if (col.key === 'name') {
+                    td.className = 'analytics-group-name' + (g.name ? '' : ' users-td-muted');
+                    td.textContent = g.name || (by === 'company' ? '(no company)' : '(no location)');
+                } else if (col.key === 'lastActiveAt') {
+                    dateCell(td, g.lastActiveAt, true);
+                } else {
+                    td.className = 'analytics-num';
+                    td.textContent = (g[col.key] || 0).toLocaleString();
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+    }
+
+    // ---- Trends ------------------------------------------------------------
+    // Adoption steps, then weekly bars: active people, projects created,
+    // items added. Weeks run Monday to Sunday and are labeled mm/dd by
+    // their Monday. All of it follows the search and People filters.
+
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+    function parseDay(s) {
+        var p = String(s).split('-');
+        return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    }
+    /** The Monday (YYYY-MM-DD) of the week a date falls in, local time. */
+    function weekOf(d) {
+        var w = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        w.setDate(w.getDate() - ((w.getDay() + 6) % 7));
+        return dayKey(w);
+    }
+    function isoWeek(iso) {
+        var d = iso ? new Date(iso) : null;
+        return d && !isNaN(d.getTime()) ? weekOf(d) : null;
+    }
+    /** Every week's Monday from the week of `first` (YYYY-MM-DD) to this week. */
+    function weeksFrom(first) {
+        var out = [];
+        var w = parseDay(first);
+        var end = weekOf(new Date());
+        for (var i = 0; i < 520; i++) {
+            var k = dayKey(w);
+            out.push(k);
+            if (k >= end) break;
+            w.setDate(w.getDate() + 7);
+        }
+        return out;
+    }
+
+    /** Invited accounts follow only the company, location and level filters. */
+    function invitedMatches(u) {
+        var keys = ['company', 'location', 'userLevel'];
+        for (var i = 0; i < keys.length; i++) {
+            var wanted = aFilters[keys[i]];
+            if (!wanted || !wanted.length) continue;
+            var v = keys[i] === 'location' ? (u.locations || []) : [String(u[keys[i]] || '')];
+            if (!v.some(function (x) { return wanted.indexOf(x) !== -1; })) return false;
+        }
+        return true;
+    }
+
+    function drawTrends(wrap, list) {
+        // 1. Adoption steps.
+        var inv = invited.filter(invitedMatches).length;
+        var steps = [
+            ['Accounts (invited + registered)', list.length + inv],
+            ['Registered', list.length],
+            ['Saved at least one project', list.filter(function (p) { return p.projectCount > 0; }).length],
+            ['Active in the last 30 days', list.filter(function (p) {
+                var d = daysAgo(p.lastActiveAt);
+                return d !== null && d <= 30;
+            }).length]
+        ];
+        var funnel = chartSection('Adoption steps',
+            'Each step as a share of all accounts. Accounts still waiting to register follow only the company, ' +
+            'location and level filters.');
+        var top = steps[0][1] || 1;
+        steps.forEach(function (s) {
+            var row = document.createElement('div');
+            row.className = 'analytics-step';
+            var label = document.createElement('span');
+            label.className = 'analytics-step-label';
+            label.textContent = s[0];
+            var track = document.createElement('span');
+            track.className = 'analytics-step-track';
+            var bar = document.createElement('span');
+            bar.className = 'analytics-step-bar';
+            bar.style.width = Math.round(s[1] / top * 100) + '%';
+            track.appendChild(bar);
+            var num = document.createElement('span');
+            num.className = 'analytics-step-num';
+            num.textContent = s[1].toLocaleString() + '  (' + Math.round(s[1] / top * 100) + '%)';
+            row.appendChild(label);
+            row.appendChild(track);
+            row.appendChild(num);
+            funnel.appendChild(row);
+        });
+        wrap.appendChild(funnel);
+
+        // 2. Active people per week (distinct people with any active day),
+        //    from the week accounts started.
+        var startWeek = weekOf(parseDay(ACCOUNTS_SINCE));
+        var activeByWeek = {};
+        var firstActive = null;
+        list.forEach(function (p) {
+            var seen = {};
+            p.activeDays.forEach(function (day) {
+                var w = weekOf(parseDay(day));
+                if (w < startWeek || seen[w]) return;
+                seen[w] = true;
+                activeByWeek[w] = (activeByWeek[w] || 0) + 1;
+                if (!firstActive || w < firstActive) firstActive = w;
+            });
+        });
+        var fullFrom = weekOf(parseDay(FULL_TRACKING_SINCE));
+        wrap.appendChild(weekChart('Active people per week',
+            'People who used the site at least once that week. Lighter bars, before ' + shortDate(FULL_TRACKING_SINCE + 'T12:00:00') +
+            ', are estimated from sign-ins and saved project dates, so they read low.',
+            firstActive, activeByWeek, function (w) { return w <= fullFrom; }, 'people'));
+
+        // 3. Projects created and items added per week, from the week
+        //    accounts started; anything older is counted in the note.
+        var projByWeek = {}, itemsByWeek = {};
+        var firstProj = null, firstItem = null, earlyProj = 0, earlyItems = 0;
+        list.forEach(function (p) {
+            p.projects.forEach(function (pr) {
+                if (!pr.shared) {
+                    var w = isoWeek(pr.createdAt);
+                    if (w && w < startWeek) earlyProj += 1;
+                    else if (w) {
+                        projByWeek[w] = (projByWeek[w] || 0) + 1;
+                        if (!firstProj || w < firstProj) firstProj = w;
+                    }
+                }
+                (pr.addedDays || []).forEach(function (day) {
+                    var wi = weekOf(parseDay(day));
+                    if (wi < startWeek) { earlyItems += 1; return; }
+                    itemsByWeek[wi] = (itemsByWeek[wi] || 0) + 1;
+                    if (!firstItem || wi < firstItem) firstItem = wi;
+                });
+            });
+        });
+        var since = shortDate(ACCOUNTS_SINCE + 'T12:00:00');
+        wrap.appendChild(weekChart('Projects created per week',
+            'Saved projects by the week they were started (shared copies left out). Deleted projects are not counted.' +
+            (earlyProj ? ' ' + earlyProj + ' more were started before accounts began on ' + since + '.' : ''),
+            firstProj, projByWeek, null, 'projects'));
+        wrap.appendChild(weekChart('Items added per week',
+            'Items in saved projects by the week they were added. Removed items and temporary carts are not counted.' +
+            (earlyItems ? ' ' + earlyItems + ' more were added before accounts began on ' + since + '.' : ''),
+            firstItem, itemsByWeek, null, 'items'));
+    }
+
+    function chartSection(title, note) {
+        var sec = document.createElement('section');
+        sec.className = 'analytics-chart';
+        var h = document.createElement('h3');
+        h.className = 'analytics-chart-title';
+        h.textContent = title;
+        sec.appendChild(h);
+        if (note) {
+            var p = document.createElement('p');
+            p.className = 'analytics-chart-note';
+            p.textContent = note;
+            sec.appendChild(p);
+        }
+        return sec;
+    }
+
+    /** Weekly bar chart. counts: { weekMonday: n }; estimated(week) -> lighter bar. */
+    function weekChart(title, note, firstWeek, counts, estimated, unit) {
+        var sec = chartSection(title, note);
+        if (!firstWeek) {
+            var empty = document.createElement('p');
+            empty.className = 'users-empty';
+            empty.textContent = 'Nothing to show for the people selected.';
+            sec.appendChild(empty);
+            return sec;
+        }
+        var weeks = weeksFrom(firstWeek);
+        var max = 1;
+        weeks.forEach(function (w) { if ((counts[w] || 0) > max) max = counts[w]; });
+        var every = weeks.length > 40 ? 4 : (weeks.length > 20 ? 2 : 1);
+
+        var bars = document.createElement('div');
+        bars.className = 'analytics-bars';
+        weeks.forEach(function (w, i) {
+            var n = counts[w] || 0;
+            var col = document.createElement('div');
+            col.className = 'analytics-bar-col' + (estimated && estimated(w) ? ' analytics-bar-est' : '');
+            col.title = 'Week of ' + shortDate(w + 'T12:00:00') + ': ' + n + ' ' + unit;
+            var val = document.createElement('span');
+            val.className = 'analytics-bar-value';
+            val.textContent = n ? String(n) : '';
+            var track = document.createElement('span');
+            track.className = 'analytics-bar-track';
+            var bar = document.createElement('span');
+            bar.className = 'analytics-bar';
+            bar.style.height = (n / max * 100) + '%';
+            track.appendChild(bar);
+            var lab = document.createElement('span');
+            lab.className = 'analytics-bar-label';
+            lab.textContent = i % every === 0 ? shortDate(w + 'T12:00:00').slice(0, 5) : '';
+            col.appendChild(val);
+            col.appendChild(track);
+            col.appendChild(lab);
+            bars.appendChild(col);
+        });
+        sec.appendChild(bars);
+        return sec;
     }
 
     // =================================================================

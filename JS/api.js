@@ -110,6 +110,22 @@
         get: function (path) { return request('GET', path); },
         post: function (path, body) { return request('POST', path, body || {}); },
         put: function (path, body, extra) { return request('PUT', path, body || {}, extra); },
-        del: function (path) { return request('DELETE', path); }
+        del: function (path) { return request('DELETE', path); },
+
+        /**
+         * Note one action for the Super Admin Analytics tab
+         * (POST /api/usage/event): kind = 'export' (detail xlsx / dxf /
+         * pdf), 'calculator' (detail = its key) or 'design_search'.
+         * Fire and forget - a failed note never bothers the person.
+         */
+        usage: function (kind, detail, productKey) {
+            try {
+                request('POST', '/api/usage/event', {
+                    kind: kind,
+                    detail: detail || '',
+                    productKey: productKey || ''
+                }).catch(function () {});
+            } catch (e) { /* never break the action being noted */ }
+        }
     };
 })();

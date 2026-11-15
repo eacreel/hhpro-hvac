@@ -275,9 +275,12 @@ function projectSummaries(user) {
         if (!p || !p.id || name !== p.id + '.json') continue;
         const items = Array.isArray(p.items) ? p.items : [];
         const types = {};
+        const addedDays = [];
         items.forEach((it) => {
             const k = String((it && it.productKey) || 'unknown');
             types[k] = (types[k] || 0) + 1;
+            const t = it && it.addedAt ? new Date(it.addedAt) : null;
+            if (t && !isNaN(t.getTime())) addedDays.push(db.localDay(t));
         });
         out.push({
             name: String(p.name || ''),
@@ -285,7 +288,11 @@ function projectSummaries(user) {
             updatedAt: p.updatedAt || p.createdAt || null,
             items: items.length,
             types,
-            layout: layoutLabel(p.engineer)
+            layout: layoutLabel(p.engineer),
+            // The day each item was added (Trends: items added per week).
+            // A shared copy's items were added by the sender, so none.
+            addedDays: p.sharedBy ? [] : addedDays,
+            shared: !!p.sharedBy
         });
     }
     out.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
@@ -300,9 +307,13 @@ router.get('/analytics', (req, res) => {
     const nameByEmail = {};
     all.forEach((u) => { nameByEmail[u.email] = displayName(u); });
     const carts = db.cartSummaries();
+    const events = db.eventSummaries();
+    const days = db.activeDays();
+    const none = { count: 0, last: null, details: {} };
     const people = all.filter((u) => u.status === 'active').map((u) => {
         const by = db.normalizeEmail(u.created_by);
         const cart = carts[u.id] || { items: 0, last: null, types: {} };
+        const ev = events[u.id] || {};
         return {
             id: u.id,
             email: u.email,
@@ -323,10 +334,24 @@ router.get('/analytics', (req, res) => {
             // Items added to a temporary cart (counted since backend 0.12.0).
             cartItems: cart.items,
             lastCartAt: cart.last,
-            cartTypes: cart.types
+            cartTypes: cart.types,
+            // Since backend 0.14.0: schedule downloads (details by
+            // format), calculator opens (by calculator), Design Search runs.
+            exports: ev.export || none,
+            calculators: ev.calculator || none,
+            designSearches: ev.design_search || none,
+            // Days they used the site (estimated before 0.14.0).
+            activeDays: days[u.id] || []
         };
     });
-    res.json({ people, generatedAt: new Date().toISOString() });
+    // Accounts still waiting to register: just enough for the Trends
+    // tab's adoption steps to follow the company / location / level filters.
+    const invited = all.filter((u) => u.status !== 'active').map((u) => ({
+        company: u.company,
+        locations: db.locationsOf(u),
+        userLevel: u.user_level
+    }));
+    res.json({ people, invited, generatedAt: new Date().toISOString() });
 });
 
 // ---- companies -----------------------------------------------------

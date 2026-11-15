@@ -4623,6 +4623,8 @@
                     if (!sections.length) {
                         return Promise.reject(new Error('No schedule data to combine.'));
                     }
+                    // Super Admin Analytics: a full-schedule download.
+                    if (HHpro.Api && HHpro.Api.usage) HHpro.Api.usage('export', fmt.ext, 'full_schedule');
                     // The CAD export also embeds each unit's drawings below
                     // the combined schedule; resolve them across every
                     // product in the project first.

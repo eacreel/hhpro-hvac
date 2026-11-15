@@ -92,6 +92,13 @@ WHAT'S IN THE GRID
     // Public entry points
     // =================================================================
 
+    /** Note a schedule download for the Super Admin Analytics tab. */
+    function noteExport(format, productKey) {
+        if (HHpro.Api && typeof HHpro.Api.usage === 'function') {
+            HHpro.Api.usage('export', format, productKey);
+        }
+    }
+
     function exportToExcel(productKey, items, data, projectName) {
         if (!window.JSZip) {
             alert('JSZip is not loaded - cannot export Excel.');
@@ -102,6 +109,7 @@ WHAT'S IN THE GRID
             alert('Nothing to export - this tab has no items yet.');
             return;
         }
+        noteExport('xlsx', productKey);
 
         var title = data.scheduleTitle || 'Schedule';
         generateXlsxBlob(title, grid).then(function (blob) {
@@ -119,6 +127,7 @@ WHAT'S IN THE GRID
             alert('Nothing to export - this tab has no items yet.');
             return;
         }
+        noteExport('pdf', productKey);
         openPrintWindow(productTabLabel(productKey), projectName, grid);
     }
 
@@ -128,6 +137,7 @@ WHAT'S IN THE GRID
             alert('Nothing to export - this tab has no items yet.');
             return;
         }
+        noteExport('dxf', productKey);
         var sections = [{ title: getExportScheduleTitle(productKey), grid: grid }];
         prepareCadDrawings([{ items: items, data: data }]).then(function (drawings) {
             return dxfBlobFromSections(sections, drawings);
@@ -1020,6 +1030,7 @@ WHAT'S IN THE GRID
             alert('Select at least one mini split and one multi position split first.');
             return;
         }
+        noteExport(format, 'split_systems');
         if (format === 'pdf') {
             openPrintWindow('Split Systems', projectName, grid);
             return;

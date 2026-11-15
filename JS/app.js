@@ -71,6 +71,12 @@
     // overview instead.
     var CALC_ONLY_VIEWS = { main: true, calculators: true, privacy: true };
 
+    function noteCalculatorOpen(viewName) {
+        if (!HHpro.Calculators || !HHpro.Api || typeof HHpro.Api.usage !== 'function') return;
+        var def = HHpro.Calculators.list().filter(function (d) { return d.view === viewName; })[0];
+        if (def) HHpro.Api.usage('calculator', def.key);
+    }
+
     function viewAllowed(viewName) {
         if (AUTH_VIEWS[viewName] || !HHpro.State || !HHpro.State.isCalculatorsOnly()) return true;
         if (CALC_ONLY_VIEWS[viewName]) return true;
@@ -128,6 +134,9 @@
             // First signed-in page of a visit: pop up What's New if
             // Updates.txt has lines this person hasn't seen.
             if (!AUTH_VIEWS[viewName] && HHpro.WhatsNew) HHpro.WhatsNew.checkForUpdates();
+            // Super Admin Analytics: note a calculator being opened (not
+            // when Back / Forward returns to one).
+            if (!opts.fromHistory) noteCalculatorOpen(viewName);
             if (opts.fromHistory) {
                 current = opts.fromHistory;
                 return;

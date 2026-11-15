@@ -891,6 +891,167 @@
     min-width: 220px;
 }
 
+/* People / Companies / Hoffman offices / Trends switch. */
+.analytics-views {
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: var(--space-sm);
+    padding: 3px;
+    background-color: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.analytics-view {
+    padding: 5px 14px;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.analytics-view:hover {
+    color: var(--color-text);
+}
+
+.analytics-view-active,
+.analytics-view-active:hover {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: inset 0 -2px 0 var(--color-primary-light);
+}
+
+/* Companies / offices tables. */
+.analytics-table caption.analytics-table-note {
+    caption-side: top;
+    padding: 10px 14px;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.analytics-group-name {
+    font-weight: 600;
+}
+
+/* Trends: one card per chart. */
+.analytics-trends {
+    display: grid;
+    gap: var(--space-md);
+}
+
+.analytics-chart {
+    padding: var(--space-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.analytics-chart-title {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+}
+
+.analytics-chart-note {
+    margin: 4px 0 var(--space-md);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+/* Adoption steps: label | bar | count (share). */
+.analytics-step {
+    display: grid;
+    grid-template-columns: minmax(150px, 230px) 1fr auto;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 5px 0;
+    font-size: var(--font-size-sm);
+}
+
+.analytics-step-label {
+    color: var(--color-text);
+}
+
+.analytics-step-track {
+    height: 14px;
+    background-color: var(--color-bg);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.analytics-step-bar {
+    display: block;
+    height: 100%;
+    background-color: var(--color-primary-light);
+    border-radius: 3px;
+}
+
+.analytics-step-num {
+    min-width: 90px;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: pre;
+}
+
+/* Weekly bars: value on top, bar, mm/dd under. */
+.analytics-bars {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    height: 190px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.analytics-bar-col {
+    flex: 1 0 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 30px;
+}
+
+.analytics-bar-value {
+    height: 16px;
+    color: var(--color-text);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.analytics-bar-track {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    border-bottom: 1px solid var(--color-border-strong);
+}
+
+.analytics-bar {
+    display: block;
+    width: 70%;
+    min-height: 1px;
+    background-color: var(--color-primary-light);
+    border-radius: 3px 3px 0 0;
+}
+
+.analytics-bar-est .analytics-bar {
+    opacity: 0.4;
+}
+
+.analytics-bar-label {
+    height: 18px;
+    padding-top: 3px;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 /* ---- Companies tab ------------------------------------------------- */
 
 .users-company-add {
