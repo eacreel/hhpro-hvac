@@ -225,12 +225,12 @@
             opened.forEach(openInNewTab);
             generated.forEach(openGenerated);
             if (!opened.length) {
-                alert((submittals.length
+                HHpro.UI.alert((submittals.length
                         ? 'The submittal for this item isn\'t available yet.'
                         : 'No submittal is available for this item.') +
                     (generated.length ? ' Its performance sheet opened in a new tab.' : ''));
             } else if (opened.length < urls.length) {
-                alert((urls.length - opened.length) + ' of ' + urls.length +
+                HHpro.UI.alert((urls.length - opened.length) + ' of ' + urls.length +
                     ' submittals for this item aren\'t available yet; the others opened in new tabs.');
             }
         }
@@ -253,7 +253,7 @@
     function openGenerated(doc) {
         var blob;
         try { blob = doc.generate(); } catch (e) {
-            alert('Could not build ' + (doc.filename || 'the document') + ': ' + ((e && e.message) || e));
+            HHpro.UI.alert('Could not build ' + (doc.filename || 'the document') + ': ' + ((e && e.message) || e));
             return;
         }
         if (!blob) return;
@@ -400,7 +400,7 @@
 
         var name = document.createElement('div');
         name.className = 'docs-item-name';
-        name.textContent = item.docColumn.name;
+        name.textContent = HHpro.Format ? HHpro.Format.label(item.docColumn.name) : item.docColumn.name;
 
         var filename = document.createElement('div');
         filename.className = 'docs-item-file';

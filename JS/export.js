@@ -101,12 +101,12 @@ WHAT'S IN THE GRID
 
     function exportToExcel(productKey, items, data, projectName) {
         if (!window.JSZip) {
-            alert('JSZip is not loaded - cannot export Excel.');
+            HHpro.UI.alert('JSZip is not loaded - cannot export Excel.');
             return;
         }
         var grid = buildScheduleGrid(productKey, items, data);
         if (!grid || !grid.rows.length) {
-            alert('Nothing to export - this tab has no items yet.');
+            HHpro.UI.alert('Nothing to export - this tab has no items yet.');
             return;
         }
         noteExport('xlsx', productKey);
@@ -117,14 +117,14 @@ WHAT'S IN THE GRID
                            safeFilename(productTabLabel(productKey)) + '.xlsx';
             downloadBlob(blob, safeName);
         }).catch(function (err) {
-            alert('Excel export failed: ' + (err && err.message ? err.message : err));
+            HHpro.UI.alert('Excel export failed: ' + (err && err.message ? err.message : err));
         });
     }
 
     function exportToPDF(productKey, items, data, projectName) {
         var grid = buildScheduleGrid(productKey, items, data);
         if (!grid || !grid.rows.length) {
-            alert('Nothing to export - this tab has no items yet.');
+            HHpro.UI.alert('Nothing to export - this tab has no items yet.');
             return;
         }
         noteExport('pdf', productKey);
@@ -134,7 +134,7 @@ WHAT'S IN THE GRID
     function exportToCAD(productKey, items, data, projectName) {
         var grid = buildScheduleGrid(productKey, items, data);
         if (!grid || !grid.rows.length) {
-            alert('Nothing to export - this tab has no items yet.');
+            HHpro.UI.alert('Nothing to export - this tab has no items yet.');
             return;
         }
         noteExport('dxf', productKey);
@@ -146,7 +146,7 @@ WHAT'S IN THE GRID
                            safeFilename(productTabLabel(productKey)) + '.dxf';
             downloadBlob(blob, safeName);
         }).catch(function (err) {
-            alert('CAD export failed: ' + (err && err.message ? err.message : err));
+            HHpro.UI.alert('CAD export failed: ' + (err && err.message ? err.message : err));
         });
     }
 
@@ -1030,7 +1030,7 @@ WHAT'S IN THE GRID
     function exportSplitSystems(format, groups, projectName) {
         var grid = buildCombinedSplitSystemsGrid(groups);
         if (!grid || !grid.rows.length) {
-            alert('Select at least one mini split and one multi position split first.');
+            HHpro.UI.alert('Select at least one mini split and one multi position split first.');
             return;
         }
         noteExport(format, 'split_systems');
@@ -2175,7 +2175,7 @@ WHAT'S IN THE GRID
     function openPrintWindow(productLabel, projectName, grid) {
         var w = window.open('', '_blank');
         if (!w) {
-            alert('Please allow popups from this site to use the PDF export.');
+            HHpro.UI.alert('Please allow popups from this site to use the PDF export.');
             return;
         }
         // Document title (browser-tab / suggested-PDF-filename). The

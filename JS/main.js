@@ -51,6 +51,9 @@
         var actions = document.createElement('div');
         actions.className = 'header-actions';
 
+        // Cart / project button (hidden for calculators-only accounts).
+        actions.appendChild(HHpro.UI.createCartSlot());
+
         var whatsNewBtn = HHpro.UI.createWhatsNewButton();
         if (whatsNewBtn) actions.appendChild(whatsNewBtn);
         actions.appendChild(HHpro.UI.createUserGuideButton());

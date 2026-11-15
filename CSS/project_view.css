@@ -675,8 +675,7 @@
     font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
     margin: 0 0 var(--space-sm) 0;
     padding-bottom: var(--space-xs);
     border-bottom: 1px solid var(--color-border);
@@ -1493,6 +1492,8 @@
     width: max-content;
     min-width: 100%;
     color: var(--color-text);
+    /* Equal-width digits, like the schedule tables. */
+    font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Headers ---------- */

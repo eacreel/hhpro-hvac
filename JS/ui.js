@@ -309,6 +309,21 @@
          *
          * @returns {HTMLElement}
          */
+        /**
+         * The header spot for the cart / project button (cart.js
+         * mountToggle moves the one button here), instead of a tab stuck
+         * to the screen edge over the schedules. Both headers (this
+         * buildHeader and the overview's, main.js) use it.
+         */
+        createCartSlot: function () {
+            var slot = document.createElement('span');
+            slot.className = 'header-cart-slot';
+            if (HHpro.Cart && typeof HHpro.Cart.mountToggle === 'function') {
+                HHpro.Cart.mountToggle(slot);
+            }
+            return slot;
+        },
+
         createUserGuideButton: function () {
             var btn = document.createElement('button');
             btn.type = 'button';
@@ -372,20 +387,86 @@
          * @param {string} message
          * @param {boolean=} isError - red border, stays up longer
          */
-        toast: function (message, isError) {
-            var el = document.getElementById('hh-toast');
-            if (!el) {
-                el = document.createElement('div');
-                el.id = 'hh-toast';
-                el.className = 'hh-toast';
-                el.setAttribute('role', 'status');
-                document.body.appendChild(el);
+        /**
+         * A styled notice in the bottom-right corner (several stack).
+         * Replaces the browser's alert() boxes across the site.
+         *
+         * @param {string} message - line breaks are kept
+         * @param {boolean|Object=} opts - true (an error, the older
+         *        signature) or { kind: 'info'|'success'|'warning'|'error',
+         *        duration: ms (0 = stays until closed) }
+         */
+        toast: function (message, opts) {
+            var o = (opts === true) ? { kind: 'error' }
+                : (opts && typeof opts === 'object') ? opts : {};
+            var kind = o.kind || 'info';
+            var text = String(message == null ? '' : message);
+
+            var stack = document.getElementById('hh-toasts');
+            if (!stack) {
+                stack = document.createElement('div');
+                stack.id = 'hh-toasts';
+                stack.className = 'hh-toast-stack';
+                document.body.appendChild(stack);
             }
-            el.textContent = message;
-            el.classList.toggle('hh-toast-error', !!isError);
-            el.classList.add('hh-toast-show');
-            clearTimeout(el._timer);
-            el._timer = setTimeout(function () { el.classList.remove('hh-toast-show'); }, isError ? 7000 : 3500);
+            // Four at most: the oldest goes first.
+            while (stack.children.length >= 4) stack.removeChild(stack.firstChild);
+
+            var el = document.createElement('div');
+            el.className = 'hh-toast hh-toast-' + kind;
+            el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+            var icon = HHpro.UI.icon(kind === 'success' ? 'check'
+                : (kind === 'warning' || kind === 'error') ? 'alert-triangle' : 'bell');
+            icon.classList.add('hh-toast-icon');
+            el.appendChild(icon);
+            var body = document.createElement('div');
+            body.className = 'hh-toast-text';
+            body.textContent = text;
+            el.appendChild(body);
+            var close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'hh-toast-close';
+            close.setAttribute('aria-label', 'Dismiss');
+            close.appendChild(HHpro.UI.icon('x'));
+            el.appendChild(close);
+            stack.appendChild(el);
+
+            function dismiss() {
+                clearTimeout(el._timer);
+                el.classList.remove('hh-toast-show');
+                setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 220);
+            }
+            close.addEventListener('click', dismiss);
+
+            // Long enough to read: longer messages and errors stay longer;
+            // a long list (missing files) stays until closed. Hovering
+            // holds it open.
+            var duration = (o.duration != null) ? o.duration
+                : text.length > 360 ? 0
+                : (kind === 'error' ? 8000 : 4500) + Math.min(8000, text.length * 35);
+            function arm(ms) {
+                clearTimeout(el._timer);
+                if (ms > 0) el._timer = setTimeout(dismiss, ms);
+            }
+            el.addEventListener('mouseenter', function () { clearTimeout(el._timer); });
+            el.addEventListener('mouseleave', function () { if (duration > 0) arm(2500); });
+            arm(duration);
+            requestAnimationFrame(function () { el.classList.add('hh-toast-show'); });
+            return el;
+        },
+
+        /**
+         * Drop-in for window.alert(): the same message as a styled notice,
+         * its kind read from the wording ("could not ..." is an error,
+         * "... isn't available yet" a warning, "Imported ..." a success).
+         */
+        alert: function (message) {
+            var t = String(message == null ? '' : message);
+            var kind = /skipped|n't available|not available|could not be added|allow popups|no longer/i.test(t) ? 'warning'
+                : /\bfail|could not|couldn't|can't|cannot|\berror\b|missing|not loaded/i.test(t) ? 'error'
+                : /^(imported|saved|moved|shared|replaced)\b/i.test(t) ? 'success'
+                : 'info';
+            return HHpro.UI.toast(t, { kind: kind });
         },
 
         /**
@@ -464,6 +545,8 @@
 
             var actions = document.createElement('div');
             actions.className = 'header-actions';
+
+            actions.appendChild(HHpro.UI.createCartSlot());
 
             var whatsNewBtn = HHpro.UI.createWhatsNewButton();
             if (whatsNewBtn) actions.appendChild(whatsNewBtn);

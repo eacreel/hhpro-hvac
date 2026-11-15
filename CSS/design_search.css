@@ -171,12 +171,11 @@
 }
 
 /* Inside the form card the section titles drop to eyebrow style (small,
-   uppercase, muted) so they group their controls instead of competing
-   with the 2rem page title; the results header keeps the larger cut. */
+   muted) so they group their controls instead of competing with the 2rem
+   page title; the results header keeps the larger cut. */
 .design-search-form .design-search-section-title {
     font-size: var(--font-size-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
     color: var(--color-text-muted);
 }
 
@@ -486,10 +485,8 @@
 }
 
 .design-cond-group-title {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--color-text-muted);
 }
 

@@ -439,7 +439,7 @@
         if (data.scheduleTitle) {
             var meta = document.createElement('p');
             meta.className = 'product-meta';
-            meta.textContent = data.scheduleTitle;
+            meta.textContent = displayLabel(data.scheduleTitle);
             titleArea.appendChild(meta);
         }
         header.appendChild(titleArea);
@@ -494,6 +494,13 @@
 
         var filterBarContainer = document.createElement('div');
         main.appendChild(filterBarContainer);
+
+        // The filters the person has set, as removable chips under the
+        // bar ("Number of Indoor Units: 3 x") - quicker to read than
+        // scanning every dropdown. Empty (no layout space) when none.
+        var filterChipsContainer = document.createElement('div');
+        filterChipsContainer.className = 'filter-chips';
+        main.appendChild(filterChipsContainer);
 
         // Container for the active model-filter chip. Empty when there
         // is no active model filter, so it takes no layout space.
@@ -619,10 +626,38 @@
                 }
             });
             renderFilterBar();
+            renderFilterChips();
             refreshSchedule();
             // Let the intro section (model gallery) re-sync its active
             // card against the new filter state.
             introListeners.forEach(function (cb) { cb(); });
+        }
+
+        // One chip per filter the person picked (not the ones filled in
+        // automatically because only one option was left). Filters driven
+        // by picture cards show just the value ("Multi Splits").
+        function renderFilterChips() {
+            filterChipsContainer.innerHTML = '';
+            var visible = getVisibleFilters(product.productKey, data, filterValues);
+            visible.forEach(function (fc) {
+                var v = filterValues[fc.name];
+                if (v === null || v === undefined || autoSelectedNames[fc.name]) return;
+                var chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'filter-chip';
+                var galleryOnly = isGalleryOnlyFilter(product.productKey, fc.name);
+                var text = (galleryOnly ? '' : displayLabel(fc.name) + ': ') + formatNumber(v);
+                chip.title = 'Remove this filter';
+                chip.setAttribute('aria-label', 'Remove filter ' + text);
+                var label = document.createElement('span');
+                label.textContent = text;
+                chip.appendChild(label);
+                chip.appendChild(HHpro.UI.icon('x'));
+                chip.addEventListener('click', function () {
+                    onUserFilterChange(fc.name, null);
+                });
+                filterChipsContainer.appendChild(chip);
+            });
         }
 
         function onUserFilterChange(filterName, newValue) {
@@ -1007,7 +1042,7 @@
 
             var label = document.createElement('label');
             label.className = 'filter-label';
-            label.textContent = fc.name;
+            label.textContent = displayLabel(fc.name);
 
             var select = document.createElement('select');
             select.className = 'filter-select';
@@ -1184,9 +1219,26 @@
         var gpHidden = gpRatingHidden(data, selections, product);
         gpHidden.forEach(function (letter) { hiddenSet[letter] = true; });
         table.__gpRatingHidden = gpHidden.join(',');
-        table.appendChild(buildScheduleHead(data, hiddenSet));
-        table.appendChild(buildScheduleBody(data, selections, product, hiddenSet));
+        // The model number column stays pinned beside Actions when the
+        // table scrolls sideways, so a row keeps its identity on a 30-column
+        // schedule. applyStickyHeaderOffsets sets its left offset.
+        var pinCol = pinnedColumn(data, product, hiddenSet);
+        table.appendChild(buildScheduleHead(data, hiddenSet, pinCol));
+        table.appendChild(buildScheduleBody(data, selections, product, hiddenSet, pinCol));
         return table;
+    }
+
+    // The schedule column pinned next to Actions: data.js pinColumn (a
+    // letter, or false for none), else the first MODEL-headed column.
+    function pinnedColumn(data, product, hiddenSet) {
+        if (product && product.pinColumn === false) return null;
+        var col = product && product.pinColumn;
+        if (!col) {
+            var first = findModelColumns(data)[0];
+            col = first && first.col;
+        }
+        if (!col || (hiddenSet && hiddenSet[col])) return null;
+        return col;
     }
 
     // Rating columns GasPackDesign hides for the rows in view: one unit per
@@ -1226,7 +1278,7 @@
         };
     }
 
-    function buildScheduleHead(data, hiddenSet) {
+    function buildScheduleHead(data, hiddenSet, pinCol) {
         hiddenSet = hiddenSet || {};
         var thead = document.createElement('thead');
         var rows = (data.scheduleHeader && data.scheduleHeader.rows) || [];
@@ -1275,6 +1327,7 @@
                 var th = document.createElement('th');
                 if (visibleSpan > 1) th.colSpan = visibleSpan;
                 if (cell.rowspan && cell.rowspan > 1) th.rowSpan = cell.rowspan;
+                if (pinCol && cell.col === pinCol && visibleSpan === 1) th.classList.add('pin-col');
                 th.textContent = (cell.value !== null && cell.value !== undefined) ? String(cell.value) : '';
                 tr.appendChild(th);
             });
@@ -1285,7 +1338,7 @@
         return thead;
     }
 
-    function buildScheduleBody(data, selections, product, hiddenSet) {
+    function buildScheduleBody(data, selections, product, hiddenSet, pinCol) {
         hiddenSet = hiddenSet || {};
         var tbody = document.createElement('tbody');
         var allLetters = (data.scheduleHeader && data.scheduleHeader.columnLetters) || [];
@@ -1299,7 +1352,7 @@
         if (kwVariants) {
             var families = groupKwFamilies(selections, kwVariants);
             families.forEach(function (fam) {
-                tbody.appendChild(buildKwFamilyRow(fam, kwVariants, product, data, colLetters));
+                tbody.appendChild(buildKwFamilyRow(fam, kwVariants, product, data, colLetters, pinCol));
             });
             return tbody;
         }
@@ -1386,6 +1439,7 @@
                     var cell = layout[rowIndex][colLetter];
                     if (cell === null) return; // covered by rowSpan/colSpan from earlier
                     var td = document.createElement('td');
+                    if (colLetter === pinCol) td.classList.add('pin-col');
                     var value = cell.value;
                     if (elecCtrl && rowIndex === 0 && elecCtrl.handles(colLetter)) {
                         elecCtrl.fillCell(td, colLetter);
@@ -1566,6 +1620,12 @@
         return (HHpro.Format && HHpro.Format.number) ? HHpro.Format.number(v) : String(v);
     }
 
+    // An ALL-CAPS workbook label in normal capitalization ("SIZE (INDOOR
+    // UNIT #1)" -> "Size (Indoor Unit #1)"); schedule headers keep caps.
+    function displayLabel(text) {
+        return (HHpro.Format && HHpro.Format.label) ? HHpro.Format.label(text) : String(text || '');
+    }
+
     // Cell text + the muted look for a lone "-" (JS/format.js).
     function setCellText(td, text) {
         if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, text);
@@ -1602,6 +1662,15 @@
             for (var k = 0; k < row.cells.length; k++) {
                 row.cells[k].style.top = topPx;
             }
+        }
+
+        // The pinned model column (pinnedColumn) sticks just right of the
+        // pinned Actions column, whatever width Actions ended up.
+        var pins = table.querySelectorAll('.pin-col');
+        if (pins.length) {
+            var actionsHead = thead.querySelector('th.actions-head');
+            var leftPx = (actionsHead ? Math.floor(actionsHead.getBoundingClientRect().width) : 0) + 'px';
+            for (var p = 0; p < pins.length; p++) pins[p].style.left = leftPx;
         }
     }
 
@@ -1643,10 +1712,12 @@
         });
 
         // ----- Submittal (open PDF in new tab) -----
-        var subBtn = document.createElement('button');
-        subBtn.type = 'button';
-        subBtn.className = 'action-btn action-btn-secondary';
-        subBtn.textContent = 'Submittal';
+        // Submittal and Docs are icon buttons (named by tooltip + aria
+        // label) so the pinned Actions column stays narrow; Select keeps
+        // its text as the row's main action.
+        var SUB_TITLE = 'Submittal - open the PDF';
+        var DOCS_TITLE = 'Documents - submittal, manuals, CAD, Revit';
+        var subBtn = iconButton('file-text', SUB_TITLE);
         subBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openSubmittal === 'function') {
                 HHpro.Docs.openSubmittal(product, getSel(), data, docOpts());
@@ -1670,9 +1741,10 @@
             var allMissing = urls.length > 0 && states.every(function (s) { return s === false; });
             var off = !named || allMissing;
             subBtn.classList.toggle('action-btn-no-file', off);
-            if (!off) subBtn.removeAttribute('title');
-            else subBtn.title = named ? 'This item\'s submittal isn\'t available yet'
-                                      : 'No submittal available for this item';
+            subBtn.title = !off ? SUB_TITLE
+                : named ? 'This item\'s submittal isn\'t available yet'
+                        : 'No submittal available for this item';
+            subBtn.setAttribute('aria-label', subBtn.title);
             if (states.some(function (s) { return s === undefined; })) {
                 D.checkUrls(urls).then(function () {
                     if (subBtn.isConnected && getSel() === sel) refreshDocState();
@@ -1690,16 +1762,13 @@
                 return D.isAvailable(u) === false;
             });
             docsBtn.classList.toggle('action-btn-no-file', noDocs);
-            if (noDocs) docsBtn.title = 'This item\'s documents aren\'t available yet';
-            else docsBtn.removeAttribute('title');
+            docsBtn.title = noDocs ? 'This item\'s documents aren\'t available yet' : DOCS_TITLE;
+            docsBtn.setAttribute('aria-label', docsBtn.title);
         }
         row.refreshDocState = refreshDocState;
 
         // ----- Docs (popup with all available documents) -----
-        var docsBtn = document.createElement('button');
-        docsBtn.type = 'button';
-        docsBtn.className = 'action-btn action-btn-secondary';
-        docsBtn.textContent = 'Docs';
+        var docsBtn = iconButton('folder', DOCS_TITLE);
         docsBtn.addEventListener('click', function () {
             if (HHpro.Docs && typeof HHpro.Docs.openDocsModal === 'function') {
                 HHpro.Docs.openDocsModal(product, getSel(), data, docOpts());
@@ -1722,12 +1791,24 @@
         return row;
     }
 
+    // A compact row action shown as an icon; the title is its tooltip and
+    // its accessible name.
+    function iconButton(iconName, title) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'action-btn action-btn-secondary action-btn-icon';
+        btn.title = title;
+        btn.setAttribute('aria-label', title);
+        btn.appendChild(HHpro.UI.icon(iconName));
+        return btn;
+    }
+
     // ---------------------------------------------------------------
     // kW-family row (used by buildScheduleBody for products that
     // merge kW variants -- see HHpro.Schedule.groupKwFamilies).
     // ---------------------------------------------------------------
 
-    function buildKwFamilyRow(fam, kwVariants, product, data, colLetters) {
+    function buildKwFamilyRow(fam, kwVariants, product, data, colLetters, pinCol) {
         // No selection-boundary class here: kW family rows are always
         // single rows, so the 1px row border is the right separator.
         var tr = document.createElement('tr');
@@ -1808,6 +1889,7 @@
 
         colLetters.forEach(function (colLetter) {
             var td = document.createElement('td');
+            if (colLetter === pinCol) td.classList.add('pin-col');
 
             if (capCtrl && capCtrl.handles(colLetter)) {
                 capCtrl.fillCell(td, colLetter);

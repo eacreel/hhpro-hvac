@@ -860,33 +860,92 @@ input[type="checkbox"], input[type="radio"] {
 
 /* ---- Shared toast (HHpro.UI.toast) --------------------------------- */
 
-.hh-toast {
+/* Notices stack in the bottom-right corner, newest at the bottom. They
+   replace the browser's alert() boxes (HHpro.UI.alert). The stack itself
+   lets clicks through; each notice takes them. */
+.hh-toast-stack {
     position: fixed;
-    left: 50%;
-    bottom: 24px;
-    transform: translate(-50%, 12px);
-    max-width: min(560px, calc(100% - 32px));
-    padding: 10px 18px;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: min(420px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.hh-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 10px 12px 14px;
     background-color: var(--color-bg-dark);
     border: 1px solid var(--color-border-strong);
+    border-left: 4px solid var(--color-primary-light);
     border-radius: var(--radius-md);
     color: var(--color-text);
     font-size: var(--font-size-sm);
+    line-height: 1.45;
     box-shadow: var(--shadow-md);
     opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
-    z-index: 1200;
+    transform: translateY(10px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: auto;
 }
 
 .hh-toast-show {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
 }
 
-.hh-toast-error {
-    border-color: var(--color-error);
-    color: var(--color-error-light);
+.hh-toast-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    color: var(--color-primary-light);
+}
+
+.hh-toast-text {
+    flex: 1;
+    min-width: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.hh-toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    line-height: 0;
+}
+
+.hh-toast-close:hover {
+    color: var(--color-text);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.hh-toast-close .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.hh-toast-success { border-left-color: var(--color-success); }
+.hh-toast-success .hh-toast-icon { color: var(--color-success); }
+.hh-toast-warning { border-left-color: var(--color-warning); }
+.hh-toast-warning .hh-toast-icon { color: var(--color-warning); }
+.hh-toast-error { border-left-color: var(--color-error); }
+.hh-toast-error .hh-toast-icon { color: var(--color-error-light); }
+
+@media (prefers-reduced-motion: reduce) {
+    .hh-toast { transition: none; }
 }
 
 /* ---- Company logo in the header ------------------------------------ */

@@ -593,7 +593,7 @@
         confirmDiscardTempCart(function () {
             var ok = HHpro.Cart.activateProject(proj.id);
             if (!ok) {
-                alert('Could not open this project. It may have been deleted.');
+                HHpro.UI.alert('Could not open this project. It may have been deleted.');
                 HHpro.App.showView('projects');
                 return;
             }
@@ -793,7 +793,7 @@
     function handleExportAllCSV() {
         var list = HHpro.Cart.listProjects();
         if (!list.length) {
-            alert('No projects to export.');
+            HHpro.UI.alert('No projects to export.');
             return;
         }
         var csv = projectsToCSV(list);
@@ -919,10 +919,10 @@
                 try {
                     processImportedCSV(reader.result);
                 } catch (err) {
-                    alert('Could not read this CSV file:\n\n' + (err && err.message ? err.message : err));
+                    HHpro.UI.alert('Could not read this CSV file:\n\n' + (err && err.message ? err.message : err));
                 }
             };
-            reader.onerror = function () { alert('Error reading file.'); };
+            reader.onerror = function () { HHpro.UI.alert('Error reading file.'); };
             reader.readAsText(file);
         });
         document.body.appendChild(input);
@@ -935,7 +935,7 @@
     function processImportedCSV(text) {
         var rows = parseCSV(text);
         if (!rows.length) {
-            alert('CSV file is empty.');
+            HHpro.UI.alert('CSV file is empty.');
             return;
         }
         var headers = rows[0].map(function (h) { return (h || '').trim(); });
@@ -943,7 +943,7 @@
 
         var list = Object.keys(projectsByName).map(function (n) { return projectsByName[n]; });
         if (!list.length) {
-            alert('No projects found in the CSV.');
+            HHpro.UI.alert('No projects found in the CSV.');
             return;
         }
         openImportConflictModal(list);
@@ -961,7 +961,7 @@
 
         if (!conflicts.length) {
             var result = HHpro.Cart.mergeImportedProjects(importedProjects);
-            alert('Imported ' + result.imported + ' project(s) from CSV.');
+            HHpro.UI.alert('Imported ' + result.imported + ' project(s) from CSV.');
             HHpro.App.showView('projects');
             return;
         }
@@ -977,13 +977,13 @@
             cancelLabel: 'Rename imports',
             onConfirm: function () {
                 var r = HHpro.Cart.mergeImportedProjects(importedProjects, { onConflict: 'replace' });
-                alert('Imported ' + (r.imported + r.replaced) + ' project(s). ' +
+                HHpro.UI.alert('Imported ' + (r.imported + r.replaced) + ' project(s). ' +
                       r.replaced + ' existing project(s) replaced.');
                 HHpro.App.showView('projects');
             },
             onCancel: function () {
                 var r = HHpro.Cart.mergeImportedProjects(importedProjects, { onConflict: 'rename' });
-                alert('Imported ' + (r.imported + r.renamed) + ' project(s). ' +
+                HHpro.UI.alert('Imported ' + (r.imported + r.renamed) + ' project(s). ' +
                       r.renamed + ' renamed to avoid conflicts.');
                 HHpro.App.showView('projects');
             }

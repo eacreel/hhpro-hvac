@@ -1299,7 +1299,7 @@
 
         var label = document.createElement('label');
         label.className = 'filter-label';
-        label.textContent = filterCol.name;
+        label.textContent = HHpro.Format ? HHpro.Format.label(filterCol.name) : filterCol.name;
         group.appendChild(label);
 
         var select = document.createElement('select');
@@ -2041,7 +2041,7 @@
         var st = HHpro.Cart && HHpro.Cart.getActiveState ? HHpro.Cart.getActiveState() : null;
         var sameProject = st && st.mode === rep.mode && (st.projectId || null) === rep.projectId;
         if (!sameProject || !HHpro.ProjectView) {
-            alert('The project ' + (rep.tag || rep.model) + ' came from is no longer open, so it ' +
+            HHpro.UI.alert('The project ' + (rep.tag || rep.model) + ' came from is no longer open, so it ' +
                 'can’t be replaced. Open that project and use Configure again.');
             return;
         }
@@ -2058,7 +2058,7 @@
             patch: { selectionId: match.selection.id, label: label, gasPackDesign: payload }
         });
         if (!out.ok) {
-            alert((rep.tag || rep.model) + ' is no longer on the project schedule, so it can’t ' +
+            HHpro.UI.alert((rep.tag || rep.model) + ' is no longer on the project schedule, so it can’t ' +
                 'be replaced.');
             return;
         }

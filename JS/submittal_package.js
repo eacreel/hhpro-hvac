@@ -65,7 +65,7 @@
         opts = opts || {};
         var types = pdfTypes(filesData);
         if (!types.length) {
-            alert('This project has no PDF documents to put in a package yet.');
+            HHpro.UI.alert('This project has no PDF documents to put in a package yet.');
             return;
         }
 
@@ -157,7 +157,7 @@
             downloadBlob(res.blob, safeName(projectName) + ' - Submittal Package - ' + todayStr() + '.pdf');
             if (HHpro.Api && HHpro.Api.usage) HHpro.Api.usage('export', 'pdf', 'submittal_package');
             if (res.skipped.length) {
-                alert(res.skipped.length + ' file(s) could not be added and are marked ' +
+                HHpro.UI.alert(res.skipped.length + ' file(s) could not be added and are marked ' +
                     '"not included" in the index:\n\n' +
                     res.skipped.slice(0, 15).map(function (s) {
                         return '  - ' + s.filename + ' (' + s.reason + ')';
@@ -165,7 +165,7 @@
                     (res.skipped.length > 15 ? '\n  ...and ' + (res.skipped.length - 15) + ' more.' : ''));
             }
         }).catch(function (err) {
-            alert('Could not build the submittal package: ' + ((err && err.message) || err));
+            HHpro.UI.alert('Could not build the submittal package: ' + ((err && err.message) || err));
         }).then(function () {
             if (button) {
                 button.disabled = false;

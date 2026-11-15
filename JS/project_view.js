@@ -481,7 +481,7 @@
             var ssCount = groups['multi_position_splits'].length +
                           groups['mini_splits'].length;
             nav.appendChild(buildTabButton('split_systems',
-                'SPLIT SYSTEMS (' + ssCount + ')'));
+                'Split Systems (' + ssCount + ')'));
         }
 
         // Refrigerant tab only appears when the project has at least
@@ -489,20 +489,20 @@
         // (mini splits or multi position splits today). Sits between
         // the product tabs and Files so it stays grouped with the
         // schedule-data views. Label style mirrors the product tabs:
-        // UPPERCASE with a parenthesized count (system count for
-        // Refrigerant).
+        // normal capitalization with a parenthesized count (system count
+        // for Refrigerant).
         if (hasRefrigerantSystems(groups)) {
             var refCount = countRefrigerantSystems(groups);
             nav.appendChild(buildTabButton('refrigerant',
-                'REFRIGERANT (' + refCount + ')'));
+                'Refrigerant (' + refCount + ')'));
         }
 
         var calcN = savedCalcCount();
         if (calcN) {
-            nav.appendChild(buildTabButton('calculations', 'CALCULATIONS (' + calcN + ')'));
+            nav.appendChild(buildTabButton('calculations', 'Calculations (' + calcN + ')'));
         }
 
-        nav.appendChild(buildTabButton('files', 'FILES'));
+        nav.appendChild(buildTabButton('files', 'Files'));
         return nav;
     }
 
@@ -624,7 +624,7 @@
                 try {
                     triggerBlobDownload(calcPdfBlob(calc, activeState), calcFileName(calc));
                 } catch (err) {
-                    alert('Could not build the PDF: ' + (err && err.message ? err.message : String(err)));
+                    HHpro.UI.alert('Could not build the PDF: ' + (err && err.message ? err.message : String(err)));
                 }
             });
             actions.appendChild(pdf);
@@ -1696,7 +1696,7 @@
             return REFRIGERANT_PRODUCT_KEYS.indexOf(it.productKey) >= 0;
         });
         if (!refItems.length) {
-            alert('No refrigerant systems in this project.');
+            HHpro.UI.alert('No refrigerant systems in this project.');
             return;
         }
 
@@ -1718,7 +1718,7 @@
             results.forEach(function (r) { loaded[r.key] = r.data; });
             renderRefrigerantReportWindow(refItems, loaded, projectName);
         }).catch(function (err) {
-            alert('Could not build refrigerant report: ' +
+            HHpro.UI.alert('Could not build refrigerant report: ' +
                   (err && err.message ? err.message : String(err)));
         });
     }
@@ -1726,7 +1726,7 @@
     function renderRefrigerantReportWindow(refItems, dataByKey, projectName) {
         var w = window.open('', '_blank');
         if (!w) {
-            alert('Please allow popups from this site to use the PDF report.');
+            HHpro.UI.alert('Please allow popups from this site to use the PDF report.');
             return;
         }
 
@@ -3764,6 +3764,11 @@
         return String(val);
     }
 
+    // An ALL-CAPS workbook label in normal capitalization (JS/format.js).
+    function displayLabel(text) {
+        return (HHpro.Format && HHpro.Format.label) ? HHpro.Format.label(text) : String(text || '');
+    }
+
     // Cell text + the muted look for a lone "-" (JS/format.js).
     function setCellText(td, text) {
         if (HHpro.Format && HHpro.Format.setCellText) HHpro.Format.setCellText(td, text);
@@ -4847,7 +4852,7 @@
 
             var label = document.createElement('span');
             label.className = 'files-type-label';
-            label.textContent = name;
+            label.textContent = displayLabel(name);
 
             var count = document.createElement('span');
             count.className = 'files-type-count';
@@ -5011,7 +5016,7 @@
 
         var name = document.createElement('span');
         name.className = 'files-file-name';
-        name.textContent = file.docTypeName;
+        name.textContent = displayLabel(file.docTypeName);
 
         var fname = document.createElement('span');
         fname.className = 'files-file-fname';
@@ -5045,7 +5050,7 @@
 
         var name = document.createElement('span');
         name.className = 'files-file-name';
-        name.textContent = file.docTypeName;
+        name.textContent = displayLabel(file.docTypeName);
 
         var fname = document.createElement('span');
         fname.className = 'files-file-fname';
@@ -5216,7 +5221,7 @@
 
     function handleDownloadZip(filesData, activeState, downloadBtn, elecConfirmed) {
         if (typeof JSZip === 'undefined') {
-            alert('JSZip library is missing. Make sure JS/jszip.min.js is included in the site.');
+            HHpro.UI.alert('JSZip library is missing. Make sure JS/jszip.min.js is included in the site.');
             return;
         }
 
@@ -5238,7 +5243,7 @@
             }
         });
         if (!selectedFiles.length) {
-            alert('Select at least one file to download.');
+            HHpro.UI.alert('Select at least one file to download.');
             return;
         }
 
@@ -5348,13 +5353,13 @@
                     summary += '\n  ...and ' + (missing.length - 15) + ' more.';
                 }
                 summary += '\n\nThe ZIP was still downloaded with the files that were found.';
-                alert(summary);
+                HHpro.UI.alert(summary);
             }
         }).catch(function (err) {
             downloadBtn.disabled = false;
             downloadBtn.classList.remove('projects-btn-busy');
             labelEl.textContent = originalText;
-            alert('Failed to build ZIP: ' +
+            HHpro.UI.alert('Failed to build ZIP: ' +
                   (err && err.message ? err.message : String(err)));
         });
     }

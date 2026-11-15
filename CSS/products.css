@@ -399,7 +399,8 @@
     color: var(--color-text-inverse);
     left: 0;
     z-index: 4; /* higher than other thead cells (2) and body action cells (1) */
-    min-width: 200px;
+    /* Select + two icon buttons (was 200px for three text buttons). */
+    min-width: 128px;
     /* Pin shadow (right-edge cast for the sticky column) combined with
        this cell's copy of the header seam -- it rowspans every header
        row, so the tr:last-child seam rule above can't reach it. */
@@ -432,6 +433,83 @@
    so the hover tint wins on even rows too. */
 .schedule-table tbody tr:hover > td.actions-cell {
     background-color: #182742;
+}
+
+/* ---------- Active-filter chips (base.js renderFilterChips) ----------
+   One pill per filter the person set, under the filter bar; the x
+   clears it. Collapses to nothing when no filter is set. */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-chips:empty {
+    display: none;
+}
+
+.filter-chips:not(:empty) {
+    margin-top: var(--space-sm);
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--color-primary-light);
+    background-color: rgba(91, 169, 216, 0.12);
+    color: var(--color-text);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.filter-chip:hover {
+    background-color: rgba(91, 169, 216, 0.24);
+}
+
+.filter-chip .icon {
+    width: 13px;
+    height: 13px;
+    opacity: 0.75;
+}
+
+.filter-chip:hover .icon {
+    opacity: 1;
+}
+
+/* ---------- Pinned model column ----------
+   The product's model number column (base.js pinnedColumn) sticks just
+   right of the Actions column when the schedule scrolls sideways; JS
+   sets its left offset (applyStickyHeaderOffsets). Opaque backgrounds
+   so the columns scrolling underneath don't show through - the zebra
+   tint is a see-through overlay elsewhere, so it is baked in here. */
+.schedule-table thead th.pin-col {
+    z-index: 3; /* above other header cells (2), under Actions (4) */
+    box-shadow: var(--shadow-pin);
+}
+
+.schedule-table thead tr:last-child th.pin-col {
+    box-shadow: var(--shadow-pin), 0 4px 8px -4px rgba(0, 0, 0, 0.5);
+}
+
+.schedule-table tbody td.pin-col {
+    position: sticky;
+    z-index: 1;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-pin);
+    font-weight: 600;
+}
+
+.schedule-table tbody tr:nth-child(even) > td.pin-col {
+    background-color: #252f40; /* --color-surface + the 4% zebra lift */
+}
+
+.schedule-table tbody tr:hover > td.pin-col {
+    background-color: var(--color-row-hover);
 }
 
 .actions-row {
@@ -495,6 +573,27 @@
     color: var(--color-text-muted);
     text-decoration: line-through;
     text-decoration-thickness: 1px;
+}
+
+/* Submittal / Docs as icon buttons (base.js iconButton): square, the
+   icon centered, named by tooltip. Unavailable ones fade and get a
+   dashed edge instead of the text strikethrough. */
+.action-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 6px;
+    min-width: 28px;
+}
+
+.action-btn-icon .icon {
+    width: 15px;
+    height: 15px;
+}
+
+.action-btn-icon.action-btn-no-file {
+    opacity: 0.45;
+    border-style: dashed;
 }
 
 /* ---------- kW variant cell (dropdown + chevron) ----------

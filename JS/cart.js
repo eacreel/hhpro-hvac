@@ -136,6 +136,7 @@
         updateItem: updateItem,
         migrateItems: migrateItems,
         computeLabel: computeLabel,
+        mountToggle: mountToggle,
         openPanel: openPanel,
         closePanel: closePanel,
         togglePanel: togglePanel,
@@ -266,8 +267,22 @@
             initialized = true;
         }
         buildUI();
+        mountToggle();
         renderPanel();
         renderToggle();
+    }
+
+    // The cart button sits in the page header (ui.js buildHeader leaves a
+    // .header-cart-slot). Every view rebuilds its header, so the header
+    // hands over its new slot when it's built; init() picks up the slot
+    // already on the page. With no header (none on screen) the button
+    // stays out of sight in #cart-root.
+    function mountToggle(slot) {
+        if (!toggleBtn) return;
+        var target = slot || document.querySelector('.app-header .header-cart-slot');
+        if (!target) return;
+        if (toggleBtn.parentNode !== target) target.appendChild(toggleBtn);
+        toggleBtn.classList.add('cart-toggle-header');
     }
 
     // Kept available in case other code ever wants to manually
@@ -1239,7 +1254,11 @@
     function openPanel() {
         if (!panel) return;
         panel.classList.add('open');
-        toggleBtn.classList.add('cart-toggle-hidden');
+        // The old screen-edge tab hid under the panel; the header button
+        // just stays where it is.
+        if (!toggleBtn.classList.contains('cart-toggle-header')) {
+            toggleBtn.classList.add('cart-toggle-hidden');
+        }
     }
 
     function closePanel() {
