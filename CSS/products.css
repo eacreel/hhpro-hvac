@@ -512,11 +512,15 @@
     background-color: var(--color-row-hover);
 }
 
+/* One line at every screen size: the table sizes each column to its
+   narrowest possible width (width: min-content), so a row allowed to
+   wrap always stacked Select over the icons. nowrap makes the single
+   line the narrowest it can be. */
 .actions-row {
     display: flex;
     gap: var(--space-xs);
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 /* A row with a product's extra button (LC RTU "Configure") keeps all
