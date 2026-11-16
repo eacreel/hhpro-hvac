@@ -452,6 +452,16 @@
             assetsFolder: 'ASSETS/ISLANDAIRE',
             tileClass: 'tile-islandaire',
             autoTagPrefix: 'PTAC-',
+            // One row per unit and voltage with a dropdown in the AUX.
+            // ELECTRIC HEAT kW cell (S): "-" (none), 2.5, 3.4, 5 and the
+            // DUAL STAGE options. It swaps the heat amps / watts / BTU/H
+            // (T U V); the Electric Heat filter is hidden, like Marvair.
+            kwVariants: {
+                variantColumn: 'S',
+                dependentColumns: ['T', 'U', 'V'],
+                filterName: 'ELECTRIC HEAT',
+                defaultValue: '-'
+            },
             // The NOTES column (AE) cites the SCHEDULE NOTES list by
             // number ("1 - 13" VTAC, "14 - 29" PTAC), so the list is fixed
             // and the free-text Accessories column is not added.

@@ -143,10 +143,9 @@
         },
         {
             name: 'Price Select',
-            // Price's sign-in page (Customer / Employee, with registration).
-            // Don't paste a URL copied from the address bar mid-login: those
-            // carry a one-time, IP-stamped state token that expires.
-            url: 'https://sso.priceindustries.com/am/XUI/?realm=/alpha#/',
+            // Price's Engineer Toolkit page (links to their selection
+            // software and sign-in).
+            url: 'https://priceindustries.com/resources/software/engineer-toolkit/',
             logo: 'DATA/PICTURES/Price_Logo_Blue.svg',
             cardClass: 'select-link-light'
         }
