@@ -220,8 +220,8 @@
                 prompt: 'Select a heater type to open its schedule',
                 backLabel: 'All Heater Types',
                 cards: [
-                    { value: 'Wall',      label: 'Wall Mounted', picture: 'DATA/PICTURES/Markel 3320 (Black).jpg' },
-                    { value: 'Suspended', label: 'Suspended',    picture: 'DATA/PICTURES/Markel 5100 (Black).jpg' }
+                    { value: 'Wall',      label: 'Wall Mounted 3320', picture: 'DATA/PICTURES/Markel 3320 (Black).jpg' },
+                    { value: 'Suspended', label: 'Suspended 5100',    picture: 'DATA/PICTURES/Markel 5100 (Black).jpg' }
                 ]
             }
         },
