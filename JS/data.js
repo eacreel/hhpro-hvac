@@ -439,6 +439,27 @@
                 'AIR IONIZATION DEVICE SCHEDULE - FAN COIL MOUNTED':
                     'FAN COIL MOUNTED (BAS COMPATIBLE)'
             }
+        },
+        {
+            // Islandaire PTACs and VTACs (added 2026-11-16) on one schedule
+            // (ISLANDAIRE DATA.xlsx). The display name is also the
+            // product's row name on the Users Permissions tab. The tile
+            // photo combines EZ44 Photo.jpg (PTAC) and EZVV Photo.jpg (VTAC).
+            productKey: 'islandaire',
+            displayName: 'Islandaire PTAC/VTAC',
+            jsonFile: 'DATA/JSON/islandaire.json',
+            pictureFile: 'DATA/PICTURES/Islandaire (Black).jpg',
+            assetsFolder: 'ASSETS/ISLANDAIRE',
+            tileClass: 'tile-islandaire',
+            autoTagPrefix: 'PTAC-',
+            // The NOTES column (AE) cites the SCHEDULE NOTES list by
+            // number ("1 - 13" VTAC, "14 - 29" PTAC), so the list is fixed
+            // and the free-text Accessories column is not added.
+            scheduleNotesReadOnly: true,
+            hideAccessoriesColumn: true,
+            // Cart labels lead with the nominal cooling, e.g. "9600 BTU/H / EZ09".
+            cartSizeFilter: 'NOMINAL BTUH COOLING',
+            cartSizeLabel: '{} BTU/H'
         }
     ];
 

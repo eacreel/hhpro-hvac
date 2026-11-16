@@ -429,6 +429,28 @@ PRODUCT_CONFIGS = {
     # the menu converts both into markel.json. See COMBINED_GROUPS below.
     "MARKEL DATA - 3320.xlsx": {"combinedGroup": "markel"},
     "MARKEL DATA - 5100.xlsx": {"combinedGroup": "markel"},
+    # Islandaire PTACs and VTACs (added 2026-11-16) on one schedule. Title
+    # row 2, two header rows (3-4), data from row 5. Column A is TAG
+    # ("VTAC-" / "PTAC-"), dropped like the WSHP one. The NOTES column (AE)
+    # cites the SCHEDULE NOTES list by number ("1 - 13" VTAC, "14 - 29"
+    # PTAC). The site product key is "islandaire".
+    "ISLANDAIRE DATA.xlsx": {
+        "productType": "ISLANDAIRE PTAC/VTAC",
+        "outputFileName": "islandaire.json",
+        "headerRows": 3,
+        "dataStartRow": 5,
+        "supportsMultiRow": False,
+        "assetsFolder": "ISLANDAIRE",
+        "dropTagColumn": True,
+        "searchSchema": {
+            "displayName": "Islandaire PTAC/VTAC",
+            "description": "Islandaire packaged terminal (PTAC) and vertical terminal (VTAC) units. Enter design loads and the page returns models that meet the targets within your tolerance.",
+            "targets": [
+                {"label": "Cooling Capacity", "col": "G", "unit": "BTU/h", "defaultTolerance": 10},
+                {"label": "Heating Capacity", "col": "M", "unit": "BTU/h", "defaultTolerance": 10},
+            ],
+        },
+    },
 }
 
 

@@ -86,6 +86,7 @@
         'MODEL NUMBER (DAIKIN)': true,
         'MODEL (DAIKIN)': true,
         'MODEL (PRICE)': true,
+        'MODEL (ISLANDAIRE)': true,
         'MODEL/CATALOG NUMBER (MARKEL)': true,
         'MODEL#': true,
         'MODEL #': true,

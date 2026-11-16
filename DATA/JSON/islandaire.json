@@ -1,0 +1,4897 @@
+{
+  "productType": "ISLANDAIRE PTAC/VTAC",
+  "assetsFolder": "ISLANDAIRE",
+  "scheduleTitle": "SCHEDULE",
+  "supportsMultiRowSelections": false,
+  "searchSchema": {
+    "displayName": "Islandaire PTAC/VTAC",
+    "description": "Islandaire packaged terminal (PTAC) and vertical terminal (VTAC) units. Enter design loads and the page returns models that meet the targets within your tolerance.",
+    "targets": [
+      {
+        "label": "Cooling Capacity",
+        "col": "G",
+        "unit": "BTU/h",
+        "defaultTolerance": 10
+      },
+      {
+        "label": "Heating Capacity",
+        "col": "M",
+        "unit": "BTU/h",
+        "defaultTolerance": 10
+      }
+    ]
+  },
+  "scheduleHeader": {
+    "columnLetters": [
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "AA",
+      "AB",
+      "AC",
+      "AD",
+      "AE"
+    ],
+    "rows": [
+      [
+        {
+          "col": "B",
+          "value": "SCHEDULE",
+          "colspan": 30,
+          "rowspan": 1
+        }
+      ],
+      [
+        {
+          "col": "B",
+          "value": "MODEL\n(ISLANDAIRE)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "C",
+          "value": "TYPE",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "D",
+          "value": "COMPRESSOR",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "E",
+          "value": "REFRIGERANT",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "F",
+          "value": "CFM\n(HIGH/LOW)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "G",
+          "value": "COOLING",
+          "colspan": 6,
+          "rowspan": 1
+        },
+        {
+          "col": "M",
+          "value": "HEAT PUMP",
+          "colspan": 6,
+          "rowspan": 1
+        },
+        {
+          "col": "S",
+          "value": "AUX. ELECTRIC HEAT",
+          "colspan": 4,
+          "rowspan": 1
+        },
+        {
+          "col": "W",
+          "value": "VOLTS/HZ/PH",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "X",
+          "value": "EFFICIENCY",
+          "colspan": 5,
+          "rowspan": 1
+        },
+        {
+          "col": "AC",
+          "value": "INDOOR NOISE\n(dbA COOLING)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "AD",
+          "value": "NOISE\nINDOOR/OUTDOOR\n(dbA)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "AE",
+          "value": "NOTES",
+          "colspan": 1,
+          "rowspan": 2
+        }
+      ],
+      [
+        {
+          "col": "G",
+          "value": "BTUH COOL",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "H",
+          "value": "CAPACITY RANGE",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "I",
+          "value": "AMPS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "J",
+          "value": "WATTS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "K",
+          "value": "OA AMBIENT\n(DB/WB)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "L",
+          "value": "ENTERING AIR\n(DB/WB)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "M",
+          "value": "BTU HEAT",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "N",
+          "value": "CAPACITY RANGE",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "O",
+          "value": "AMPS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "P",
+          "value": "WATTS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "Q",
+          "value": "OA AMBIENT\n(DB/WB)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "R",
+          "value": "ENTERING AIR\n(DB/WB)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "S",
+          "value": "KW",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "T",
+          "value": "AMPS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "U",
+          "value": "WATTAGE",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "V",
+          "value": "BTU/H",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "X",
+          "value": "EER2",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "Y",
+          "value": "SEER2",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "Z",
+          "value": "C.O.P.",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "AA",
+          "value": "HSPF2 (IV)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "AB",
+          "value": "HSPF2 (V)",
+          "colspan": 1,
+          "rowspan": 1
+        }
+      ]
+    ]
+  },
+  "filterColumns": [
+    {
+      "name": "TYPE",
+      "col": "AG"
+    },
+    {
+      "name": "NOMINAL BTUH COOLING",
+      "col": "AH"
+    },
+    {
+      "name": "ELECTRICAL",
+      "col": "AI"
+    },
+    {
+      "name": "ELECTRIC HEAT",
+      "col": "AJ"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "AL",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "AM",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "AN",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "AO",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "AP",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "AQ",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AR",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "AS",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "AT",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "AU",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "AV",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AW",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AX",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AY",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AZ",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "BA",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "BB",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "BC",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "refrigerantColumns": [],
+  "selections": [
+    {
+      "id": "sel_0001",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0002",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0003",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0004",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0005",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0006",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0007",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0008",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0009",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0010",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0011",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.83,
+            "U": 2045,
+            "V": 7000,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0012",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.83,
+            "U": 2045,
+            "V": 7000,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0013",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.83,
+            "U": 2045,
+            "V": 7000,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0014",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.83,
+            "U": 2045,
+            "V": 7000,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0015",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.83,
+            "U": 2045,
+            "V": 7000,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0016",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.03,
+            "U": 2500,
+            "V": 8500,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0017",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.03,
+            "U": 2500,
+            "V": 8500,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0018",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.03,
+            "U": 2500,
+            "V": 8500,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0019",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.03,
+            "U": 2500,
+            "V": 8500,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0020",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 2.5,
+            "T": 9.03,
+            "U": 2500,
+            "V": 8500,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 2.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0021",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0022",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0023",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0024",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0025",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0026",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0027",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0028",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0029",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0030",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 3.4,
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 3.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0031",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0032",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0033",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0034",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0035",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0036",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0037",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0038",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0039",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0040",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": 5,
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": 5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0041",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0042",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0043",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0044",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0045",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0046",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0047",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0048",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0049",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0050",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13,
+            "U": 3600,
+            "V": 12300,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0051",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0052",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0053",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0054",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0055",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0056",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0057",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0058",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0059",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0060",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 18.05,
+            "U": 5000,
+            "V": 17100,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0061",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 28.31,
+            "U": 5890,
+            "V": 20100,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0062",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 28.31,
+            "U": 5890,
+            "V": 20100,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0063",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 28.31,
+            "U": 5890,
+            "V": 20100,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0064",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 28.31,
+            "U": 5890,
+            "V": 20100,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0065",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 28.31,
+            "U": 5890,
+            "V": 20100,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0066",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 37.7,
+            "U": 10445,
+            "V": 35600,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0067",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 37.7,
+            "U": 10445,
+            "V": 35600,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0068",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 37.7,
+            "U": 10445,
+            "V": 35600,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0069",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 37.7,
+            "U": 10445,
+            "V": 35600,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0070",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "7.2 (DUAL STAGE)",
+            "T": 37.7,
+            "U": 10445,
+            "V": 35600,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "7.2 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0071",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 4.4,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 4,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 39.32,
+            "U": 8180,
+            "V": 27900,
+            "W": "208/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0072",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 5.4,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 5.5,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 39.32,
+            "U": 8180,
+            "V": 27900,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0073",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 7.4,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 6.7,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 39.32,
+            "U": 8180,
+            "V": 27900,
+            "W": "208/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0074",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 9.2,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 8,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 39.32,
+            "U": 8180,
+            "V": 27900,
+            "W": "208/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0075",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 11.6,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 9.2,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 39.32,
+            "U": 8180,
+            "V": 27900,
+            "W": "208/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0076",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 9600,
+            "H": "5700-10100",
+            "I": 3.14,
+            "J": 870,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 9800,
+            "N": "5900-10500",
+            "O": 2.9,
+            "P": 810,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 52.36,
+            "U": 14505,
+            "V": 49500,
+            "W": "277/60/1",
+            "X": 11,
+            "Y": 13.8,
+            "Z": 3.3,
+            "AA": 6.6,
+            "AB": 5.4,
+            "AC": "55/47/45",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 9600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0077",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/305",
+            "G": 12600,
+            "H": "5700-13000",
+            "I": 3.97,
+            "J": 1100,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 12300,
+            "N": "5900-12800",
+            "O": 4.03,
+            "P": 1115,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 52.36,
+            "U": 14505,
+            "V": 49500,
+            "W": "277/60/1",
+            "X": 11.1,
+            "Y": 14.4,
+            "Z": 3.2,
+            "AA": 6.5,
+            "AB": 5.3,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 12600,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0078",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ15",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "465/390",
+            "G": 15000,
+            "H": "7400-15800",
+            "I": 5.22,
+            "J": 1445,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 14300,
+            "N": "7300-15300",
+            "O": 4.73,
+            "P": 1310,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 52.36,
+            "U": 14505,
+            "V": 49500,
+            "W": "277/60/1",
+            "X": 10.4,
+            "Y": 13.7,
+            "Z": 2.7,
+            "AA": 6.4,
+            "AB": 5.2,
+            "AC": "55/49/46",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 15000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0079",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ18",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "565/525",
+            "G": 18300,
+            "H": "8600-18900",
+            "I": 6.82,
+            "J": 1890,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 18000,
+            "N": "11000-18700",
+            "O": 5.9,
+            "P": 1640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 52.36,
+            "U": 14505,
+            "V": 49500,
+            "W": "277/60/1",
+            "X": 9.7,
+            "Y": 12.8,
+            "Z": 3.2,
+            "AA": 7.1,
+            "AB": 5.6,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 18300,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0080",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ24",
+            "C": "VTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "700/610",
+            "G": 22000,
+            "H": "10300-22500",
+            "I": 8.66,
+            "J": 2400,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 20000,
+            "N": "11000-20900",
+            "O": 6.81,
+            "P": 1885,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "10.0 (DUAL STAGE)",
+            "T": 52.36,
+            "U": 14505,
+            "V": 49500,
+            "W": "277/60/1",
+            "X": 9.2,
+            "Y": 12.8,
+            "Z": 3.1,
+            "AA": 7.1,
+            "AB": 5.5,
+            "AC": "55/55/54",
+            "AD": "-",
+            "AE": "1 - 13"
+          },
+          "filterData": {
+            "TYPE": "VTAC",
+            "NOMINAL BTUH COOLING": 22000,
+            "ELECTRICAL": "277/60/1",
+            "ELECTRIC HEAT": "10.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZVV - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZVV - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZVV - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0081",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "420/290",
+            "G": 10000,
+            "H": "6000-11800",
+            "I": 3.8,
+            "J": 770,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 8500,
+            "N": "5606-11475",
+            "O": 3.2,
+            "P": 640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 13,
+            "Y": "-",
+            "Z": 3.9,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "42/50",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 10000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0082",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 12100,
+            "H": "9000-15400",
+            "I": 4.9,
+            "J": 980,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 11900,
+            "N": "6995-16187",
+            "O": 4.6,
+            "P": 960,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 12.4,
+            "Y": "-",
+            "Z": 3.8,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 12100,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0083",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ16",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 14800,
+            "H": "9000-17000",
+            "I": 6.7,
+            "J": 1340,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 13700,
+            "N": "6995-16187",
+            "O": 5.7,
+            "P": 1150,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "-",
+            "T": "-",
+            "U": "-",
+            "V": "-",
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": "-",
+            "Z": 3.5,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 14800,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "-"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0084",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "420/290",
+            "G": 10000,
+            "H": "6000-11800",
+            "I": 3.8,
+            "J": 770,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 8500,
+            "N": "5606-11475",
+            "O": 3.2,
+            "P": 640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 13,
+            "Y": "-",
+            "Z": 3.9,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "42/50",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 10000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0085",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 12100,
+            "H": "9000-15400",
+            "I": 4.9,
+            "J": 980,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 11900,
+            "N": "6995-16187",
+            "O": 4.6,
+            "P": 960,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 12.4,
+            "Y": "-",
+            "Z": 3.8,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 12100,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0086",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ16",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 14800,
+            "H": "9000-17000",
+            "I": 6.7,
+            "J": 1340,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 13700,
+            "N": "6995-16187",
+            "O": 5.7,
+            "P": 1150,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "3.4 (DUAL STAGE)",
+            "T": 13.37,
+            "U": 2780,
+            "V": 9500,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": "-",
+            "Z": 3.5,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 14800,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "3.4 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0087",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ09",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "420/290",
+            "G": 10000,
+            "H": "6000-11800",
+            "I": 3.8,
+            "J": 770,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 8500,
+            "N": "5606-11475",
+            "O": 3.2,
+            "P": 640,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 13,
+            "Y": "-",
+            "Z": 3.9,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "42/50",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 10000,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0088",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ12",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 12100,
+            "H": "9000-15400",
+            "I": 4.9,
+            "J": 980,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 11900,
+            "N": "6995-16187",
+            "O": 4.6,
+            "P": 960,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 12.4,
+            "Y": "-",
+            "Z": 3.8,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 12100,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0089",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "EZ16",
+            "C": "PTAC",
+            "D": "Inverter",
+            "E": "R32",
+            "F": "450/360",
+            "G": 14800,
+            "H": "9000-17000",
+            "I": 6.7,
+            "J": 1340,
+            "K": "95/75",
+            "L": "80/67",
+            "M": 13700,
+            "N": "6995-16187",
+            "O": 5.7,
+            "P": 1150,
+            "Q": "47/43",
+            "R": "70/60",
+            "S": "5.0 (DUAL STAGE)",
+            "T": 19.66,
+            "U": 4090,
+            "V": 14000,
+            "W": "208/60/1",
+            "X": 11.1,
+            "Y": "-",
+            "Z": 3.5,
+            "AA": "-",
+            "AB": "-",
+            "AC": "-",
+            "AD": "46/52",
+            "AE": "14 - 29"
+          },
+          "filterData": {
+            "TYPE": "PTAC",
+            "NOMINAL BTUH COOLING": 14800,
+            "ELECTRICAL": "208/60/1",
+            "ELECTRIC HEAT": "5.0 (DUAL STAGE)"
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Islandaire - EZ4V - Cut Sheets",
+            "INSTALLATION MANUAL (SYSTEM)": "Islandaire - EZ4V - IOM",
+            "REVIT (SYSTEM)": "Islandaire - EZ4V - Revit"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": [
+      "Dual high-efficiency DC fan motors",
+      "Compressor freeze protection",
+      "Compressor time delay",
+      "Room side freeze protection",
+      "Power service disconnect",
+      "Washable air filter",
+      "Optional - 18 gauge, powder-coat painted wall plenum",
+      "Optional - Air discharge plenum assembly kit",
+      "Optional - Architectural louver",
+      "Optional - Interior acess panel",
+      "Optional - Remote thermostat",
+      "Optional - I.R. motion sensor",
+      "Optional - Door switch",
+      "Dual fan motors",
+      "Washable filter",
+      "Wi-Fi Ready",
+      "Compressor freeze protection",
+      "Manual fresh air damper",
+      "Handheld remote",
+      "Optional - Room side freeze protection",
+      "Optional - Heavy duty insulated wall sleeve",
+      "Optional - Condensate removal kit",
+      "Optional - Architectural louver",
+      "Optional - Electrical sub-base kit",
+      "Optional - Wired remote thermostat",
+      "Optional - Wireless remote thermostat",
+      "Optional - I.R. motion sensor",
+      "Optional - Door switch",
+      "Optional - Duct kit"
+    ]
+  },
+  "_meta": {
+    "sourceFile": "ISLANDAIRE DATA.xlsx",
+    "generatedAt": "2026-11-16T09:57:39",
+    "dataRowCount": 89,
+    "selectionCount": 89
+  }
+}

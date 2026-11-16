@@ -61,7 +61,10 @@
         grilles: ['grilles', 'grille', 'grills', 'grill', 'registers', 'register'],
         vav: ['vav boxes', 'vav box', 'vavs', 'vav', 'terminal units', 'terminal unit', 'sdv', 'single duct'],
         rac: ['return air canopies', 'return air canopy', 'canopies', 'canopy', 'rac'],
-        gps: ['bipolar ionization', 'needlepoint', 'ionization', 'ionizers', 'ionizer', 'gps']
+        gps: ['bipolar ionization', 'needlepoint', 'ionization', 'ionizers', 'ionizer', 'gps'],
+        islandaire: ['packaged terminal air conditioners', 'packaged terminal air conditioner',
+                     'packaged terminal', 'vertical terminal', 'ptacs', 'ptac', 'vtacs', 'vtac',
+                     'islandaire']
     };
 
     // When no product is named, what a unit points at (in this order).
@@ -394,6 +397,17 @@
         gps: function (f, data) {
             void data;
             return finish(plan('gps'), 'Open product');
+        },
+
+        islandaire: function (f, data) {
+            var p = plan('islandaire');
+            var type = /\bvtacs?\b|\bvertical\b/.test(f.text) ? 'VTAC'
+                : /\bptacs?\b/.test(f.text) ? 'PTAC' : null;
+            setText(p, data, 'TYPE', type, type);
+            var btu = f.btu != null ? f.btu : (f.tons != null ? f.tons * 12000 : null);
+            setSize(p, data, 'NOMINAL BTUH COOLING', btu, 'BTU/H');
+            setElectrical(p, data, 'ELECTRICAL', f);
+            return finish(p);
         }
     };
 
