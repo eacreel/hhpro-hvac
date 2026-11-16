@@ -1289,7 +1289,414 @@
         };
     }
 
-    // engineerKey -> productKey -> factory (returns a fresh template).
+    // =================================================================
+    // Crenshaw Consulting templates
+    // Mapped from DATA/ENGINEER SCHEDULES/Crenshaw Consulting.xlsx, using
+    // the user's matching Hoffman Cart exports as a value-by-value Rosetta
+    // Stone. The firm keeps more than one layout for some products (tab
+    // names "... - PRIVATE" / "... - MILITARY"); those register as
+    // `styles` and the Schedule layout dropdown lists one entry per style.
+    // Columns headed "(MBH)" show MBH (BTU/h / 1000). Notes are the firm's "1-" numbering.
+    // =================================================================
+
+    // "-" (native "doesn't apply") -> blank, as the firm's sheet leaves it.
+    function blankDash(v) {
+        var t = s(v);
+        return t === '-' ? '' : t;
+    }
+
+    // "208-230/1" or "208/60/1" -> "208/1" (lower volts of a range, no Hz).
+    function voltLow(v) {
+        return voltPh(s(v).replace(/^(\d+)\s*-\s*\d+/, '$1'));
+    }
+
+    // Leading number with trailing zeros dropped ("12.20" -> "12.2"),
+    // '' when there is none.
+    function cleanNum(v) {
+        var m = s(v).match(/-?\d+(?:\.\d+)?/);
+        return m ? String(Number(m[0])) : '';
+    }
+
+    // Number of BTU/h -> MBH, '' / '-' passed through.
+    function mbhNum(v) {
+        var n = Number(v);
+        if (s(v) === '' || !isFinite(n)) return s(v);
+        return String(Math.round(n) / 1000);
+    }
+
+    // Firm notes: "1-" + text; text with hard line breaks continues on
+    // indented rows (one notes row per line, like the Excel sheet).
+    function crenshawNotes(list) {
+        var out = [];
+        list.forEach(function (text, i) {
+            String(text).split('\n').forEach(function (line, j) {
+                out.push(j === 0 ? (i + 1) + '-  ' + line.trim() : '      ' + line.trim());
+            });
+        });
+        return out;
+    }
+
+    function crenshawRtuPrivate() {
+        function isHp(g) { return /HEAT PUMP/i.test(g.filter('TYPE')) || /SEER/i.test(g.cell('H')); }
+        // Efficiency "16.7 IEER/11.8 EER" (gas) or "16.4 SEER2/12.20 EER2"
+        // (heat pump): the first part lands in IEER or SEER2 by its label.
+        function effFirst(g, label) {
+            var part = s(g.cell('H')).split('/')[0];
+            return new RegExp(label, 'i').test(part) ? cleanNum(part) : '';
+        }
+        var labels = ['MARK', 'MANUFACTURER', 'NOMINAL\nTONNAGE', 'MODEL NO.', 'ARI COOLING\n(MBH)',
+            'EER', 'IEER', 'SEER2', 'HEAT. INPUT\n(MBH)', 'HEAT. OUTPUT\n(MBH)', 'HEAT\nSTAGES', 'AFUE',
+            'HEAT PUMP\nBTU/h (47°F, 70°F INDOOR DB)', 'HEAT PUMP\nBTU/h (17°F, 70°F INDOOR DB)',
+            'HEAT PUMP\nBTU/h (70°F INDOOR DB)', 'S.A.\nCFM', 'MIN O.A.\nCFM', 'MAX O.A.\nCFM',
+            'ESP\n(IN. H2O)', 'FAN\nHP', 'DRIVE', 'VOLT/PH', 'MCA', 'MOCP', 'WEIGHT\n(LBS)', 'REMARKS'];
+        return {
+            orientation: 'rows',
+            title: 'PACKAGED ROOFTOP UNIT SCHEDULE',
+            // Gas and heat pump columns side by side (see UNIT_TYPE_LIMITS).
+            allUnitTypes: true,
+            header: labels.map(function (label, c) { return { r: 0, c: c, label: label }; }),
+            columns: [
+                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return g.cell('A'); } },
+                { scope: 'item', derive: function (g) { return g.cell('C'); } },
+                { scope: 'item', derive: function (g) { return g.cell('B'); } },
+                { scope: 'item', derive: function (g) { return mbhNum(g.cell('F')); } },
+                { scope: 'item', derive: function (g) { var n = effNum(g.cell('H'), 1); return n === '-' ? '' : String(Number(n)); } },
+                { scope: 'item', derive: function (g) { return effFirst(g, 'IEER'); } },
+                { scope: 'item', derive: function (g) { return effFirst(g, 'SEER'); } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('M')); } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('N')); } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('O')); } },
+                // Daikin LC gas packs are 80% AFUE.
+                { scope: 'item', derive: function (g) { return isHp(g) ? '' : '80%'; } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('R')); } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('S')); } },
+                { scope: 'item', derive: function (g) { return blankDash(g.cell('T')); } },
+                { scope: 'item', derive: function (g) { return g.cell('D'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_rtu_oa_min' },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_rtu_oa_max' },
+                { scope: 'item', derive: function (g) { return g.cell('E'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AC'); } },
+                { scope: 'item', derive: function () { return 'DIRECT'; } },
+                { scope: 'item', derive: function (g) { return voltLow(g.cell('AB')); } },
+                { scope: 'item', derive: function (g) { return g.cell('AD'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AE'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AF'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_rtu_remarks' }
+            ],
+            notesTitle: '',
+            notes: crenshawNotes([
+                'ARI COOLING CAPACITY BASED ON INDOOR EANTERING AIR CONDITION OF 80°F DRY BULB, 67°F WET BULB AND OUTDOOR AIR CONDITION OF 95°F DRY BULB',
+                'UNIT TO BE CONFIGURED FOR 2 STAGE GAS HEAT. PROVIDE WITH GALVANIZED STEEL////STAINLESTAINLESS STEEL HEAT EXCHANGER',
+                'UNIT TO UTILIZE R-32 REFRIGERANT. UNIT TO BE PROVIDED WITH REFRIGERANT LEAK DETECTION SYSTEM.',
+                'PROVIDE UNIT WITH MANUFACTURER\'S 14" EQUIPMENT CURB',
+                'PROVIDE UNIT WITH ANTI-SHORT CYCLE TIMER, COIL GUARD, 100% OUTDOOR AIR ENTHALPY CONTROLLED, FULLY MODULATING ECONOMIZER',
+                'UNIT TO BE PROVIDED WITH FULLY MODULATING HOT GAS REHEAT COIL FOR DEHUMIDIFICATION',
+                'UNIT TO BE CONFIGURED FOR HORIZONTAL DISCHARGE',
+                'UNIT TO BE SET UP FOR DEMAND CONTROLLED VENTILATION. DURING UNOCCUPIED PERIODS AND DURING WARMUP OR COOLDOWN, THE OUTSIDE AIR DAMPER\nSHALL BE CLOSED. DURING OCCUPIED HOURS, THE OUTSIDE AIR DAMPER SHALL OPEN TO THE MINIMUM OA POSITION. WHEN THE CO2 LEVEL IN THE SPACE\nRISES ABOVE SETPOINT, THE OUTSIDE AIR DAMPER SHALL MODULATE TO THE MAXIMUM OA POSITION. MINIMUM AND MAXIMUM OUTSIDE AIR POSITIONS SHALL\nBE SET BY THE TEST AND BALANCE CONTRACTOR DURING SYSTEM BALANCING.',
+                'PROVIDE 7-DAY PROGRAMMABLE THERMOSTAT/HUMIDITY SENSOR WITH DIGITAL DISPLAY, OVERRIDE AND SETPOINT ADJUSTMENT. PROVIDE CO2 SENSOR.',
+                'UNIT SHALL BE PROVIDED WITH RETURN AIR SMOKE DETECTOR AND SHALL BE SHUT DOWN UPON SIGNAL FROM FIRE ALARM SYSTEM. CONTROLS BY FIRE\nALARM CONTRACTOR. SMOKE DETECTOR SHALL BE FURNISHED AND WIRED BY FIRE ALARM CONTRACTOR. MECHANICAL CONTRACTOR SHALL INSTALL\nDETECTOR IN RETURN AIR DUCT.'
+            ]),
+            manufacturers: null
+        };
+    }
+
+    // "MULTI POSITION SPLIT - PRIVATE": two schedules on one sheet - the air
+    // handlers, then the heat pumps - built as stacked `tables` (export.js
+    // buildStackedTemplateGrid). Each unit is one row in each table.
+    function crenshawMultiSplitPrivate() {
+        function hdr(labels) {
+            return labels.map(function (label, c) { return { r: 0, c: c, label: label }; });
+        }
+        var ahu = {
+            orientation: 'rows',
+            title: 'SPLIT SYSTEM AIR HANDLING UNIT SCHEDULE',
+            header: hdr(['MARK', 'MANUFACTURER', 'MODEL NO.', 'S.A.\nCFM', 'O.A.\nCFM', 'ESP\n(IN. H2O)',
+                'FAN\nHP', 'ELEC. HEAT\n(KW)', 'HEAT\nSTAGES', 'VOLT/PH', 'MCA', 'MOCP', 'WEIGHT\n(LBS)', 'REMARKS']),
+            columns: [
+                { scope: 'item', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[0]); } },
+                { scope: 'item', derive: function (g) { return g.cell('A'); } },
+                { scope: 'item', derive: function (g) { return g.cell('B'); } },
+                { scope: 'item', capacityField: 'airflow', derive: function (g) { return g.cell('C'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_oa_cfm' },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_esp' },
+                { scope: 'item', derive: function (g) { return g.cell('D'); } },
+                { scope: 'item', elecField: 'kw', derive: function (g) { return g.cell('N') || '0'; } },
+                { scope: 'item', derive: function () { return '1'; } },
+                { scope: 'item', elecField: 'voltage', derive: function (g) { return voltLow(g.cell('P')); } },
+                { scope: 'item', derive: function (g) { return g.cell('Q'); } },
+                { scope: 'item', derive: function (g) { return g.cell('R'); } },
+                { scope: 'item', derive: function (g) { return g.cell('S'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_ahu_remarks' }
+            ],
+            notesTitle: '',
+            notes: crenshawNotes([
+                'PROVIDE FAN COIL WITH FACTORY INSTALLED ELECTRIC HEATER, FILTER, DISCONNECT SWITCH AND SINGLE POINT WIRING CONNECTION.',
+                'PROVIDE UNIT WITH DAIKIN 7-DAY PROGRAMMABLE THERMOSTAT. THERMOSTAT SHALL BE WIFI CAPABLE AND LOCKABLE.',
+                'PROVIDE UNIT WITH AUXILIARY DRAIN PAN AND FLOAT SWITCH.',
+                'PROVIDE WITH REFRIGERANT LEAK DETECTION SYSTEM.'
+            ]),
+            manufacturers: null
+        };
+        var hp = {
+            orientation: 'rows',
+            title: 'SPLIT SYSTEM HEAT PUMP SCHEDULE',
+            header: hdr(['MARK', 'MANUFACTURER', 'NOMINAL\nTONNAGE', 'MODEL NO.', 'ARI COOLING\n(MBH)',
+                'ARI HEATING\n(MBH)', 'SEER2', 'HSPF2', 'VOLT/PH', 'MCA', 'MOCP', 'WEIGHT\n(LBS)', 'REMARKS']),
+            columns: [
+                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return g.cell('T'); } },
+                { scope: 'item', derive: function (g) { return g.filter('SIZE'); } },
+                { scope: 'item', derive: function (g) { return g.cell('U'); } },
+                { scope: 'item', derive: function (g) { return mbhNum(g.cell('J')); } },
+                { scope: 'item', derive: function (g) { return isPositiveNum(g.cell('W')) ? mbhNum(g.cell('W')) : '-'; } },
+                { scope: 'item', derive: function (g) { return cleanNum(s(g.cell('AD')).split('/')[0]) || '-'; } },
+                { scope: 'item', derive: function (g) { return cleanNum(g.cell('X')) || '-'; } },
+                { scope: 'item', derive: function (g) { return voltLow(g.cell('Y')); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AA'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AE'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_hp_remarks' }
+            ],
+            notesTitle: '',
+            notes: crenshawNotes([
+                'COOLING CAPACITY BASED ON INDOOR ENTERING AIR CONDITION OF 80°F DRY BULB, 67°F WET BULB AND OUTDOOR AIR CONDITION OF 95°F DRY BULB.\nHEATING CAPACITY BASED ON INDOOR ENTERING AIR CONDITION OF 70°F DRY BULB AND OUTDOOR AIR CONDITION OF 47°F DRY BULB.',
+                'STANDARD UNIT FEATURES SHALL INCLUDE FILTER DRIER, FRONT SEATING SERVICE VALVES, INTERNAL PRESSURE RELIEF VALVE, INTERNAL THERMAL OVERLOAD,\nSUCTION LINE ACCUMULATOR, HIGH PRESSURE SWITCH AND LOSS OF CHARGE SWITCH.',
+                'ACCESSORY UNIT FEATURES SHALL INCLUDE: COMPRESSOR START ASSIST, CRANKCASE HEATER, THERMOSTATIC EXPANSION VALVE AND TIME DELAY RELAY.',
+                'REFRIGERANT LINES SHALL BE SIZED SO THAT MAXIMUM CAPACITY LOSS DUE TO LINE LENGTH IS 3%. ALL PIPING SHALL BE HARD COPPER PIPE.'
+            ]),
+            manufacturers: null
+        };
+        return {
+            orientation: 'rows',
+            title: ahu.title,
+            tables: [ahu, hp]
+        };
+    }
+
+    function crenshawMultiSplitMilitary() {
+        return {
+            orientation: 'rows',
+            title: 'SPLIT SYSTEM AIR HANDLING UNIT SCHEDULE',
+            header: [
+                { r: 0, c: 0, colspan: 22, label: 'INDOOR UNIT' },
+                { r: 0, c: 22, colspan: 5, label: 'OUTDOOR UNIT' },
+                { r: 0, c: 27, rowspan: 5, label: 'REMARKS' },
+                { r: 1, c: 0, rowspan: 4, label: 'MARK' },
+                { r: 1, c: 1, rowspan: 4, label: 'DESCRIPTION' },
+                { r: 1, c: 2, colspan: 3, label: 'MOTOR' },
+                { r: 1, c: 5, colspan: 7, label: 'DX COIL' },
+                { r: 1, c: 12, colspan: 2, label: 'HEAT PUMP HEATING' },
+                { r: 1, c: 14, colspan: 2, label: 'AUX. ELECTRIC HEAT' },
+                { r: 1, c: 16, colspan: 3, label: 'ELECTRICAL DATA' },
+                { r: 1, c: 19, colspan: 2, label: 'FILTERS' },
+                { r: 1, c: 21, rowspan: 4, label: 'WIEGHT\n(LBS)' },
+                { r: 1, c: 22, rowspan: 4, label: 'MARK' },
+                { r: 1, c: 23, colspan: 3, label: 'ELECTRICAL DATA' },
+                { r: 1, c: 26, rowspan: 4, label: 'WEIGHT\n(LBS)' },
+                { r: 2, c: 2, rowspan: 3, label: 'SUPPLY (CFM)' },
+                { r: 2, c: 3, rowspan: 3, label: 'E.S.P. ("WC)' },
+                { r: 2, c: 4, rowspan: 3, label: 'DRIVE' },
+                { r: 2, c: 5, colspan: 7, label: 'COOLING' },
+                { r: 2, c: 12, rowspan: 3, label: 'TTL CAP\n(MBH)' },
+                { r: 2, c: 13, rowspan: 3, label: 'TEMP RISE\n(°F)' },
+                { r: 2, c: 14, rowspan: 3, label: 'KW' },
+                { r: 2, c: 15, rowspan: 3, label: 'TEMP RISE\n(°F)' },
+                { r: 2, c: 16, rowspan: 3, label: 'V/PH' },
+                { r: 2, c: 17, rowspan: 3, label: 'MCA' },
+                { r: 2, c: 18, rowspan: 3, label: 'MOCP' },
+                { r: 2, c: 19, rowspan: 3, label: 'EFFIC.' },
+                { r: 2, c: 20, rowspan: 3, label: 'THICK. (IN)' },
+                { r: 2, c: 23, rowspan: 3, label: 'V/PH' },
+                { r: 2, c: 24, rowspan: 3, label: 'MCA' },
+                { r: 2, c: 25, rowspan: 3, label: 'MOCP' },
+                { r: 3, c: 5, rowspan: 2, label: 'TTL CAP\n(MBH)' },
+                { r: 3, c: 6, rowspan: 2, label: 'SENS. CAP\n(MBH)' },
+                { r: 3, c: 7, rowspan: 2, label: 'AMB. (°F)' },
+                { r: 3, c: 8, rowspan: 2, label: 'EAT DB (°F)' },
+                { r: 3, c: 9, rowspan: 2, label: 'EAT WB (°F)' },
+                { r: 3, c: 10, rowspan: 2, label: 'LAT DB (°F)' },
+                { r: 3, c: 11, rowspan: 2, label: 'LAT WB (°F)' }
+            ],
+            columns: [
+                { scope: 'item', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[0]); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_mil_desc', derive: function () { return 'HORIZONTAL AHU'; } },
+                { scope: 'item', capacityField: 'airflow', derive: function (g) { return g.cell('C'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_mil_esp' },
+                { scope: 'item', derive: function () { return 'DIRECT'; } },
+                { scope: 'item', derive: function (g) { return mbhNum(g.cell('J')); } },
+                { scope: 'item', derive: function (g) { return mbhNum(g.cell('K')); } },
+                { scope: 'item', derive: function (g) { return g.cell('AB'); } },
+                { scope: 'item', capacityField: 'eatDb', derive: function (g) { return g.cell('F'); } },
+                { scope: 'item', capacityField: 'eatWb', derive: function (g) { return g.cell('G'); } },
+                { scope: 'item', derive: function (g) { return g.cell('H'); } },
+                { scope: 'item', derive: function (g) { return g.cell('I'); } },
+                { scope: 'item', derive: function (g) { return isPositiveNum(g.cell('L')) ? mbhNum(g.cell('L')) : '-'; } },
+                { scope: 'item', derive: function (g) { return g.cell('M') || '-'; } },
+                { scope: 'item', elecField: 'kw', derive: function (g) { return isPositiveNum(g.cell('N')) ? g.cell('N') : '-'; } },
+                { scope: 'item', derive: function (g) { return g.cell('O') || '-'; } },
+                { scope: 'item', elecField: 'voltage', derive: function (g) { return voltLow(g.cell('P')); } },
+                { scope: 'item', derive: function (g) { return g.cell('Q'); } },
+                { scope: 'item', derive: function (g) { return g.cell('R'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_mil_filter_eff' },
+                { scope: 'item', derive: function () { return '2'; } },
+                { scope: 'item', derive: function (g) { return g.cell('S'); } },
+                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return g.cell('Y'); } },
+                { scope: 'item', derive: function (g) { return g.cell('Z'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AA'); } },
+                { scope: 'item', derive: function (g) { return g.cell('AE'); } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_mps_mil_remarks' }
+            ],
+            notesTitle: 'REMARKS:',
+            notes: crenshawNotes([
+                'PROVIDE WITH TXV VALVE AND ECM SUPPLY FAN MOTOR',
+                'DISCHARGE CONDENSATE TO GRADE',
+                'PROVIDE WITH SINGLE POINT ELECTRICAL CONNECTION TO AHU'
+            ]),
+            manufacturers: null
+        };
+    }
+
+    // Mini splits: indoor fields per indoor head (scope 'row'), outdoor
+    // fields once per system (scope 'item', row-spanned). Indoor units are
+    // powered from the outdoor unit, so their electrical reads "-".
+    function miniIsHp(g) {
+        return !/COOLING ONLY/i.test(g.filter('COOLING ONLY OR HEAT PUMP'));
+    }
+
+    // Outdoor cooling capacity: the outdoor unit's available capacity on
+    // multi-zone systems, else the (single) indoor head's capacity.
+    function miniSystemCooling(g) {
+        var avail = g.cellAt('T', 0);
+        if (isPositiveNum(avail)) return avail;
+        var total = 0;
+        for (var i = 0; i < g.numRows; i++) {
+            var n = Number(g.cellAt('F', i));
+            if (isFinite(n)) total += n;
+        }
+        return total ? String(total) : g.cellAt('F', 0);
+    }
+
+    function crenshawMiniSplitPrivate() {
+        var labels = ['MARK', 'MANUFACTURER', 'MODEL NO.', 'TYPE', 'SERVICE', 'VOLT/PH', 'MCA', 'MOCP', 'WEIGHT',
+            'MARK', 'MODEL NO.', 'NOMINAL\nCOOLING', 'SEER2', 'MCA', 'MOCP', 'VOLT/PH', 'WEIGHT', 'REMARKS'];
+        return {
+            orientation: 'rows',
+            title: 'SPLIT SYSTEM AIR CONDITIONING UNIT SCHEDULE',
+            header: labels.map(function (label, c) { return { r: 0, c: c, label: label }; }),
+            columns: [
+                { scope: 'row', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[g.rowIndex]); } },
+                { scope: 'row', derive: function (g) { return g.cell('P'); } },
+                { scope: 'row', derive: function (g) { return g.cell('Q'); } },
+                { scope: 'row', derive: function (g) { return miniIsHp(g) ? 'HEAT PUMP' : 'COOLING ONLY'; } },
+                { scope: 'row', editable: true, fieldKey: 'crenshaw_min_service', derive: function (g) { return s(g.item.serves); } },
+                { scope: 'row', derive: function () { return '-'; } },
+                { scope: 'row', derive: function () { return '-'; } },
+                { scope: 'row', derive: function () { return '-'; } },
+                { scope: 'row', derive: function (g) { var w = g.cell('K'); return w ? w + ' LBS' : ''; } },
+                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('AB', 0); } },
+                { scope: 'item', derive: miniSystemCooling },
+                { scope: 'item', derive: function (g) { return firstNumber(g.cellAt('W', 0)); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('Y', 0); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('Z', 0); } },
+                { scope: 'item', derive: function (g) { return voltLow(g.cellAt('X', 0)); } },
+                { scope: 'item', derive: function (g) { var w = g.cellAt('V', 0); return w ? w + ' LBS' : ''; } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_min_remarks' }
+            ],
+            notesTitle: '',
+            notes: crenshawNotes([
+                'PROVIDE UNIT WITH WALL MOUNTING BRACKET AND WALL MOUNTED THERMOSTAT',
+                'PROVIDE UNIT WITH 208/230 VOLT CONDENSATE PUMP POWERED THROUGH AIR HANDLING UNIT.',
+                'INDOOR UNIT SHALL BE POWERED FROM OUTDOOR UNIT. ALL POWER WIRING BY ELECTRICAL CONTRACTOR'
+            ]),
+            manufacturers: null
+        };
+    }
+
+    function crenshawMiniSplitMilitary() {
+        return {
+            orientation: 'rows',
+            title: 'DUCTLESS SPLIT SYSTEM SCHEDULE',
+            header: [
+                { r: 0, c: 0, colspan: 11, label: 'INDOOR UNIT' },
+                { r: 0, c: 11, colspan: 10, label: 'OUTDOOR UNIT' },
+                { r: 1, c: 0, rowspan: 3, label: 'MARK' },
+                { r: 1, c: 1, rowspan: 3, label: 'SERVES' },
+                { r: 1, c: 2, rowspan: 3, colspan: 2, label: 'TYPE' },
+                { r: 1, c: 4, rowspan: 2, label: 'AIRFLOW' },
+                { r: 3, c: 4, label: 'CFM' },
+                { r: 1, c: 5, colspan: 2, label: 'COOLING CAPACITY' },
+                { r: 2, c: 5, label: 'TOTAL' },
+                { r: 2, c: 6, label: 'SENSIBLE' },
+                { r: 3, c: 5, label: '(MBH @ 95°F)' },
+                { r: 3, c: 6, label: '(MBH @ 95°F)' },
+                { r: 1, c: 7, rowspan: 3, label: 'SHR' },
+                { r: 1, c: 8, label: 'HEATING' },
+                { r: 2, c: 8, label: 'CAPACITY' },
+                { r: 3, c: 8, label: '(MBH @ 17°F)' },
+                { r: 1, c: 9, label: 'HEATING' },
+                { r: 2, c: 9, label: 'CAPACITY' },
+                { r: 3, c: 9, label: '(MBH @ 47°F)' },
+                { r: 1, c: 10, rowspan: 3, label: 'WEIGHT\n(LBS)' },
+                { r: 1, c: 11, rowspan: 3, label: 'MARK' },
+                { r: 1, c: 12, rowspan: 3, label: 'NOMINAL\nTONS' },
+                { r: 1, c: 13, rowspan: 3, label: 'SEER2' },
+                { r: 1, c: 14, rowspan: 3, label: 'EER2' },
+                { r: 1, c: 15, rowspan: 3, label: 'VOLT/PH' },
+                { r: 1, c: 16, rowspan: 3, label: 'MCA' },
+                { r: 1, c: 17, rowspan: 3, label: 'MOCP' },
+                { r: 1, c: 18, rowspan: 3, label: 'WEIGHT\n(LBS)' },
+                { r: 1, c: 19, rowspan: 3, label: 'MAX PIPING\n(FT.)' },
+                { r: 1, c: 20, rowspan: 3, label: 'REMARKS' }
+            ],
+            columns: [
+                { scope: 'row', derive: function (g) { return s(g.item.indoorTags && g.item.indoorTags[g.rowIndex]); } },
+                { scope: 'row', editable: true, fieldKey: 'crenshaw_min_mil_serves', derive: function (g) { return s(g.item.serves); } },
+                { scope: 'row', derive: function (g) { return miniIsHp(g) ? 'HP' : 'AC'; } },
+                { scope: 'row', derive: function (g) { return s(g.cell('L')).toUpperCase(); } },
+                { scope: 'row', derive: function (g) { return g.cell('A'); } },
+                { scope: 'row', derive: function (g) { return mbhNum(g.cell('F')); } },
+                { scope: 'row', derive: function (g) { return mbhNum(g.cell('G')); } },
+                // Sensible heat ratio, worked out from the two capacities.
+                { scope: 'row', derive: function (g) {
+                    var t = Number(g.cell('F')), sn = Number(g.cell('G'));
+                    return (t > 0 && sn > 0) ? (sn / t).toFixed(2) : '-';
+                } },
+                // 17°F heating capacity: no data source - typed per unit.
+                { scope: 'row', editable: true, fieldKey: 'crenshaw_min_mil_heat17',
+                  derive: function (g) { return miniIsHp(g) ? '' : '-'; } },
+                { scope: 'row', derive: function (g) { return isPositiveNum(g.cell('J')) ? mbhNum(g.cell('J')) : '-'; } },
+                { scope: 'row', derive: function (g) { return g.cell('K'); } },
+                { scope: 'item', derive: function (g) { return s(g.item.tag); } },
+                { scope: 'item', derive: function (g) { return g.filter('SIZE (OUTDOOR UNIT)'); } },
+                { scope: 'item', derive: function (g) { return cleanNum(s(g.cellAt('W', 0)).split('/')[0]) || '-'; } },
+                { scope: 'item', derive: function (g) { return cleanNum(s(g.cellAt('W', 0)).split('/')[1]) || '-'; } },
+                { scope: 'item', derive: function (g) { return voltLow(g.cellAt('X', 0)); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('Y', 0); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('Z', 0); } },
+                { scope: 'item', derive: function (g) { return g.cellAt('V', 0); } },
+                // "66' Vertical / 99' Total" -> 66 (the firm's sheet lists the vertical limit)
+                { scope: 'item', derive: function (g) { return cleanNum(g.cellAt('AD', 0)) || '-'; } },
+                { scope: 'item', editable: true, fieldKey: 'crenshaw_min_mil_remarks' }
+            ],
+            notesTitle: 'REMARKS',
+            notes: crenshawNotes([
+                'PROVIDE UNIT WITH WIRED WALL MOUNTED THERMOSTAT AND CONTROLLER WITH BACNET MS/TP COMPATIBLE INTERFACE AND CLEANABLE TYPE FILTERS.',
+                "PROVIDE UNIT WITH WALL MOUNTED CONDENSATE PUMP, WIRED TO MOTOR RATED SWITCH, CAPABLE OF 10 GPH AT 20' HEAT, 1/ HP, /,  FLA.",
+                'INDOOR AIR HANDLING UNIT IS POWERED FROM OUTDOOR CONDENSING UNIT.',
+                'PROVIDE ALL ACCESSORIES REQUIRED FOR LOW AMBIENT OPERATION TO 0. PROVIDE COIL GUARDS AND 3,000 SALT-HOUR SEACOAST CONSTRUCTION. COATINGS MUST NOT REDUCE UNIT PERFORMANCE.',
+                'COOLING CAPACITY IS CALCULATED AT AN INDOOR DESIGN TEMPERATURE OF 80°F DB AND 67°F WB. HEATING CAPACITY (IF APPLICABLE) IS CALCULATED AT AN INDOOR DESIGN TEMPERATURE OF 60°F DB.',
+                'COOLING CAPACITY IS CALCULATED AT AN INDOOR DESIGN TEMPERATURE OF 72°F DB AND RELATIVE HUMIDITY OF 50%.'
+            ]),
+            manufacturers: null
+        };
+    }
+
+    // engineerKey -> productKey -> factory (returns a fresh template), or
+    // -> { styles: [{ key, label, factory }] } when the firm keeps more than
+    // one layout for that product (first style is the default).
     var REGISTRY = {
         hoffman: {},   // empty - native layout for every product
         refresco: {
@@ -1313,8 +1720,40 @@
             multi_position_splits: mswgMultiSplit,
             mini_splits: mswgMiniSplit,
             gas_packs: mswgRtu
+        },
+        crenshaw: {
+            gas_packs: crenshawRtuPrivate,
+            multi_position_splits: { styles: [
+                { key: 'private', label: 'Private', factory: crenshawMultiSplitPrivate },
+                { key: 'military', label: 'Military', factory: crenshawMultiSplitMilitary }
+            ] },
+            mini_splits: { styles: [
+                { key: 'private', label: 'Private', factory: crenshawMiniSplitPrivate },
+                { key: 'military', label: 'Military', factory: crenshawMiniSplitMilitary }
+            ] }
         }
     };
+
+    // Styles a firm keeps for one product ([] when it has a single layout).
+    function stylesFor(engineerKey, productKey) {
+        var entry = (REGISTRY[engineerKey] || {})[productKey];
+        return (entry && entry.styles) ? entry.styles : [];
+    }
+
+    // The project's chosen style for (firm, product), stored in the
+    // product's project extra as templateStyle[engineerKey]; defaults to
+    // the firm's first style.
+    function chosenStyle(engineerKey, productKey) {
+        var styles = stylesFor(engineerKey, productKey);
+        if (!styles.length) return null;
+        var extra = (HHpro.Cart && HHpro.Cart.getProjectExtra)
+            ? HHpro.Cart.getProjectExtra(productKey) : {};
+        var key = extra && extra.templateStyle && extra.templateStyle[engineerKey];
+        for (var i = 0; i < styles.length; i++) {
+            if (styles[i].key === key) return styles[i];
+        }
+        return styles[0];
+    }
 
     // Firm layouts that only fit some of a product's units. The Light
     // Commercial RTU schedule (gas_packs) mixes gas packs and heat pumps,
@@ -1367,7 +1806,8 @@
         { key: 'barrett_woodyard', label: 'Barrett Woodyard & Associates' },
         { key: 'allied', label: 'Allied' },
         { key: 'saber', label: 'Saber' },
-        { key: 'mswg', label: 'MSWG' }
+        { key: 'mswg', label: 'MSWG' },
+        { key: 'crenshaw', label: 'Crenshaw Consulting' }
     ];
 
     // Engineer access is gated by the login password (see login.js ->
@@ -1403,9 +1843,49 @@
             if (!byProduct) return null;
             var factory = byProduct[productKey];
             if (!factory) return null;
+            if (factory.styles) factory = chosenStyle(engineerKey, productKey).factory;
             var tpl = factory();
             if (!tpl.allUnitTypes && !unitsFitTemplates(productKey)) return null;
             return tpl;
+        },
+
+        /**
+         * The layouts a firm keeps for one product, as [{ key, label }]
+         * ([] when it has just one). The Schedule layout dropdown lists
+         * one entry per style ("Crenshaw Consulting - Military").
+         */
+        listStyles: function (engineerKey, productKey) {
+            return stylesFor(engineerKey, productKey).map(function (st) {
+                return { key: st.key, label: st.label };
+            });
+        },
+
+        /** Current style key for (firm, product), or null. */
+        getStyle: function (engineerKey, productKey) {
+            var st = chosenStyle(engineerKey, productKey);
+            return st ? st.key : null;
+        },
+
+        /** Save the project's style for (firm, product). */
+        setStyle: function (engineerKey, productKey, styleKey) {
+            if (!stylesFor(engineerKey, productKey).length) return;
+            if (!(HHpro.Cart && HHpro.Cart.getProjectExtra && HHpro.Cart.setProjectExtra)) return;
+            var map = (HHpro.Cart.getProjectExtra(productKey) || {}).templateStyle || {};
+            if (map[engineerKey] === styleKey) return;
+            map[engineerKey] = styleKey;
+            HHpro.Cart.setProjectExtra(productKey, { templateStyle: map });
+        },
+
+        /**
+         * Key the "Edit Schedule" cell overrides are filed under: the firm,
+         * plus ":style" for a firm with several layouts (each style is a
+         * different grid, so their hand edits must not mix). Single-layout
+         * firms keep the plain firm key, as before.
+         */
+        layoutKey: function (engineerKey, productKey) {
+            var st = chosenStyle(engineerKey, productKey);
+            return st && st !== stylesFor(engineerKey, productKey)[0]
+                ? engineerKey + ':' + st.key : engineerKey;
         }
     };
 })();

@@ -85,7 +85,11 @@ WHAT'S IN THE GRID
         // mini-split rows under the one shared Saber split layout. The first
         // is for the on-screen tab; the second downloads/prints it.
         buildCombinedSplitSystemsGrid: buildCombinedSplitSystemsGrid,
-        toSplitSystems:                exportSplitSystems
+        toSplitSystems:                exportSplitSystems,
+
+        // Row role ('title' | 'header' | 'data' | 'notes' | 'blank') -
+        // stacked grids carry per-row kinds (see buildMultiScheduleGrid).
+        gridRowKind:                   gridRowKind
     };
 
     // =================================================================
@@ -743,7 +747,9 @@ WHAT'S IN THE GRID
         if (!(window.HHpro && HHpro.Cart && HHpro.Cart.getProjectExtra)) return null;
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
         var all = extra.cellOverrides || {};
-        return all[currentEngineer()] || null;
+        var key = (HHpro.Templates && HHpro.Templates.layoutKey)
+            ? HHpro.Templates.layoutKey(currentEngineer(), productKey) : currentEngineer();
+        return all[key] || null;
     }
 
     function applyCellOverrides(grid, productKey) {
@@ -880,9 +886,56 @@ WHAT'S IN THE GRID
     }
 
     function buildTemplateGrid(productKey, template, items, data) {
+        if (template.tables) return buildStackedTemplateGrid(productKey, template, items, data);
         return (template.orientation === 'columns')
             ? buildTransposedTemplateGrid(productKey, template, items, data)
             : buildRowsTemplateGrid(productKey, template, items, data);
+    }
+
+    // A firm sheet holding more than one schedule (Crenshaw's multi position
+    // split: air handlers, then heat pumps): each of template.tables is an
+    // ordinary rows template, built on its own and stacked with a blank row
+    // between, the same way buildMultiScheduleGrid stacks GPS sections.
+    // Per-row `rowKinds` keep each table's title / header / data / notes
+    // styled right.
+    function buildStackedTemplateGrid(productKey, template, items, data) {
+        var rows = [];
+        var merges = [];
+        var rowKinds = [];
+        var colWidths = [];
+        var colCount = 0;
+        var first = null;
+        template.tables.forEach(function (sub, si) {
+            var grid = buildRowsTemplateGrid(productKey, sub, items, data);
+            if (!first) first = grid;
+            if (si > 0) {
+                rows.push([]);
+                rowKinds.push('blank');
+            }
+            var offset = rows.length;
+            for (var r = 0; r < grid.rows.length; r++) {
+                rows.push(grid.rows[r]);
+                rowKinds.push(gridRowKind(grid, r));
+            }
+            grid.merges.forEach(function (m) {
+                merges.push({ r1: m.r1 + offset, c1: m.c1, r2: m.r2 + offset, c2: m.c2 });
+            });
+            if (grid.colCount > colCount) colCount = grid.colCount;
+            grid.colWidths.forEach(function (w, i) {
+                if (!(colWidths[i] >= w)) colWidths[i] = w;
+            });
+        });
+        while (colWidths.length < colCount) colWidths.push(10);
+        return {
+            rows: rows,
+            merges: merges,
+            numHeaderRows: first.numHeaderRows,
+            titleRowCount: first.titleRowCount,
+            dataEndRow: first.dataEndRow,
+            colCount: colCount,
+            colWidths: colWidths,
+            rowKinds: rowKinds
+        };
     }
 
     // Emit one product's data rows (item-scope columns row-spanned over the

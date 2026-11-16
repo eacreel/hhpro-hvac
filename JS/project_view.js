@@ -322,17 +322,37 @@
         var allowedKeys = engineers.map(function (e) { return e.key; });
         if (allowedKeys.indexOf(current) === -1) current = 'hoffman';
 
+        // A firm with several layouts for this product (Crenshaw's
+        // "Private" / "Military" tabs) gets one entry per layout, valued
+        // "firm|style"; the style is saved per product, the firm per project.
         engineers.forEach(function (e) {
-            var opt = document.createElement('option');
-            opt.value = e.key;
-            opt.textContent = e.label;
-            if (e.key === current) opt.selected = true;
-            sel.appendChild(opt);
+            var styles = (activeTab !== 'split_systems' && HHpro.Templates && HHpro.Templates.listStyles)
+                ? HHpro.Templates.listStyles(e.key, activeTab) : [];
+            if (!styles.length) {
+                var opt = document.createElement('option');
+                opt.value = e.key;
+                opt.textContent = e.label;
+                if (e.key === current) opt.selected = true;
+                sel.appendChild(opt);
+                return;
+            }
+            var curStyle = HHpro.Templates.getStyle(e.key, activeTab);
+            styles.forEach(function (st) {
+                var o = document.createElement('option');
+                o.value = e.key + '|' + st.key;
+                o.textContent = e.label + ' - ' + st.label;
+                if (e.key === current && st.key === curStyle) o.selected = true;
+                sel.appendChild(o);
+            });
         });
 
         sel.addEventListener('change', function () {
+            var parts = sel.value.split('|');
+            if (parts[1] && HHpro.Templates && HHpro.Templates.setStyle) {
+                HHpro.Templates.setStyle(parts[0], activeTab, parts[1]);
+            }
             if (HHpro.Cart && HHpro.Cart.setProjectEngineer) {
-                HHpro.Cart.setProjectEngineer(sel.value);
+                HHpro.Cart.setProjectEngineer(parts[0]);
             }
             HHpro.App.showView('project_view');
         });
@@ -2447,6 +2467,16 @@
         return wrap;
     }
 
+    // Header band row? Stacked grids (two firm schedules on one sheet)
+    // carry per-row kinds; plain grids use the index band.
+    function isHeaderRow(grid, r, numHeaderRows) {
+        if (grid.rowKinds && HHpro.Export && HHpro.Export.gridRowKind) {
+            var kind = HHpro.Export.gridRowKind(grid, r);
+            return kind === 'header' || kind === 'title';
+        }
+        return r < numHeaderRows;
+    }
+
     function renderEditableGridToDom(grid, productKey) {
         var table = document.createElement('table');
         table.className = 'schedule-table project-schedule-table template-schedule tpl-editing';
@@ -2460,7 +2490,7 @@
                 var cell = row[c];
                 if (!cell || cell.covered) continue;
 
-                var isHeader = cell.title || (r < numHeaderRows && cell.bold);
+                var isHeader = cell.title || (isHeaderRow(grid, r, numHeaderRows) && cell.bold);
                 var el = document.createElement(isHeader ? 'th' : 'td');
                 if (cell.rowSpan > 1) el.rowSpan = cell.rowSpan;
                 if (cell.colSpan > 1) el.colSpan = cell.colSpan;
@@ -2508,6 +2538,9 @@
     function updateCellOverride(productKey, r, c, value) {
         var engineer = (HHpro.Cart && HHpro.Cart.getProjectEngineer)
             ? HHpro.Cart.getProjectEngineer() : 'hoffman';
+        if (HHpro.Templates && HHpro.Templates.layoutKey) {
+            engineer = HHpro.Templates.layoutKey(engineer, productKey);
+        }
         var extra = HHpro.Cart.getProjectExtra(productKey) || {};
         var all = extra.cellOverrides || {};
         var map = all[engineer] || {};
@@ -2541,7 +2574,7 @@
                 var cell = row[c];
                 if (!cell || cell.covered) continue;
 
-                var isHeader = cell.title || (r < numHeaderRows && cell.bold);
+                var isHeader = cell.title || (isHeaderRow(grid, r, numHeaderRows) && cell.bold);
                 var el = document.createElement(isHeader ? 'th' : 'td');
                 if (cell.rowSpan > 1) el.rowSpan = cell.rowSpan;
                 if (cell.colSpan > 1) el.colSpan = cell.colSpan;
@@ -2880,6 +2913,9 @@
         });
 
         var engineer = (HHpro.Cart.getProjectEngineer && HHpro.Cart.getProjectEngineer()) || 'hoffman';
+        if (HHpro.Templates && HHpro.Templates.layoutKey) {
+            engineer = HHpro.Templates.layoutKey(engineer, opts.productKey);
+        }
         var extra = HHpro.Cart.getProjectExtra(opts.productKey) || {};
         var all = extra.cellOverrides || {};
         var map = all[engineer];
