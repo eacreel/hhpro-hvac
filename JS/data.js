@@ -452,6 +452,9 @@
             assetsFolder: 'ASSETS/ISLANDAIRE',
             tileClass: 'tile-islandaire',
             autoTagPrefix: 'PTAC-',
+            // Auto Tag numbers each TYPE on its own: PTAC-1, PTAC-2 ... and
+            // VTAC-1, VTAC-2 ... (one Prefix / Start at pair per type).
+            autoTagByFilter: 'TYPE',
             // One row per unit and voltage with a dropdown in the AUX.
             // ELECTRIC HEAT kW cell (S): "-" (none), 2.5, 3.4, 5 and the
             // DUAL STAGE options. It swaps the heat amps / watts / BTU/H

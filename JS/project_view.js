@@ -3824,6 +3824,11 @@
     // =================================================================
 
     function openAutoTagModal(productKey, items, data) {
+        var product = HHpro.Data && HHpro.Data.getProduct ? HHpro.Data.getProduct(productKey) : null;
+        if (product && product.autoTagByFilter) {
+            openGroupedAutoTagModal(productKey, items, data, product.autoTagByFilter);
+            return;
+        }
         var last = (HHpro.Cart.getProjectExtra(productKey) || {}).lastAutoTag || {};
         var subRowCount = 0;
         items.forEach(function (it) {
@@ -4088,6 +4093,183 @@
         document.body.appendChild(backdrop);
 
         setTimeout(function () { prefixInput.focus(); prefixInput.select(); }, 0);
+
+        function close() {
+            if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+        }
+    }
+
+    /**
+     * Auto Tag for a product whose tags depend on a filter value
+     * (data.js `autoTagByFilter: 'TYPE'`, Islandaire: PTAC-1, PTAC-2 ...
+     * and VTAC-1, VTAC-2 ...). One Prefix / Start at pair per value
+     * present in the schedule; each value numbers its own items in their
+     * current order. Items without the filter value use the product's
+     * autoTagPrefix as their own group.
+     */
+    function openGroupedAutoTagModal(productKey, items, data, filterName) {
+        var last = (HHpro.Cart.getProjectExtra(productKey) || {}).lastAutoTag || {};
+        var lastGroups = last.groups || {};
+        var fallbackPrefix = defaultPrefixFor(productKey);
+
+        function groupOf(it) {
+            var sel = findSelectionById(data, it.selectionId);
+            var fd = (sel && sel.rows && sel.rows[0] && sel.rows[0].filterData) || {};
+            var v = fd[filterName];
+            return (v === null || v === undefined || String(v).trim() === '' || v === '-')
+                ? '' : String(v).trim();
+        }
+
+        // Groups in order of first appearance, with their item counts.
+        var order = [];
+        var counts = {};
+        items.forEach(function (it) {
+            var g = groupOf(it);
+            if (!(g in counts)) { counts[g] = 0; order.push(g); }
+            counts[g]++;
+        });
+
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+
+        var modal = document.createElement('div');
+        modal.className = 'modal';
+
+        var title = document.createElement('h2');
+        title.className = 'modal-title';
+        title.textContent = 'Auto Tag items';
+
+        var desc = document.createElement('p');
+        desc.className = 'modal-desc';
+        desc.textContent = 'Assigns tags to all ' + items.length + ' item' +
+            (items.length === 1 ? '' : 's') + ' in this schedule, in their current order. ' +
+            'Each type is numbered on its own. Existing tags will be overwritten.';
+
+        var form = document.createElement('div');
+        form.className = 'autotag-form';
+        var preview = document.createElement('div');
+        preview.className = 'autotag-preview';
+
+        var inputs = [];
+        order.forEach(function (g) {
+            var defPrefix = g ? g + '-' : fallbackPrefix;
+            var saved = lastGroups[g] || {};
+
+            var section = document.createElement('div');
+            section.className = 'autotag-section';
+            var header = document.createElement('div');
+            header.className = 'autotag-section-header';
+            header.textContent = (g || 'Other') + ' (' + counts[g] + ')';
+            section.appendChild(header);
+
+            var prefixRow = document.createElement('div');
+            prefixRow.className = 'autotag-row';
+            var prefixLabel = document.createElement('label');
+            prefixLabel.className = 'autotag-label';
+            prefixLabel.textContent = 'Prefix';
+            var prefixInput = document.createElement('input');
+            prefixInput.type = 'text';
+            prefixInput.className = 'modal-input';
+            prefixInput.placeholder = 'e.g. ' + defPrefix;
+            prefixInput.value = saved.prefix !== undefined ? saved.prefix : defPrefix;
+            prefixInput.maxLength = 20;
+            prefixRow.appendChild(prefixLabel);
+            prefixRow.appendChild(prefixInput);
+            section.appendChild(prefixRow);
+
+            var startRow = document.createElement('div');
+            startRow.className = 'autotag-row';
+            var startLabel = document.createElement('label');
+            startLabel.className = 'autotag-label';
+            startLabel.textContent = 'Start at';
+            var startInput = document.createElement('input');
+            startInput.type = 'number';
+            startInput.className = 'modal-input';
+            startInput.min = '0';
+            startInput.value = String(saved.start !== undefined ? saved.start : 1);
+            startRow.appendChild(startLabel);
+            startRow.appendChild(startInput);
+            section.appendChild(startRow);
+
+            form.appendChild(section);
+            inputs.push({ group: g, prefix: prefixInput, start: startInput });
+        });
+
+        function readGroup(inp) {
+            var n = parseInt(inp.start.value, 10);
+            return { prefix: inp.prefix.value, start: isNaN(n) ? 1 : n };
+        }
+
+        function updatePreview() {
+            preview.innerHTML = '';
+            inputs.forEach(function (inp) {
+                var v = readGroup(inp);
+                var c = counts[inp.group];
+                var line = document.createElement('div');
+                line.textContent = (inp.group || 'Other') + ': ' + v.prefix + v.start +
+                    (c > 1 ? ' … ' + v.prefix + (v.start + c - 1) : '');
+                preview.appendChild(line);
+            });
+        }
+        inputs.forEach(function (inp) {
+            inp.prefix.addEventListener('input', updatePreview);
+            inp.start.addEventListener('input', updatePreview);
+        });
+        updatePreview();
+        form.appendChild(preview);
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'modal-btn modal-btn-secondary';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', close);
+        var applyBtn = document.createElement('button');
+        applyBtn.type = 'button';
+        applyBtn.className = 'modal-btn modal-btn-primary';
+        applyBtn.textContent = 'Apply';
+        applyBtn.addEventListener('click', function () {
+            var settings = {};
+            var next = {};
+            inputs.forEach(function (inp) {
+                settings[inp.group] = readGroup(inp);
+                next[inp.group] = settings[inp.group].start;
+            });
+            items.forEach(function (it) {
+                var g = groupOf(it);
+                HHpro.Cart.updateItem(it.instanceId, { tag: settings[g].prefix + next[g] });
+                next[g]++;
+            });
+            var savedGroups = {};
+            Object.keys(lastGroups).forEach(function (k) { savedGroups[k] = lastGroups[k]; });
+            Object.keys(settings).forEach(function (k) { savedGroups[k] = settings[k]; });
+            HHpro.Cart.setProjectExtra(productKey, { lastAutoTag: { groups: savedGroups } });
+            close();
+            HHpro.App.showView('project_view');
+        });
+        actions.appendChild(cancelBtn);
+        actions.appendChild(applyBtn);
+
+        inputs.forEach(function (inp) {
+            [inp.prefix, inp.start].forEach(function (el) {
+                el.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); applyBtn.click(); }
+                    else if (e.key === 'Escape') { e.preventDefault(); close(); }
+                });
+            });
+        });
+
+        modal.appendChild(title);
+        modal.appendChild(desc);
+        modal.appendChild(form);
+        modal.appendChild(actions);
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+        setTimeout(function () {
+            if (inputs[0]) { inputs[0].prefix.focus(); inputs[0].prefix.select(); }
+        }, 0);
 
         function close() {
             if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
