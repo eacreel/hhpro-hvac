@@ -2493,9 +2493,11 @@ WHAT'S IN THE GRID
                              '</td>');
                     continue;
                 }
-                out.push('<' + tag + attrs + '>' +
-                         xmlEscape(String(cell.value || '')) +
-                         '</' + tag + '>');
+                // Data cells keep explicit "\n" breaks (Santa-Fe CFM at
+                // several static pressures), like the PDF writer and CAD.
+                var html = xmlEscape(String(cell.value || ''));
+                if (rowClass === 'data-row') html = html.replace(/\r?\n/g, '<br>');
+                out.push('<' + tag + attrs + '>' + html + '</' + tag + '>');
             }
             out.push('</tr>');
         }
@@ -3609,6 +3611,12 @@ WHAT'S IN THE GRID
         // MTEXT control chars and drop any remaining non-ASCII.
         return asciiizeCircledDigits(s)
             .replace(/°/g, '%%d')
+            // Typographic punctuation from Excel (Santa-Fe 0.2" WG) ->
+            // its plain ASCII look-alike instead of '?'.
+            .replace(/[“”„″]/g, '"')
+            .replace(/[‘’‚′]/g, "'")
+            .replace(/[–—−]/g, '-')
+            .replace(/ /g, ' ')
             .replace(/[^\x20-\x7e]/g, '?')
             .replace(/\\/g, '\\\\')
             .replace(/\{/g, '\\{')
