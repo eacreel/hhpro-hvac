@@ -64,7 +64,8 @@
         gps: ['bipolar ionization', 'needlepoint', 'ionization', 'ionizers', 'ionizer', 'gps'],
         islandaire: ['packaged terminal air conditioners', 'packaged terminal air conditioner',
                      'packaged terminal', 'vertical terminal', 'ptacs', 'ptac', 'vtacs', 'vtac',
-                     'islandaire']
+                     'islandaire'],
+        santa_fe: ['dehumidifiers', 'dehumidifier', 'dehumidification', 'dehu', 'santa-fe', 'santa fe']
     };
 
     // When no product is named, what a unit points at (in this order).
@@ -408,6 +409,11 @@
             setSize(p, data, 'NOMINAL BTUH COOLING', btu, 'BTU/H');
             setElectrical(p, data, 'ELECTRICAL', f);
             return finish(p);
+        },
+
+        santa_fe: function (f, data) {
+            void data;
+            return finish(plan('santa_fe'), 'Open product');
         }
     };
 

@@ -451,6 +451,25 @@ PRODUCT_CONFIGS = {
             ],
         },
     },
+    # Santa-Fe dehumidifiers (added 2026-11-17). Same layout as Islandaire:
+    # title row 2, two header rows (3-4), data from row 5, TAG column A
+    # ("DH-") dropped. The MODEL filter (W) holds each unit's photo name and
+    # drives the photo cards on the site. The site product key is
+    # "santa_fe"; it is kept out of Design Search.
+    "SANTA FE DATA.xlsx": {
+        "productType": "SANTA-FE DEHUMIDIFIERS",
+        "outputFileName": "santa_fe.json",
+        "headerRows": 3,
+        "dataStartRow": 5,
+        "supportsMultiRow": False,
+        "assetsFolder": "SANTA FE",
+        "dropTagColumn": True,
+        "searchSchema": {
+            "displayName": "Santa-Fe Dehumidifiers",
+            "description": "Santa-Fe dehumidifiers.",
+            "targets": [],
+        },
+    },
 }
 
 

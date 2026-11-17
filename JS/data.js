@@ -473,6 +473,45 @@
             // Cart labels lead with the nominal cooling, e.g. "9600 BTU/H / EZ09".
             cartSizeFilter: 'NOMINAL BTUH COOLING',
             cartSizeLabel: '{} BTU/H'
+        },
+        {
+            // Santa-Fe dehumidifiers (added 2026-11-17), SANTA FE DATA.xlsx.
+            // The display name is also the product's row name on the Users
+            // Permissions tab. The tile photo is the Santa-Fe logo.
+            productKey: 'santa_fe',
+            displayName: 'Santa-Fe Dehumidifiers',
+            jsonFile: 'DATA/JSON/santa_fe.json',
+            pictureFile: 'DATA/PICTURES/Santa Fe - Logo.webp',
+            assetsFolder: 'ASSETS/SANTA FE',
+            tileClass: 'tile-santa-fe',
+            autoTagPrefix: 'DH-',
+            excludeFromDesignSearch: true,
+            // The NOTES column (U) cites the SCHEDULE NOTES list by number,
+            // so the list is fixed and the free-text Accessories column is
+            // not added (like Islandaire).
+            scheduleNotesReadOnly: true,
+            hideAccessoriesColumn: true,
+            // Cart labels lead with the water removal, e.g.
+            // "8.75 GAL/DAY / 4044110 (COMPACT 70)".
+            cartSizeFilter: 'WATER REMOVAL @ 80°F and 60%RH (GALLONS)',
+            cartSizeLabel: '{} GAL/DAY',
+            // MODEL (column W) holds each unit's photo name; the photo cards
+            // (JS/santa_fe.js) are its only control. `value` must match a
+            // MODEL filter value exactly.
+            galleryOnlyFilters: ['MODEL'],
+            modelGallery: [
+                { value: 'Santa Fe Compact70',      label: 'Compact70',      desc: 'Crawl Space / Basement', picture: 'DATA/PICTURES/Santa Fe Compact70.webp' },
+                { value: 'Santa Fe Oasis105',       label: 'Oasis105',       desc: 'Crawl Space / Attic',    picture: 'DATA/PICTURES/Santa Fe Oasis105.webp' },
+                { value: 'Santa Fe Advance Dry110', label: 'Advance Dry110', desc: 'Crawl Space / Basement', picture: 'DATA/PICTURES/Santa Fe Advance Dry110.webp' },
+                { value: 'Santa Fe Classic',        label: 'Classic',        desc: 'Basement (Vertical)',    picture: 'DATA/PICTURES/Santa Fe Classic.webp' },
+                { value: 'Santa Fe Ultra MD33',     label: 'Ultra MD33',     desc: 'In-Wall',                picture: 'DATA/PICTURES/Santa Fe Ultra MD33.webp' },
+                { value: 'Santa Fe Ultra70',        label: 'Ultra70',        desc: 'Ventilating, Ducted',    picture: 'DATA/PICTURES/Santa Fe Ultra70.webp' },
+                // The V100 shares the V125 / V155 cabinet and photo.
+                { value: 'Santa Fe Ultra V100',     label: 'Ultra V100',     desc: 'Ventilating, Ducted',    picture: 'DATA/PICTURES/Santa Fe Ultra V125.webp' },
+                { value: 'Santa Fe Ultra V125',     label: 'Ultra V125',     desc: 'Ventilating, Ducted',    picture: 'DATA/PICTURES/Santa Fe Ultra V125.webp' },
+                { value: 'Santa Fe Ultra V155',     label: 'Ultra V155',     desc: 'Ventilating, Ducted',    picture: 'DATA/PICTURES/Santa Fe Ultra V155.webp' },
+                { value: 'Santa Fe Ultra V205',     label: 'Ultra V205',     desc: 'Ventilating, Ducted',    picture: 'DATA/PICTURES/Santa Fe Ultra V205.webp' }
+            ]
         }
     ];
 

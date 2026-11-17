@@ -1398,6 +1398,13 @@
     padding: 18% 14%;
 }
 
+/* The Santa-Fe tile photo is its wide (1200x362) logo on black: contain
+   it like the GPS logo so the whole wordmark reads. */
+.tile.tile-santa-fe .tile-image img {
+    object-fit: contain;
+    padding: 8%;
+}
+
 /* GPS schedule pages put the notes directly under the schedule, so the
    schedule card hugs its table instead of stretching to fill the page
    (overriding .schedule-wrap's flex:1/min-height and the short-window

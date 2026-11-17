@@ -1,0 +1,738 @@
+{
+  "productType": "SANTA-FE DEHUMIDIFIERS",
+  "assetsFolder": "SANTA FE",
+  "scheduleTitle": "DEHUMIDIFIER SCHEDULE",
+  "supportsMultiRowSelections": false,
+  "searchSchema": {
+    "displayName": "Santa-Fe Dehumidifiers",
+    "description": "Santa-Fe dehumidifiers.",
+    "targets": []
+  },
+  "scheduleHeader": {
+    "columnLetters": [
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U"
+    ],
+    "rows": [
+      [
+        {
+          "col": "B",
+          "value": "DEHUMIDIFIER SCHEDULE",
+          "colspan": 20,
+          "rowspan": 1
+        }
+      ],
+      [
+        {
+          "col": "B",
+          "value": "MODEL\n(SANTA-FE)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "C",
+          "value": "CFM",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "D",
+          "value": "VENTILATION CFM",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "E",
+          "value": "OPERATING TEMPERATURE\n(MIN/MAX, °F)",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "F",
+          "value": "REFRIGERANT",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "G",
+          "value": "PERFORMANCE @ 80°F and 60%RH",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "J",
+          "value": "PERFORMANCE @ 65°F and 60%RH",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "M",
+          "value": "FILTER",
+          "colspan": 1,
+          "rowspan": 2
+        },
+        {
+          "col": "N",
+          "value": "ELECTRICAL",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "Q",
+          "value": "DIMENSIONS & WEIGHT",
+          "colspan": 4,
+          "rowspan": 1
+        },
+        {
+          "col": "U",
+          "value": "NOTES",
+          "colspan": 1,
+          "rowspan": 2
+        }
+      ],
+      [
+        {
+          "col": "G",
+          "value": "WATER REMOVAL\n(PINTS/GALLONS)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "H",
+          "value": "EFFICIENCY\n(PINTS/KWh)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "I",
+          "value": "ENERGY FACTOR\n(L/kWh)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "J",
+          "value": "WATER REMOVAL\n(PINTS/GALLONS)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "K",
+          "value": "EFFICIENCY\n(PINTS/KWh)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "L",
+          "value": "ENERGY FACTOR\n(L/kWh)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "N",
+          "value": "V/PH/HZ",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "O",
+          "value": "AMPS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "P",
+          "value": "WATTS",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "Q",
+          "value": "LENGTH\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "R",
+          "value": "WIDTH\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "S",
+          "value": "HEIGHT\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "T",
+          "value": "WEIGHT\n(LBS)",
+          "colspan": 1,
+          "rowspan": 1
+        }
+      ]
+    ]
+  },
+  "filterColumns": [
+    {
+      "name": "MODEL",
+      "col": "W"
+    },
+    {
+      "name": "CFM",
+      "col": "X"
+    },
+    {
+      "name": "WATER REMOVAL @ 80°F and 60%RH (GALLONS)",
+      "col": "Y"
+    },
+    {
+      "name": "WATER REMOVAL @ 65°F and 60%RH (GALLONS)",
+      "col": "Z"
+    }
+  ],
+  "documentationColumns": [
+    {
+      "name": "SUBMITTAL (OUTDOOR UNIT)",
+      "col": "AB",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (INDOOR UNIT)",
+      "col": "AC",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "SUBMITTAL (SYSTEM)",
+      "col": "AD",
+      "folder": "SUBMITTALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "col": "AE",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "col": "AF",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "AG",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AH",
+      "folder": "CAPACITY TABLES",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (OUTDOOR)",
+      "col": "AI",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (INDOOR)",
+      "col": "AJ",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "INSTALLATION MANUAL (SYSTEM)",
+      "col": "AK",
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "REVIT (OUTDOOR)",
+      "col": "AL",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (INDOOR)",
+      "col": "AM",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "REVIT (SYSTEM)",
+      "col": "AN",
+      "folder": "REVIT",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (OUTDOOR)",
+      "col": "AO",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (INDOOR)",
+      "col": "AP",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AQ",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AR",
+      "folder": "CONTROLS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "OPERATION MANUAL",
+      "col": "AS",
+      "folder": "OPERATION MANUAL",
+      "fileExtension": "pdf"
+    }
+  ],
+  "refrigerantColumns": [],
+  "selections": [
+    {
+      "id": "sel_0001",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4044110 (COMPACT 70)",
+            "C": "150 @ 0.0\" WG",
+            "D": "-",
+            "E": "49/95",
+            "F": "R454B",
+            "G": "70/8.75",
+            "H": 5.5,
+            "I": 2.6,
+            "J": "43.7/5.4",
+            "K": 4.1,
+            "L": 1.96,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 3.7,
+            "P": 444,
+            "Q": 21,
+            "R": 12,
+            "S": 12,
+            "T": 55,
+            "U": "1 - 5, 6"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Compact70",
+            "CFM": 150,
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 5.4
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe Compact 70 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe Compact 70 - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0002",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4044510 (OASIS 105)",
+            "C": "280 CFM UP TO 1” WG",
+            "D": "-",
+            "E": "49/95",
+            "F": "R454B",
+            "G": "102/12.75",
+            "H": 7.5,
+            "I": 3.54,
+            "J": "67/8.37",
+            "K": 5.95,
+            "L": 2.81,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 6.1,
+            "P": 732,
+            "Q": 24,
+            "R": 16,
+            "S": 14.5,
+            "T": 59,
+            "U": "1 - 5, 7"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Oasis105",
+            "CFM": 280,
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.75,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 8.37
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe Oasis 105 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe Oasis 105 - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0003",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4047010 (ADVANCE DRY110)",
+            "C": "370 CFM @ 0.0” WG",
+            "D": "-",
+            "E": "40/95",
+            "F": "R454B",
+            "G": "110/13.75",
+            "H": 7.7,
+            "I": 3.66,
+            "J": "70/8.75",
+            "K": 5.92,
+            "L": 2.81,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 4.1,
+            "P": 480,
+            "Q": 29,
+            "R": 14.35,
+            "S": 24,
+            "T": 102,
+            "U": "1 - 5, 8"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Advance Dry110",
+            "CFM": 370,
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 13.75,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 8.75
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe Advance Dry110 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe Advance Dry110 - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0004",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4044710 (CLASSIC)",
+            "C": "275 CFM @ 0.0” WG",
+            "D": "-",
+            "E": "56/95",
+            "F": "R454B",
+            "G": "116/14.5",
+            "H": 7.27,
+            "I": 3.43,
+            "J": "76/9.5",
+            "K": 5.9,
+            "L": 2.8,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 4.5,
+            "P": 540,
+            "Q": 20,
+            "R": 17,
+            "S": 36,
+            "T": 110,
+            "U": "1 - 5, 9"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Classic",
+            "CFM": 275,
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 14.5,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 9.5
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe Classic - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe Classic - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0005",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4044610 (ULTRA MD33)",
+            "C": "150 CFM @ 0.0” WG",
+            "D": "-",
+            "E": "49/95",
+            "F": "R454B",
+            "G": "37/4.6",
+            "H": 5.1,
+            "I": 2.4,
+            "J": "22/2.75",
+            "K": 3.46,
+            "L": 1.64,
+            "M": "WASHABLE",
+            "N": "120/1/60",
+            "O": 15,
+            "P": 260,
+            "Q": 1.5,
+            "R": 17.25,
+            "S": 33.5625,
+            "T": 39,
+            "U": "1 - 5, 10"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra MD33",
+            "CFM": 150,
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 4.6,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 2.75
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA MD33- Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA MD33- IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0006",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4044100 (ULTRA70)",
+            "C": "150 CFM @ 0.0” WG\n140 CFM @ 0.2” WG\n130 CFM @ 0.4” WG",
+            "D": "-",
+            "E": "49/95",
+            "F": "R454B",
+            "G": "70/8.75",
+            "H": 5.5,
+            "I": 2.6,
+            "J": "52.45/6.55",
+            "K": 4.31,
+            "L": 2.04,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 15,
+            "P": 492,
+            "Q": 28,
+            "R": 12,
+            "S": 12,
+            "T": 55,
+            "U": "1 - 5, 11, 13"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra70",
+            "CFM": "130-150",
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 6.55
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA70 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA70 - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0007",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4047100 (ULTRA V100)",
+            "C": "385 @ 0.0” WC \n350 @ 0.2” WC\n305 @ 0.4” WC\n260 @ 0.6” WC",
+            "D": "150 @ 0.0” WC\n135 @ 0.2” WC\n120 @ 0.4” WC\n100 @ 0.6” WC",
+            "E": "34/105",
+            "F": "R454B",
+            "G": "100/12.6",
+            "H": 6.4,
+            "I": 3,
+            "J": "82/10.25",
+            "K": 5.55,
+            "L": 2.63,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 15,
+            "P": 620,
+            "Q": 39.25,
+            "R": 14.35,
+            "S": 24,
+            "T": 101,
+            "U": "1 - 5, 12, 13"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra V100",
+            "CFM": "260-385",
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.6,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 10.25
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V100 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA V1XX - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0008",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4047200 (ULTRA V125)",
+            "C": "385 @ 0.0” WC\n350 @ 0.2” WC\n305 @ 0.4” WC\n260 @ 0.6” WC",
+            "D": "150 @ 0.0” WC\n135 @ 0.2” WC\n120 @ 0.4” WC\n100 @ 0.6” WC",
+            "E": "34/105",
+            "F": "R454B",
+            "G": "125/15.5",
+            "H": 5.9,
+            "I": 2.8,
+            "J": "101/12.6",
+            "K": 5.2,
+            "L": 2.45,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 15,
+            "P": 800,
+            "Q": 39.25,
+            "R": 14.35,
+            "S": 24,
+            "T": 104,
+            "U": "1 - 5, 12, 13"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra V125",
+            "CFM": "260-385",
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 15.5,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 12.6
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V125 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA V1XX - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0009",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4047300 (ULTRA V155)",
+            "C": "435 @ 0.0” WC\n395 @ 0.2” WC\n360 @ 0.4” WC\n322 @ 0.6” WC",
+            "D": "170 @ 0.0” WC\n154 @ 0.2” WC\n140 @ 0.4” WC\n125 @ 0.6” WC",
+            "E": "34/105",
+            "F": "R454B",
+            "G": "155/19.3",
+            "H": 7.1,
+            "I": 3.35,
+            "J": "128/16",
+            "K": 6.5,
+            "L": 2.9,
+            "M": "MERV-13",
+            "N": "115/1/60",
+            "O": 15,
+            "P": 810,
+            "Q": 39.25,
+            "R": 14.35,
+            "S": 24,
+            "T": 112,
+            "U": "1 - 5, 12, 13"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra V155",
+            "CFM": "322-435",
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 19.3,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 16
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V155 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA V1XX - IOM"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sel_0010",
+      "rows": [
+        {
+          "scheduleData": {
+            "B": "4046180 (ULTRA V205)",
+            "C": "550 @ 0.0” WG\n515 @ 0.2” WG\n470 @ 0.4” WG\n430 @ 0.6” WG",
+            "D": "215 @ 0.0” WG\n200 @ 0.2” WG\n183 @ 0.4” WG\n167 @ 0.6” WG",
+            "E": "40/104",
+            "F": "R454B",
+            "G": "205/25.625",
+            "H": 7.5,
+            "I": 3.5,
+            "J": "173/21.6",
+            "K": 6.3,
+            "L": 3,
+            "M": "MERV-13",
+            "N": "110-120/1/60",
+            "O": 15,
+            "P": 1115,
+            "Q": 38,
+            "R": 26.75,
+            "S": 20.75,
+            "T": 148,
+            "U": "1 - 5, 12, 13"
+          },
+          "filterData": {
+            "MODEL": "Santa Fe Ultra V205",
+            "CFM": "430-550",
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 25.625,
+            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 21.6
+          },
+          "documentationData": {
+            "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V205 - Submittal",
+            "INSTALLATION MANUAL (SYSTEM)": "Santa Fe ULTRA V1XX - IOM"
+          }
+        }
+      ]
+    }
+  ],
+  "scheduleNotes": {
+    "format": "list",
+    "notes": [
+      "Water removal is rated in pints / gallons per day at the conditions listed.",
+      "Unit ships with a factory power cord and NEMA 5-15 plug. Electrical contractor to provide a 115V receptacle within reach of the cord.",
+      "Contractor to route condensate by gravity from the unit's 3/4\" drain connection to an approved drain. Provide a condensate pump where gravity drainage is not available.",
+      "Dimensions and weights include duct collars.",
+      "Install per the manufacturer's instructions. Keep the filter and controls accessible for service.",
+      "Compact70: Horizontal unit sized to hang between floor joists. Rotatable discharge for horizontal or vertical discharge. Auto restart after a power outage.",
+      "Oasis105: Variable speed fan (Low / High / Auto). Optional supply duct kit for ducted installs. Positive pressure drain, no P-trap required. Dedicated float switch port.",
+      "Advance Dry110: Dual exhaust outlets. Terminal block for SmartAire remote sensor and float switch. Built-in P-trap. Dew point cut-out.",
+      "Classic: Vertical basement unit. Minimum operating temperature 56°F. Optional duct kit and condensate pump.",
+      "Ultra MD33: In-wall unit, 5-3/4\" deep, for 2x6 or 2x4 stud walls. Plug-in or hard-wired on a 15A circuit. Drain to hub drain or plumbing line. Built-in digital dehumidistat and washable filter. Optional kits: surface mount (4037766), 2x4 wall mount bezel (4037767), rear panel (4037768).",
+      "Ultra70: 8\" round inlet and outlet with optional 8\" outdoor air ventilation duct. Terminal block for optional DEH 3000/R controller. 15A circuit.",
+      "Ultra V100 / V125 / V155 / V205: Built-in 8\" outdoor air ventilation inlet (meets ASHRAE 62.2). Duct connections: 8\" and 10\" round inlets, 10\" round outlet. 15A dedicated circuit. 24VAC terminal block for DEH 3000/R control. SmartAire remote sensor and power damper (V100 / V125 / V155). Secondary drain port for float switch.",
+      "Ultra70 and Ultra V series: second rating point is 73°F / 60% RH."
+    ]
+  },
+  "_meta": {
+    "sourceFile": "SANTA FE DATA.xlsx",
+    "generatedAt": "2026-11-17T09:28:03",
+    "dataRowCount": 10,
+    "selectionCount": 10
+  }
+}

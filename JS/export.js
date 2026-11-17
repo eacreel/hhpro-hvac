@@ -1539,7 +1539,8 @@ WHAT'S IN THE GRID
             'vav':                    'VAV SCHEDULE',
             'rac':                    'RETURN AIR CANOPY SCHEDULE',
             'gps':                    'AIR IONIZATION DEVICE SCHEDULES',
-            'islandaire':             'PTAC/VTAC SCHEDULE'
+            'islandaire':             'PTAC/VTAC SCHEDULE',
+            'santa_fe':               'DEHUMIDIFIER SCHEDULE'
         };
         return titles[productKey] || 'SCHEDULE';
     }
@@ -2694,7 +2695,8 @@ WHAT'S IN THE GRID
             'rac': 'Price RAC (Return Air Canopy)',
             'gps': 'GPS Bipolar Ionization',
             // Excel sheet names and filenames can't hold "/".
-            'islandaire': 'Islandaire PTAC-VTAC'
+            'islandaire': 'Islandaire PTAC-VTAC',
+            'santa_fe': 'Santa-Fe Dehumidifiers'
         };
         return fallback[productKey] || productKey;
     }

@@ -1144,6 +1144,7 @@
                     val === 'MODEL #' || val === 'GPS MODEL' ||
                     val === 'MODEL NUMBER (DAIKIN)' || val === 'MODEL (DAIKIN)' ||
                     val === 'MODEL (PRICE)' || val === 'MODEL (ISLANDAIRE)' ||
+                    val === 'MODEL (SANTA-FE)' ||
                     val === 'MODEL/CATALOG NUMBER (MARKEL)') {
                     found = cell.col;
                 }
