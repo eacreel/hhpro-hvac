@@ -373,6 +373,12 @@
     white-space: nowrap;
 }
 
+/* ...except a product flagged multiLineCells in data.js keeps the
+   workbook's in-cell line breaks, still without wrapping. */
+.schedule-table.schedule-multiline tbody td {
+    white-space: pre;
+}
+
 /* Zebra striping makes it easier to track a row across the wide horizontal
    scroll. Even rows get a subtle lift above the base surface; hover and
    the selection-boundary border still win over this. */

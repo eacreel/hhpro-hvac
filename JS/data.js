@@ -486,6 +486,9 @@
             tileClass: 'tile-santa-fe',
             autoTagPrefix: 'DH-',
             excludeFromDesignSearch: true,
+            // CFM / VENTILATION CFM list one value per static pressure on
+            // its own line, as in the workbook.
+            multiLineCells: true,
             // The NOTES column (U) cites the SCHEDULE NOTES list by number,
             // so the list is fixed and the free-text Accessories column is
             // not added (like Islandaire).

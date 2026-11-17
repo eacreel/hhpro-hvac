@@ -2798,6 +2798,8 @@
 
         var table = document.createElement('table');
         table.className = 'schedule-table project-schedule-table';
+        var lineProduct = HHpro.Data.getProduct(productKey);
+        if (lineProduct && lineProduct.multiLineCells) table.classList.add('schedule-multiline');
         if (hasIndoorTagColumn(productKey)) {
             table.classList.add('schedule-has-indoor-tag');
         }

@@ -1188,6 +1188,9 @@
     function buildScheduleTable(data, selections, product) {
         var table = document.createElement('table');
         table.className = 'schedule-table';
+        // multiLineCells (data.js): keep the workbook's in-cell line
+        // breaks (Santa-Fe CFM at several static pressures).
+        if (product && product.multiLineCells) table.classList.add('schedule-multiline');
         // Per-product "always hidden" columns (declared in data.js via
         // hiddenSelectionColumns). The project-view schedule creator
         // still shows these; only the browse page hides them.
