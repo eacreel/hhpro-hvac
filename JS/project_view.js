@@ -235,6 +235,49 @@
             actionsRight.appendChild(shareBtn);
         }
 
+        // Temporary cart: save its items into a project after all.
+        if (activeState.mode === 'cart' && activeState.items.length && HHpro.Cart) {
+            var hasProjects = HHpro.Cart.listProjects().length > 0;
+
+            var toExistingBtn = document.createElement('button');
+            toExistingBtn.type = 'button';
+            toExistingBtn.className = 'projects-btn projects-btn-secondary';
+            toExistingBtn.textContent = 'Move Items to Existing Project';
+            toExistingBtn.title = hasProjects
+                ? 'Add these items to one of your saved projects and open it'
+                : 'No projects saved yet';
+            toExistingBtn.disabled = !hasProjects;
+            toExistingBtn.addEventListener('click', function () {
+                HHpro.Cart.openProjectPicker(function (proj) {
+                    if (!proj) return;
+                    var moved = HHpro.Cart.moveCartToProject(proj.id);
+                    if (!moved) return;
+                    var n = activeState.items.length;
+                    if (HHpro.UI.toast) {
+                        HHpro.UI.toast(n + ' item' + (n === 1 ? '' : 's') + ' moved to ' + moved.name + '.');
+                    }
+                    HHpro.App.showView('project_view');
+                }, { title: 'Move items to which project?' });
+            });
+            actionsRight.appendChild(toExistingBtn);
+
+            var toNewBtn = document.createElement('button');
+            toNewBtn.type = 'button';
+            toNewBtn.className = 'projects-btn projects-btn-primary';
+            toNewBtn.textContent = 'Move Items to New Project';
+            toNewBtn.title = 'Save these items as a new project and open it';
+            toNewBtn.addEventListener('click', function () {
+                HHpro.Cart.promptProjectName(function (name) {
+                    if (!name) return;
+                    var created = HHpro.Cart.moveCartToNewProject(name);
+                    if (!created) return;
+                    if (HHpro.UI.toast) HHpro.UI.toast('Saved as project ' + created.name + '.');
+                    HHpro.App.showView('project_view');
+                });
+            });
+            actionsRight.appendChild(toNewBtn);
+        }
+
         if (activeState.mode === 'project') {
             var exitBtn = document.createElement('button');
             exitBtn.type = 'button';

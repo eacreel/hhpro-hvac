@@ -60,6 +60,9 @@
      HHpro.Cart.activateProject(id)
      HHpro.Cart.deleteProject(id)
      HHpro.Cart.createAndActivateProject(name)
+     HHpro.Cart.moveCartToProject(id)     -> temporary cart items into a saved project
+     HHpro.Cart.moveCartToNewProject(name) -> temporary cart saved as a new project
+     HHpro.Cart.openProjectPicker(onDone, options)
      HHpro.Cart.promptProjectName(onDone)
      HHpro.Cart.mergeImportedProjects(list, options)
      HHpro.Cart.shareProject(id, email)   -> Promise; copies it to another account
@@ -165,6 +168,9 @@
         countNewShared: countNewShared,
         markSharedSeen: markSharedSeen,
         exitProject: clearActiveState,
+        moveCartToProject: moveCartToProject,
+        moveCartToNewProject: moveCartToNewProject,
+        openProjectPicker: openProjectPicker,
         promptProjectName: promptProjectName,
         ensureModeChosen: ensureModeChosen,
         mergeImportedProjects: mergeImportedProjects,
@@ -716,6 +722,68 @@
 
     function hasUnsavedCartItems() {
         return state.mode === 'cart' && state.items.length > 0;
+    }
+
+    // ---- moving a temporary cart into a project ---------------------
+    // The cart's items (with their tags, design values and per-product
+    // settings) are copied into the project, the project becomes the
+    // active one, and the temporary cart is gone. Not an undo step: undo
+    // history belongs to the cart that no longer exists.
+
+    /** Add every cart item to an existing project and open it. Returns the project or null. */
+    function moveCartToProject(projectId) {
+        if (state.mode !== 'cart' || !state.items.length) return null;
+        var projects = loadProjects();
+        var proj = projects[projectId];
+        if (!proj) return null;
+
+        var items = Array.isArray(proj.items) ? proj.items.slice() : [];
+        // Cart instance ids (item_0001 ...) would collide with the
+        // project's, so number the moved items after its highest one.
+        var maxNum = 0;
+        items.forEach(function (it) {
+            var n = parseInt((it.instanceId || '').replace(/\D/g, ''), 10);
+            if (!isNaN(n) && n > maxNum) maxNum = n;
+        });
+        deepClone(state.items).forEach(function (it) {
+            maxNum++;
+            it.instanceId = 'item_' + String(maxNum).padStart(4, '0');
+            items.push(it);
+        });
+        proj.items = items;
+
+        // Per-product settings: the project's own win; a product the
+        // project has no settings for takes the cart's.
+        var extra = (proj.extra && typeof proj.extra === 'object') ? proj.extra : {};
+        Object.keys(state.extra || {}).forEach(function (pk) {
+            if (!extra[pk]) extra[pk] = deepClone(state.extra[pk]);
+        });
+        proj.extra = extra;
+        proj.updatedAt = new Date().toISOString();
+        saveProjects(projects);
+
+        clearHistory();
+        startProjectMode(proj);
+        renderPanel();
+        renderToggle();
+        return proj;
+    }
+
+    /** Save the cart as a new project with this name and open it. Returns the project or null. */
+    function moveCartToNewProject(name) {
+        if (state.mode !== 'cart' || !state.items.length || !name) return null;
+        var proj = createProject(name);
+        proj.items = deepClone(state.items);
+        proj.extra = deepClone(state.extra);
+        proj.engineer = state.engineer || defaultEngineer();
+        proj.updatedAt = new Date().toISOString();
+        saveProjects(loadProjects());
+
+        clearHistory();
+        startProjectMode(proj);
+        renderPanel();
+        renderToggle();
+        return proj;
     }
 
     function clearActiveState() {
@@ -1501,7 +1569,9 @@
     // Project picker modal
     // =================================================================
 
-    function openProjectPicker(onDone) {
+    // options.title replaces the heading (the Cart page's "Move Items to
+    // Existing Project" uses the same list).
+    function openProjectPicker(onDone, options) {
         var list = listProjects();
 
         var backdrop = buildModalBackdrop();
@@ -1509,7 +1579,7 @@
 
         var title = document.createElement('h2');
         title.className = 'modal-title';
-        title.textContent = 'Open existing project';
+        title.textContent = (options && options.title) || 'Open existing project';
 
         var listEl = document.createElement('div');
         listEl.className = 'modal-project-list';
