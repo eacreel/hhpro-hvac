@@ -79,7 +79,7 @@
         },
         {
           "col": "J",
-          "value": "PERFORMANCE @ 65°F and 60%RH",
+          "value": "PERFORMANCE @ 65°F / 73°F and 60%RH",
           "colspan": 3,
           "rowspan": 1
         },
@@ -204,7 +204,7 @@
       "col": "Y"
     },
     {
-      "name": "WATER REMOVAL @ 65°F and 60%RH (GALLONS)",
+      "name": "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)",
       "col": "Z"
     }
   ],
@@ -350,7 +350,7 @@
             "MODEL": "Santa Fe Compact70",
             "CFM": 150,
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 5.4
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 5.4
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Compact 70 - Submittal",
@@ -389,7 +389,7 @@
             "MODEL": "Santa Fe Oasis105",
             "CFM": 280,
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.75,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 8.37
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 8.37
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Oasis 105 - Submittal",
@@ -428,7 +428,7 @@
             "MODEL": "Santa Fe Advance Dry110",
             "CFM": 370,
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 13.75,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 8.75
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 8.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Advance Dry110 - Submittal",
@@ -467,7 +467,7 @@
             "MODEL": "Santa Fe Classic",
             "CFM": 275,
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 14.5,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 9.5
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 9.5
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Classic - Submittal",
@@ -494,11 +494,11 @@
             "L": 1.64,
             "M": "WASHABLE",
             "N": "120/1/60",
-            "O": 15,
+            "O": 2.2,
             "P": 260,
-            "Q": 1.5,
-            "R": 17.25,
-            "S": 33.5625,
+            "Q": 5.75,
+            "R": 14.1875,
+            "S": 30,
             "T": 39,
             "U": "1 - 5, 10"
           },
@@ -506,7 +506,7 @@
             "MODEL": "Santa Fe Ultra MD33",
             "CFM": 150,
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 4.6,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 2.75
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 2.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA MD33- Submittal",
@@ -533,7 +533,7 @@
             "L": 2.04,
             "M": "MERV-13",
             "N": "115/1/60",
-            "O": 15,
+            "O": 4.1,
             "P": 492,
             "Q": 28,
             "R": 12,
@@ -545,7 +545,7 @@
             "MODEL": "Santa Fe Ultra70",
             "CFM": "130-150",
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 6.55
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 6.55
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA70 - Submittal",
@@ -572,7 +572,7 @@
             "L": 2.63,
             "M": "MERV-13",
             "N": "115/1/60",
-            "O": 15,
+            "O": 8,
             "P": 620,
             "Q": 39.25,
             "R": 14.35,
@@ -584,7 +584,7 @@
             "MODEL": "Santa Fe Ultra V100",
             "CFM": "260-385",
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.6,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 10.25
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 10.25
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V100 - Submittal",
@@ -611,7 +611,7 @@
             "L": 2.45,
             "M": "MERV-13",
             "N": "115/1/60",
-            "O": 15,
+            "O": 10.2,
             "P": 800,
             "Q": 39.25,
             "R": 14.35,
@@ -623,7 +623,7 @@
             "MODEL": "Santa Fe Ultra V125",
             "CFM": "260-385",
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 15.5,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 12.6
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 12.6
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V125 - Submittal",
@@ -650,7 +650,7 @@
             "L": 2.9,
             "M": "MERV-13",
             "N": "115/1/60",
-            "O": 15,
+            "O": 10,
             "P": 810,
             "Q": 39.25,
             "R": 14.35,
@@ -662,7 +662,7 @@
             "MODEL": "Santa Fe Ultra V155",
             "CFM": "322-435",
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 19.3,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 16
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 16
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V155 - Submittal",
@@ -689,7 +689,7 @@
             "L": 3,
             "M": "MERV-13",
             "N": "110-120/1/60",
-            "O": 15,
+            "O": 12.5,
             "P": 1115,
             "Q": 38,
             "R": 26.75,
@@ -701,7 +701,7 @@
             "MODEL": "Santa Fe Ultra V205",
             "CFM": "430-550",
             "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 25.625,
-            "WATER REMOVAL @ 65°F and 60%RH (GALLONS)": 21.6
+            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 21.6
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V205 - Submittal",
@@ -725,13 +725,13 @@
       "Classic: Vertical basement unit. Minimum operating temperature 56°F. Optional duct kit and condensate pump.",
       "Ultra MD33: In-wall unit, 5-3/4\" deep, for 2x6 or 2x4 stud walls. Plug-in or hard-wired on a 15A circuit. Drain to hub drain or plumbing line. Built-in digital dehumidistat and washable filter. Optional kits: surface mount (4037766), 2x4 wall mount bezel (4037767), rear panel (4037768).",
       "Ultra70: 8\" round inlet and outlet with optional 8\" outdoor air ventilation duct. Terminal block for optional DEH 3000/R controller. 15A circuit.",
-      "Ultra V100 / V125 / V155 / V205: Built-in 8\" outdoor air ventilation inlet (meets ASHRAE 62.2). Duct connections: 8\" and 10\" round inlets, 10\" round outlet. 15A dedicated circuit. 24VAC terminal block for DEH 3000/R control. SmartAire remote sensor and power damper (V100 / V125 / V155). Secondary drain port for float switch.",
-      "Ultra70 and Ultra V series: second rating point is 73°F / 60% RH."
+      "Ultra V100 / V125 / V155 / V205: Built-in 8\" outdoor air ventilation inlet (meets ASHRAE 62.2). Duct connections: 8\" and 10\" round inlets, 10\" round outlet. 15A dedicated circuit. 24VAC terminal block for DEH 3000/R control. SmartAire remote sensor and power damper (V100 / V125 / V155). Secondary drain port for float switch. Amps listed at 104°F / 36% RH.",
+      "Second performance point: Ultra70 and Ultra V series are rated at 73°F / 60% RH; all other units at 65°F / 60% RH."
     ]
   },
   "_meta": {
     "sourceFile": "SANTA FE DATA.xlsx",
-    "generatedAt": "2026-11-17T09:28:03",
+    "generatedAt": "2026-11-17T11:51:39",
     "dataRowCount": 10,
     "selectionCount": 10
   }
