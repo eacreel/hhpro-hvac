@@ -48,6 +48,8 @@
     // then reopen on the first one their air handler has.
     var LEGACY_VOLTAGES = ['208/1', '208/3', '460/3'];
     var ZERO_KW_DOC = / - 0 kW$/i;
+    // Default AHU voltage when the unit also comes in 240/1 (see normalize).
+    var DEFAULT_VOLTAGE = '208/1';
 
     // -----------------------------------------------------------------
     // Table + columns
@@ -111,6 +113,11 @@
         var volts = voltagesFor(data, entry);
         var v = (st && volts.indexOf(st.voltage) >= 0) ? st.voltage : null;
         if (v == null && volts.length === 1) v = volts[0];
+        // A unit offered at both 208/1 and 240/1 starts on 208/1 (what is
+        // picked nearly every time); the dropdown still offers 240/1.
+        if (v == null && volts.indexOf(DEFAULT_VOLTAGE) >= 0 && volts.indexOf('240/1') >= 0) {
+            v = DEFAULT_VOLTAGE;
+        }
         var out = { voltage: v, kitKw: null };
         if (v == null) return out;
         var kits = kitsFor(entry, v);
