@@ -1882,9 +1882,12 @@
 
     /** "today", "yesterday", "5 days ago", "3 months ago". */
     function relativeDay(iso) {
-        var d = daysAgo(iso);
-        if (d === null) return '';
-        var n = Math.floor(d);
+        var t = iso ? new Date(iso) : null;
+        if (!t || isNaN(t.getTime())) return '';
+        // Count calendar days (local midnights), not 24-hour periods, so last night reads "yesterday".
+        var now = new Date();
+        var n = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
+            new Date(t.getFullYear(), t.getMonth(), t.getDate())) / DAY_MS);
         if (n <= 0) return 'today';
         if (n === 1) return 'yesterday';
         if (n < 60) return n + ' days ago';
