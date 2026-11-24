@@ -29,14 +29,17 @@
       "R",
       "S",
       "T",
-      "U"
+      "U",
+      "V",
+      "W",
+      "X"
     ],
     "rows": [
       [
         {
           "col": "B",
           "value": "DEHUMIDIFIER SCHEDULE",
-          "colspan": 20,
+          "colspan": 23,
           "rowspan": 1
         }
       ],
@@ -79,30 +82,36 @@
         },
         {
           "col": "J",
-          "value": "PERFORMANCE @ 65°F / 73°F and 60%RH",
+          "value": "PERFORMANCE @ 65°F and 60%RH",
           "colspan": 3,
           "rowspan": 1
         },
         {
           "col": "M",
+          "value": "PERFORMANCE @ 73°F and 60%RH",
+          "colspan": 3,
+          "rowspan": 1
+        },
+        {
+          "col": "P",
           "value": "FILTER",
           "colspan": 1,
           "rowspan": 2
         },
         {
-          "col": "N",
+          "col": "Q",
           "value": "ELECTRICAL",
           "colspan": 3,
           "rowspan": 1
         },
         {
-          "col": "Q",
+          "col": "T",
           "value": "DIMENSIONS & WEIGHT",
           "colspan": 4,
           "rowspan": 1
         },
         {
-          "col": "U",
+          "col": "X",
           "value": "NOTES",
           "colspan": 1,
           "rowspan": 2
@@ -111,7 +120,7 @@
       [
         {
           "col": "G",
-          "value": "WATER REMOVAL\n(PINTS/GALLONS)",
+          "value": "WATER REMOVAL\n(PINTS/GALLONS, PER DAY)",
           "colspan": 1,
           "rowspan": 1
         },
@@ -129,7 +138,7 @@
         },
         {
           "col": "J",
-          "value": "WATER REMOVAL\n(PINTS/GALLONS)",
+          "value": "WATER REMOVAL\n(PINTS/GALLONS, PER DAY)",
           "colspan": 1,
           "rowspan": 1
         },
@@ -146,43 +155,61 @@
           "rowspan": 1
         },
         {
+          "col": "M",
+          "value": "WATER REMOVAL\n(PINTS/GALLONS, PER DAY)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
           "col": "N",
-          "value": "V/PH/HZ",
+          "value": "EFFICIENCY\n(PINTS/KWh)",
           "colspan": 1,
           "rowspan": 1
         },
         {
           "col": "O",
-          "value": "AMPS",
-          "colspan": 1,
-          "rowspan": 1
-        },
-        {
-          "col": "P",
-          "value": "WATTS",
+          "value": "ENERGY FACTOR\n(L/kWh)",
           "colspan": 1,
           "rowspan": 1
         },
         {
           "col": "Q",
-          "value": "LENGTH\n(IN)",
+          "value": "V/PH/HZ",
           "colspan": 1,
           "rowspan": 1
         },
         {
           "col": "R",
-          "value": "WIDTH\n(IN)",
+          "value": "AMPS",
           "colspan": 1,
           "rowspan": 1
         },
         {
           "col": "S",
-          "value": "HEIGHT\n(IN)",
+          "value": "WATTS",
           "colspan": 1,
           "rowspan": 1
         },
         {
           "col": "T",
+          "value": "LENGTH\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "U",
+          "value": "WIDTH\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "V",
+          "value": "HEIGHT\n(IN)",
+          "colspan": 1,
+          "rowspan": 1
+        },
+        {
+          "col": "W",
           "value": "WEIGHT\n(LBS)",
           "colspan": 1,
           "rowspan": 1
@@ -193,127 +220,123 @@
   "filterColumns": [
     {
       "name": "MODEL",
-      "col": "W"
+      "col": "Z"
     },
     {
       "name": "CFM",
-      "col": "X"
+      "col": "AA"
     },
     {
-      "name": "WATER REMOVAL @ 80°F and 60%RH (GALLONS)",
-      "col": "Y"
-    },
-    {
-      "name": "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)",
-      "col": "Z"
+      "name": "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)",
+      "col": "AB"
     }
   ],
   "documentationColumns": [
     {
       "name": "SUBMITTAL (OUTDOOR UNIT)",
-      "col": "AB",
-      "folder": "SUBMITTALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "SUBMITTAL (INDOOR UNIT)",
-      "col": "AC",
-      "folder": "SUBMITTALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "SUBMITTAL (SYSTEM)",
       "col": "AD",
       "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (SYSTEM)",
+      "name": "SUBMITTAL (INDOOR UNIT)",
       "col": "AE",
-      "folder": "ENGINEERING MANUALS",
+      "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
+      "name": "SUBMITTAL (SYSTEM)",
       "col": "AF",
-      "folder": "ENGINEERING MANUALS",
+      "folder": "SUBMITTALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "name": "ENGINEERING MANUAL (SYSTEM)",
       "col": "AG",
       "folder": "ENGINEERING MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "CAPACITY TABLE",
+      "name": "ENGINEERING MANUAL (OUTDOOR UNIT)",
       "col": "AH",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "ENGINEERING MANUAL (INDOOR UNIT)",
+      "col": "AI",
+      "folder": "ENGINEERING MANUALS",
+      "fileExtension": "pdf"
+    },
+    {
+      "name": "CAPACITY TABLE",
+      "col": "AJ",
       "folder": "CAPACITY TABLES",
       "fileExtension": "pdf"
     },
     {
       "name": "INSTALLATION MANUAL (OUTDOOR)",
-      "col": "AI",
-      "folder": "INSTALLATION MANUALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "INSTALLATION MANUAL (INDOOR)",
-      "col": "AJ",
-      "folder": "INSTALLATION MANUALS",
-      "fileExtension": "pdf"
-    },
-    {
-      "name": "INSTALLATION MANUAL (SYSTEM)",
       "col": "AK",
       "folder": "INSTALLATION MANUALS",
       "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (OUTDOOR)",
+      "name": "INSTALLATION MANUAL (INDOOR)",
       "col": "AL",
-      "folder": "REVIT",
-      "fileExtension": "zip"
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (INDOOR)",
+      "name": "INSTALLATION MANUAL (SYSTEM)",
       "col": "AM",
-      "folder": "REVIT",
-      "fileExtension": "zip"
+      "folder": "INSTALLATION MANUALS",
+      "fileExtension": "pdf"
     },
     {
-      "name": "REVIT (SYSTEM)",
+      "name": "REVIT (OUTDOOR)",
       "col": "AN",
       "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (OUTDOOR)",
+      "name": "REVIT (INDOOR)",
       "col": "AO",
-      "folder": "CAD",
+      "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (INDOOR)",
+      "name": "REVIT (SYSTEM)",
       "col": "AP",
-      "folder": "CAD",
+      "folder": "REVIT",
       "fileExtension": "zip"
     },
     {
-      "name": "CAD (SYSTEM)",
+      "name": "CAD (OUTDOOR)",
       "col": "AQ",
       "folder": "CAD",
       "fileExtension": "zip"
     },
     {
-      "name": "CONTROLS OPTIONS",
+      "name": "CAD (INDOOR)",
       "col": "AR",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CAD (SYSTEM)",
+      "col": "AS",
+      "folder": "CAD",
+      "fileExtension": "zip"
+    },
+    {
+      "name": "CONTROLS OPTIONS",
+      "col": "AT",
       "folder": "CONTROLS",
       "fileExtension": "pdf"
     },
     {
       "name": "OPERATION MANUAL",
-      "col": "AS",
+      "col": "AU",
       "folder": "OPERATION MANUAL",
       "fileExtension": "pdf"
     }
@@ -336,21 +359,23 @@
             "J": "43.7/5.4",
             "K": 4.1,
             "L": 1.96,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 3.7,
-            "P": 444,
-            "Q": 21,
-            "R": 12,
-            "S": 12,
-            "T": 55,
-            "U": "1 - 5, 6"
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 3.7,
+            "S": 444,
+            "T": 21,
+            "U": 12,
+            "V": 12,
+            "W": 55,
+            "X": "1 - 5, 6"
           },
           "filterData": {
             "MODEL": "Santa Fe Compact70",
             "CFM": 150,
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 5.4
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 8.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Compact 70 - Submittal",
@@ -375,21 +400,23 @@
             "J": "67/8.37",
             "K": 5.95,
             "L": 2.81,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 6.1,
-            "P": 732,
-            "Q": 24,
-            "R": 16,
-            "S": 14.5,
-            "T": 59,
-            "U": "1 - 5, 7"
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 6.1,
+            "S": 732,
+            "T": 24,
+            "U": 16,
+            "V": 14.5,
+            "W": 59,
+            "X": "1 - 5, 7"
           },
           "filterData": {
             "MODEL": "Santa Fe Oasis105",
             "CFM": 280,
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.75,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 8.37
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 12.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Oasis 105 - Submittal",
@@ -414,21 +441,23 @@
             "J": "70/8.75",
             "K": 5.92,
             "L": 2.81,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 4.1,
-            "P": 480,
-            "Q": 29,
-            "R": 14.35,
-            "S": 24,
-            "T": 102,
-            "U": "1 - 5, 8"
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 4.1,
+            "S": 480,
+            "T": 29,
+            "U": 14.35,
+            "V": 24,
+            "W": 102,
+            "X": "1 - 5, 8"
           },
           "filterData": {
             "MODEL": "Santa Fe Advance Dry110",
             "CFM": 370,
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 13.75,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 8.75
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 13.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Advance Dry110 - Submittal",
@@ -453,21 +482,23 @@
             "J": "76/9.5",
             "K": 5.9,
             "L": 2.8,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 4.5,
-            "P": 540,
-            "Q": 20,
-            "R": 17,
-            "S": 36,
-            "T": 110,
-            "U": "1 - 5, 9"
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 4.5,
+            "S": 540,
+            "T": 20,
+            "U": 17,
+            "V": 36,
+            "W": 110,
+            "X": "1 - 5, 9"
           },
           "filterData": {
             "MODEL": "Santa Fe Classic",
             "CFM": 275,
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 14.5,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 9.5
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 14.5
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe Classic - Submittal",
@@ -492,21 +523,23 @@
             "J": "22/2.75",
             "K": 3.46,
             "L": 1.64,
-            "M": "WASHABLE",
-            "N": "120/1/60",
-            "O": 2.2,
-            "P": 260,
-            "Q": 5.75,
-            "R": 14.1875,
-            "S": 30,
-            "T": 39,
-            "U": "1 - 5, 10"
+            "M": "-",
+            "N": "-",
+            "O": "-",
+            "P": "WASHABLE",
+            "Q": "120/1/60",
+            "R": 2.2,
+            "S": 260,
+            "T": 5.75,
+            "U": 14.1875,
+            "V": 30,
+            "W": 39,
+            "X": "1 - 5, 10"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra MD33",
             "CFM": 150,
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 4.6,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 2.75
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 4.6
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA MD33- Submittal",
@@ -528,24 +561,26 @@
             "G": "70/8.75",
             "H": 5.5,
             "I": 2.6,
-            "J": "52.45/6.55",
-            "K": 4.31,
-            "L": 2.04,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 4.1,
-            "P": 492,
-            "Q": 28,
-            "R": 12,
-            "S": 12,
-            "T": 55,
-            "U": "1 - 5, 11, 13"
+            "J": "-",
+            "K": "-",
+            "L": "-",
+            "M": "52.45/6.55",
+            "N": 4.31,
+            "O": 2.04,
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 4.1,
+            "S": 492,
+            "T": 28,
+            "U": 12,
+            "V": 12,
+            "W": 55,
+            "X": "1 - 5, 11"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra70",
             "CFM": "130-150",
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 8.75,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 6.55
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 8.75
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA70 - Submittal",
@@ -567,24 +602,26 @@
             "G": "100/12.6",
             "H": 6.4,
             "I": 3,
-            "J": "82/10.25",
-            "K": 5.55,
-            "L": 2.63,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 8,
-            "P": 620,
-            "Q": 39.25,
-            "R": 14.35,
-            "S": 24,
-            "T": 101,
-            "U": "1 - 5, 12, 13"
+            "J": "-",
+            "K": "-",
+            "L": "-",
+            "M": "82/10.25",
+            "N": 5.55,
+            "O": 2.63,
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 8,
+            "S": 620,
+            "T": 39.25,
+            "U": 14.35,
+            "V": 24,
+            "W": 101,
+            "X": "1 - 5, 12"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra V100",
             "CFM": "260-385",
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 12.6,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 10.25
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 12.6
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V100 - Submittal",
@@ -606,24 +643,26 @@
             "G": "125/15.5",
             "H": 5.9,
             "I": 2.8,
-            "J": "101/12.6",
-            "K": 5.2,
-            "L": 2.45,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 10.2,
-            "P": 800,
-            "Q": 39.25,
-            "R": 14.35,
-            "S": 24,
-            "T": 104,
-            "U": "1 - 5, 12, 13"
+            "J": "-",
+            "K": "-",
+            "L": "-",
+            "M": "101/12.6",
+            "N": 5.2,
+            "O": 2.45,
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 10.2,
+            "S": 800,
+            "T": 39.25,
+            "U": 14.35,
+            "V": 24,
+            "W": 104,
+            "X": "1 - 5, 12"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra V125",
             "CFM": "260-385",
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 15.5,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 12.6
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 15.5
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V125 - Submittal",
@@ -645,24 +684,26 @@
             "G": "155/19.3",
             "H": 7.1,
             "I": 3.35,
-            "J": "128/16",
-            "K": 6.5,
-            "L": 2.9,
-            "M": "MERV-13",
-            "N": "115/1/60",
-            "O": 10,
-            "P": 810,
-            "Q": 39.25,
-            "R": 14.35,
-            "S": 24,
-            "T": 112,
-            "U": "1 - 5, 12, 13"
+            "J": "-",
+            "K": "-",
+            "L": "-",
+            "M": "128/16",
+            "N": 6.5,
+            "O": 2.9,
+            "P": "MERV-13",
+            "Q": "115/1/60",
+            "R": 10,
+            "S": 810,
+            "T": 39.25,
+            "U": 14.35,
+            "V": 24,
+            "W": 112,
+            "X": "1 - 5, 12"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra V155",
             "CFM": "322-435",
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 19.3,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 16
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 19.3
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V155 - Submittal",
@@ -684,24 +725,26 @@
             "G": "205/25.625",
             "H": 7.5,
             "I": 3.5,
-            "J": "173/21.6",
-            "K": 6.3,
-            "L": 3,
-            "M": "MERV-13",
-            "N": "110-120/1/60",
-            "O": 12.5,
-            "P": 1115,
-            "Q": 38,
-            "R": 26.75,
-            "S": 20.75,
-            "T": 148,
-            "U": "1 - 5, 12, 13"
+            "J": "-",
+            "K": "-",
+            "L": "-",
+            "M": "173/21.6",
+            "N": 6.3,
+            "O": 3,
+            "P": "MERV-13",
+            "Q": "110-120/1/60",
+            "R": 12.5,
+            "S": 1115,
+            "T": 38,
+            "U": 26.75,
+            "V": 20.75,
+            "W": 148,
+            "X": "1 - 5, 12"
           },
           "filterData": {
             "MODEL": "Santa Fe Ultra V205",
             "CFM": "430-550",
-            "WATER REMOVAL @ 80°F and 60%RH (GALLONS)": 25.625,
-            "WATER REMOVAL @ 65°F / 73°F and 60%RH (GALLONS)": 21.6
+            "WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)": 25.625
           },
           "documentationData": {
             "SUBMITTAL (SYSTEM)": "Santa Fe ULTRA V205 - Submittal",
@@ -725,13 +768,12 @@
       "Classic: Vertical basement unit. Minimum operating temperature 56°F. Optional duct kit and condensate pump.",
       "Ultra MD33: In-wall unit, 5-3/4\" deep, for 2x6 or 2x4 stud walls. Plug-in or hard-wired on a 15A circuit. Drain to hub drain or plumbing line. Built-in digital dehumidistat and washable filter. Optional kits: surface mount (4037766), 2x4 wall mount bezel (4037767), rear panel (4037768).",
       "Ultra70: 8\" round inlet and outlet with optional 8\" outdoor air ventilation duct. Terminal block for optional DEH 3000/R controller. 15A circuit.",
-      "Ultra V100 / V125 / V155 / V205: Built-in 8\" outdoor air ventilation inlet (meets ASHRAE 62.2). Duct connections: 8\" and 10\" round inlets, 10\" round outlet. 15A dedicated circuit. 24VAC terminal block for DEH 3000/R control. SmartAire remote sensor and power damper (V100 / V125 / V155). Secondary drain port for float switch. Amps listed at 104°F / 36% RH.",
-      "Second performance point: Ultra70 and Ultra V series are rated at 73°F / 60% RH; all other units at 65°F / 60% RH."
+      "Ultra V100 / V125 / V155 / V205: Built-in 8\" outdoor air ventilation inlet (meets ASHRAE 62.2). Duct connections: 8\" and 10\" round inlets, 10\" round outlet. 15A dedicated circuit. 24VAC terminal block for DEH 3000/R control. SmartAire remote sensor and power damper (V100 / V125 / V155). Secondary drain port for float switch. Amps listed at 104°F / 36% RH."
     ]
   },
   "_meta": {
     "sourceFile": "SANTA FE DATA.xlsx",
-    "generatedAt": "2026-11-17T11:51:39",
+    "generatedAt": "2026-11-24T06:12:06",
     "dataRowCount": 10,
     "selectionCount": 10
   }

@@ -495,8 +495,9 @@
             scheduleNotesReadOnly: true,
             hideAccessoriesColumn: true,
             // Cart labels lead with the water removal, e.g.
-            // "8.75 GAL/DAY / 4044110 (COMPACT 70)".
-            cartSizeFilter: 'WATER REMOVAL @ 80°F and 60%RH (GALLONS)',
+            // "8.75 GAL/DAY / 4044110 (COMPACT 70)". Must match the filter
+            // header in SANTA FE DATA.xlsx exactly (AB2 since 2026-11-24).
+            cartSizeFilter: 'WATER REMOVAL @ 80°F and 60%RH (GALLONS PER DAY)',
             cartSizeLabel: '{} GAL/DAY',
             // MODEL (column W) holds each unit's photo name; the photo cards
             // (JS/santa_fe.js) are its only control. `value` must match a
